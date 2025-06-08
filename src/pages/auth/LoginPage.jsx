@@ -1,9 +1,23 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/admin-dashboard');
+    }
+  }, [user, loading, navigate]);
+
+  if (!loading && user) {
+    return null; // Ou un composant de chargement/spinner
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
