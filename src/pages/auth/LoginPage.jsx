@@ -9,15 +9,23 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Attend que loading soit false pour vérifier l'authentification
     if (!loading && user) {
       navigate('/admin-dashboard');
     }
   }, [user, loading, navigate]);
 
-  if (!loading && user) {
-    return null; // Ou un composant de chargement/spinner
+  if (loading) {
+    // Un petit spinner ou rien
+    return null;
   }
 
+  if (user) {
+    // L'utilisateur est déjà connecté, on peut return null ou un spinner
+    return null;
+  }
+
+  // Sinon, afficher le formulaire
   return (
     <motion.div
       initial={{ opacity: 0 }}
