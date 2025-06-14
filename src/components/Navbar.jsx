@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, Search, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { personalData } from '@/lib/personalData';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,16 +83,33 @@ const Navbar = () => {
             <Button variant="ghost" size="icon" className="md:hidden" aria-label="Rechercher">
                <Search className="h-5 w-5" />
             </Button>
-            <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link to="/connexion">
-                <UserCircle className="mr-2 h-4 w-4" /> Connexion
-              </Link>
-            </Button>
-            <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
-              <Link to="/inscription">
-                <UserCircle className="mr-2 h-4 w-4" /> Inscription
-              </Link>
-            </Button>
+            {!user && (
+              <>
+                <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Link to="/connexion">
+                    <UserCircle className="mr-2 h-4 w-4" /> Connexion
+                  </Link>
+                </Button>
+                <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                  <Link to="/inscription">
+                    <UserCircle className="mr-2 h-4 w-4" /> Inscription
+                  </Link>
+                </Button>
+              </>
+            )}
+            {user && user.role === 'admin' ? (
+              <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                <Link to="/admin-dashboard">
+                  <Settings className="mr-2 h-4 w-4" /> Admin
+                </Link>
+              </Button>
+            ) : user && (
+              <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                <Link to="/profile">
+                  <Settings className="mr-2 h-4 w-4" /> Mon Compte
+                </Link>
+              </Button>
+            )}
             <div className="md:hidden">
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} aria-label="Ouvrir le menu">
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -122,15 +141,25 @@ const Navbar = () => {
               </NavLink>
             ))}
             <div className="border-t border-border pt-3 space-y-3">
-                <NavLink to="/connexion" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                    <UserCircle className="mr-2 h-4 w-4" /> Connexion
+              {!user && (
+                <>
+                  <NavLink to="/connexion" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                      <UserCircle className="mr-2 h-4 w-4" /> Connexion
+                  </NavLink>
+                  <NavLink to="/inscription" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                      <UserCircle className="mr-2 h-4 w-4" /> Inscription
+                  </NavLink>
+                </>
+              )}
+              {user && user.role === 'admin' ? (
+                <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                  <Settings className="mr-2 h-4 w-4" /> Admin
                 </NavLink>
-                <NavLink to="/inscription" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                    <UserCircle className="mr-2 h-4 w-4" /> Inscription
-                </NavLink>
+              ) : user && (
                 <NavLink to="/profile" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                    <Settings className="mr-2 h-4 w-4" /> Mon Compte
+                  <Settings className="mr-2 h-4 w-4" /> Mon Compte
                 </NavLink>
+              )}
             </div>
           </motion.div>
         )}
