@@ -83,7 +83,12 @@ const Navbar = () => {
             </Button>
             <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
               <Link to="/connexion">
-                <UserCircle className="mr-2 h-4 w-4" /> Connexion / Inscription
+                <UserCircle className="mr-2 h-4 w-4" /> Connexion
+              </Link>
+            </Button>
+            <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+              <Link to="/inscription">
+                <UserCircle className="mr-2 h-4 w-4" /> Inscription
               </Link>
             </Button>
             <div className="md:hidden">
@@ -118,7 +123,10 @@ const Navbar = () => {
             ))}
             <div className="border-t border-border pt-3 space-y-3">
                 <NavLink to="/connexion" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                    <UserCircle className="mr-2 h-4 w-4" /> Connexion / Inscription
+                    <UserCircle className="mr-2 h-4 w-4" /> Connexion
+                </NavLink>
+                <NavLink to="/inscription" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                    <UserCircle className="mr-2 h-4 w-4" /> Inscription
                 </NavLink>
                 <NavLink to="/profile" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
                     <Settings className="mr-2 h-4 w-4" /> Mon Compte
