@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
@@ -35,15 +34,38 @@ const RegisterForm = () => {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nom complet</Label>
+              <Label htmlFor="firstName">Prénom</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="name"
+                  id="firstName"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="John"
                   className="pl-10"
-                  {...register('name', {
+                  {...register('firstName', {
+                    required: 'Le prénom est requis',
+                    minLength: {
+                      value: 2,
+                      message: 'Le prénom doit contenir au moins 2 caractères'
+                    }
+                  })}
+                />
+              </div>
+              {errors.firstName && (
+                <p className="text-sm text-destructive">{errors.firstName.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Nom</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Doe"
+                  className="pl-10"
+                  {...register('lastName', {
                     required: 'Le nom est requis',
                     minLength: {
                       value: 2,
@@ -52,8 +74,8 @@ const RegisterForm = () => {
                   })}
                 />
               </div>
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+              {errors.lastName && (
+                <p className="text-sm text-destructive">{errors.lastName.message}</p>
               )}
             </div>
 
@@ -81,15 +103,15 @@ const RegisterForm = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone</Label>
+              <Label htmlFor="phoneNumber">Téléphone</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="phone"
+                  id="phoneNumber"
                   type="tel"
                   placeholder="+221 77 123 45 67"
                   className="pl-10"
-                  {...register('phone', {
+                  {...register('phoneNumber', {
                     required: 'Le numéro de téléphone est requis',
                     pattern: {
                       value: /^\+?[1-9]\d{1,14}$/,
@@ -98,8 +120,8 @@ const RegisterForm = () => {
                   })}
                 />
               </div>
-              {errors.phone && (
-                <p className="text-sm text-destructive">{errors.phone.message}</p>
+              {errors.phoneNumber && (
+                <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>
               )}
             </div>
 
