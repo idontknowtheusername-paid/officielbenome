@@ -52,7 +52,7 @@ function App() {
               <Route path="inscription" element={<RegisterPage />} />
               <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
               <Route path="reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
-              <Route path="profil" element={<ProfilePage />} />
+              <Route path="profile" element={<ProfilePage />} />
               
               {/* Marketplace Sections */}
               <Route path="immobilier" element={<RealEstatePage />} />
