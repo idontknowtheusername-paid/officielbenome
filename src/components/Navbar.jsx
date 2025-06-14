@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,7 +82,7 @@ const Navbar = () => {
                <Search className="h-5 w-5" />
             </Button>
             <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link to="/admin-dashboard">
+              <Link to="/connexion">
                 <UserCircle className="mr-2 h-4 w-4" /> Connexion / Inscription
               </Link>
             </Button>
@@ -118,10 +117,10 @@ const Navbar = () => {
               </NavLink>
             ))}
             <div className="border-t border-border pt-3 space-y-3">
-                <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                <NavLink to="/connexion" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
                     <UserCircle className="mr-2 h-4 w-4" /> Connexion / Inscription
                 </NavLink>
-                 <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                <NavLink to="/profile" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
                     <Settings className="mr-2 h-4 w-4" /> Mon Compte
                 </NavLink>
             </div>
