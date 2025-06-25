@@ -8,6 +8,7 @@
     "prestart": "node scripts/check-env.js",
     "start": "NODE_ENV=production node server.js",
     "dev": "NODE_ENV=development nodemon --inspect server.js",
+    "build": "echo \"No build step required\" && exit 0",
     "check": "node scripts/check-env.js",
     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit --coverage",
     "test:watch": "npm test -- --watch",
