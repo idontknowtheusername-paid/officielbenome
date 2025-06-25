@@ -11,7 +11,16 @@ export const API_ENDPOINTS = {
   
   // Users
   USERS: `${API_BASE_URL}/users`,
+  USER_STATUS: (userId) => `${API_BASE_URL}/users/${userId}/status`,
   PROFILE: `${API_BASE_URL}/users/profile`,
+  
+  // Admin
+  ADMIN_DASHBOARD: `${API_BASE_URL}/admin/dashboard`,
+  ADMIN_USERS: `${API_BASE_URL}/admin/users`,
+  ADMIN_LISTINGS: `${API_BASE_URL}/admin/listings`,
+  ADMIN_APPROVE_LISTING: (id) => `${API_BASE_URL}/admin/listings/${id}/approve`,
+  ADMIN_REJECT_LISTING: (id) => `${API_BASE_URL}/admin/listings/${id}/reject`,
+  ADMIN_TRANSACTIONS: `${API_BASE_URL}/admin/transactions`,
   
   // Real Estate
   REAL_ESTATE_LISTINGS: `${API_BASE_URL}/real-estate/listings`,

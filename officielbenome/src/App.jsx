@@ -3,7 +3,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AnimatePresence } from 'framer-motion';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { AdminRoute } from '@/components/ProtectedRoute';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -21,7 +22,14 @@ import RealEstatePage from '@/pages/marketplace/RealEstatePage';
 import AutomobilePage from '@/pages/marketplace/AutomobilePage';
 import ServicesPage from '@/pages/marketplace/ServicesPage';
 import GeneralMarketplacePage from '@/pages/marketplace/GeneralMarketplacePage';
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'; 
+// Admin Pages
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import AdminUsersPage from '@/pages/admin/users/UsersPage';
+import AdminListingsPage from '@/pages/admin/listings/ListingsPage';
+import AdminTransactionsPage from '@/pages/admin/transactions/TransactionsPage';
+import AdminAnalyticsPage from '@/pages/admin/analytics/AnalyticsPage';
+import AdminModerationPage from '@/pages/admin/moderation/ModerationPage';
+import AdminSettingsPage from '@/pages/admin/settings/SettingsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 // Static Pages
@@ -60,8 +68,75 @@ function App() {
               <Route path="services" element={<ServicesPage />} />
               <Route path="marketplace" element={<GeneralMarketplacePage />} />
               
-              {/* Admin Routes */}
-              <Route path="admin-dashboard" element={<AdminDashboardPage />} />
+              {/* Protected Admin Routes */}
+              <Route path="admin">
+                <Route 
+                  index 
+                  element={
+                    <AdminRoute>
+                      <AdminDashboardPage />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="utilisateurs" 
+                  element={
+                    <AdminRoute requiredPermissions={['admin:users']}>
+                      <AdminUsersPage />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="annonces" 
+                  element={
+                    <AdminRoute requiredPermissions={['listing:manage']}>
+                      <AdminListingsPage />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="transactions" 
+                  element={
+                    <AdminRoute requiredPermissions={['transaction:manage']}>
+                      <AdminTransactionsPage />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="analytiques" 
+                  element={
+                    <AdminRoute requiredPermissions={['admin:analytics']}>
+                      <AdminAnalyticsPage />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="moderation" 
+                  element={
+                    <AdminRoute requiredPermissions={['report:manage']}>
+                      <AdminModerationPage />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="parametres" 
+                  element={
+                    <AdminRoute requiredPermissions={['admin:settings']}>
+                      <AdminSettingsPage />
+                    </AdminRoute>
+                  } 
+                />
+              </Route>
+              
+              {/* Admin Dashboard Alias (redirection pour compatibilité) */}
+              <Route 
+                path="admin-dashboard" 
+                element={
+                  <AdminRoute>
+                    <AdminDashboardPage />
+                  </AdminRoute>
+                } 
+              />
 
               {/* Static/Informational Pages */}
               <Route path="a-propos" element={<AboutPage />} />

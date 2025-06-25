@@ -1,418 +1,310 @@
 import express from 'express';
-import db from '../config/database.js';
+import { body, param, query } from 'express-validator';
 import { authenticate, authorize } from '../middleware/auth.js';
-import { body, validationResult } from 'express-validator';
+import * as adminController from '../controllers/admin.controller.js';
+import { ROLES } from '../config/constants.js';
+import { validateRequest } from '../middleware/validateRequest.js';
+
 const router = express.Router();
+
+// Middleware d'authentification et d'autorisation pour les admins
+const requireAdmin = [authenticate, authorize([ROLES.ADMIN])];
+
+// Appliquer le middleware à toutes les routes admin
+router.use(requireAdmin);
 
 /**
  * @swagger
  * /api/admin/dashboard:
  *   get:
- *     summary: Statistiques du dashboard admin
+ *     summary: Récupère les statistiques du tableau de bord admin
  *     security:
  *       - bearerAuth: []
+ *     tags: [Admin]
  *     responses:
  *       200:
- *         description: Statistiques du dashboard
+ *         description: Statistiques du tableau de bord
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: number }
+ *                         active: { type: number }
+ *                     listings:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: number }
+ *                         pending: { type: number }
+ *                     revenue: { type: number }
+ *                     recentActivities: { type: array }
  *       401:
  *         description: Non authentifié
  *       403:
- *         description: Accès refusé
- *
- * /api/admin/listings:
- *   get:
- *     summary: Liste paginée des annonces à valider
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: status
- *         schema: { type: string }
- *       - in: query
- *         name: page
- *         schema: { type: integer }
- *       - in: query
- *         name: limit
- *         schema: { type: integer }
- *     responses:
- *       200:
- *         description: Liste paginée des annonces
- *
- * /api/admin/listings/{id}/approve:
- *   put:
- *     summary: Approuver une annonce
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Annonce approuvée
- *       404:
- *         description: Annonce non trouvée
- *
- * /api/admin/listings/{id}/reject:
- *   put:
- *     summary: Rejeter une annonce
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               reason:
- *                 type: string
- *     responses:
- *       200:
- *         description: Annonce rejetée
- *       404:
- *         description: Annonce non trouvée
- *
+ *         description: Accès refusé - Admin requis
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/dashboard', adminController.getDashboardStats);
+
+/**
+ * @swagger
  * /api/admin/users:
  *   get:
- *     summary: Liste paginée des utilisateurs
+ *     summary: Liste des utilisateurs avec pagination
  *     security:
  *       - bearerAuth: []
+ *     tags: [Admin]
  *     parameters:
  *       - in: query
  *         name: page
- *         schema: { type: integer }
+ *         schema: { type: integer, default: 1, minimum: 1 }
+ *         description: Numéro de page
  *       - in: query
  *         name: limit
- *         schema: { type: integer }
+ *         schema: { type: integer, default: 10, minimum: 1, maximum: 100 }
+ *         description: Nombre d'éléments par page
  *       - in: query
  *         name: search
  *         schema: { type: string }
+ *         description: Terme de recherche (nom ou email)
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: ['active', 'suspended', 'pending'] }
+ *         description: Filtrer par statut
  *     responses:
  *       200:
  *         description: Liste paginée des utilisateurs
- *
- * /api/admin/users/{id}/status:
+ *       401:
+ *         description: Non authentifié
+ *       403:
+ *         description: Accès refusé - Admin requis
+ */
+router.get(
+  '/users',
+  [
+    query('page').optional().isInt({ min: 1 }).toInt(),
+    query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+    query('search').optional().trim().escape(),
+    query('status').optional().isIn(['active', 'suspended', 'pending']),
+  ],
+  validateRequest,
+  adminController.getUsers
+);
+
+/**
+ * @swagger
+ * /api/admin/users/{userId}/status:
  *   put:
- *     summary: Modifier le statut ou le rôle d'un utilisateur
+ *     summary: Met à jour le statut d'un utilisateur
  *     security:
  *       - bearerAuth: []
+ *     tags: [Admin]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: userId
  *         required: true
  *         schema: { type: string }
+ *         description: ID de l'utilisateur
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [status]
  *             properties:
- *               action:
+ *               status:
  *                 type: string
- *                 enum: [activate, deactivate, promote, demote]
+ *                 enum: [active, suspended, pending]
+ *               reason:
+ *                 type: string
+ *                 maxLength: 500
  *     responses:
  *       200:
- *         description: Statut modifié
+ *         description: Statut utilisateur mis à jour
  *       400:
- *         description: Action invalide
- *
- * /api/admin/transactions:
+ *         description: Données invalides
+ *       401:
+ *         description: Non authentifié
+ *       403:
+ *         description: Accès refusé - Admin requis
+ *       404:
+ *         description: Utilisateur non trouvé
+ */
+router.put(
+  '/users/:userId/status',
+  [
+    param('userId').isMongoId().withMessage('ID utilisateur invalide'),
+    body('status').isIn(['active', 'suspended', 'pending']).withMessage('Statut invalide'),
+    body('reason').optional().isString().trim().isLength({ max: 500 }),
+  ],
+  validateRequest,
+  adminController.updateUserStatus
+);
+
+/**
+ * @swagger
+ * /api/admin/listings:
  *   get:
- *     summary: Liste paginée des transactions
+ *     summary: Récupère la liste des annonces avec pagination
  *     security:
  *       - bearerAuth: []
+ *     tags: [Admin]
  *     parameters:
  *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: ['PENDING_APPROVAL', 'ACTIVE', 'REJECTED'], default: 'PENDING_APPROVAL' }
+ *         description: Statut des annonces à récupérer
+ *       - in: query
  *         name: page
- *         schema: { type: integer }
+ *         schema: { type: integer, default: 1, minimum: 1 }
+ *         description: Numéro de page
  *       - in: query
  *         name: limit
- *         schema: { type: integer }
+ *         schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+ *         description: Nombre d'éléments par page
+ *     responses:
+ *       200:
+ *         description: Liste paginée des annonces
+ *       401:
+ *         description: Non authentifié
+ *       403:
+ *         description: Accès refusé - Admin requis
+ */
+router.get(
+  '/listings',
+  [
+    query('status').optional().isIn(['PENDING_APPROVAL', 'ACTIVE', 'REJECTED']),
+    query('page').optional().isInt({ min: 1 }).toInt(),
+    query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+  ],
+  validateRequest,
+  adminController.getListings
+);
+
+/**
+ * @swagger
+ * /api/admin/listings/{id}/approve:
+ *   put:
+ *     summary: Approuve une annonce
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID de l'annonce à approuver
+ *     responses:
+ *       200:
+ *         description: Annonce approuvée avec succès
+ *       404:
+ *         description: Annonce non trouvée
+ *       500:
+ *         description: Erreur serveur
+ */
+router.put(
+  '/listings/:id/approve',
+  [
+    param('id').isMongoId().withMessage('ID d\'annonce invalide')
+  ],
+  validateRequest,
+  adminController.approveListing
+);
+
+/**
+ * @swagger
+ * /api/admin/listings/{id}/reject:
+ *   put:
+ *     summary: Rejette une annonce
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID de l'annonce à rejeter
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [reason]
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: Raison du rejet
+ *                 minLength: 10
+ *                 maxLength: 500
+ *     responses:
+ *       200:
+ *         description: Annonce rejetée avec succès
+ *       400:
+ *         description: Données invalides
+ *       404:
+ *         description: Annonce non trouvée
+ */
+router.put(
+  '/listings/:id/reject',
+  [
+    param('id').isMongoId().withMessage('ID d\'annonce invalide'),
+    body('reason').isString().trim().isLength({ min: 10, max: 500 })
+  ],
+  validateRequest,
+  adminController.rejectListing
+);
+
+/**
+ * @swagger
+ * /api/admin/transactions:
+ *   get:
+ *     summary: Récupère la liste des transactions avec pagination
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Admin]
+ *     parameters:
  *       - in: query
  *         name: status
  *         schema: { type: string }
+ *         description: Statut des transactions à filtrer
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1, minimum: 1 }
+ *         description: Numéro de page
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+ *         description: Nombre d'éléments par page
  *     responses:
  *       200:
  *         description: Liste paginée des transactions
+ *       401:
+ *         description: Non authentifié
+ *       403:
+ *         description: Accès refusé - Admin requis
  */
-
-// All admin routes require ADMIN role
-router.use(authenticate);
-router.use(authorize('ADMIN'));
-
-// Dashboard stats
-router.get('/dashboard', async (req, res) => {
-  try {
-    const [
-      usersCount,
-      listingsCount,
-      activeListingsCount,
-      pendingListingsCount,
-      transactionsCount,
-      revenueSum
-    ] = await Promise.all([
-      db.query('SELECT COUNT(*) FROM users'),
-      db.query('SELECT COUNT(*) FROM listings'),
-      db.query('SELECT COUNT(*) FROM listings WHERE status = $1', ['ACTIVE']),
-      db.query('SELECT COUNT(*) FROM listings WHERE status = $1', ['PENDING_APPROVAL']),
-      db.query('SELECT COUNT(*) FROM transactions'),
-      db.query('SELECT SUM(amount) FROM transactions WHERE status = $1', ['PAID'])
-    ]);
-
-    res.json({
-      stats: {
-        totalUsers: parseInt(usersCount.rows[0].count),
-        totalListings: parseInt(listingsCount.rows[0].count),
-        activeListings: parseInt(activeListingsCount.rows[0].count),
-        pendingListings: parseInt(pendingListingsCount.rows[0].count),
-        totalTransactions: parseInt(transactionsCount.rows[0].count),
-        totalRevenue: parseFloat(revenueSum.rows[0].sum || 0)
-      }
-    });
-  } catch (error) {
-    console.error('Admin dashboard error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get all listings for approval
-router.get('/listings', async (req, res) => {
-  try {
-    const { status = 'PENDING_APPROVAL', page = 1, limit = 20 } = req.query;
-    const offset = (page - 1) * limit;
-
-    const result = await db.query(`
-      SELECT l.*, u.first_name, u.last_name, u.email,
-             COUNT(*) OVER() as total_count
-      FROM listings l
-      JOIN users u ON l.user_id = u.id
-      WHERE l.status = $1
-      ORDER BY l.created_at ASC
-      LIMIT $2 OFFSET $3
-    `, [status, limit, offset]);
-
-    const totalCount = result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0;
-
-    res.json({
-      listings: result.rows.map(row => {
-        const { total_count, ...listing } = row;
-        return listing;
-      }),
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount
-      }
-    });
-  } catch (error) {
-    console.error('Admin get listings error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Approve listing
-router.put('/listings/:id/approve', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await db.query(
-      'UPDATE listings SET status = $1, published_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING user_id',
-      ['ACTIVE', id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Listing not found' });
-    }
-
-    // Create notification for user
-    await db.query(`
-      INSERT INTO notifications (user_id, type, title, content, link)
-      VALUES ($1, 'LISTING_APPROVED', 'Listing Approved', 
-              'Your listing has been approved and is now live', '/listings/${id}')
-    `, [result.rows[0].user_id]);
-
-    res.json({ message: 'Listing approved successfully' });
-  } catch (error) {
-    console.error('Admin approve listing error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Reject listing
-router.put('/listings/:id/reject', [
-  body('reason').optional().isString()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  try {
-    const { id } = req.params;
-    const { reason } = req.body;
-
-    const result = await db.query(
-      'UPDATE listings SET status = $1 WHERE id = $2 RETURNING user_id',
-      ['REJECTED', id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Listing not found' });
-    }
-
-    // Create notification for user
-    await db.query(`
-      INSERT INTO notifications (user_id, type, title, content, link)
-      VALUES ($1, 'LISTING_REJECTED', 'Listing Rejected', $2, '/listings/${id}')
-    `, [result.rows[0].user_id, reason || 'Your listing has been rejected']);
-
-    res.json({ message: 'Listing rejected successfully' });
-  } catch (error) {
-    console.error('Admin reject listing error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get all users
-router.get('/users', async (req, res) => {
-  try {
-    const { page = 1, limit = 20, search } = req.query;
-    const offset = (page - 1) * limit;
-
-    let query = `
-      SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number,
-             u.kyc_status, u.roles, u.created_at, u.last_login_at,
-             COUNT(l.id) as listings_count,
-             COUNT(*) OVER() as total_count
-      FROM users u
-      LEFT JOIN listings l ON u.id = l.user_id AND l.status != 'DELETED'
-    `;
-    
-    let params = [];
-    let paramCount = 0;
-
-    if (search) {
-      query += ` WHERE (u.first_name ILIKE $${++paramCount} OR u.last_name ILIKE $${paramCount} OR u.email ILIKE $${paramCount})`;
-      params.push(`%${search}%`);
-    }
-
-    query += ` GROUP BY u.id ORDER BY u.created_at DESC LIMIT $${++paramCount} OFFSET $${++paramCount}`;
-    params.push(limit, offset);
-
-    const result = await db.query(query, params);
-    const totalCount = result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0;
-
-    res.json({
-      users: result.rows.map(row => {
-        const { total_count, ...user } = row;
-        return user;
-      }),
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount
-      }
-    });
-  } catch (error) {
-    console.error('Admin get users error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Update user status
-router.put('/users/:id/status', [
-  body('action').isIn(['activate', 'deactivate', 'promote', 'demote'])
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  try {
-    const { id } = req.params;
-    const { action } = req.body; // 'activate', 'deactivate', 'promote', 'demote'
-
-    let updateQuery;
-    let params = [id];
-
-    switch (action) {
-      case 'activate':
-        // For now, we don't have an active/inactive status field
-        // This could be implemented with an 'is_active' boolean field
-        return res.status(400).json({ message: 'User activation not implemented' });
-      
-      case 'promote':
-        updateQuery = `UPDATE users SET roles = array_append(roles, 'ADMIN') WHERE id = $1 AND NOT ('ADMIN' = ANY(roles))`;
-        break;
-      
-      case 'demote':
-        updateQuery = `UPDATE users SET roles = array_remove(roles, 'ADMIN') WHERE id = $1`;
-        break;
-      
-      default:
-        return res.status(400).json({ message: 'Invalid action' });
-    }
-
-    await db.query(updateQuery, params);
-    res.json({ message: `User ${action}d successfully` });
-  } catch (error) {
-    console.error('Admin update user status error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get transactions
-router.get('/transactions', async (req, res) => {
-  try {
-    const { page = 1, limit = 20, status } = req.query;
-    const offset = (page - 1) * limit;
-
-    let query = `
-      SELECT t.*, l.title as listing_title,
-             ub.first_name as buyer_first_name, ub.last_name as buyer_last_name,
-             us.first_name as seller_first_name, us.last_name as seller_last_name,
-             COUNT(*) OVER() as total_count
-      FROM transactions t
-      JOIN listings l ON t.listing_id = l.id
-      LEFT JOIN users ub ON t.buyer_id = ub.id
-      LEFT JOIN users us ON t.seller_id = us.id
-    `;
-
-    let params = [];
-    let paramCount = 0;
-
-    if (status) {
-      query += ` WHERE t.status = $${++paramCount}`;
-      params.push(status);
-    }
-
-    query += ` ORDER BY t.created_at DESC LIMIT $${++paramCount} OFFSET $${++paramCount}`;
-    params.push(limit, offset);
-
-    const result = await db.query(query, params);
-    const totalCount = result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0;
-
-    res.json({
-      transactions: result.rows.map(row => {
-        const { total_count, ...transaction } = row;
-        return transaction;
-      }),
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount
-      }
-    });
-  } catch (error) {
-    console.error('Admin get transactions error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+router.get(
+  '/transactions',
+  [
+    query('status').optional().trim(),
+    query('page').optional().isInt({ min: 1 }).toInt(),
+    query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+  ],
+  validateRequest,
+  adminController.getTransactions
+);
 
 export default router;

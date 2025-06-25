@@ -212,11 +212,48 @@ export const markNotificationAsRead = async (notificationId) => {
 
 // Fonction de recherche globale
 export const searchAll = async (query, filters = {}) => {
-  const queryString = new URLSearchParams({
-    q: query,
-    ...filters,
-  }).toString();
-  return fetchData(`/search?${queryString}`);
+  const queryParams = new URLSearchParams({ q: query, ...filters }).toString();
+  return fetchData(`${API_ENDPOINTS.SEARCH}?${queryParams}`);
+};
+
+// Fonctions d'administration
+export const getDashboardStats = async () => {
+  return fetchData(API_ENDPOINTS.ADMIN_DASHBOARD);
+};
+
+export const getAdminUsers = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`${API_ENDPOINTS.ADMIN_USERS}?${queryParams}`);
+};
+
+export const updateUserStatus = async (userId, statusData) => {
+  return fetchData(API_ENDPOINTS.USER_STATUS(userId), {
+    method: 'PATCH',
+    body: JSON.stringify(statusData),
+  });
+};
+
+export const getAdminListings = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`${API_ENDPOINTS.ADMIN_LISTINGS}?${queryParams}`);
+};
+
+export const approveListing = async (listingId) => {
+  return fetchData(API_ENDPOINTS.ADMIN_APPROVE_LISTING(listingId), {
+    method: 'PATCH',
+  });
+};
+
+export const rejectListing = async (listingId, reason) => {
+  return fetchData(API_ENDPOINTS.ADMIN_REJECT_LISTING(listingId), {
+    method: 'PATCH',
+    body: JSON.stringify({ reason }),
+  });
+};
+
+export const getAdminTransactions = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`${API_ENDPOINTS.ADMIN_TRANSACTIONS}?${queryParams}`);
 };
 
 export default {

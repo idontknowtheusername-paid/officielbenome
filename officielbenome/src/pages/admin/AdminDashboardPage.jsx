@@ -1,33 +1,160 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, ListChecks, BarChart2, AlertTriangle, Settings, ShieldCheck, ShoppingBag, Car, Briefcase, TrendingUp, MessageSquare as MessageSquareWarning, DollarSign, PackageCheck } from 'lucide-react';
+import { 
+  Users, ListChecks, BarChart2, AlertTriangle, Settings, 
+  ShieldCheck, ShoppingBag, Car, Briefcase, TrendingUp, 
+  MessageSquare as MessageSquareWarning, DollarSign, PackageCheck, Loader2, AlertCircle
+} from 'lucide-react';
+import { 
+  getDashboardStats, 
+  getAdminUsers,
+  getAdminListings,
+  getAdminTransactions,
+  updateUserStatus,
+  approveListing,
+  rejectListing
+} from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const AdminDashboardPage = () => {
-  const stats = [
-    { title: "Utilisateurs Actifs", value: "1,250", icon: <Users className="h-8 w-8 text-blue-400" />, trend: "+5% ce mois", color: "blue" },
-    { title: "Annonces en Attente", value: "72", icon: <ListChecks className="h-8 w-8 text-yellow-400" />, trend: "Urgents: 5", color: "yellow" },
-    { title: "Transactions (30j)", value: "15.2M FCFA", icon: <DollarSign className="h-8 w-8 text-green-400" />, trend: "+12%", color: "green" },
-    { title: "Rapports de Fraude", value: "8", icon: <MessageSquareWarning className="h-8 w-8 text-red-400" />, trend: "À investiguer", color: "red" },
-  ];
+  const { user, hasRole } = useAuth();
+  const navigate = useNavigate();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState([
+    { title: "Utilisateurs Actifs", value: "-", icon: <Users className="h-8 w-8 text-blue-400" />, trend: "Chargement...", color: "blue", key: 'activeUsers' },
+    { title: "Annonces en Attente", value: "-", icon: <ListChecks className="h-8 w-8 text-yellow-400" />, trend: "Chargement...", color: "yellow", key: 'pendingListings' },
+    { title: "Revenus (30j)", value: "-", icon: <DollarSign className="h-8 w-8 text-green-400" />, trend: "Chargement...", color: "green", key: 'revenue' },
+    { title: "Activités Récentes", value: "-", icon: <MessageSquareWarning className="h-8 w-8 text-red-400" />, trend: "Chargement...", color: "red", key: 'recentActivities' },
+  ]);
+  const [recentActivities, setRecentActivities] = useState([]);
 
-  const quickActions = [
-    { label: "Gérer Annonces Immobilières", icon: <ListChecks className="mr-3 h-5 w-5" />, color: "blue", link: "#immobilier-admin" },
-    { label: "Gérer Annonces Automobiles", icon: <Car className="mr-3 h-5 w-5" />, color: "red", link: "#automobile-admin" },
-    { label: "Gérer Services Professionnels", icon: <Briefcase className="mr-3 h-5 w-5" />, color: "purple", link: "#services-admin" },
-    { label: "Gérer Marketplace Générale", icon: <ShoppingBag className="mr-3 h-5 w-5" />, color: "yellow", link: "#marketplace-admin" },
-    { label: "Vérifications Utilisateurs (KYC)", icon: <ShieldCheck className="mr-3 h-5 w-5" />, color: "green", link: "#kyc-admin" },
-    { label: "Modération de Contenu", icon: <AlertTriangle className="mr-3 h-5 w-5" />, color: "orange", link: "#moderation-admin" },
-    { label: "Statistiques & Rapports", icon: <BarChart2 className="mr-3 h-5 w-5" />, color: "teal", link: "#reports-admin" },
-    { label: "Paramètres de la Plateforme", icon: <Settings className="mr-3 h-5 w-5" />, color: "gray", link: "#settings-admin" },
-  ];
+  const [quickActions] = useState([
+    { label: "Gérer les Annonces", icon: <ListChecks className="mr-3 h-5 w-5" />, color: "blue", link: "/admin/listings" },
+    { label: "Gérer les Utilisateurs", icon: <Users className="mr-3 h-5 w-5" />, color: "green", link: "/admin/users" },
+    { label: "Voir les Transactions", icon: <DollarSign className="mr-3 h-5 w-5" />, color: "purple", link: "/admin/transactions" },
+    { label: "Statistiques Détaillées", icon: <BarChart2 className="mr-3 h-5 w-5" />, color: "teal", link: "/admin/analytics" },
+  ]);
 
-  const recentActivities = [
-    { id: 1, type: "Nouvelle annonce", item: "Villa de luxe à Cocody", user: "AdminUserX", time: "5 min", category: "Immobilier", status: "Approuvée" },
-    { id: 2, type: "Nouvel utilisateur", item: "Moussa Dembélé", user: "Système", time: "15 min", category: "Utilisateur", status: "En attente KYC" },
-    { id: 3, type: "Transaction", item: "Toyota Prado 2021", value: "25M FCFA", user: "AcheteurY & VendeurZ", time: "30 min", category: "Automobile", status: "Complétée" },
-    { id: 4, type: "Signalement", item: "Annonce 'iPhone 15 Pro Max Neuf'", user: "UtilisateurA", time: "1h", category: "Marketplace", status: "En cours d'examen" },
-    { id: 5, type: "Boost activé", item: "Service de Plomberie Express", user: "PlombierPro", time: "2h", category: "Services", status: "VIP - 30 jours" },
-  ];
+  useEffect(() => {
+    // Vérifier si l'utilisateur est connecté et a le rôle admin
+    const checkAuthorization = async () => {
+      try {
+        if (user) {
+          const hasAdminRole = hasRole('admin');
+          setIsAuthorized(hasAdminRole);
+          if (!hasAdminRole) {
+            toast.error('Accès non autorisé');
+            navigate('/');
+            return;
+          }
+          // Si l'utilisateur est admin, charger les données du tableau de bord
+          await fetchDashboardData();
+        } else {
+          // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+          navigate('/connexion', { state: { from: '/admin' } });
+        }
+      } catch (error) {
+        console.error('Erreur de vérification des autorisations:', error);
+        toast.error('Erreur lors de la vérification des autorisations');
+        navigate('/');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthorization();
+  }, [user, hasRole, navigate]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      // Récupérer les statistiques du tableau de bord
+      const statsResponse = await getDashboardStats();
+      
+      if (statsResponse && statsResponse.success) {
+        const { users, listings, revenue, recentActivities: activities = [] } = statsResponse.data || {};
+        
+        // Mettre à jour les statistiques
+        setStats(prevStats => prevStats.map(stat => {
+          if (stat.key === 'activeUsers') {
+            return { ...stat, value: users?.active?.toLocaleString() || '0', trend: `Total: ${users?.total || 0}` };
+          } else if (stat.key === 'pendingListings') {
+            return { ...stat, value: listings?.pending?.toString() || '0', trend: `Total: ${listings?.total || 0}` };
+          } else if (stat.key === 'revenue') {
+            return { ...stat, value: revenue ? `${revenue.toLocaleString()} FCFA` : '0 FCFA' };
+          } else if (stat.key === 'recentActivities') {
+            return { ...stat, value: activities.length.toString(), trend: 'Dernières activités' };
+          }
+          return stat;
+        }));
+
+        // Mettre à jour les activités récentes
+        const formattedActivities = Array.isArray(activities) ? activities.map(activity => ({
+          id: activity._id || Math.random().toString(36).substr(2, 9),
+          type: activity.type || 'Activité',
+          item: activity.title || activity.description || 'Nouvelle activité',
+          value: activity.amount ? `${activity.amount} FCFA` : undefined,
+          user: activity.user?.name || activity.user?.email || 'Système',
+          time: activity.createdAt ? formatTimeAgo(activity.createdAt) : 'Récemment',
+          category: activity.category || 'Système',
+          status: activity.status || 'Complétée'
+        })) : [];
+        
+        setRecentActivities(formattedActivities);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du tableau de bord:', error);
+      toast.error('Erreur lors du chargement des données du tableau de bord');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'À l\'instant';
+    if (diffInSeconds < 3600) return `Il y a ${Math.floor(diffInSeconds / 60)} min`;
+    if (diffInSeconds < 86400) return `Il y a ${Math.floor(diffInSeconds / 3600)} h`;
+    return `Il y a ${Math.floor(diffInSeconds / 86400)} j`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+          <div className="flex justify-center mb-4">
+            <AlertCircle className="h-12 w-12 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Accès refusé</h2>
+          <p className="text-gray-600 mb-6">
+            Vous n'avez pas les autorisations nécessaires pour accéder à cette page.
+          </p>
+          <Button onClick={() => navigate('/')}>
+            Retour à l'accueil
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+
+
 
   const getIconForActivity = (category, status) => {
     if (status === "Approuvée" || status === "Complétée" || status.startsWith("VIP")) return <PackageCheck className="h-5 w-5 text-green-400" />;
@@ -70,11 +197,19 @@ const AdminDashboardPage = () => {
               <h2 className="text-md font-semibold text-slate-300">{stat.title}</h2>
               {stat.icon}
             </div>
-            <p className="text-2xl sm:text-3xl font-bold mb-1">{stat.value}</p>
-            <div className="flex items-center text-xs text-slate-400">
-              <TrendingUp className={`mr-1 h-4 w-4 text-${stat.color}-400`} />
-              {stat.trend}
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center h-12">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <>
+                <p className="text-2xl sm:text-3xl font-bold mb-1">{stat.value}</p>
+                <div className="flex items-center text-xs text-slate-400">
+                  <TrendingUp className={`mr-1 h-4 w-4 text-${stat.color}-400`} />
+                  {stat.trend}
+                </div>
+              </>
+            )}
           </motion.div>
         ))}
       </div>
@@ -91,9 +226,13 @@ const AdminDashboardPage = () => {
           <h2 className="text-xl font-semibold mb-6">Actions Rapides</h2>
           <div className="space-y-3">
             {quickActions.map(action => (
-              <button key={action.label} className={`w-full flex items-center justify-start p-3 bg-${action.color}-600/10 hover:bg-${action.color}-600/20 text-${action.color}-300 rounded-lg transition-colors`}>
+              <a 
+                key={action.label} 
+                href={action.link}
+                className={`w-full flex items-center justify-start p-3 bg-${action.color}-600/10 hover:bg-${action.color}-600/20 text-${action.color}-300 rounded-lg transition-colors`}
+              >
                 {action.icon} {action.label}
-              </button>
+              </a>
             ))}
           </div>
         </motion.div>
@@ -107,22 +246,32 @@ const AdminDashboardPage = () => {
         >
           <h2 className="text-xl font-semibold mb-6">Activité Récente</h2>
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-            {recentActivities.map(activity => (
-              <div key={activity.id} className="flex items-start p-3 bg-slate-700/50 rounded-lg">
-                <div className={`p-2 bg-${activity.status === "Approuvée" || activity.status === "Complétée" || activity.status.startsWith("VIP") ? 'green' : (activity.status === "En attente KYC" || activity.status === "En cours d'examen" ? 'yellow' : 'slate')}-600/30 rounded-full mr-3`}>
-                  {getIconForActivity(activity.category, activity.status)}
-                </div>
-                <div className="flex-grow">
-                  <p className="font-medium text-slate-200 text-sm">
-                    <span className="font-bold">{activity.type}:</span> {activity.item} 
-                    {activity.value && <span className="text-green-400"> ({activity.value})</span>}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    Il y a {activity.time} par {activity.user} - <span className={`font-semibold text-${activity.status === "Approuvée" || activity.status === "Complétée" || activity.status.startsWith("VIP") ? 'green' : (activity.status === "En attente KYC" || activity.status === "En cours d'examen" ? 'yellow' : 'slate')}-400`}>{activity.status}</span>
-                  </p>
-                </div>
+            {loading ? (
+              <div className="flex items-center justify-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
               </div>
-            ))}
+            ) : recentActivities.length > 0 ? (
+              recentActivities.map(activity => (
+                <div key={activity.id} className="flex items-start p-3 bg-slate-700/50 rounded-lg">
+                  <div className={`p-2 bg-${activity.status === "Approuvée" || activity.status === "Complétée" || activity.status.startsWith("VIP") ? 'green' : (activity.status === "En attente KYC" || activity.status === "En cours d'examen" ? 'yellow' : 'slate')}-600/30 rounded-full mr-3`}>
+                    {getIconForActivity(activity.category, activity.status)}
+                  </div>
+                  <div className="flex-grow">
+                    <p className="font-medium text-slate-200 text-sm">
+                      <span className="font-bold">{activity.type}:</span> {activity.item} 
+                      {activity.value && <span className="text-green-400"> ({activity.value})</span>}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {activity.time} par {activity.user} - <span className={`font-semibold text-${activity.status === "Approuvée" || activity.status === "Complétée" || activity.status.startsWith("VIP") ? 'green' : (activity.status === "En attente KYC" || activity.status === "En cours d'examen" ? 'yellow' : 'slate')}-400`}>{activity.status}</span>
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-slate-400">
+                Aucune activité récente à afficher
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

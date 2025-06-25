@@ -7,8 +7,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npm install --legacy-peer-deps
-    startCommand: npm start
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -21,11 +21,11 @@ services:
           name: benomedb
           property: connectionString
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
       - key: JWT_EXPIRES_IN
-        value: 500d
+        value: "30d"
       - key: JWT_COOKIE_EXPIRES_IN
-        value: "90"
+        value: "30"
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
@@ -35,7 +35,10 @@ services:
       - key: CORS_ORIGIN
         value: https://benome4u.vercel.app
       - key: REDIS_URL
-        sync: false
+        fromService:
+          name: redis
+          type: redis
+          property: connectionString
     healthCheckPath: /api/health
     autoDeploy: true
     numInstances: 1
@@ -44,4 +47,9 @@ databases:
   - name: benomedb
     databaseName: benomedb
     user: benome_user
+    plan: free
+
+# Configuration du service Redis
+redis:
+  - name: redis
     plan: free

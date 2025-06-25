@@ -92,6 +92,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Vérifie si l'utilisateur a un rôle spécifique
+  const hasRole = (role) => {
+    if (!user) return false;
+    // Si l'utilisateur a un tableau de rôles, vérifie s'il contient le rôle demandé
+    if (Array.isArray(user.roles)) {
+      return user.roles.includes(role);
+    }
+    // Si l'utilisateur a un seul rôle (string)
+    return user.role === role || user.roles === role;
+  };
+
+  // Vérifie si l'utilisateur a l'un des rôles spécifiés
+  const hasAnyRole = (roles) => {
+    if (!user) return false;
+    if (Array.isArray(roles)) {
+      return roles.some(role => hasRole(role));
+    }
+    return hasRole(roles);
+  };
+
   const value = {
     user,
     loading,
@@ -99,6 +119,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isAuthenticated: !!user,
+    hasRole,
+    hasAnyRole,
   };
 
   return (

@@ -84,93 +84,207 @@ app.use('*', (req, res, next) => {
 // Gestionnaire d'erreurs global
 app.use(errorHandler);
 
-// Configuration du port
-const PORT = process.env.PORT || 3000;
+// Configuration du port et de l'hôte
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Synchronisation des modèles et démarrage du serveur
 async function startServer() {
   try {
-    // Vérifier les variables d'environnement requises
-    const requiredEnvVars = [
-      'NODE_ENV',
-      'PORT',
-      'DATABASE_URL',
-      'JWT_SECRET',
-      'JWT_EXPIRES_IN',
-      'JWT_COOKIE_EXPIRES_IN',
-      'EMAIL_HOST',
-      'EMAIL_PORT',
-      'EMAIL_USERNAME',
-      'EMAIL_PASSWORD',
-      'EMAIL_FROM',
-      'REDIS_URL'
-    ];
+    // Variables d'environnement requises avec valeurs par défaut
+    const envVars = {
+      NODE_ENV: process.env.NODE_ENV || 'development',
+      PORT: PORT,
+      DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/officielbenome_dev',
+      JWT_SECRET: process.env.JWT_SECRET || 'votre_clé_secrète_par_défaut',
+      JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '30d',
+      JWT_COOKIE_EXPIRES_IN: process.env.JWT_COOKIE_EXPIRES_IN || '30',
+      EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      EMAIL_PORT: process.env.EMAIL_PORT || '587',
+      EMAIL_USERNAME: process.env.EMAIL_USERNAME || '',
+      EMAIL_PASSWORD: process.env.EMAIL_PASSWORD || '',
+      EMAIL_FROM: process.env.EMAIL_FROM || 'no-reply@officielbenome.com',
+      REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379'
+    };
 
-    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-    
-    if (missingVars.length > 0) {
-      throw new Error(`Variables d'environnement manquantes: ${missingVars.join(', ')}`);
+    // Mettre à jour process.env avec les valeurs par défaut si nécessaire
+    Object.entries(envVars).forEach(([key, value]) => {
+      if (!process.env[key]) {
+        process.env[key] = value;
+        console.warn(`⚠️  Utilisation de la valeur par défaut pour ${key}: ${value}`);
+      }
+    });
+
+    // Connexion à Redis (si nécessaire)
+    if (process.env.NODE_ENV !== 'test' && process.env.REDIS_URL !== 'disabled') {
+      try {
+        logger.info('🔌 Tentative de connexion à Redis...');
+        await redisClient.connect();
+        logger.info('✅ Connecté à Redis avec succès');
+        
+        // Tester la connexion Redis
+        try {
+          await redisClient.client.ping();
+          logger.info('✅ Test de connexion à Redis réussi');
+        } catch (pingError) {
+          logger.warn('⚠️  Test de connexion Redis échoué, poursuite avec des fonctionnalités limitées');
+          logger.debug('Détails de l\'erreur Redis:', pingError);
+        }
+      } catch (redisError) {
+        logger.warn('⚠️  Impossible de se connecter à Redis, poursuite sans cache');
+        logger.debug('Détails de l\'erreur Redis:', redisError);
+        // Désactiver Redis pour cette instance
+        process.env.REDIS_URL = 'disabled';
+      }
+    } else if (process.env.REDIS_URL === 'disabled') {
+      logger.warn('🚫 Redis est désactivé pour cette instance');
     }
 
-    // Connexion à Redis
-    await redisClient.connect();
-    logger.info('✅ Connecté à Redis');
-
     // Synchronisation des modèles avec la base de données
-    await syncModels();
-    logger.info('✅ Base de données synchronisée');
-    
-    // Démarrage du serveur
-    const serverPort = process.env.PORT || 10000;
-    const server = app.listen(serverPort, '0.0.0.0', () => {
-      logger.info(`✅ Serveur démarré en mode ${process.env.NODE_ENV} sur le port ${serverPort}`);
-      console.log(`Server is listening on http://0.0.0.0:${serverPort}`);
+    try {
+      logger.info('🔄 Tentative de synchronisation des modèles avec la base de données...');
+      await syncModels();
+      logger.info('✅ Base de données synchronisée avec succès');
       
-      // Afficher les routes disponibles
-      const routes = [];
-      app._router.stack.forEach((middleware) => {
-        if (middleware.route) {
-          // Routes enregistrées directement sur l'application
-          const methods = Object.keys(middleware.route.methods).map(method => method.toUpperCase()).join(', ');
-          routes.push(`${methods.padEnd(8)} ${middleware.route.path}`);
-        } else if (middleware.name === 'router') {
-          // Routes enregistrées via des routeurs
-          middleware.handle.stack.forEach((handler) => {
-            if (handler.route) {
-              const methods = Object.keys(handler.route.methods).map(method => method.toUpperCase()).join(', ');
-              routes.push(`${methods.padEnd(8)} ${handler.route.path}`);
-            }
-          });
+      // Tester la connexion à la base de données
+      try {
+        await sequelize.authenticate();
+        logger.info('✅ Connexion à la base de données établie avec succès');
+        
+        // Afficher les informations de connexion (en mode développement uniquement)
+        if (process.env.NODE_ENV === 'development') {
+          const dbConfig = sequelize.config;
+          logger.debug(`📊 Configuration de la base de données: ${dbConfig.database}@${dbConfig.host}:${dbConfig.port}`);
         }
-      });
+      } catch (authError) {
+        logger.error('❌ Échec de la connexion à la base de données après synchronisation');
+        logger.debug('Détails de l\'erreur d\'authentification:', authError);
+        throw new Error('Échec de la connexion à la base de données après synchronisation');
+      }
+    } catch (dbError) {
+      logger.error('❌ Erreur de synchronisation de la base de données');
+      logger.debug('Détails de l\'erreur de synchronisation:', dbError);
       
-      console.log('\nRoutes disponibles:');
-      console.log('==================');
-      routes.sort().forEach(route => console.log(route));
-      console.log('\n');
+      // Vérifier si c'est une erreur de connexion
+      if (dbError.name === 'SequelizeConnectionError') {
+        logger.error('Veuillez vérifier les informations de connexion à la base de données dans votre fichier .env');
+        logger.error(`URL de connexion actuelle: ${process.env.DATABASE_URL || 'Non définie'}`);
+      }
+      
+      throw dbError;
+    }
+    
+    // Configuration du serveur
+    const server = app.listen(PORT, HOST, () => {
+      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+      const serverAddress = `${protocol}://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`;
+      const apiBaseUrl = `${serverAddress}${process.env.API_PREFIX || '/api'}`;
+      
+      // En-tête du serveur
+      console.log('\n' + '='.repeat(80));
+      console.log(`🚀 Serveur démarré en mode ${process.env.NODE_ENV}`.padEnd(79) + '🚀');
+      console.log('='.repeat(80));
+      
+      // Informations de base
+      console.log(`🌍 Environnement:`.padEnd(20) + process.env.NODE_ENV);
+      console.log(`🌐 URL du serveur:`.padEnd(20) + serverAddress);
+      console.log(`📡 Point d'accès API:`.padEnd(20) + apiBaseUrl);
+      console.log(`🔌 Port d'écoute:`.padEnd(20) + PORT);
+      console.log(`🏠 Hôte:`.padEnd(20) + HOST);
+      
+      // Informations supplémentaires en mode développement
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('\n🔧 Mode développement:');
+        console.log('='.repeat(40));
+        console.log(`📊 Interface Swagger:`.padEnd(20) + `${serverAddress}/api-docs`);
+        console.log(`📝 Documentation API:`.padEnd(20) + `${serverAddress}/api-docs-json`);
+      }
+      
+      // Pied de page
+      console.log('\n' + '='.repeat(80));
+      console.log(`🛠️  ${new Date().toLocaleString()}`.padEnd(79) + '🛠️');
+      console.log('='.repeat(80));
+      
+      // Afficher les routes disponibles uniquement en développement
+      if (process.env.NODE_ENV === 'development') {
+        console.log('\n🔍 Routes disponibles:');
+        console.log('='.repeat(60));
+        
+        const routes = [];
+        const processRoute = (path, layer) => {
+          if (layer.route) {
+            const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase()).join(',');
+            routes.push({ method: methods, path: path + (layer.route.path === '/' ? '' : layer.route.path) });
+          } else if (layer.name === 'router') {
+            layer.handle.stack.forEach(processRoute.bind(null, path + (layer.regexp.toString().includes('(?:^|\\/)api') ? '/api' : '')));
+          } else if (layer.name === 'router' && layer.handle.stack) {
+            layer.handle.stack.forEach(processRoute.bind(null, path));
+          }
+        };
+        
+        app._router.stack.forEach(processRoute.bind(null, ''));
+        
+        // Afficher les routes groupées par méthode
+        const methods = {};
+        routes.forEach(route => {
+          if (!methods[route.method]) methods[route.method] = [];
+          methods[route.method].push(route.path);
+        });
+        
+        Object.entries(methods).forEach(([method, paths]) => {
+          console.log(`\n${method}:`);
+          paths.sort().forEach(path => console.log(`  ${path}`));
+        });
+        
+        console.log('\n' + '='.repeat(60) + '\n');
+      }
     });
 
     // Gestion des erreurs de démarrage
     server.on('error', (error) => {
+      const bind = typeof PORT === 'string' ? `Pipe ${PORT}` : `Port ${PORT}`;
+      
+      // Journalisation détaillée de l'erreur
+      logger.error('\n❌ ERREUR DE DÉMARRAGE DU SERVEUR');
+      logger.error('='.repeat(60));
+      logger.error(`Code d'erreur: ${error.code || 'Inconnu'}`);
+      logger.error(`Message: ${error.message}`);
+      
+      // Gestion des erreurs spécifiques
       if (error.syscall !== 'listen') {
-        throw error;
+        logger.error(`Erreur système: ${error.syscall}`);
+        logger.error('Détails techniques:', error);
+        process.exit(1);
       }
 
-      const bind = typeof serverPort === 'string' ? `Pipe ${serverPort}` : `Port ${serverPort}`;
-
-      // Gestion des erreurs spécifiques
       switch (error.code) {
         case 'EACCES':
-          logger.error(`${bind} nécessite des privilèges élevés`);
-          process.exit(1);
+          logger.error(`\n❌ ${bind} nécessite des privilèges élevés`);
+          logger.error('Solution: Essayez de démarrer le serveur avec un port supérieur à 1024');
           break;
+          
         case 'EADDRINUSE':
-          logger.error(`${bind} est déjà utilisé`);
-          process.exit(1);
+          logger.error(`\n❌ ${bind} est déjà utilisé par un autre processus`);
+          logger.error('Solutions possibles:');
+          logger.error('1. Attendez que le port se libère');
+          logger.error('2. Utilisez un autre port en définissant la variable d\'environnement PORT');
+          logger.error('3. Tuez le processus qui utilise ce port avec: lsof -i :PORT');
           break;
+          
+        case 'ECONNREFUSED':
+          logger.error('\n❌ Impossible de se connecter à la base de données');
+          logger.error('Vérifiez que la base de données est en cours d\'exécution et accessible');
+          logger.error(`URL de connexion: ${process.env.DATABASE_URL || 'Non définie'}`);
+          break;
+          
         default:
-          throw error;
+          logger.error('\n❌ Erreur inattendue lors du démarrage du serveur');
+          logger.error('Détails techniques:', error);
       }
+      
+      logger.error('\n🔍 Pour plus de détails, consultez les logs complets');
+      logger.error('='.repeat(60) + '\n');
+      process.exit(1);
     });
 
     return server;
@@ -180,7 +294,87 @@ async function startServer() {
   }
 }
 
-// Démarrer le serveur
-startServer();
+// Gestion des signaux d'arrêt
+const shutdown = async (signal) => {
+  const signalName = signal || 'SIGTERM';
+  logger.warn(`\n⚠️  Réception du signal ${signalName}. Arrêt en cours...`);
+  
+  try {
+    // Fermer la connexion à Redis si elle existe
+    if (redisClient && redisClient.isConnected) {
+      logger.info('Fermeture de la connexion Redis...');
+      await redisClient.client.quit().catch(e => logger.error('Erreur lors de la fermeture de Redis:', e));
+    }
+    
+    // Fermer la connexion à la base de données
+    if (sequelize) {
+      logger.info('Fermeture de la connexion à la base de données...');
+      await sequelize.close().catch(e => logger.error('Erreur lors de la fermeture de la base de données:', e));
+    }
+    
+    logger.info('Toutes les connexions ont été fermées avec succès');
+    process.exit(0);
+  } catch (error) {
+    logger.error('Erreur lors de la fermeture des connexions:', error);
+    process.exit(1);
+  }
+};
 
-export default app;
+// Gestion des signaux d'arrêt
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+// Gestion des erreurs non capturées
+process.on('uncaughtException', (error) => {
+  logger.error('\n🚨 ERREUR NON CAPTURÉE');
+  logger.error('='.repeat(60));
+  logger.error(`Message: ${error.message}`);
+  logger.error('Stack:', error.stack);
+  logger.error('='.repeat(60));
+  
+  // Tenter une fermeture propre avant de quitter
+  shutdown('UNCAUGHT_EXCEPTION').then(() => {
+    process.exit(1);
+  });
+});
+
+// Gestion des rejets de promesses non gérés
+process.on('unhandledRejection', (reason, promise) => {
+  logger.warn('\n⚠️  REJET DE PROMESSE NON GÉRÉ');
+  logger.warn('='.repeat(60));
+  logger.warn('Raison:', reason);
+  
+  // Afficher la pile d'appels si disponible
+  if (reason instanceof Error) {
+    logger.warn('Stack:', reason.stack);
+  } else {
+    logger.warn('Détails:', JSON.stringify(reason, null, 2));
+  }
+  
+  logger.warn('='.repeat(60));
+  
+  // Dans un environnement de production, vous pourriez vouloir ne pas arrêter le processus
+  // mais simplement le logger. Pour le développement, on peut vouloir arrêter le processus.
+  if (process.env.NODE_ENV === 'development') {
+    // Ne pas arrêter le processus en développement pour permettre le débogage
+    return;
+  }
+  
+  // En production, on peut choisir de quitter après un délai
+  // pour éviter que le serveur ne reste dans un état instable
+  setTimeout(() => {
+    logger.error('Arrêt du processus suite à un rejet de promesse non géré');
+    process.exit(1);
+  }, 1000);
+});
+
+// Démarrer le serveur uniquement si ce fichier est exécuté directement
+if (require.main === module) {
+  startServer().catch(error => {
+    console.error('❌ Échec du démarrage du serveur:', error);
+    process.exit(1);
+  });
+}
+
+export { app };
+export default startServer;
