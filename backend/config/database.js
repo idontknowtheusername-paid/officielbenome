@@ -45,7 +45,21 @@ const databaseConfig = {
 };
 
 const env = process.env.NODE_ENV || 'development';
-const config = databaseConfig[env];
+const config = { ...databaseConfig[env] };
+
+// Si nous sommes en production et que nous avons une DATABASE_URL, nous l'utilisons
+if (env === 'production' && process.env.DATABASE_URL) {
+  // Créer une nouvelle URL pour encoder correctement les caractères spéciaux
+  const dbUrl = new URL(process.env.DATABASE_URL);
+  
+  // Si le mot de passe contient des caractères spéciaux, les encoder
+  if (dbUrl.password) {
+    dbUrl.password = encodeURIComponent(dbUrl.password);
+  }
+  
+  // Mettre à jour la configuration avec l'URL encodée
+  config.url = dbUrl.toString();
+}
 
 let sequelize;
 
