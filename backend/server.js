@@ -27,16 +27,10 @@ import usersRoutes from './routes/users.js';
 // Initialisation de l'application Express
 const app = express();
 
-// Middleware de base
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
-
-// Sécurité
+// Middleware de sécurité
 app.use(helmet());
+
+// Configuration de sécurité (inclut CORS, rate limiting, etc.)
 applySecurity(app);
 
 // Gestion du body parser
@@ -128,7 +122,7 @@ async function startServer() {
     
     // Démarrage du serveur
     const serverPort = process.env.PORT || 5000;
-    const server = app.listen(serverPort, () => {
+    const server = app.listen(serverPort, '0.0.0.0', () => {
       logger.info(`✅ Serveur démarré en mode ${process.env.NODE_ENV} sur le port ${serverPort}`);
       
       // Afficher les routes disponibles

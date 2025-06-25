@@ -1,5 +1,6 @@
+import API_ENDPOINTS from '@/config/api.config';
 
-const API_BASE_URL = "https://benome4ubackend.onrender.com/api";
+const API_BASE_URL = "https://officielbenome-backend.onrender.com/api";
 
 // Fonction utilitaire pour les appels API
 const fetchData = async (endpoint, options = {}) => {
@@ -10,64 +11,78 @@ const fetchData = async (endpoint, options = {}) => {
     ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...options.headers,
+      },
+      credentials: 'include', // Important pour les cookies d'authentification
+    });
 
-  const data = await response.json();
+    // Si la réponse est 204 No Content, on ne tente pas de parser le JSON
+    if (response.status === 204) {
+      return null;
+    }
 
-  if (!response.ok) {
-    throw new Error(data.message || 'Une erreur est survenue');
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error = new Error(data.message || 'Une erreur est survenue');
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
   }
-
-  return data;
 };
 
 // Fonctions d'authentification
 export const registerUser = async (userData) => {
-  return fetchData('/auth/register', {
+  return fetchData(API_ENDPOINTS.REGISTER, {
     method: 'POST',
     body: JSON.stringify(userData),
   });
 };
 
 export const loginUser = async (credentials) => {
-  return fetchData('/auth/login', {
+  return fetchData(API_ENDPOINTS.LOGIN, {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
 };
 
 export const logoutUser = async () => {
-  return fetchData('/auth/logout', {
+  return fetchData(API_ENDPOINTS.LOGOUT, {
     method: 'POST',
   });
 };
 
 export const getCurrentUserProfile = async () => {
-  return fetchData('/auth/profile');
+  return fetchData(API_ENDPOINTS.PROFILE);
 };
 
 export const updateUserProfile = async (userData) => {
-  return fetchData('/auth/profile', {
+  return fetchData(API_ENDPOINTS.PROFILE, {
     method: 'PUT',
     body: JSON.stringify(userData),
   });
 };
 
 export const forgotPassword = async (email) => {
-  return fetchData('/auth/forgot-password', {
+  return fetchData(API_ENDPOINTS.FORGOT_PASSWORD, {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
 };
 
 export const resetPassword = async (token, newPassword) => {
-  return fetchData('/auth/reset-password', {
+  return fetchData(API_ENDPOINTS.RESET_PASSWORD, {
     method: 'POST',
     body: JSON.stringify({ token, newPassword }),
   });

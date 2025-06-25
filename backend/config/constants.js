@@ -12,6 +12,8 @@ const ALLOWED_ORIGINS = [
   'https://officielbenome.com',
   'https://www.officielbenome.com',
   'https://staging.officielbenome.com',
+  'https://benome4u.vercel.app',
+  'https://www.benome4u.vercel.app'
 ];
 
 // Configuration du rate limiting

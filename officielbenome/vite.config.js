@@ -190,6 +190,15 @@ export default defineConfig({
 			'Cross-Origin-Embedder-Policy': 'credentialless',
 		},
 		allowedHosts: true,
+		proxy: {
+			'/api': {
+				target: 'https://officielbenome-backend.onrender.com',
+				changeOrigin: true,
+				secure: false,
+				ws: true,
+				rewrite: (path) => path.replace(/^\/api/, '')
+			}
+		}
 	},
 	resolve: {
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json', ],
