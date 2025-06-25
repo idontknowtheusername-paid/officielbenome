@@ -1,1 +1,1 @@
-web: cd backend && ./start.sh
+web: ./start-app.sh
