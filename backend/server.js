@@ -121,9 +121,10 @@ async function startServer() {
     logger.info('✅ Base de données synchronisée');
     
     // Démarrage du serveur
-    const serverPort = process.env.PORT || 5000;
+    const serverPort = process.env.PORT || 10000;
     const server = app.listen(serverPort, '0.0.0.0', () => {
       logger.info(`✅ Serveur démarré en mode ${process.env.NODE_ENV} sur le port ${serverPort}`);
+      console.log(`Server is listening on http://0.0.0.0:${serverPort}`);
       
       // Afficher les routes disponibles
       const routes = [];

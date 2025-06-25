@@ -7,13 +7,15 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: chmod +x start.sh && npm install --legacy-peer-deps && npm run build
-    startCommand: ./start.sh
+    buildCommand: npm install --legacy-peer-deps
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: HOST
+        value: 0.0.0.0
       - key: DATABASE_URL
         fromDatabase:
           name: benomedb
@@ -22,6 +24,8 @@ services:
         sync: false
       - key: JWT_EXPIRES_IN
         value: 500d
+      - key: JWT_COOKIE_EXPIRES_IN
+        value: "90"
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
@@ -29,7 +33,9 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
       - key: CORS_ORIGIN
-        value: https://your-frontend-domain.com
+        value: https://benome4u.vercel.app
+      - key: REDIS_URL
+        sync: false
     healthCheckPath: /api/health
     autoDeploy: true
     numInstances: 1
