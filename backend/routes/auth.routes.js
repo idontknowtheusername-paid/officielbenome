@@ -1,207 +1,335 @@
 import express from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { body, validationResult } from 'express-validator';
-import db from '../config/database.js';
-import { authenticate } from '../middleware/auth.js';
+import { body } from 'express-validator';
+import AuthController from '../controllers/auth.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
+
 const router = express.Router();
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: L'ID unique de l'utilisateur
+ *         firstName:
+ *           type: string
+ *           description: Le prénom de l'utilisateur
+ *         lastName:
+ *           type: string
+ *           description: Le nom de famille de l'utilisateur
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: L'adresse email de l'utilisateur
+ *         phoneNumber:
+ *           type: string
+ *           description: Le numéro de téléphone de l'utilisateur
+ *         isOnline:
+ *           type: boolean
+ *           description: Statut de connexion de l'utilisateur
+ *         lastLoginAt:
+ *           type: string
+ *           format: date-time
+ *           description: Dernière connexion de l'utilisateur
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: La date de création du compte
+ *     AuthTokens:
+ *       type: object
+ *       properties:
+ *         accessToken:
+ *           type: string
+ *           description: Le token d'accès JWT
+ *         refreshToken:
+ *           type: string
+ *           description: Le token de rafraîchissement JWT
+ *         expiresIn:
+ *           type: number
+ *           description: Durée de validité du token en secondes
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         error:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               description: Message d'erreur
+ *             code:
+ *               type: string
+ *               description: Code d'erreur personnalisé
+ *             details:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 description: Détails des erreurs de validation
+ */
+
+// Validation des données d'entrée
+const validate = (method) => {
+  switch (method) {
+    case 'register': {
+      return [
+        body('email', 'Email invalide').isEmail().normalizeEmail(),
+        body('password', 'Le mot de passe doit contenir au moins 6 caractères')
+          .isLength({ min: 6 }),
+        body('firstName', 'Le prénom est requis').notEmpty().trim(),
+        body('lastName', 'Le nom est requis').notEmpty().trim()
+      ];
+    }
+    case 'login': {
+      return [
+        body('email', 'Email invalide').isEmail().normalizeEmail(),
+        body('password', 'Le mot de passe est requis').exists()
+      ];
+    }
+    default:
+      return [];
+  }
+};
 
 /**
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Inscription utilisateur
+ *     summary: Inscription d'un nouvel utilisateur
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - firstName
+ *               - lastName
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
+ *                 description: L'adresse email de l'utilisateur
  *               password:
  *                 type: string
+ *                 format: password
+ *                 minLength: 6
+ *                 description: Le mot de passe (au moins 6 caractères)
  *               firstName:
  *                 type: string
+ *                 description: Le prénom de l'utilisateur
  *               lastName:
  *                 type: string
+ *                 description: Le nom de famille de l'utilisateur
  *               phoneNumber:
  *                 type: string
+ *                 description: Le numéro de téléphone (optionnel)
  *     responses:
  *       201:
- *         description: Utilisateur créé
+ *         description: Utilisateur enregistré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Utilisateur enregistré avec succès
+ *                 token:
+ *                   type: string
+ *                   description: JWT token
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
  *       400:
  *         description: Erreur de validation ou utilisateur existant
- *
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/register', validate('register'), AuthController.register);
+
+/**
+ * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Connexion utilisateur
+ *     summary: Connexion d'un utilisateur
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
+ *                 description: L'adresse email de l'utilisateur
  *               password:
  *                 type: string
+ *                 format: password
+ *                 description: Le mot de passe
  *     responses:
  *       200:
  *         description: Connexion réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Connexion réussie
+ *                 token:
+ *                   type: string
+ *                   description: JWT token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Refresh token pour obtenir un nouveau token d'accès
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Erreur de validation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
  *         description: Identifiants invalides
- *
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/login', validate('login'), AuthController.login);
+
+/**
+ * @swagger
+ * /api/auth/refresh-token:
+ *   post:
+ *     summary: Rafraîchir le token d'accès
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: Le refresh token précédemment émis
+ *     responses:
+ *       200:
+ *         description: Token rafraîchi avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 token:
+ *                   type: string
+ *                   description: Nouveau JWT token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Nouveau refresh token
+ *       400:
+ *         description: Token de rafraîchissement invalide ou manquant
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/refresh-token', AuthController.refreshToken);
+
+/**
+ * @swagger
  * /api/auth/logout:
  *   post:
- *     summary: Déconnexion utilisateur
+ *     summary: Déconnexion de l'utilisateur
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Déconnexion réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Déconnexion réussie
  *       401:
  *         description: Non authentifié
- *
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/logout', authenticate, AuthController.logout);
+
+/**
+ * @swagger
  * /api/auth/me:
  *   get:
- *     summary: Récupérer le profil utilisateur courant
+ *     summary: Récupérer les informations de l'utilisateur connecté
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Profil utilisateur
- *       404:
- *         description: Utilisateur non trouvé
+ *         description: Succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-
-// Register
-router.post('/register', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('firstName').trim().isLength({ min: 2 }),
-  body('lastName').trim().isLength({ min: 2 })
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    const { email, password, firstName, lastName, phoneNumber } = req.body;
-    const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-    const result = await db.query(
-      `INSERT INTO users (first_name, last_name, email, password_hash, phone_number) 
-       VALUES ($1, $2, $3, $4, $5) RETURNING id, email, first_name, last_name`,
-      [firstName, lastName, email, passwordHash, phoneNumber]
-    );
-    const user = result.rows[0];
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
-    res.status(201).json({
-      message: 'User created successfully',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name
-      }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Login
-router.post('/login', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').exists()
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    const { email, password } = req.body;
-    const result = await db.query(
-      'SELECT id, email, password_hash, first_name, last_name, roles FROM users WHERE email = $1',
-      [email]
-    );
-    if (result.rows.length === 0) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    const user = result.rows[0];
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    await db.query(
-      'UPDATE users SET last_login_at = CURRENT_TIMESTAMP, is_online = true WHERE id = $1',
-      [user.id]
-    );
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
-    res.json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        roles: user.roles
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Logout
-router.post('/logout', authenticate, async (req, res) => {
-  try {
-    await db.query(
-      'UPDATE users SET is_online = false WHERE id = $1',
-      [req.user.id]
-    );
-    res.json({ message: 'Logout successful' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get current user
-router.get('/me', authenticate, async (req, res) => {
-  try {
-    const result = await db.query(
-      `SELECT id, first_name, last_name, email, phone_number, profile_picture_url, \
-              address, kyc_status, roles, preferred_language, currency, created_at\n       FROM users WHERE id = $1`,
-      [req.user.id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.json({ user: result.rows[0] });
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+router.get('/me', authenticate, AuthController.getCurrentUser);
 
 export default router;

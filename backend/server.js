@@ -2,69 +2,190 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { applySecurity } from './middleware/security.js';
 import errorHandler from './middleware/errorHandler.js';
-import sequelize from './config/database.js';
+import { syncModels } from './models/index.js';
 import setupSwagger from './swagger.js';
 
+// Configuration des chemins ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Chargement des variables d'environnement
+dotenv.config();
+
+// Importation des routes
 import authRoutes from './routes/auth.routes.js';
 import blogRoutes from './routes/blog.routes.js';
 import projectRoutes from './routes/project.routes.js';
 import contactRoutes from './routes/contact.routes.js';
-import realEstateRoutes from './routes/listings/realEstate.routes.js';
-import autoRoutes from './routes/listings/auto.routes.js';
-import serviceRoutes from './routes/listings/service.routes.js';
-import marketplaceProductRoutes from './routes/marketplace/product.routes.js';
-import favoritesRoutes from './routes/favorites/favorites.routes.js';
-import notificationsRoutes from './routes/notifications.js';
-import searchRoutes from './routes/search/search.routes.js';
-import uploadsRoutes from './routes/uploads/uploads.routes.js';
-import paymentsRoutes from './routes/payments.js';
-import healthRoutes from './routes/health.routes.js';
 import usersRoutes from './routes/users.js';
-import categoriesRoutes from './routes/categories.js';
-import listingsRoutes from './routes/listings.js';
-import reviewsRoutes from './routes/reviews.js';
-import messagesRoutes from './routes/messages.js';
-import uploadRoutes from './routes/upload.js';
-import adminRoutes from './routes/admin.js';
 
-dotenv.config();
-
+// Initialisation de l'application Express
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Middleware de base
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// Sécurité
 app.use(helmet());
 applySecurity(app);
 
-app.use('/api/auth', authRoutes);
-app.use('/api/blogs', blogRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/real-estate/listings', realEstateRoutes);
-app.use('/api/auto/listings', autoRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/marketplace/listings', marketplaceProductRoutes);
-app.use('/api/favorites', favoritesRoutes);
-app.use('/api/notifications', notificationsRoutes);
-app.use('/api/search', searchRoutes);
-app.use('/api/uploads', uploadsRoutes);
-app.use('/api/payments', paymentsRoutes);
-app.use('/api/health', healthRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/categories', categoriesRoutes);
-app.use('/api/listings', listingsRoutes);
-app.use('/api/reviews', reviewsRoutes);
-app.use('/api/messages', messagesRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/admin', adminRoutes);
+// Gestion du body parser
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-setupSwagger(app);
+// Servir les fichiers statiques
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Configuration Swagger
+if (process.env.NODE_ENV !== 'production') {
+  setupSwagger(app);
+}
+
+// Routes de l'API
+const API_PREFIX = process.env.API_PREFIX || '/api';
+
+// Routes d'authentification
+app.use(`${API_PREFIX}/auth`, authRoutes);
+
+// Routes des utilisateurs
+app.use(`${API_PREFIX}/users`, usersRoutes);
+
+// Routes du blog
+app.use(`${API_PREFIX}/blog`, blogRoutes);
+
+// Routes des projets
+app.use(`${API_PREFIX}/projects`, projectRoutes);
+
+// Routes de contact
+app.use(`${API_PREFIX}/contact`, contactRoutes);
+
+// Route de santé
+app.get(`${API_PREFIX}/health`, (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Gestion des erreurs 404
+app.use('*', (req, res, next) => {
+  res.status(404).json({
+    status: 'error',
+    message: `Can't find ${req.originalUrl} on this server!`
+  });
+});
+
+// Gestionnaire d'erreurs global
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+// Configuration du port
+const PORT = process.env.PORT || 3000;
 
-sequelize.sync().then(() => {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}).catch((err) => console.error('PostgreSQL connection error:', err));
+// Synchronisation des modèles et démarrage du serveur
+async function startServer() {
+  try {
+    // Vérifier les variables d'environnement requises
+    const requiredEnvVars = [
+      'NODE_ENV',
+      'PORT',
+      'DATABASE_URL',
+      'JWT_SECRET',
+      'JWT_EXPIRES_IN',
+      'JWT_COOKIE_EXPIRES_IN',
+      'EMAIL_HOST',
+      'EMAIL_PORT',
+      'EMAIL_USERNAME',
+      'EMAIL_PASSWORD',
+      'EMAIL_FROM',
+      'REDIS_URL'
+    ];
+
+    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    
+    if (missingVars.length > 0) {
+      throw new Error(`Variables d'environnement manquantes: ${missingVars.join(', ')}`);
+    }
+
+    // Connexion à Redis
+    await redisClient.connect();
+    logger.info('✅ Connecté à Redis');
+
+    // Synchronisation des modèles avec la base de données
+    await syncModels();
+    logger.info('✅ Base de données synchronisée');
+    
+    // Démarrage du serveur
+    const serverPort = process.env.PORT || 5000;
+    const server = app.listen(serverPort, () => {
+      logger.info(`✅ Serveur démarré en mode ${process.env.NODE_ENV} sur le port ${serverPort}`);
+      
+      // Afficher les routes disponibles
+      const routes = [];
+      app._router.stack.forEach((middleware) => {
+        if (middleware.route) {
+          // Routes enregistrées directement sur l'application
+          const methods = Object.keys(middleware.route.methods).map(method => method.toUpperCase()).join(', ');
+          routes.push(`${methods.padEnd(8)} ${middleware.route.path}`);
+        } else if (middleware.name === 'router') {
+          // Routes enregistrées via des routeurs
+          middleware.handle.stack.forEach((handler) => {
+            if (handler.route) {
+              const methods = Object.keys(handler.route.methods).map(method => method.toUpperCase()).join(', ');
+              routes.push(`${methods.padEnd(8)} ${handler.route.path}`);
+            }
+          });
+        }
+      });
+      
+      console.log('\nRoutes disponibles:');
+      console.log('==================');
+      routes.sort().forEach(route => console.log(route));
+      console.log('\n');
+    });
+
+    // Gestion des erreurs de démarrage
+    server.on('error', (error) => {
+      if (error.syscall !== 'listen') {
+        throw error;
+      }
+
+      const bind = typeof serverPort === 'string' ? `Pipe ${serverPort}` : `Port ${serverPort}`;
+
+      // Gestion des erreurs spécifiques
+      switch (error.code) {
+        case 'EACCES':
+          logger.error(`${bind} nécessite des privilèges élevés`);
+          process.exit(1);
+          break;
+        case 'EADDRINUSE':
+          logger.error(`${bind} est déjà utilisé`);
+          process.exit(1);
+          break;
+        default:
+          throw error;
+      }
+    });
+
+    return server;
+  } catch (error) {
+    logger.error('❌ Erreur lors du démarrage du serveur:', error);
+    process.exit(1);
+  }
+}
+
+// Démarrer le serveur
+startServer();
+
+export default app;
