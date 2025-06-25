@@ -5,8 +5,10 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
+    "prestart": "node scripts/check-env.js",
     "start": "NODE_ENV=production node server.js",
     "dev": "NODE_ENV=development nodemon --inspect server.js",
+    "check": "node scripts/check-env.js",
     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit --coverage",
     "test:watch": "npm test -- --watch",
     "test:ci": "NODE_ENV=test jest --ci --detectOpenHandles --forceExit --coverage --reporters=default --reporters=jest-junit",
@@ -24,7 +26,7 @@
     "db:setup": "npm run db:create && npm run db:migrate && npm run db:seed",
     "migration:create": "node scripts/create-migration.js",
     "prettier": "prettier --write \"**/*.{js,json,md}\"",
-    "prepare": "husky install",
+    "prepare": "if [ -f .git ]; then husky install; fi",
     "security-check": "npm audit --production && npx snyk test",
     "check-updates": "npx npm-check-updates",
     "update-deps": "npx npm-check-updates -u && npm install"
