@@ -55,6 +55,7 @@
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.1",
     "pg": "^8.10.0",
+    "mongoose": "^8.2.0",
     "pg-hstore": "^2.3.4",
     "rate-limiter-flexible": "^2.4.1",
     "redis": "^4.5.1",
