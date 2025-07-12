@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('authToken');
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -34,11 +35,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await loginUser(credentials);
-      localStorage.setItem('authToken', response.token);
       setUser(response.user);
       toast({
         title: "Connexion réussie",
-        description: "Bienvenue sur Benome !",
+        description: `Bienvenue ${response.user.firstName} !`,
       });
       navigate('/');
       return true;
@@ -55,11 +55,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await registerUser(userData);
-      localStorage.setItem('authToken', response.token);
       setUser(response.user);
       toast({
         title: "Inscription réussie",
-        description: "Bienvenue sur Benome !",
+        description: `Bienvenue ${response.user.firstName} !`,
       });
       navigate('/');
       return true;
@@ -76,7 +75,6 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await logoutUser();
-      localStorage.removeItem('authToken');
       setUser(null);
       toast({
         title: "Déconnexion réussie",
@@ -84,11 +82,14 @@ export const AuthProvider = ({ children }) => {
       });
       navigate('/');
     } catch (error) {
+      // Même si la déconnexion échoue côté serveur, on déconnecte côté client
+      localStorage.removeItem('authToken');
+      setUser(null);
       toast({
-        title: "Erreur de déconnexion",
-        description: error.message,
-        variant: "destructive",
+        title: "Déconnexion",
+        description: "Vous avez été déconnecté",
       });
+      navigate('/');
     }
   };
 

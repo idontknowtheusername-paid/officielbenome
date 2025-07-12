@@ -8,13 +8,20 @@ const User = sequelize.define('User', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  username: {
+  firstName: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
     validate: {
-      len: [3, 30],
-      is: /^[a-zA-Z0-9_]+$/ // N'autorise que les lettres, chiffres et underscores
+      len: [2, 50],
+      notEmpty: true
+    }
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [2, 50],
+      notEmpty: true
     }
   },
   email: {
@@ -25,11 +32,18 @@ const User = sequelize.define('User', {
       isEmail: true
     }
   },
+  phoneNumber: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      is: /^\+?[1-9]\d{1,14}$/
+    }
+  },
   password: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      len: [8, 100] // Au moins 8 caractères
+      len: [8, 100]
     }
   },
   role: {
@@ -40,11 +54,19 @@ const User = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
-  lastLogin: {
+  lastLoginAt: {
     type: DataTypes.DATE
   },
   profileImage: {
     type: DataTypes.STRING
+  },
+  resetPasswordToken: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  resetPasswordExpires: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   timestamps: true,
@@ -53,23 +75,26 @@ const User = sequelize.define('User', {
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
-        const salt = await bcrypt.genSalt(10);
+        const salt = await bcrypt.genSalt(12);
         user.password = await bcrypt.hash(user.password, salt);
       }
     },
     beforeUpdate: async (user) => {
       if (user.changed('password')) {
-        const salt = await bcrypt.genSalt(10);
+        const salt = await bcrypt.genSalt(12);
         user.password = await bcrypt.hash(user.password, salt);
       }
     }
   },
   defaultScope: {
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password', 'resetPasswordToken', 'resetPasswordExpires'] },
   },
   scopes: {
     withPassword: {
       attributes: { include: ['password'] },
+    },
+    withResetToken: {
+      attributes: { include: ['resetPasswordToken', 'resetPasswordExpires'] },
     },
   },
 });
@@ -77,6 +102,11 @@ const User = sequelize.define('User', {
 // Méthode pour comparer les mots de passe
 User.prototype.isValidPassword = async function(password) {
   return await bcrypt.compare(password, this.password);
+};
+
+// Méthode pour obtenir le nom complet
+User.prototype.getFullName = function() {
+  return `${this.firstName} ${this.lastName}`;
 };
 
 export default User;

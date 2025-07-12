@@ -21,7 +21,7 @@ const fetchData = async (endpoint, options = {}) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Une erreur est survenue');
+    throw new Error(data.error?.message || data.message || 'Une erreur est survenue');
   }
 
   return data;
@@ -29,34 +29,55 @@ const fetchData = async (endpoint, options = {}) => {
 
 // Fonctions d'authentification
 export const registerUser = async (userData) => {
-  return fetchData('/auth/register', {
+  const response = await fetchData('/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
   });
+  
+  // Stocker le token d'accès
+  if (response.data?.tokens?.accessToken) {
+    localStorage.setItem('authToken', response.data.tokens.accessToken);
+  }
+  
+  return response.data;
 };
 
 export const loginUser = async (credentials) => {
-  return fetchData('/auth/login', {
+  const response = await fetchData('/auth/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
+  
+  // Stocker le token d'accès
+  if (response.data?.tokens?.accessToken) {
+    localStorage.setItem('authToken', response.data.tokens.accessToken);
+  }
+  
+  return response.data;
 };
 
 export const logoutUser = async () => {
-  return fetchData('/auth/logout', {
+  const response = await fetchData('/auth/logout', {
     method: 'POST',
   });
+  
+  // Supprimer le token
+  localStorage.removeItem('authToken');
+  
+  return response;
 };
 
 export const getCurrentUserProfile = async () => {
-  return fetchData('/auth/profile');
+  const response = await fetchData('/auth/profile');
+  return response.data.user;
 };
 
 export const updateUserProfile = async (userData) => {
-  return fetchData('/auth/profile', {
+  const response = await fetchData('/auth/profile', {
     method: 'PUT',
     body: JSON.stringify(userData),
   });
+  return response.data.user;
 };
 
 export const forgotPassword = async (email) => {

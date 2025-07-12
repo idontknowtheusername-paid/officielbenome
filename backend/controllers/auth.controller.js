@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import bcrypt from 'bcryptjs';
 import { validationResult } from 'express-validator';
 import { Op } from 'sequelize';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import JwtService from '../services/jwt.service.js';
 import emailService from '../services/emailService.js';
@@ -15,20 +17,19 @@ class AuthController {
       if (!errors.isEmpty()) {
         return res.status(StatusCodes.BAD_REQUEST).json({
           success: false,
-          errors: errors.array(),
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Erreur de validation',
+            details: errors.array()
+          }
         });
       }
 
-      const { username, email, password } = req.body;
+      const { firstName, lastName, email, phoneNumber, password } = req.body;
       
       // Vérifier si l'utilisateur existe déjà
       const existingUser = await User.findOne({
-        where: {
-          [Op.or]: [
-            { email },
-            { username }
-          ]
-        }
+        where: { email }
       });
 
       if (existingUser) {
@@ -36,19 +37,18 @@ class AuthController {
           success: false,
           error: {
             code: 'USER_EXISTS',
-            message: 'Un utilisateur avec cet email ou ce nom d\'utilisateur existe déjà'
+            message: 'Un utilisateur avec cet email existe déjà'
           }
         });
       }
 
-      // Hasher le mot de passe
-      const hashedPassword = await bcrypt.hash(password, 12);
-      
       // Créer l'utilisateur
       const user = await User.create({
-        username,
+        firstName,
+        lastName,
         email,
-        password: hashedPassword,
+        phoneNumber,
+        password,
         role: 'user' // Rôle par défaut
       });
 
@@ -69,8 +69,10 @@ class AuthController {
         data: {
           user: {
             id: user.id,
-            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
             email: user.email,
+            phoneNumber: user.phoneNumber,
             role: user.role,
             createdAt: user.createdAt
           },
@@ -92,7 +94,7 @@ class AuthController {
       const { email, password } = req.body;
 
       // Vérifier si l'utilisateur existe
-      const user = await User.findOne({ where: { email } });
+      const user = await User.scope('withPassword').findOne({ where: { email } });
       
       if (!user) {
         return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -105,7 +107,7 @@ class AuthController {
       }
 
       // Vérifier le mot de passe
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await user.isValidPassword(password);
       
       if (!isPasswordValid) {
         return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -129,8 +131,10 @@ class AuthController {
         data: {
           user: {
             id: user.id,
-            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
             email: user.email,
+            phoneNumber: user.phoneNumber,
             role: user.role
           },
           tokens: {
@@ -221,7 +225,7 @@ class AuthController {
       const { token, newPassword } = req.body;
       
       // Trouver l'utilisateur avec un token valide
-      const user = await User.findOne({
+      const user = await User.scope('withResetToken').findOne({
         where: {
           resetPasswordToken: token,
           resetPasswordExpires: { [Op.gt]: new Date() }
@@ -256,6 +260,104 @@ class AuthController {
       });
     } catch (error) {
       logger.error('Reset password error:', error);
+      next(error);
+    }
+  }
+
+  static async getProfile(req, res, next) {
+    try {
+      const user = await User.findByPk(req.user.id);
+      
+      if (!user) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          error: {
+            code: 'USER_NOT_FOUND',
+            message: 'Utilisateur non trouvé'
+          }
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+            isVerified: user.isVerified,
+            lastLoginAt: user.lastLoginAt,
+            profileImage: user.profileImage,
+            createdAt: user.createdAt
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Get profile error:', error);
+      next(error);
+    }
+  }
+
+  static async updateProfile(req, res, next) {
+    try {
+      const { firstName, lastName, email, phoneNumber } = req.body;
+      
+      const user = await User.findByPk(req.user.id);
+      
+      if (!user) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          error: {
+            code: 'USER_NOT_FOUND',
+            message: 'Utilisateur non trouvé'
+          }
+        });
+      }
+
+      // Vérifier si l'email est déjà utilisé par un autre utilisateur
+      if (email && email !== user.email) {
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+          return res.status(StatusCodes.CONFLICT).json({
+            success: false,
+            error: {
+              code: 'EMAIL_EXISTS',
+              message: 'Cet email est déjà utilisé'
+            }
+          });
+        }
+      }
+
+      // Mettre à jour le profil
+      await user.update({
+        firstName: firstName || user.firstName,
+        lastName: lastName || user.lastName,
+        email: email || user.email,
+        phoneNumber: phoneNumber || user.phoneNumber
+      });
+
+      res.json({
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+            isVerified: user.isVerified,
+            lastLoginAt: user.lastLoginAt,
+            profileImage: user.profileImage,
+            createdAt: user.createdAt
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Update profile error:', error);
       next(error);
     }
   }

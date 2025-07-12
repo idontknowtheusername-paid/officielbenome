@@ -34,9 +34,13 @@ const router = express.Router();
  *         phoneNumber:
  *           type: string
  *           description: Le numéro de téléphone de l'utilisateur
- *         isOnline:
+ *         role:
+ *           type: string
+ *           enum: [user, admin, moderator]
+ *           description: Le rôle de l'utilisateur
+ *         isVerified:
  *           type: boolean
- *           description: Statut de connexion de l'utilisateur
+ *           description: Si l'utilisateur est vérifié
  *         lastLoginAt:
  *           type: string
  *           format: date-time
@@ -84,17 +88,40 @@ const validate = (method) => {
   switch (method) {
     case 'register': {
       return [
+        body('firstName', 'Le prénom est requis').notEmpty().trim().isLength({ min: 2, max: 50 }),
+        body('lastName', 'Le nom est requis').notEmpty().trim().isLength({ min: 2, max: 50 }),
         body('email', 'Email invalide').isEmail().normalizeEmail(),
-        body('password', 'Le mot de passe doit contenir au moins 6 caractères')
-          .isLength({ min: 6 }),
-        body('firstName', 'Le prénom est requis').notEmpty().trim(),
-        body('lastName', 'Le nom est requis').notEmpty().trim()
+        body('phoneNumber', 'Numéro de téléphone invalide').matches(/^\+?[1-9]\d{1,14}$/),
+        body('password', 'Le mot de passe doit contenir au moins 8 caractères')
+          .isLength({ min: 8 })
+          .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial')
       ];
     }
     case 'login': {
       return [
         body('email', 'Email invalide').isEmail().normalizeEmail(),
         body('password', 'Le mot de passe est requis').exists()
+      ];
+    }
+    case 'forgotPassword': {
+      return [
+        body('email', 'Email invalide').isEmail().normalizeEmail()
+      ];
+    }
+    case 'resetPassword': {
+      return [
+        body('token', 'Token requis').notEmpty(),
+        body('newPassword', 'Le mot de passe doit contenir au moins 8 caractères')
+          .isLength({ min: 8 })
+          .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial')
+      ];
+    }
+    case 'updateProfile': {
+      return [
+        body('firstName', 'Le prénom doit contenir entre 2 et 50 caractères').optional().isLength({ min: 2, max: 50 }),
+        body('lastName', 'Le nom doit contenir entre 2 et 50 caractères').optional().isLength({ min: 2, max: 50 }),
+        body('email', 'Email invalide').optional().isEmail().normalizeEmail(),
+        body('phoneNumber', 'Numéro de téléphone invalide').optional().matches(/^\+?[1-9]\d{1,14}$/)
       ];
     }
     default:
@@ -115,29 +142,35 @@ const validate = (method) => {
  *           schema:
  *             type: object
  *             required:
- *               - email
- *               - password
  *               - firstName
  *               - lastName
+ *               - email
+ *               - phoneNumber
+ *               - password
  *             properties:
+ *               firstName:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *                 description: Le prénom de l'utilisateur
+ *               lastName:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *                 description: Le nom de famille de l'utilisateur
  *               email:
  *                 type: string
  *                 format: email
  *                 description: L'adresse email de l'utilisateur
+ *               phoneNumber:
+ *                 type: string
+ *                 pattern: '^\+?[1-9]\d{1,14}$'
+ *                 description: Le numéro de téléphone (format international)
  *               password:
  *                 type: string
  *                 format: password
- *                 minLength: 6
- *                 description: Le mot de passe (au moins 6 caractères)
- *               firstName:
- *                 type: string
- *                 description: Le prénom de l'utilisateur
- *               lastName:
- *                 type: string
- *                 description: Le nom de famille de l'utilisateur
- *               phoneNumber:
- *                 type: string
- *                 description: Le numéro de téléphone (optionnel)
+ *                 minLength: 8
+ *                 description: Le mot de passe (au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial)
  *     responses:
  *       201:
  *         description: Utilisateur enregistré avec succès
@@ -149,16 +182,21 @@ const validate = (method) => {
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Utilisateur enregistré avec succès
- *                 token:
- *                   type: string
- *                   description: JWT token
- *                 user:
- *                   $ref: '#/components/schemas/User'
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *                     tokens:
+ *                       $ref: '#/components/schemas/AuthTokens'
  *       400:
- *         description: Erreur de validation ou utilisateur existant
+ *         description: Erreur de validation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       409:
+ *         description: Utilisateur déjà existant
  *         content:
  *           application/json:
  *             schema:
@@ -201,23 +239,13 @@ router.post('/register', validate('register'), AuthController.register);
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Connexion réussie
- *                 token:
- *                   type: string
- *                   description: JWT token
- *                 refreshToken:
- *                   type: string
- *                   description: Refresh token pour obtenir un nouveau token d'accès
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *       400:
- *         description: Erreur de validation
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *                     tokens:
+ *                       $ref: '#/components/schemas/AuthTokens'
  *       401:
  *         description: Identifiants invalides
  *         content:
@@ -229,53 +257,9 @@ router.post('/login', validate('login'), AuthController.login);
 
 /**
  * @swagger
- * /api/auth/refresh-token:
- *   post:
- *     summary: Rafraîchir le token d'accès
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
- *                 description: Le refresh token précédemment émis
- *     responses:
- *       200:
- *         description: Token rafraîchi avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 token:
- *                   type: string
- *                   description: Nouveau JWT token
- *                 refreshToken:
- *                   type: string
- *                   description: Nouveau refresh token
- *       400:
- *         description: Token de rafraîchissement invalide ou manquant
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.post('/refresh-token', AuthController.refreshToken);
-
-/**
- * @swagger
  * /api/auth/logout:
  *   post:
- *     summary: Déconnexion de l'utilisateur
+ *     summary: Déconnexion d'un utilisateur
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
@@ -294,7 +278,7 @@ router.post('/refresh-token', AuthController.refreshToken);
  *                   type: string
  *                   example: Déconnexion réussie
  *       401:
- *         description: Non authentifié
+ *         description: Non autorisé
  *         content:
  *           application/json:
  *             schema:
@@ -304,15 +288,104 @@ router.post('/logout', authenticate, AuthController.logout);
 
 /**
  * @swagger
- * /api/auth/me:
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Demande de réinitialisation de mot de passe
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: L'adresse email de l'utilisateur
+ *     responses:
+ *       200:
+ *         description: Email de réinitialisation envoyé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Si un compte avec cet email existe, un email de réinitialisation a été envoyé
+ *       400:
+ *         description: Erreur de validation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/forgot-password', validate('forgotPassword'), AuthController.forgotPassword);
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Réinitialisation du mot de passe
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Le token de réinitialisation
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 description: Le nouveau mot de passe
+ *     responses:
+ *       200:
+ *         description: Mot de passe réinitialisé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Votre mot de passe a été réinitialisé avec succès
+ *       400:
+ *         description: Token invalide ou expiré
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/reset-password', validate('resetPassword'), AuthController.resetPassword);
+
+/**
+ * @swagger
+ * /api/auth/profile:
  *   get:
- *     summary: Récupérer les informations de l'utilisateur connecté
+ *     summary: Récupérer le profil de l'utilisateur connecté
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Succès
+ *         description: Profil récupéré avec succès
  *         content:
  *           application/json:
  *             schema:
@@ -322,14 +395,99 @@ router.post('/logout', authenticate, AuthController.logout);
  *                   type: boolean
  *                   example: true
  *                 data:
- *                   $ref: '#/components/schemas/User'
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
  *       401:
  *         description: Non autorisé
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Utilisateur non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/me', authenticate, AuthController.getCurrentUser);
+router.get('/profile', authenticate, AuthController.getProfile);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   put:
+ *     summary: Mettre à jour le profil de l'utilisateur connecté
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *                 description: Le prénom de l'utilisateur
+ *               lastName:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *                 description: Le nom de famille de l'utilisateur
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: L'adresse email de l'utilisateur
+ *               phoneNumber:
+ *                 type: string
+ *                 pattern: '^\+?[1-9]\d{1,14}$'
+ *                 description: Le numéro de téléphone (format international)
+ *     responses:
+ *       200:
+ *         description: Profil mis à jour avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Erreur de validation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Non autorisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Utilisateur non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       409:
+ *         description: Email déjà utilisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.put('/profile', authenticate, validate('updateProfile'), AuthController.updateProfile);
 
 export default router;

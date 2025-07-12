@@ -5,6 +5,7 @@ import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, 
 import { Button } from '@/components/ui/button';
 import { personalData } from '@/lib/personalData';
 import { useAuth } from '@/contexts/AuthContext';
+import UserMenu from '@/components/ui/user-menu';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,33 +84,25 @@ const Navbar = () => {
             <Button variant="ghost" size="icon" className="md:hidden" aria-label="Rechercher">
                <Search className="h-5 w-5" />
             </Button>
-            {!user && (
-              <>
-                <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
+            
+            {/* User Menu */}
+            {!user ? (
+              <div className="hidden md:flex items-center space-x-2">
+                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Link to="/connexion">
                     <UserCircle className="mr-2 h-4 w-4" /> Connexion
                   </Link>
                 </Button>
-                <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                <Button asChild variant="outline">
                   <Link to="/inscription">
                     <UserCircle className="mr-2 h-4 w-4" /> Inscription
                   </Link>
                 </Button>
-              </>
+              </div>
+            ) : (
+              <UserMenu />
             )}
-            {user && user.role === 'admin' ? (
-              <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
-                <Link to="/admin-dashboard">
-                  <Settings className="mr-2 h-4 w-4" /> Admin
-                </Link>
-              </Button>
-            ) : user && (
-              <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
-                <Link to="/profile">
-                  <Settings className="mr-2 h-4 w-4" /> Mon Compte
-                </Link>
-              </Button>
-            )}
+            
             <div className="md:hidden">
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} aria-label="Ouvrir le menu">
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -141,7 +134,7 @@ const Navbar = () => {
               </NavLink>
             ))}
             <div className="border-t border-border pt-3 space-y-3">
-              {!user && (
+              {!user ? (
                 <>
                   <NavLink to="/connexion" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
                       <UserCircle className="mr-2 h-4 w-4" /> Connexion
@@ -150,15 +143,17 @@ const Navbar = () => {
                       <UserCircle className="mr-2 h-4 w-4" /> Inscription
                   </NavLink>
                 </>
-              )}
-              {user && user.role === 'admin' ? (
-                <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                  <Settings className="mr-2 h-4 w-4" /> Admin
-                </NavLink>
-              ) : user && (
-                <NavLink to="/profile" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                  <Settings className="mr-2 h-4 w-4" /> Mon Compte
-                </NavLink>
+              ) : (
+                <div className="space-y-2">
+                  <NavLink to="/profile" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                    <UserCircle className="mr-2 h-4 w-4" /> Mon Profil
+                  </NavLink>
+                  {user.role === 'admin' && (
+                    <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                      <Settings className="mr-2 h-4 w-4" /> Admin
+                    </NavLink>
+                  )}
+                </div>
               )}
             </div>
           </motion.div>
