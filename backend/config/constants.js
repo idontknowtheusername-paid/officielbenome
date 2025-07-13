@@ -497,6 +497,4 @@ export const UPLOAD_OPTIONS = {
   UPLOAD_DIR: 'uploads',
 };
 
-export {
-  ALLOWED_ORIGINS,
-};
+
