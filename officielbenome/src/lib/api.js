@@ -44,17 +44,31 @@ const fetchData = async (endpoint, options = {}) => {
 
 // Fonctions d'authentification
 export const registerUser = async (userData) => {
-  return fetchData(API_ENDPOINTS.REGISTER, {
+  const response = await fetchData(API_ENDPOINTS.REGISTER, {
     method: 'POST',
     body: JSON.stringify(userData),
   });
+  
+  // Le backend retourne { success: true, data: { user: {...}, tokens: {...} } }
+  // On retourne { user: {...}, token: "..." } pour le frontend
+  return {
+    user: response.data.user,
+    token: response.data.tokens.accessToken
+  };
 };
 
 export const loginUser = async (credentials) => {
-  return fetchData(API_ENDPOINTS.LOGIN, {
+  const response = await fetchData(API_ENDPOINTS.LOGIN, {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
+  
+  // Le backend retourne { success: true, data: { user: {...}, tokens: {...} } }
+  // On retourne { user: {...}, token: "..." } pour le frontend
+  return {
+    user: response.data.user,
+    token: response.data.tokens.accessToken
+  };
 };
 
 export const logoutUser = async () => {
@@ -64,14 +78,22 @@ export const logoutUser = async () => {
 };
 
 export const getCurrentUserProfile = async () => {
-  return fetchData(API_ENDPOINTS.PROFILE);
+  const response = await fetchData(API_ENDPOINTS.PROFILE);
+  
+  // Le backend retourne { success: true, data: { user: {...} } }
+  // On retourne directement l'objet user pour le frontend
+  return response.data.user;
 };
 
 export const updateUserProfile = async (userData) => {
-  return fetchData(API_ENDPOINTS.PROFILE, {
+  const response = await fetchData(API_ENDPOINTS.PROFILE, {
     method: 'PUT',
     body: JSON.stringify(userData),
   });
+  
+  // Le backend retourne { success: true, data: { user: {...} } }
+  // On retourne directement l'objet user pour le frontend
+  return response.data.user;
 };
 
 export const forgotPassword = async (email) => {
