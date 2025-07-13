@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await loginUser(credentials);
+      console.log('AuthContext login response:', response); // Debug log
       localStorage.setItem('authToken', response.token);
       setUser(response.user);
       toast({
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }) => {
       navigate('/');
       return true;
     } catch (error) {
+      console.error('Login error:', error); // Debug log
       toast({
         title: "Erreur de connexion",
         description: error.message,
@@ -55,6 +57,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await registerUser(userData);
+      console.log('AuthContext register response:', response); // Debug log
       localStorage.setItem('authToken', response.token);
       setUser(response.user);
       toast({
@@ -64,6 +67,7 @@ export const AuthProvider = ({ children }) => {
       navigate('/');
       return true;
     } catch (error) {
+      console.error('Register error:', error); // Debug log
       toast({
         title: "Erreur d'inscription",
         description: error.message,

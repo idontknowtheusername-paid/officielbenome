@@ -26,6 +26,12 @@ const fetchData = async (endpoint, options = {}) => {
       return null;
     }
 
+    // Si le backend n'est pas accessible (502, 503, etc.)
+    if (response.status >= 500) {
+      console.error('Backend inaccessible:', response.status, response.statusText);
+      throw new Error('Le serveur backend n\'est pas accessible. Veuillez réessayer plus tard.');
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
@@ -38,6 +44,12 @@ const fetchData = async (endpoint, options = {}) => {
     return data;
   } catch (error) {
     console.error('API Error:', error);
+    
+    // Si c'est une erreur de réseau ou de connexion
+    if (error.name === 'TypeError' || error.message.includes('fetch')) {
+      throw new Error('Impossible de se connecter au serveur. Vérifiez votre connexion internet.');
+    }
+    
     throw error;
   }
 };
@@ -48,6 +60,8 @@ export const registerUser = async (userData) => {
     method: 'POST',
     body: JSON.stringify(userData),
   });
+  
+  console.log('Register response:', response); // Debug log
   
   // Le backend retourne { success: true, data: { user: {...}, tokens: {...} } }
   // On retourne { user: {...}, token: "..." } pour le frontend
@@ -62,6 +76,8 @@ export const loginUser = async (credentials) => {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
+  
+  console.log('Login response:', response); // Debug log
   
   // Le backend retourne { success: true, data: { user: {...}, tokens: {...} } }
   // On retourne { user: {...}, token: "..." } pour le frontend
@@ -276,36 +292,4 @@ export const rejectListing = async (listingId, reason) => {
 export const getAdminTransactions = async (params = {}) => {
   const queryParams = new URLSearchParams(params).toString();
   return fetchData(`${API_ENDPOINTS.ADMIN_TRANSACTIONS}?${queryParams}`);
-};
-
-export default {
-  registerUser,
-  loginUser,
-  logoutUser,
-  getCurrentUserProfile,
-  updateUserProfile,
-  forgotPassword,
-  resetPassword,
-  getRealEstateListings,
-  getRealEstateListing,
-  createRealEstateListing,
-  getAutoListings,
-  getAutoListing,
-  createAutoListing,
-  getServices,
-  getService,
-  createService,
-  getMarketplaceListings,
-  getMarketplaceListing,
-  createMarketplaceListing,
-  getBlogPosts,
-  getBlogPost,
-  createBlogPost,
-  sendContactMessage,
-  getFavorites,
-  addToFavorites,
-  removeFromFavorites,
-  getNotifications,
-  markNotificationAsRead,
-  searchAll,
 };

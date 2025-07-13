@@ -149,9 +149,9 @@ const Navbar = () => {
                     <UserCircle className="mr-2 h-4 w-4" /> Mon Profil
                   </NavLink>
                   {user.role === 'admin' && (
-                    <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                      <Settings className="mr-2 h-4 w-4" /> Admin
-                    </NavLink>
+                <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                  <Settings className="mr-2 h-4 w-4" /> Admin
+                </NavLink>
                   )}
                 </div>
               )}

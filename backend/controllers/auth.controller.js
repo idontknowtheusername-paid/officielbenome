@@ -41,7 +41,7 @@ class AuthController {
           }
         });
       }
-
+      
       // Créer l'utilisateur
       const user = await User.create({
         firstName,
