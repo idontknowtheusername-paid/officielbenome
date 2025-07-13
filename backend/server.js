@@ -1,3 +1,5 @@
+console.log('📦 Chargement des modules...');
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -5,6 +7,9 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+
+console.log('📦 Modules de base chargés');
+
 import { applySecurity } from './middleware/security.js';
 import errorHandler from './middleware/errorHandler.js';
 import { syncModels } from './models/index.js';
@@ -12,6 +17,8 @@ import setupSwagger from './swagger.js';
 import logger from './config/logger.js';
 import redisClient from './config/redis.js';
 import sequelize from './config/database.js';
+
+console.log('📦 Tous les modules chargés avec succès');
 
 // Configuration des chemins ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -341,32 +348,36 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 // Gestion des erreurs non capturées
 process.on('uncaughtException', (error) => {
-  logger.error('\n🚨 ERREUR NON CAPTURÉE');
-  logger.error('='.repeat(60));
-  logger.error(`Message: ${error.message}`);
-  logger.error('Stack:', error.stack);
-  logger.error('='.repeat(60));
+  console.error('\n🚨 ERREUR NON CAPTURÉE');
+  console.error('='.repeat(60));
+  console.error(`Message: ${error.message}`);
+  console.error('Stack:', error.stack);
+  console.error('='.repeat(60));
   
   // Tenter une fermeture propre avant de quitter
-  shutdown('UNCAUGHT_EXCEPTION').then(() => {
+  if (typeof shutdown === 'function') {
+    shutdown('UNCAUGHT_EXCEPTION').then(() => {
+      process.exit(1);
+    });
+  } else {
     process.exit(1);
-  });
+  }
 });
 
 // Gestion des rejets de promesses non gérés
 process.on('unhandledRejection', (reason, promise) => {
-  logger.warn('\n⚠️  REJET DE PROMESSE NON GÉRÉ');
-  logger.warn('='.repeat(60));
-  logger.warn('Raison:', reason);
+  console.warn('\n⚠️  REJET DE PROMESSE NON GÉRÉ');
+  console.warn('='.repeat(60));
+  console.warn('Raison:', reason);
   
   // Afficher la pile d'appels si disponible
   if (reason instanceof Error) {
-    logger.warn('Stack:', reason.stack);
+    console.warn('Stack:', reason.stack);
   } else {
-    logger.warn('Détails:', JSON.stringify(reason, null, 2));
+    console.warn('Détails:', JSON.stringify(reason, null, 2));
   }
   
-  logger.warn('='.repeat(60));
+  console.warn('='.repeat(60));
   
   // Dans un environnement de production, vous pourriez vouloir ne pas arrêter le processus
   // mais simplement le logger. Pour le développement, on peut vouloir arrêter le processus.
@@ -378,7 +389,7 @@ process.on('unhandledRejection', (reason, promise) => {
   // En production, on peut choisir de quitter après un délai
   // pour éviter que le serveur ne reste dans un état instable
   setTimeout(() => {
-    logger.error('Arrêt du processus suite à un rejet de promesse non géré');
+    console.error('Arrêt du processus suite à un rejet de promesse non géré');
     process.exit(1);
   }, 1000);
 });
