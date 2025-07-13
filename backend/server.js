@@ -11,7 +11,7 @@ import { syncModels } from './models/index.js';
 import setupSwagger from './swagger.js';
 import logger from './config/logger.js';
 import redisClient from './config/redis.js';
-import { sequelize } from './config/database.js';
+import sequelize from './config/database.js';
 
 // Configuration des chemins ES modules
 const __filename = fileURLToPath(import.meta.url);
