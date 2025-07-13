@@ -9,6 +9,9 @@ import { applySecurity } from './middleware/security.js';
 import errorHandler from './middleware/errorHandler.js';
 import { syncModels } from './models/index.js';
 import setupSwagger from './swagger.js';
+import logger from './config/logger.js';
+import redisClient from './config/redis.js';
+import { sequelize } from './config/database.js';
 
 // Configuration des chemins ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -369,7 +372,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Démarrer le serveur uniquement si ce fichier est exécuté directement
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   startServer().catch(error => {
     console.error('❌ Échec du démarrage du serveur:', error);
     process.exit(1);
