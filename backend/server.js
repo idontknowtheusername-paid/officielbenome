@@ -94,6 +94,13 @@ const HOST = process.env.HOST || '0.0.0.0';
 // Synchronisation des modèles et démarrage du serveur
 async function startServer() {
   try {
+    console.log('🚀 Démarrage du serveur...');
+    console.log('📊 Variables d\'environnement:');
+    console.log('  NODE_ENV:', process.env.NODE_ENV);
+    console.log('  PORT:', process.env.PORT);
+    console.log('  DATABASE_URL:', process.env.DATABASE_URL ? 'Définie' : 'Non définie');
+    console.log('  JWT_SECRET:', process.env.JWT_SECRET ? 'Définie' : 'Non définie');
+    
     // Variables d'environnement requises avec valeurs par défaut
     const envVars = {
       NODE_ENV: process.env.NODE_ENV || 'development',
@@ -110,6 +117,8 @@ async function startServer() {
       REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379'
     };
 
+    console.log('🔧 Configuration des variables d\'environnement...');
+
     // Mettre à jour process.env avec les valeurs par défaut si nécessaire
     Object.entries(envVars).forEach(([key, value]) => {
       if (!process.env[key]) {
@@ -118,6 +127,7 @@ async function startServer() {
       }
     });
 
+    console.log('🔌 Tentative de connexion à Redis...');
     // Connexion à Redis (si nécessaire)
     if (process.env.NODE_ENV !== 'test' && process.env.REDIS_URL !== 'disabled') {
       try {
@@ -143,6 +153,7 @@ async function startServer() {
       logger.warn('🚫 Redis est désactivé pour cette instance');
     }
 
+    console.log('🔄 Tentative de synchronisation des modèles...');
     // Synchronisation des modèles avec la base de données
     try {
       logger.info('🔄 Tentative de synchronisation des modèles avec la base de données...');
@@ -177,6 +188,7 @@ async function startServer() {
       throw dbError;
     }
     
+    console.log('🌐 Démarrage du serveur HTTP...');
     // Configuration du serveur
     const server = app.listen(PORT, HOST, () => {
       const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
@@ -373,8 +385,14 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Démarrer le serveur uniquement si ce fichier est exécuté directement
 if (import.meta.url === `file://${process.argv[1]}`) {
+  console.log('🎯 Point d\'entrée détecté, démarrage du serveur...');
+  
   startServer().catch(error => {
-    console.error('❌ Échec du démarrage du serveur:', error);
+    console.error('❌ Échec du démarrage du serveur:');
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('Code:', error.code);
+    console.error('Name:', error.name);
     process.exit(1);
   });
 }
