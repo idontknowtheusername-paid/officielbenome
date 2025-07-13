@@ -11,9 +11,9 @@ const HeroSection = () => {
     <section className="relative min-h-[80vh] flex items-center justify-center py-20 md:py-32 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 -z-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 opacity-70"></div>
         <img  
-            className="absolute inset-0 w-full h-full object-cover opacity-20" 
+            className="absolute inset-0 w-full h-full object-cover opacity-40" 
             alt="Abstract background with geometric shapes and light streaks"
          src="https://images.unsplash.com/photo-1508896080210-93c377eb4135" />
       </div>

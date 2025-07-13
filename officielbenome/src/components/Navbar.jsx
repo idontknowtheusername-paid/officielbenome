@@ -90,7 +90,7 @@ const Navbar = () => {
                     <UserCircle className="mr-2 h-4 w-4" /> Connexion
                   </Link>
                 </Button>
-                <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Link to="/inscription">
                     <UserCircle className="mr-2 h-4 w-4" /> Inscription
                   </Link>
