@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node hello.js",
+    "start": "node test-express.js",
     "dev": "nodemon --inspect server.js",
     "build": "echo \"No build step required\" && exit 0",
     "check": "node scripts/check-env.js",
