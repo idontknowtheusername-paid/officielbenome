@@ -198,6 +198,9 @@ async function startServer() {
     }
     
     console.log('🌐 Démarrage du serveur HTTP...');
+    console.log(`🔧 Port: ${PORT}, Hôte: ${HOST}`);
+    console.log('🚀 Tentative de démarrage du serveur...');
+    
     // Configuration du serveur
     const server = app.listen(PORT, HOST, () => {
       const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
