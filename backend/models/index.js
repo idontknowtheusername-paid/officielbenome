@@ -127,12 +127,23 @@ RealEstateListing.belongsTo(User, {
 // Synchronisation des modèles avec la base de données
 const syncModels = async () => {
   try {
-    // Forcer la synchronisation en mode développement
+    // En production, ne pas forcer la synchronisation pour éviter de recréer les tables
     const force = process.env.NODE_ENV === 'development';
-    await sequelize.sync({ force });
+    const alter = process.env.NODE_ENV === 'production'; // Alter existing tables in production
+    
+    console.log(`🔄 Synchronisation des modèles (force: ${force}, alter: ${alter})`);
+    
+    await sequelize.sync({ force, alter });
     console.log('✅ Modèles synchronisés avec succès');
   } catch (error) {
     console.error('❌ Erreur lors de la synchronisation des modèles:', error);
+    
+    // En production, si la synchronisation échoue, continuer sans erreur
+    if (process.env.NODE_ENV === 'production') {
+      console.log('⚠️  Synchronisation échouée en production, continuation sans synchronisation...');
+      return;
+    }
+    
     throw error;
   }
 };
