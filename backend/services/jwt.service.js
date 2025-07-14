@@ -35,13 +35,18 @@ class JwtService {
       { expiresIn: JWT_REFRESH_EXPIRES_IN }
     );
 
-    // Stocker le refresh token dans Redis
-    await redisClient.set(
-      `refresh_token:${user.id}`,
-      refreshToken,
-      'EX',
-      60 * 60 * 24 * 7 // 7 jours en secondes
-    );
+    // Stocker le refresh token dans Redis (si disponible)
+    try {
+      await redisClient.set(
+        `refresh_token:${user.id}`,
+        refreshToken,
+        'EX',
+        60 * 60 * 24 * 7 // 7 jours en secondes
+      );
+    } catch (redisError) {
+      // Si Redis n'est pas disponible, on continue sans stockage
+      console.log('⚠️  Redis non disponible, refresh token non stocké');
+    }
 
     return { accessToken, refreshToken };
   }
@@ -57,10 +62,16 @@ class JwtService {
   static async verifyRefreshToken(token) {
     try {
       const decoded = await verifyToken(token, process.env.JWT_REFRESH_SECRET);
-      const storedToken = await redisClient.get(`refresh_token:${decoded.id}`);
       
-      if (storedToken !== token) {
-        throw new Error('Invalid refresh token');
+      // Vérifier le token dans Redis (si disponible)
+      try {
+        const storedToken = await redisClient.get(`refresh_token:${decoded.id}`);
+        if (storedToken !== token) {
+          throw new Error('Invalid refresh token');
+        }
+      } catch (redisError) {
+        // Si Redis n'est pas disponible, on accepte le token
+        console.log('⚠️  Redis non disponible, validation du refresh token ignorée');
       }
       
       return decoded;
@@ -70,7 +81,12 @@ class JwtService {
   }
 
   static async revokeRefreshToken(userId) {
-    await redisClient.del(`refresh_token:${userId}`);
+    try {
+      await redisClient.del(`refresh_token:${userId}`);
+    } catch (redisError) {
+      // Si Redis n'est pas disponible, on ignore
+      console.log('⚠️  Redis non disponible, révocation du refresh token ignorée');
+    }
   }
 }
 

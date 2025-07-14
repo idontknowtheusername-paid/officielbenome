@@ -1,10 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 import { validationResult } from 'express-validator';
+import { Op } from 'sequelize';
 import Blog from '../models/Blog.js';
 import User from '../models/User.js';
 import logger from '../config/logger.js';
-import { NotFoundError, BadRequestError, ForbiddenError } from '../errors/index.js';
-import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 
 /**
  * @desc    Récupérer tous les articles de blog avec pagination et filtres
@@ -16,55 +15,60 @@ export const getAllBlogs = async (req, res, next) => {
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
     // Filtres
-    const query = { status: 'published' };
+    const where = { status: 'published' };
     
     // Filtre par auteur
     if (req.query.author) {
-      query.author = req.query.author;
+      where.authorId = req.query.author;
     }
     
     // Filtre par catégorie
     if (req.query.category) {
-      query.category = req.query.category;
+      where.category = req.query.category;
     }
     
     // Filtre par mots-clés
     if (req.query.keywords) {
-      query.$text = { $search: req.query.keywords };
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${req.query.keywords}%` } },
+        { content: { [Op.iLike]: `%${req.query.keywords}%` } }
+      ];
     }
 
     // Tri
-    const sort = {};
+    let order = [['createdAt', 'DESC']];
     if (req.query.sortBy) {
       const parts = req.query.sortBy.split(':');
-      sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
-    } else {
-      sort.createdAt = -1; // Tri par défaut par date de création décroissante
+      order = [[parts[0], parts[1] === 'desc' ? 'DESC' : 'ASC']];
     }
 
     // Exécuter la requête
-    const [blogs, total] = await Promise.all([
-      Blog.find(query)
-        .populate('author', 'username avatar firstName lastName')
-        .sort(sort)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Blog.countDocuments(query)
-    ]);
+    const { count, rows: blogs } = await Blog.findAndCountAll({
+      where,
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'firstName', 'lastName', 'email']
+        }
+      ],
+      order,
+      offset,
+      limit
+    });
 
     // Calculer le nombre total de pages
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(count / limit);
     const hasNextPage = page < totalPages;
     const hasPreviousPage = page > 1;
 
     res.status(StatusCodes.OK).json({
       success: true,
       count: blogs.length,
-      total,
+      total: count,
       totalPages,
       currentPage: page,
       hasNextPage,

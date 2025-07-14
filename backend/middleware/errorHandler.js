@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { ValidationError } from 'sequelize';
-import pkg from 'celebrate';
-const { isCelebrate } = pkg;
+import { isCelebrate } from 'celebrate';
 import logger from '../config/logger.js';
 
 /**

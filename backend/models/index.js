@@ -1,23 +1,36 @@
 import { Sequelize } from 'sequelize';
 import sequelize from '../config/database.js';
 import User from './User.js';
+import Blog from './Blog.js';
 
 // Importez d'autres modèles ici
-// import Blog from './Blog.js';
 // import Post from './Post.js';
 
 // Initialisation des modèles
 const models = {
   User,
-  // Blog,
+  Blog,
   // Post,
   sequelize,
   Sequelize
 };
 
 // Définition des relations entre les modèles
-// Exemple : User.hasMany(Post);
-//          Post.belongsTo(User);
+if (Blog.associate) {
+  Blog.associate(models);
+}
+
+// User peut avoir plusieurs blogs
+User.hasMany(Blog, {
+  foreignKey: 'authorId',
+  as: 'blogs'
+});
+
+// Blog appartient à un utilisateur
+Blog.belongsTo(User, {
+  foreignKey: 'authorId',
+  as: 'author'
+});
 
 // Synchronisation des modèles avec la base de données
 const syncModels = async () => {
