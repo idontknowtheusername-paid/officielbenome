@@ -3,6 +3,7 @@ import sequelize from '../config/database.js';
 import User from './User.js';
 import Blog from './Blog.js';
 import Project from './Project.js';
+import Contact from './Contact.js';
 
 // Importez d'autres modèles ici
 // import Post from './Post.js';
@@ -12,6 +13,7 @@ const models = {
   User,
   Blog,
   Project,
+  Contact,
   // Post,
   sequelize,
   Sequelize
@@ -37,15 +39,13 @@ Blog.belongsTo(User, {
 // Synchronisation des modèles avec la base de données
 const syncModels = async () => {
   try {
-    // En production, on utilise sync() sans options pour éviter les modifications de schéma
-    // qui peuvent causer des erreurs avec des données existantes
-    await sequelize.sync();
-    console.log('✅ Modèles synchronisés avec la base de données');
+    // Forcer la synchronisation en mode développement
+    const force = process.env.NODE_ENV === 'development';
+    await sequelize.sync({ force });
+    console.log('✅ Modèles synchronisés avec succès');
   } catch (error) {
     console.error('❌ Erreur lors de la synchronisation des modèles:', error);
-    // En production, on ne fait pas process.exit(1) pour éviter de tuer le serveur
-    // On laisse le serveur continuer sans synchronisation
-    console.log('⚠️  Synchronisation échouée, poursuite sans synchronisation des modèles');
+    throw error;
   }
 };
 
