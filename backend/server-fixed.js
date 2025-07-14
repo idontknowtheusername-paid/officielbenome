@@ -29,11 +29,13 @@ const __dirname = dirname(__filename);
 dotenv.config();
 
 // Importation des routes
+console.log('📦 Import des routes...');
 import authRoutes from './routes/auth.routes.js';
 import blogRoutes from './routes/blog.routes.js';
 import projectRoutes from './routes/project.routes.js';
 import contactRoutes from './routes/contact.routes.js';
 import usersRoutes from './routes/users.js';
+console.log('✅ Routes importées avec succès');
 
 // Initialisation de l'application Express
 const app = express();
@@ -166,7 +168,9 @@ async function startServer() {
     // Synchronisation des modèles avec la base de données
     try {
       logger.info('🔄 Tentative de synchronisation des modèles avec la base de données...');
+      console.log('📦 Import des modèles...');
       await syncModels();
+      console.log('✅ Synchronisation des modèles réussie');
       logger.info('✅ Base de données synchronisée avec succès');
       
       // Tester la connexion à la base de données
@@ -200,6 +204,15 @@ async function startServer() {
     console.log('🌐 Démarrage du serveur HTTP...');
     console.log(`🔧 Port: ${PORT}, Hôte: ${HOST}`);
     console.log('🚀 Tentative de démarrage du serveur...');
+    console.log('🔍 Vérification des routes...');
+    
+    // Afficher les routes pour debug
+    console.log('📋 Routes configurées:');
+    app._router.stack.forEach(layer => {
+      if (layer.route) {
+        console.log(`  ${Object.keys(layer.route.methods).join(',').toUpperCase()} ${layer.route.path}`);
+      }
+    });
     
     // Configuration du serveur
     const server = app.listen(PORT, HOST, () => {
