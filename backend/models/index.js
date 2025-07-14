@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 import sequelize from '../config/database.js';
 import User from './User.js';
 import Blog from './Blog.js';
+import Project from './Project.js';
 
 // Importez d'autres modèles ici
 // import Post from './Post.js';
@@ -10,6 +11,7 @@ import Blog from './Blog.js';
 const models = {
   User,
   Blog,
+  Project,
   // Post,
   sequelize,
   Sequelize
