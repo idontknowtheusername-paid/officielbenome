@@ -90,39 +90,54 @@ export const getBlogById = async (req, res, next) => {
   try {
     const { idOrSlug } = req.params;
     
-    // Vérifier si l'ID est un ObjectId valide ou un slug
-    const isObjectId = /^[0-9a-fA-F]{24}$/.test(idOrSlug);
-    const query = isObjectId 
-      ? { _id: idOrSlug }
-      : { slug: idOrSlug };
+    // Vérifier si l'ID est un UUID valide ou un slug
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+    const where = isUUID 
+      ? { id: idOrSlug, status: 'published' }
+      : { slug: idOrSlug, status: 'published' };
     
-    // Incrémenter le compteur de vues
-    const blog = await Blog.findOneAndUpdate(
-      { ...query, status: 'published' },
-      { $inc: { viewCount: 1 } },
-      { new: true }
-    ).populate('author', 'username avatar firstName lastName');
+    // Récupérer l'article avec l'auteur
+    const blog = await Blog.findOne({
+      where,
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'firstName', 'lastName', 'email']
+        }
+      ]
+    });
 
     if (!blog) {
-      throw new NotFoundError('Article non trouvé');
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Article non trouvé'
+        }
+      });
     }
 
+    // Incrémenter le compteur de vues
+    await blog.increment('viewCount');
+
     // Récupérer les articles similaires (même catégorie, exclure l'article actuel)
-    const relatedBlogs = await Blog.find({
-      category: blog.category,
-      _id: { $ne: blog._id },
-      status: 'published'
-    })
-    .limit(3)
-    .sort({ createdAt: -1 })
-    .select('title slug excerpt featuredImage readTime')
-    .lean();
+    const relatedBlogs = await Blog.findAll({
+      where: {
+        category: blog.category,
+        id: { [Op.ne]: blog.id },
+        status: 'published'
+      },
+      attributes: ['id', 'title', 'slug', 'excerpt', 'featuredImage', 'readTime'],
+      order: [['createdAt', 'DESC']],
+      limit: 3
+    });
 
     res.status(StatusCodes.OK).json({
       success: true,
       data: {
-        ...blog.toObject(),
-        relatedBlogs
+        ...blog.toJSON(),
+        relatedBlogs: relatedBlogs.map(blog => blog.toJSON())
       }
     });
   } catch (error) {
@@ -141,14 +156,27 @@ export const createBlog = async (req, res, next) => {
     // Vérifier les erreurs de validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      throw new BadRequestError('Données invalides', errors.array());
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Données invalides',
+          details: errors.array()
+        }
+      });
     }
 
     const { title, content, excerpt, category, tags, status = 'draft' } = req.body;
     
     // Vérifier si l'utilisateur a le rôle nécessaire
     if (req.user.role !== 'admin' && req.user.role !== 'auteur') {
-      throw new ForbiddenError('Non autorisé à créer des articles de blog');
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Non autorisé à créer des articles de blog'
+        }
+      });
     }
 
     // Créer un slug à partir du titre
@@ -160,31 +188,19 @@ export const createBlog = async (req, res, next) => {
       .trim();
 
     // Vérifier si un article avec le même slug existe déjà
-    const existingBlog = await Blog.findOne({ slug });
+    const existingBlog = await Blog.findOne({ where: { slug } });
     if (existingBlog) {
-      throw new BadRequestError('Un article avec un titre similaire existe déjà');
-    }
-
-    // Traiter l'image mise en avant si elle est fournie
-    let featuredImageData = {};
-    if (req.file) {
-      try {
-        const result = await uploadToCloudinary(req.file, 'blog');
-        featuredImageData = {
-          url: result.secure_url,
-          publicId: result.public_id,
-          width: result.width,
-          height: result.height,
-          format: result.format
-        };
-      } catch (uploadError) {
-        logger.error(`Erreur lors du téléchargement de l'image: ${uploadError.message}`);
-        throw new Error("Échec du téléchargement de l'image");
-      }
+      return res.status(StatusCodes.CONFLICT).json({
+        success: false,
+        error: {
+          code: 'SLUG_EXISTS',
+          message: 'Un article avec un titre similaire existe déjà'
+        }
+      });
     }
 
     // Créer l'article
-    const blog = new Blog({
+    const blog = await Blog.create({
       title,
       slug,
       content,
@@ -192,15 +208,10 @@ export const createBlog = async (req, res, next) => {
       category,
       tags: Array.isArray(tags) ? tags : tags?.split(',').map(tag => tag.trim()),
       status,
-      author: req.user.id,
-      featuredImage: Object.keys(featuredImageData).length > 0 ? featuredImageData : undefined,
+      authorId: req.user.id,
+      featuredImage: req.file ? req.file.path : null,
       readTime: Math.ceil(content.split(/\s+/).length / 200) // Estimation du temps de lecture
     });
-
-    await blog.save();
-
-    // Mettre à jour le compteur d'articles de l'auteur
-    await User.findByIdAndUpdate(req.user.id, { $inc: { postCount: 1 } });
 
     res.status(StatusCodes.CREATED).json({
       success: true,
