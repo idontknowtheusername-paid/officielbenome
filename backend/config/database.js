@@ -49,16 +49,23 @@ const config = { ...databaseConfig[env] };
 
 // Si nous sommes en production et que nous avons une DATABASE_URL, nous l'utilisons
 if (env === 'production' && process.env.DATABASE_URL) {
-  // Créer une nouvelle URL pour encoder correctement les caractères spéciaux
-  const dbUrl = new URL(process.env.DATABASE_URL);
-  
-  // Si le mot de passe contient des caractères spéciaux, les encoder
-  if (dbUrl.password) {
-    dbUrl.password = encodeURIComponent(dbUrl.password);
+  try {
+    // Créer une nouvelle URL pour encoder correctement les caractères spéciaux
+    const dbUrl = new URL(process.env.DATABASE_URL);
+    
+    // Si le mot de passe contient des caractères spéciaux, les encoder
+    if (dbUrl.password) {
+      dbUrl.password = encodeURIComponent(dbUrl.password);
+    }
+    
+    // Mettre à jour la configuration avec l'URL encodée
+    config.url = dbUrl.toString();
+    console.log('✅ URL de base de données encodée correctement');
+  } catch (error) {
+    console.error('❌ Erreur lors de l\'encodage de l\'URL de base de données:', error.message);
+    // Fallback vers l'URL originale
+    config.url = process.env.DATABASE_URL;
   }
-  
-  // Mettre à jour la configuration avec l'URL encodée
-  config.url = dbUrl.toString();
 }
 
 let sequelize;
