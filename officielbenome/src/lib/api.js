@@ -1,6 +1,6 @@
-import API_ENDPOINTS from '@/config/api.config';
+import API_ENDPOINTS, { API_BASE_URL } from '@/config/api.config';
 
-const API_BASE_URL = "https://officielbenome-backend.onrender.com/api";
+// const API_BASE_URL = "https://officielbenome-backend.onrender.com/api"; // supprimé, centralisé
 
 // Fonction utilitaire pour les appels API
 const fetchData = async (endpoint, options = {}) => {
