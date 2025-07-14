@@ -1,9 +1,40 @@
-import mongoose from 'mongoose';
+import { DataTypes } from 'sequelize';
+import sequelize from '../../config/database.js';
 
-const favoriteSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  itemId: { type: mongoose.Schema.Types.ObjectId, required: true },
-  itemType: { type: String, enum: ['real-estate', 'auto', 'service', 'product'], required: true },
-}, { timestamps: true });
+const Favorite = sequelize.define('Favorite', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
+  itemId: {
+    type: DataTypes.UUID,
+    allowNull: false
+    // Référence dynamique selon le type d'item (listing, product, etc.)
+  }
+}, {
+  timestamps: true,
+  underscored: true,
+  tableName: 'favorites',
+  indexes: [
+    {
+      fields: ['user_id']
+    },
+    {
+      fields: ['item_id']
+    }
+  ]
+});
 
-export default mongoose.model('Favorite', favoriteSchema);
+// Associations à définir selon le contexte d'itemId
+// Favorite.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+export default Favorite;

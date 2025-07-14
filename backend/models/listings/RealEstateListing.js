@@ -1,32 +1,114 @@
-import mongoose from 'mongoose';
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
-const locationSchema = new mongoose.Schema({
-  address: String,
-  city: String,
-  country: String,
-  coordinates: {
-    latitude: Number,
-    longitude: Number
+const RealEstateListing = sequelize.define('RealEstateListing', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  price: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  currency: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  propertyType: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  bedrooms: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  bathrooms: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  area: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  areaUnit: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  city: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  state: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  zipCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  country: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  latitude: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  longitude: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  images: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: [],
+  },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
+  status: {
+    type: DataTypes.ENUM('active', 'pending_approval', 'sold', 'inactive'),
+    defaultValue: 'pending_approval',
+  },
+  isFeatured: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  viewCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   }
-}, { _id: false });
+}, {
+  timestamps: true,
+  underscored: true,
+  tableName: 'real_estate_listings',
+  indexes: [
+    { fields: ['user_id'] },
+    { fields: ['property_type'] },
+    { fields: ['city'] },
+    { fields: ['status'] },
+    { fields: ['price'] }
+  ]
+});
 
-const realEstateListingSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
-  price: Number,
-  currency: String,
-  type: { type: String, enum: ['sale', 'rent'] },
-  propertyType: String,
-  bedrooms: Number,
-  bathrooms: Number,
-  areaSqMeters: Number,
-  location: locationSchema,
-  images: [String],
-  amenities: [String],
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  status: { type: String, enum: ['active', 'pending_approval', 'sold', 'rented', 'inactive'], default: 'active' },
-  isFeatured: { type: Boolean, default: false },
-  viewCount: { type: Number, default: 0 },
-}, { timestamps: true });
+// Associations à définir selon le contexte
+// RealEstateListing.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-export default mongoose.model('RealEstateListing', realEstateListingSchema);
+export default RealEstateListing;

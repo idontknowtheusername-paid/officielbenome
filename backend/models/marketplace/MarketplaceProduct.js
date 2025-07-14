@@ -1,16 +1,69 @@
-import mongoose from 'mongoose';
+import { DataTypes } from 'sequelize';
+import sequelize from '../../config/database.js';
 
-const marketplaceProductSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
-  price: Number,
-  currency: String,
-  category: String,
-  images: [String],
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  status: { type: String, enum: ['active', 'pending_approval', 'sold', 'inactive'], default: 'active' },
-  isFeatured: { type: Boolean, default: false },
-  viewCount: { type: Number, default: 0 },
-}, { timestamps: true });
+const MarketplaceProduct = sequelize.define('MarketplaceProduct', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  price: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  currency: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  category: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  images: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: [],
+  },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
+  status: {
+    type: DataTypes.ENUM('active', 'pending_approval', 'sold', 'inactive'),
+    defaultValue: 'active',
+  },
+  isFeatured: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  viewCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  }
+}, {
+  timestamps: true,
+  underscored: true,
+  tableName: 'marketplace_products',
+  indexes: [
+    { fields: ['user_id'] },
+    { fields: ['category'] },
+    { fields: ['status'] },
+    { fields: ['is_featured'] }
+  ]
+});
 
-export default mongoose.model('MarketplaceProduct', marketplaceProductSchema);
+// Associations à définir selon le contexte
+// MarketplaceProduct.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+export default MarketplaceProduct;

@@ -4,6 +4,12 @@ import User from './User.js';
 import Blog from './Blog.js';
 import Project from './Project.js';
 import Contact from './Contact.js';
+import Notification from './notifications/Notification.js';
+import Favorite from './favorites/Favorite.js';
+import MarketplaceProduct from './marketplace/MarketplaceProduct.js';
+import ServiceListing from './listings/ServiceListing.js';
+import AutoListing from './listings/AutoListing.js';
+import RealEstateListing from './listings/RealEstateListing.js';
 
 // Importez d'autres modèles ici
 // import Post from './Post.js';
@@ -14,6 +20,12 @@ const models = {
   Blog,
   Project,
   Contact,
+  Notification,
+  Favorite,
+  MarketplaceProduct,
+  ServiceListing,
+  AutoListing,
+  RealEstateListing,
   // Post,
   sequelize,
   Sequelize
@@ -22,6 +34,10 @@ const models = {
 // Définition des relations entre les modèles
 if (Blog.associate) {
   Blog.associate(models);
+}
+
+if (Notification.associate) {
+  Notification.associate(models);
 }
 
 // User peut avoir plusieurs blogs
@@ -34,6 +50,78 @@ User.hasMany(Blog, {
 Blog.belongsTo(User, {
   foreignKey: 'authorId',
   as: 'author'
+});
+
+// User peut avoir plusieurs notifications
+User.hasMany(Notification, {
+  foreignKey: 'userId',
+  as: 'notifications'
+});
+
+// Notification appartient à un utilisateur
+Notification.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+// User peut avoir plusieurs favoris
+User.hasMany(Favorite, {
+  foreignKey: 'userId',
+  as: 'favorites'
+});
+
+// Favorite appartient à un utilisateur
+Favorite.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+// User peut avoir plusieurs produits marketplace
+User.hasMany(MarketplaceProduct, {
+  foreignKey: 'userId',
+  as: 'marketplaceProducts'
+});
+
+// MarketplaceProduct appartient à un utilisateur
+MarketplaceProduct.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+// User peut avoir plusieurs annonces de service
+User.hasMany(ServiceListing, {
+  foreignKey: 'userId',
+  as: 'serviceListings'
+});
+
+// ServiceListing appartient à un utilisateur
+ServiceListing.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+// User peut avoir plusieurs annonces auto
+User.hasMany(AutoListing, {
+  foreignKey: 'userId',
+  as: 'autoListings'
+});
+
+// AutoListing appartient à un utilisateur
+AutoListing.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+// User peut avoir plusieurs annonces immobilières
+User.hasMany(RealEstateListing, {
+  foreignKey: 'userId',
+  as: 'realEstateListings'
+});
+
+// RealEstateListing appartient à un utilisateur
+RealEstateListing.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
 });
 
 // Synchronisation des modèles avec la base de données
