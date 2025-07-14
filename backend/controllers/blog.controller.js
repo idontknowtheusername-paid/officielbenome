@@ -234,21 +234,40 @@ export const updateBlog = async (req, res, next) => {
     // Vérifier les erreurs de validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      throw new BadRequestError('Données invalides', errors.array());
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Données invalides',
+          details: errors.array()
+        }
+      });
     }
 
     const { id } = req.params;
     const { title, content, excerpt, category, tags, status } = req.body;
     
     // Récupérer l'article existant
-    let blog = await Blog.findById(id);
+    const blog = await Blog.findByPk(id);
     if (!blog) {
-      throw new NotFoundError('Article non trouvé');
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Article non trouvé'
+        }
+      });
     }
 
     // Vérifier les autorisations (admin ou auteur de l'article)
-    if (req.user.role !== 'admin' && blog.author.toString() !== req.user.id) {
-      throw new ForbiddenError('Non autorisé à modifier cet article');
+    if (req.user.role !== 'admin' && blog.authorId !== req.user.id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Non autorisé à modifier cet article'
+        }
+      });
     }
 
     // Mettre à jour les champs
@@ -264,9 +283,20 @@ export const updateBlog = async (req, res, next) => {
         .trim();
       
       // Vérifier si le nouveau slug est déjà utilisé
-      const existingBlog = await Blog.findOne({ slug: newSlug, _id: { $ne: id } });
+      const existingBlog = await Blog.findOne({ 
+        where: { 
+          slug: newSlug, 
+          id: { [Op.ne]: id } 
+        } 
+      });
       if (existingBlog) {
-        throw new BadRequestError('Un article avec ce titre existe déjà');
+        return res.status(StatusCodes.CONFLICT).json({
+          success: false,
+          error: {
+            code: 'SLUG_EXISTS',
+            message: 'Un article avec ce titre existe déjà'
+          }
+        });
       }
       
       updateFields.title = title;
@@ -286,31 +316,8 @@ export const updateBlog = async (req, res, next) => {
       updateFields.readTime = Math.ceil(content.split(/\s+/).length / 200);
     }
     
-    // Mettre à jour l'image mise en avant si une nouvelle image est fournie
-    if (req.file) {
-      try {
-        // Supprimer l'ancienne image si elle existe
-        if (blog.featuredImage?.publicId) {
-          await deleteFromCloudinary(blog.featuredImage.publicId);
-        }
-        
-        // Télécharger la nouvelle image
-        const result = await uploadToCloudinary(req.file, 'blog');
-        updateFields.featuredImage = {
-          url: result.secure_url,
-          publicId: result.public_id,
-          width: result.width,
-          height: result.height,
-          format: result.format
-        };
-      } catch (uploadError) {
-        logger.error(`Erreur lors de la mise à jour de l'image: ${uploadError.message}`);
-        throw new Error("Échec de la mise à jour de l'image");
-      }
-    }
-    
     // Mettre à jour l'article
-    blog = await Blog.findByIdAndUpdate(id, { $set: updateFields }, { new: true, runValidators: true });
+    await blog.update(updateFields);
     
     res.status(StatusCodes.OK).json({
       success: true,
@@ -333,31 +340,30 @@ export const deleteBlog = async (req, res, next) => {
     const { id } = req.params;
     
     // Récupérer l'article existant
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findByPk(id);
     if (!blog) {
-      throw new NotFoundError('Article non trouvé');
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Article non trouvé'
+        }
+      });
     }
 
     // Vérifier les autorisations (admin ou auteur de l'article)
-    if (req.user.role !== 'admin' && blog.author.toString() !== req.user.id) {
-      throw new ForbiddenError('Non autorisé à supprimer cet article');
-    }
-
-    // Supprimer l'image associée si elle existe
-    if (blog.featuredImage?.publicId) {
-      try {
-        await deleteFromCloudinary(blog.featuredImage.publicId);
-      } catch (error) {
-        logger.error(`Erreur lors de la suppression de l'image: ${error.message}`);
-        // Ne pas arrêter le processus si la suppression de l'image échoue
-      }
+    if (req.user.role !== 'admin' && blog.authorId !== req.user.id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Non autorisé à supprimer cet article'
+        }
+      });
     }
 
     // Supprimer l'article
-    await blog.remove();
-
-    // Mettre à jour le compteur d'articles de l'auteur
-    await User.findByIdAndUpdate(blog.author, { $inc: { postCount: -1 } });
+    await blog.destroy();
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -380,46 +386,24 @@ export const toggleLikeBlog = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.user.id;
     
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findByPk(id);
     if (!blog) {
-      throw new NotFoundError('Article non trouvé');
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Article non trouvé'
+        }
+      });
     }
 
-    // Vérifier si l'utilisateur a déjà aimé l'article
-    const alreadyLiked = blog.likes.some(like => like.user.toString() === userId);
-    
-    let message = '';
-    
-    if (alreadyLiked) {
-      // Retirer le like
-      blog.likes = blog.likes.filter(like => like.user.toString() !== userId);
-      message = 'Like retiré avec succès';
-    } else {
-      // Ajouter le like
-      blog.likes.push({ user: userId });
-      message = 'Article aimé avec succès';
-      
-      // Envoyer une notification à l'auteur de l'article (sauf si c'est l'utilisateur lui-même)
-      if (blog.author.toString() !== userId) {
-        // Implémenter la logique de notification ici
-        // await Notification.create({
-        //   user: blog.author,
-        //   type: 'like',
-        //   content: `${req.user.username} a aimé votre article "${blog.title}"`,
-        //   link: `/blog/${blog.slug}`,
-        //   fromUser: userId
-        // });
-      }
-    }
-    
-    await blog.save();
-    
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message,
-      data: {
-        likesCount: blog.likes.length,
-        isLiked: !alreadyLiked
+    // Note: La fonctionnalité de like n'est pas encore implémentée dans le modèle Sequelize
+    // Cette fonctionnalité nécessiterait une table séparée pour les likes
+    res.status(StatusCodes.NOT_IMPLEMENTED).json({
+      success: false,
+      error: {
+        code: 'NOT_IMPLEMENTED',
+        message: 'Fonctionnalité de like non encore implémentée'
       }
     });
   } catch (error) {
@@ -437,46 +421,37 @@ export const addComment = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      throw new BadRequestError('Commentaire invalide', errors.array());
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Commentaire invalide',
+          details: errors.array()
+        }
+      });
     }
 
     const { id } = req.params;
     const { content } = req.body;
     
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findByPk(id);
     if (!blog) {
-      throw new NotFoundError('Article non trouvé');
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Article non trouvé'
+        }
+      });
     }
 
-    const comment = {
-      user: req.user.id,
-      content,
-      name: req.user.username,
-      avatar: req.user.avatar
-    };
-
-    blog.comments.unshift(comment);
-    await blog.save();
-
-    // Envoyer une notification à l'auteur de l'article (sauf si c'est l'utilisateur lui-même)
-    if (blog.author.toString() !== req.user.id) {
-      // Implémenter la logique de notification ici
-      // await Notification.create({
-      //   user: blog.author,
-      //   type: 'comment',
-      //   content: `${req.user.username} a commenté votre article "${blog.title}"`,
-      //   link: `/blog/${blog.slug}#comments`,
-      //   fromUser: req.user.id
-      // });
-    }
-
-    // Récupérer le commentaire avec les informations de l'utilisateur
-    const newComment = blog.comments[0];
-    
-    res.status(StatusCodes.CREATED).json({
-      success: true,
-      message: 'Commentaire ajouté avec succès',
-      data: newComment
+    // Note: La fonctionnalité de commentaires n'est pas encore implémentée dans le modèle Sequelize
+    res.status(StatusCodes.NOT_IMPLEMENTED).json({
+      success: false,
+      error: {
+        code: 'NOT_IMPLEMENTED',
+        message: 'Fonctionnalité de commentaires non encore implémentée'
+      }
     });
   } catch (error) {
     logger.error(`Erreur lors de l'ajout du commentaire: ${error.message}`);
@@ -493,39 +468,24 @@ export const deleteComment = async (req, res, next) => {
   try {
     const { id, commentId } = req.params;
     
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findByPk(id);
     if (!blog) {
-      throw new NotFoundError('Article non trouvé');
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Article non trouvé'
+        }
+      });
     }
 
-    // Trouver le commentaire
-    const commentIndex = blog.comments.findIndex(
-      comment => comment._id.toString() === commentId
-    );
-    
-    if (commentIndex === -1) {
-      throw new NotFoundError('Commentaire non trouvé');
-    }
-
-    const comment = blog.comments[commentIndex];
-    
-    // Vérifier les autorisations (admin, auteur du commentaire ou auteur de l'article)
-    const isAdmin = req.user.role === 'admin';
-    const isCommentAuthor = comment.user.toString() === req.user.id;
-    const isBlogAuthor = blog.author.toString() === req.user.id;
-    
-    if (!isAdmin && !isCommentAuthor && !isBlogAuthor) {
-      throw new ForbiddenError('Non autorisé à supprimer ce commentaire');
-    }
-
-    // Supprimer le commentaire
-    blog.comments.splice(commentIndex, 1);
-    await blog.save();
-    
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: 'Commentaire supprimé avec succès',
-      data: {}
+    // Note: La fonctionnalité de commentaires n'est pas encore implémentée dans le modèle Sequelize
+    res.status(StatusCodes.NOT_IMPLEMENTED).json({
+      success: false,
+      error: {
+        code: 'NOT_IMPLEMENTED',
+        message: 'Fonctionnalité de commentaires non encore implémentée'
+      }
     });
   } catch (error) {
     logger.error(`Erreur lors de la suppression du commentaire: ${error.message}`);
