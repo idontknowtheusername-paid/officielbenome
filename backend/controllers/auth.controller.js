@@ -12,6 +12,12 @@ import logger from '../config/logger.js';
 class AuthController {
   static async register(req, res, next) {
     try {
+      console.log('[AUTH] Tentative inscription:', {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        phoneNumber: req.body.phoneNumber
+      });
       // Validation des données d'entrée
       const errors = validationResult(req);
       if (!errors.isEmpty()) {

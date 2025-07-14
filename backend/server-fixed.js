@@ -53,6 +53,15 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Middleware de log global pour chaque requête
+app.use((req, res, next) => {
+  console.log(`[REQ] ${req.method} ${req.originalUrl}`);
+  if (req.method !== 'GET') {
+    console.log(`[REQ-BODY]`, JSON.stringify(req.body));
+  }
+  next();
+});
+
 // Configuration Swagger
 if (process.env.NODE_ENV !== 'production') {
   setupSwagger(app);
