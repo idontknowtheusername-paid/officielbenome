@@ -36,7 +36,7 @@ const CareersPage = () => {
         className="mb-16 bg-card p-8 md:p-12 rounded-xl shadow-xl glassmorphic-card"
       >
         <h2 className="text-3xl font-bold mb-8 text-center flex items-center justify-center">
-          <Zap className="h-8 w-8 mr-3 text-primary" /> Pourquoi travailler chez {personalData.siteName} ?
+          <img src="/maxi123.png.jpg" alt="MaxiMarket Logo" className="h-8 w-8 mr-3" /> Pourquoi travailler chez {personalData.siteName} ?
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div className="p-6">
