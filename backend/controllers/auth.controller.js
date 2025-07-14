@@ -84,6 +84,7 @@ class AuthController {
         }
       });
     } catch (error) {
+      console.error('Registration error:', error, error?.stack);
       logger.error('Registration error:', error);
       next(error);
     }
