@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { JWT_CONFIG, ENVIRONMENTS } from './config/constants.js';
 
 console.log('📦 Modules de base chargés');
 
@@ -108,11 +109,11 @@ async function startServer() {
     
     // Variables d'environnement requises avec valeurs par défaut
     const envVars = {
-      NODE_ENV: process.env.NODE_ENV || 'development',
+      NODE_ENV: process.env.NODE_ENV || ENVIRONMENTS.DEVELOPMENT,
       PORT: PORT,
       DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/officielbenome_dev',
-      JWT_SECRET: process.env.JWT_SECRET || 'votre_clé_secrète_par_défaut',
-      JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '30d',
+      JWT_SECRET: process.env.JWT_SECRET || JWT_CONFIG.SECRET,
+      JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || JWT_CONFIG.EXPIRES_IN,
       JWT_COOKIE_EXPIRES_IN: process.env.JWT_COOKIE_EXPIRES_IN || '30',
       EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
       EMAIL_PORT: process.env.EMAIL_PORT || '587',
@@ -128,34 +129,35 @@ async function startServer() {
     Object.entries(envVars).forEach(([key, value]) => {
       if (!process.env[key]) {
         process.env[key] = value;
-        console.warn(`⚠️  Utilisation de la valeur par défaut pour ${key}: ${value}`);
+        // Ne pas afficher d'avertissement pour les variables non critiques en production
+        if (process.env.NODE_ENV !== 'production' || 
+            (key !== 'EMAIL_USERNAME' && key !== 'EMAIL_PASSWORD' && key !== 'REDIS_URL')) {
+          console.log(`ℹ️  Utilisation de la valeur par défaut pour ${key}: ${key === 'JWT_SECRET' ? '[MASKED]' : value}`);
+        }
       }
     });
 
-    console.log('🔌 Tentative de connexion à Redis...');
-    // Connexion à Redis (si nécessaire)
+    // Connexion à Redis (optionnelle)
     if (process.env.NODE_ENV !== 'test' && process.env.REDIS_URL !== 'disabled') {
       try {
-        logger.info('🔌 Tentative de connexion à Redis...');
+        console.log('🔌 Tentative de connexion à Redis...');
         await redisClient.connect();
-        logger.info('✅ Connecté à Redis avec succès');
+        console.log('✅ Connecté à Redis avec succès');
         
         // Tester la connexion Redis
         try {
           await redisClient.client.ping();
-          logger.info('✅ Test de connexion à Redis réussi');
+          console.log('✅ Test de connexion à Redis réussi');
         } catch (pingError) {
-          logger.warn('⚠️  Test de connexion Redis échoué, poursuite avec des fonctionnalités limitées');
-          logger.debug('Détails de l\'erreur Redis:', pingError);
+          console.log('ℹ️  Redis disponible mais test de ping échoué, poursuite avec des fonctionnalités limitées');
         }
       } catch (redisError) {
-        logger.warn('⚠️  Impossible de se connecter à Redis, poursuite sans cache');
-        logger.debug('Détails de l\'erreur Redis:', redisError);
+        console.log('ℹ️  Redis non disponible, poursuite sans cache');
         // Désactiver Redis pour cette instance
         process.env.REDIS_URL = 'disabled';
       }
-    } else if (process.env.REDIS_URL === 'disabled') {
-      logger.warn('🚫 Redis est désactivé pour cette instance');
+    } else {
+      console.log('ℹ️  Redis désactivé pour cette instance');
     }
 
     console.log('🔄 Tentative de connexion à la base de données...');
