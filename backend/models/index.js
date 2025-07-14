@@ -46,11 +46,11 @@ User.hasMany(Blog, {
   as: 'blogs'
 });
 
-// Blog appartient à un utilisateur
-Blog.belongsTo(User, {
-  foreignKey: 'authorId',
-  as: 'author'
-});
+// Blog appartient à un utilisateur - cette association est définie dans le modèle Blog
+// Blog.belongsTo(User, {
+//   foreignKey: 'authorId',
+//   as: 'author'
+// });
 
 // User peut avoir plusieurs notifications
 User.hasMany(Notification, {
