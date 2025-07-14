@@ -57,7 +57,7 @@ const Navbar = () => {
             transition={{ duration: 0.5 }}
           >
             <Link to="/" className="flex items-center space-x-2">
-              <Zap className="h-10 w-auto text-primary" />
+              <img src="/maxi123.png.jpg" alt="MaxiMarket Logo" className="h-10 w-auto" />
               <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
             </Link>
           </motion.div>
