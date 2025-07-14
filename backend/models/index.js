@@ -22,13 +22,15 @@ const models = {
 // Synchronisation des modèles avec la base de données
 const syncModels = async () => {
   try {
-    // En développement, utilisez { force: true } pour supprimer et recréer les tables
-    // En production, utilisez { alter: true } pour mettre à jour le schéma sans supprimer les données
-    await sequelize.sync({ alter: true });
+    // En production, on utilise sync() sans options pour éviter les modifications de schéma
+    // qui peuvent causer des erreurs avec des données existantes
+    await sequelize.sync();
     console.log('✅ Modèles synchronisés avec la base de données');
   } catch (error) {
     console.error('❌ Erreur lors de la synchronisation des modèles:', error);
-    process.exit(1);
+    // En production, on ne fait pas process.exit(1) pour éviter de tuer le serveur
+    // On laisse le serveur continuer sans synchronisation
+    console.log('⚠️  Synchronisation échouée, poursuite sans synchronisation des modèles');
   }
 };
 

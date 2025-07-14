@@ -41,7 +41,7 @@ const User = sequelize.define('User', {
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true, // Temporairement true pour permettre la synchronisation
     validate: {
       len: [8, 100]
     }
