@@ -9,11 +9,14 @@
 export const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:5173', // Vite dev server
   'https://officielbenome.com',
   'https://www.officielbenome.com',
   'https://staging.officielbenome.com',
   'https://benome4u.vercel.app',
-  'https://www.benome4u.vercel.app'
+  'https://www.benome4u.vercel.app',
+  'https://officielbenome.vercel.app', // Frontend Vercel
+  'https://officielbenome-frontend.vercel.app' // Alternative frontend URL
 ];
 
 // Configuration du rate limiting
