@@ -94,20 +94,20 @@ const errorHandler = (err, req, res, next) => {
     error = new ValidationErrorApp('Erreur de validation des données', messages);
   }
 
-  // Gestion des erreurs Celebrate (validation Joi)
-  if (isCelebrate(err)) {
-    const details = [];
-    err.details.forEach((validationError) => {
-      validationError.details.forEach((detail) => {
-        details.push({
-          field: detail.context.key,
-          message: detail.message,
-          value: detail.context.value,
-        });
-      });
-    });
-    error = new ValidationErrorApp('Erreur de validation des données', details);
-  }
+  // Suppression de la gestion des erreurs Celebrate (Joi)
+  // if (isCelebrate(err)) {
+  //   const details = [];
+  //   err.details.forEach((validationError) => {
+  //     validationError.details.forEach((detail) => {
+  //       details.push({
+  //         field: detail.context.key,
+  //         message: detail.message,
+  //         value: detail.context.value,
+  //       });
+  //     });
+  //   });
+  //   error = new ValidationErrorApp('Erreur de validation des données', details);
+  // }
 
   // Gestion des erreurs JWT
   if (err.name === 'JsonWebTokenError') {
