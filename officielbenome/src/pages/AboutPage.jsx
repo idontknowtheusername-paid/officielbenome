@@ -53,7 +53,7 @@ const AboutPage = () => {
           <div className="relative aspect-square rounded-xl overflow-hidden shadow-2xl">
              <img   
               className="w-full h-full object-cover"
-              alt="Équipe Benome travaillant ensemble"
+              alt="Équipe MaxiMarket travaillant ensemble"
              src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>

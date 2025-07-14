@@ -9,16 +9,16 @@ const PressPage = () => {
   const pressReleases = [
     {
       id: 1,
-      title: "Benome révolutionne le e-commerce en Afrique de l'Ouest",
+      title: "MaxiMarket révolutionne le e-commerce en Afrique de l'Ouest",
       date: "01 Juin 2025",
-      description: "Lancement officiel de la plateforme marketplace innovante Benome.",
+      description: "Lancement officiel de la plateforme marketplace innovante MaxiMarket.",
       pdfUrl: "#",
     },
     {
       id: 2,
       title: "Partenariat stratégique avec PayDunya",
       date: "15 Mai 2025",
-      description: "Benome s'associe à PayDunya pour faciliter les paiements en ligne.",
+      description: "MaxiMarket s'associe à PayDunya pour faciliter les paiements en ligne.",
       pdfUrl: "#",
     },
   ];
@@ -36,7 +36,7 @@ const PressPage = () => {
 
   const pressContacts = {
     name: "Service Relations Presse",
-    email: "presse@benome.com",
+    email: "presse@maximarket.com",
     phone: "+221 77 123 45 67",
   };
 

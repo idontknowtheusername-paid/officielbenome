@@ -1,10 +1,10 @@
 
 export const personalData = {
-  name: "Benome",
-  siteName: "Benome",
+  name: "MaxiMarket",
+  siteName: "MaxiMarket",
   tagline: "Votre Hub Innovant pour l'Afrique de l'Ouest",
   description: "Plateforme marketplace futuriste pour l'immobilier, l'automobile, les services et plus.",
-  email: "contact@benome.com",
+  email: "contact@maximarket.com",
   phone: "+221 77 123 4567",
   address: "Dakar, Sénégal",
   socials: {

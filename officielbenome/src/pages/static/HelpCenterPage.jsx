@@ -19,8 +19,8 @@ const HelpCenterPage = () => {
 
   const categories = [
     { name: "Comptes et Profils", icon: <Users className="h-8 w-8 text-primary" />, description: "Gestion de votre compte, paramètres et notifications." },
-    { name: "Acheter sur Benome", icon: <ShoppingCart className="h-8 w-8 text-primary" />, description: "Recherche, achat, paiements et livraisons." },
-    { name: "Vendre sur Benome", icon: <Tag className="h-8 w-8 text-primary" />, description: "Création d'annonces, gestion des ventes, boosters." },
+    { name: "Acheter sur MaxiMarket", icon: <ShoppingCart className="h-8 w-8 text-primary" />, description: "Recherche, achat, paiements et livraisons." },
+    { name: "Vendre sur MaxiMarket", icon: <Tag className="h-8 w-8 text-primary" />, description: "Création d'annonces, gestion des ventes, boosters." },
     { name: "Sécurité et Confiance", icon: <ShieldCheck className="h-8 w-8 text-primary" />, description: "Protéger votre compte, éviter les fraudes." },
   ];
 

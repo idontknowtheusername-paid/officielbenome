@@ -29,7 +29,7 @@ const RegisterForm = () => {
       <Card>
         <CardHeader>
           <CardTitle>Inscription</CardTitle>
-          <CardDescription>Créez votre compte Benome</CardDescription>
+          <CardDescription>Créez votre compte MaxiMarket</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

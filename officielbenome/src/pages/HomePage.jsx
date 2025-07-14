@@ -10,7 +10,7 @@ import { personalData } from '@/lib/personalData';
 const HomePage = () => {
   // This page is now a redirect or placeholder as MarketplaceHomePage is the main entry.
   // For a portfolio site, this would be the main landing page.
-  // For Benome, we'll keep it simple and perhaps redirect or show a welcome message.
+  // For MaxiMarket, we'll keep it simple and perhaps redirect or show a welcome message.
 
   const categoryCardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -82,7 +82,7 @@ const HomePage = () => {
             <div className="relative">
               <Input 
                 type="search" 
-                placeholder="Que recherchez-vous sur Benome ?" 
+                placeholder="Que recherchez-vous sur MaxiMarket ?" 
                 className="w-full py-4 px-6 pr-16 rounded-full text-lg bg-white/10 text-white placeholder-gray-400 border-2 border-transparent focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-16"
               />
               <Button size="lg" className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-12 w-12 p-0">
@@ -171,7 +171,7 @@ const HomePage = () => {
             animate={{ opacity: 1, y:0 }}
             transition={{ duration:0.5 }}
           >
-            Prêt à <span className="gradient-text">Rejoindre Benome</span> ?
+            Prêt à <span className="gradient-text">Rejoindre MaxiMarket</span> ?
           </motion.h2>
           <motion.p 
             className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto"

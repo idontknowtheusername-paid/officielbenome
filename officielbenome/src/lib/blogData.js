@@ -8,7 +8,7 @@ let blogPosts = localStorage.getItem('blogPosts')
   : initialBlogPostsContent.map(post => ({
       ...post,
       readingTime: `${calculateReadingTime(post.content)} min`,
-      author: post.author || { name: "Benome Admin", avatar: "benome-admin-avatar" },
+      author: post.author || { name: "MaxiMarket Admin", avatar: "maximarket-admin-avatar" },
       slug: post.slug || generateSlug(post.title),
       id: post.id || generateId(),
       publishedAt: post.publishedAt || new Date().toISOString()
@@ -42,7 +42,7 @@ export const addBlogPost = (post) => {
   const newPost = {
     ...post,
     id: generateId(),
-    author: post.author || { name: "Benome Admin", avatar: "benome-admin-avatar" },
+    author: post.author || { name: "MaxiMarket Admin", avatar: "maximarket-admin-avatar" },
     publishedAt: new Date().toISOString(),
     readingTime: `${calculateReadingTime(post.content)} min`,
     slug: post.slug || generateSlug(post.title)

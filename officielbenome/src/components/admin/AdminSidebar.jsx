@@ -41,7 +41,7 @@ export function AdminSidebar({ className }) {
   return (
     <div className={cn("hidden md:flex md:flex-col md:w-64 bg-slate-900 border-r border-slate-800 min-h-screen", className)}>
       <div className="p-4 border-b border-slate-800">
-        <h2 className="text-xl font-bold text-white">Benome Admin</h2>
+        <h2 className="text-xl font-bold text-white">MaxiMarket Admin</h2>
       </div>
       
       <nav className="flex-1 px-3 py-4 space-y-1">

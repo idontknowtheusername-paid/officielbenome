@@ -179,7 +179,7 @@ const AdminDashboardPage = () => {
         transition={{ duration: 0.5 }}
         className="mb-10"
       >
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Tableau de Bord Administrateur <span className="gradient-text">Benome</span></h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Tableau de Bord Administrateur <span className="gradient-text">MaxiMarket</span></h1>
         <p className="text-md sm:text-lg text-slate-400">Vue d'ensemble et gestion de la marketplace.</p>
       </motion.div>
 

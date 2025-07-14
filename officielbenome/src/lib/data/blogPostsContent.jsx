@@ -1,16 +1,16 @@
 
 export const initialBlogPostsContent = [
   {
-    id: "benome-welcome-post",
-    title: "Bienvenue sur Benome : Votre Nouvelle Marketplace Futuriste !",
-    slug: "bienvenue-sur-benome-marketplace-futuriste",
-    excerpt: "Découvrez Benome, la plateforme innovante qui révolutionne le commerce en Afrique de l'Ouest. Immobilier, automobile, services et plus encore !",
+    id: "maximarket-welcome-post",
+    title: "Bienvenue sur MaxiMarket : Votre Nouvelle Marketplace Futuriste !",
+    slug: "bienvenue-sur-maximarket-marketplace-futuriste",
+    excerpt: "Découvrez MaxiMarket, la plateforme innovante qui révolutionne le commerce en Afrique de l'Ouest. Immobilier, automobile, services et plus encore !",
     content: `
-# Bienvenue sur Benome : Votre Nouvelle Marketplace Futuriste !
+# Bienvenue sur MaxiMarket : Votre Nouvelle Marketplace Futuriste !
 
-Nous sommes ravis de vous accueillir sur **Benome**, la destination incontournable pour toutes vos transactions en Afrique de l'Ouest. Que vous cherchiez à acheter, vendre ou louer, Benome vous offre une expérience utilisateur unique, moderne et sécurisée.
+Nous sommes ravis de vous accueillir sur **MaxiMarket**, la destination incontournable pour toutes vos transactions en Afrique de l'Ouest. Que vous cherchiez à acheter, vendre ou louer, MaxiMarket vous offre une expérience utilisateur unique, moderne et sécurisée.
 
-## Ce que Benome vous propose :
+## Ce que MaxiMarket vous propose :
 
 ### 1. Immobilier de Pointe
 Trouvez l'appartement de vos rêves, la maison idéale pour votre famille, un terrain pour construire votre avenir ou le local commercial parfait pour votre entreprise. Avec nos filtres avancés, nos visites virtuelles à 360° et nos outils d'estimation IA, la recherche immobilière n'a jamais été aussi simple et efficace.
@@ -19,32 +19,32 @@ Trouvez l'appartement de vos rêves, la maison idéale pour votre famille, un te
 Parcourez notre vaste sélection de voitures, motos et véhicules utilitaires, neufs ou d'occasion. Bénéficiez d'historiques de véhicules transparents, d'inspections virtuelles et de calculateurs de financement intégrés pour prendre des décisions éclairées.
 
 ### 3. Services Professionnels à portée de clic
-Besoin d'un expert en BTP, d'un technicien qualifié, d'une aide domestique ou d'un professionnel de la santé ? Benome vous met en relation avec des prestataires vérifiés. Prenez rendez-vous en ligne, consultez les portfolios et suivez l'avancement de vos projets en toute sérénité.
+Besoin d'un expert en BTP, d'un technicien qualifié, d'une aide domestique ou d'un professionnel de la santé ? MaxiMarket vous met en relation avec des prestataires vérifiés. Prenez rendez-vous en ligne, consultez les portfolios et suivez l'avancement de vos projets en toute sérénité.
 
 ### 4. Une Marketplace Générale Riche et Variée
-Explorez un univers de produits allant de l'électronique dernier cri à la mode tendance, en passant par les articles pour la maison, les équipements sportifs et l'artisanat local authentique. Benome est votre guichet unique pour tous vos besoins.
+Explorez un univers de produits allant de l'électronique dernier cri à la mode tendance, en passant par les articles pour la maison, les équipements sportifs et l'artisanat local authentique. MaxiMarket est votre guichet unique pour tous vos besoins.
 
 ## Une Expérience Utilisateur Inégalée
 
-Chez Benome, nous avons mis l'accent sur un design futuriste et des fonctionnalités innovantes :
+Chez MaxiMarket, nous avons mis l'accent sur un design futuriste et des fonctionnalités innovantes :
 - **Thème adaptatif sombre/clair** et effets visuels saisissants comme le glassmorphism.
 - **Recherche vocale** et **contrôles gestuels** sur mobile pour une navigation intuitive.
 - **Tableaux de bord personnalisés** avec analyses détaillées pour les vendeurs.
 - **Intelligence Artificielle** intégrée pour des recommandations personnalisées, des estimations de prix et une modération intelligente.
 
-## Rejoignez la Révolution Benome !
+## Rejoignez la Révolution MaxiMarket !
 
 Nous sommes plus qu'une simple marketplace. Nous sommes une communauté qui construit l'avenir du commerce en Afrique de l'Ouest. Créez votre compte dès aujourd'hui, publiez vos annonces ou trouvez exactement ce que vous cherchez.
 
-L'équipe Benome.
+L'équipe MaxiMarket.
     `,
-    coverImage: "benome-marketplace-skyline-futuristic",
+    coverImage: "maximarket-marketplace-skyline-futuristic",
     author: {
-      name: "L'équipe Benome",
-      avatar: "benome-logo-avatar"
+      name: "L'équipe MaxiMarket",
+      avatar: "maximarket-logo-avatar"
     },
-    category: "Annonces Benome",
-    tags: ["Benome", "Marketplace", "Afrique de l'Ouest", "Innovation", "Immobilier", "Automobile", "Services"],
+    category: "Annonces MaxiMarket",
+    tags: ["MaxiMarket", "Marketplace", "Afrique de l'Ouest", "Innovation", "Immobilier", "Automobile", "Services"],
     publishedAt: "2025-06-02T10:00:00Z",
     readingTime: "4 min"
   },
@@ -126,8 +126,8 @@ L'optimisation des performances est un aspect crucial du développement d'applic
     `,
     coverImage: "react-performance",
     author: {
-      name: "Développeur Benome",
-      avatar: "benome-dev-avatar"
+      name: "Développeur MaxiMarket",
+      avatar: "maximarket-dev-avatar"
     },
     category: "React",
     tags: ["React", "Performance", "JavaScript", "Optimisation"],
@@ -180,8 +180,8 @@ Une bonne architecture est un investissement qui paie sur le long terme. En suiv
     `,
     coverImage: "react-architecture",
     author: {
-      name: "Développeur Benome",
-      avatar: "benome-dev-avatar"
+      name: "Développeur MaxiMarket",
+      avatar: "maximarket-dev-avatar"
     },
     category: "Architecture",
     tags: ["React", "Architecture", "Bonnes pratiques", "Structure de projet"],
@@ -266,8 +266,8 @@ TailwindCSS a considérablement amélioré ma productivité en me permettant de 
     `,
     coverImage: "tailwindcss-workflow",
     author: {
-      name: "Développeur Benome",
-      avatar: "benome-dev-avatar"
+      name: "Développeur MaxiMarket",
+      avatar: "maximarket-dev-avatar"
     },
     category: "CSS",
     tags: ["TailwindCSS", "CSS", "Workflow", "Design"],

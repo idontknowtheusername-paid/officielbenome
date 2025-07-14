@@ -1,14 +1,14 @@
 
 export const initialProjectData = [
   {
-    id: "benome-marketplace-launch",
-    title: "Lancement de Benome Marketplace",
-    slug: "lancement-benome-marketplace",
-    description: "Le projet de développement et de lancement de la plateforme Benome, une marketplace futuriste pour l'Afrique de l'Ouest.",
+    id: "maximarket-marketplace-launch",
+    title: "Lancement de MaxiMarket Marketplace",
+    slug: "lancement-maximarket-marketplace",
+    description: "Le projet de développement et de lancement de la plateforme MaxiMarket, une marketplace futuriste pour l'Afrique de l'Ouest.",
     longDescription: `
-# Lancement de Benome Marketplace
+# Lancement de MaxiMarket Marketplace
 
-Ce projet représente la conception, le développement et le lancement de **Benome**, une plateforme marketplace de nouvelle génération destinée à transformer le commerce en ligne en Afrique de l'Ouest. L'objectif était de créer une solution complète, intuitive et sécurisée pour l'achat et la vente de biens immobiliers, de véhicules, de services professionnels et d'une large gamme d'autres produits.
+Ce projet représente la conception, le développement et le lancement de **MaxiMarket**, une plateforme marketplace de nouvelle génération destinée à transformer le commerce en ligne en Afrique de l'Ouest. L'objectif était de créer une solution complète, intuitive et sécurisée pour l'achat et la vente de biens immobiliers, de véhicules, de services professionnels et d'une large gamme d'autres produits.
 
 ## Fonctionnalités Clés Développées
 
@@ -43,9 +43,9 @@ L'optimisation des performances pour un chargement rapide, en particulier avec d
 
 ## Résultats Attendus
 
-Benome vise à devenir la plateforme de référence en Afrique de l'Ouest, en offrant une expérience d'achat et de vente inégalée, stimulant ainsi l'économie numérique locale et régionale.
+MaxiMarket vise à devenir la plateforme de référence en Afrique de l'Ouest, en offrant une expérience d'achat et de vente inégalée, stimulant ainsi l'économie numérique locale et régionale.
     `,
-    coverImage: "benome-platform-digital-art",
+    coverImage: "maximarket-platform-digital-art",
     demoUrl: "#", // Le site actuel est la démo
     repoUrl: "#", // Le code est géré en interne
     technologies: ["React", "Vite", "TailwindCSS", "Shadcn/UI", "Framer Motion", "JavaScript"],

@@ -28,7 +28,7 @@ const LoginForm = () => {
       <Card>
         <CardHeader>
           <CardTitle>Connexion</CardTitle>
-          <CardDescription>Connectez-vous à votre compte Benome</CardDescription>
+          <CardDescription>Connectez-vous à votre compte MaxiMarket</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

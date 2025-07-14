@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       setUser(response.user);
       toast({
         title: "Connexion réussie",
-        description: "Bienvenue sur Benome !",
+        description: "Bienvenue sur MaxiMarket !",
       });
       navigate('/');
       return true;
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
       setUser(response.user);
       toast({
         title: "Inscription réussie",
-        description: "Bienvenue sur Benome !",
+        description: "Bienvenue sur MaxiMarket !",
       });
       navigate('/');
       return true;

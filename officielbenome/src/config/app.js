@@ -4,7 +4,7 @@
  */
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-export const APP_NAME = 'Benome';
+export const APP_NAME = 'MaxiMarket';
 export const APP_DESCRIPTION = 'Plateforme de mise en relation entre particuliers';
 
 // Paramètres de pagination
@@ -31,7 +31,7 @@ export const CACHE = {
   // Durée de mise en cache par défaut (en millisecondes)
   DEFAULT_TTL: 5 * 60 * 1000, // 5 minutes
   // Préfixe pour les clés de cache
-  PREFIX: 'benome_cache_',
+  PREFIX: 'maximarket_cache_',
 };
 
 // Paramètres de l'éditeur de texte riche
@@ -202,12 +202,12 @@ export const EXTERNAL_APIS = {
 
 // Configuration des métadonnées par défaut
 export const DEFAULT_METADATA = {
-  TITLE: 'Benome - Plateforme de mise en relation entre particuliers',
-  DESCRIPTION: 'Trouvez les meilleures offres de biens et services entre particuliers sur Benome.',
+  TITLE: 'MaxiMarket - Plateforme de mise en relation entre particuliers',
+  DESCRIPTION: 'Trouvez les meilleures offres de biens et services entre particuliers sur MaxiMarket.',
   KEYWORDS: 'annonces, particuliers, vente, achat, location, services, occasion, neuf, benin, afrique',
-  AUTHOR: 'Benome',
+  AUTHOR: 'MaxiMarket',
   OG_IMAGE: '/images/og-image.jpg',
-  TWITTER_HANDLE: '@benome_app',
+  TWITTER_HANDLE: '@maximarket_app',
   FAVICON: '/favicon.ico'
 };
 
@@ -423,11 +423,11 @@ export const ROUTES = {
 export const ROUTE_METADATA = {
   [ROUTES.HOME]: {
     title: 'Accueil',
-    description: 'Trouvez les meilleures offres de biens et services entre particuliers sur Benome.'
+    description: 'Trouvez les meilleures offres de biens et services entre particuliers sur MaxiMarket.'
   },
   [ROUTES.ABOUT]: {
     title: 'À propos',
-    description: 'Découvrez Benome, la plateforme de mise en relation entre particuliers.'
+    description: 'Découvrez MaxiMarket, la plateforme de mise en relation entre particuliers.'
   },
   [ROUTES.CONTACT]: {
     title: 'Contactez-nous',
@@ -435,11 +435,11 @@ export const ROUTE_METADATA = {
   },
   [ROUTES.LOGIN]: {
     title: 'Connexion',
-    description: 'Connectez-vous à votre compte Benome pour accéder à votre tableau de bord.'
+    description: 'Connectez-vous à votre compte MaxiMarket pour accéder à votre tableau de bord.'
   },
   [ROUTES.REGISTER]: {
     title: 'Inscription',
-    description: 'Créez votre compte Benome pour commencer à publier des annonces.'
+    description: 'Créez votre compte MaxiMarket pour commencer à publier des annonces.'
   },
   [ROUTES.DASHBOARD]: {
     title: 'Tableau de bord',
@@ -447,7 +447,7 @@ export const ROUTE_METADATA = {
   },
   [ROUTES.ADMIN]: {
     title: 'Administration',
-    description: 'Panneau d\'administration de la plateforme Benome.'
+    description: 'Panneau d\'administration de la plateforme MaxiMarket.'
   }
 };
 

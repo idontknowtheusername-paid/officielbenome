@@ -77,7 +77,7 @@ export function MobileNav({ sidebarOpen, setSidebarOpen }) {
             
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
               <div className="flex-shrink-0 flex items-center px-4">
-                <h1 className="text-xl font-bold text-white">Benome Admin</h1>
+                <h1 className="text-xl font-bold text-white">MaxiMarket Admin</h1>
               </div>
               
               <nav className="mt-5 px-2 space-y-1">
