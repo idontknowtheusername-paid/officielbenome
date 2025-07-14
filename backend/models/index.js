@@ -61,7 +61,7 @@ User.hasMany(Notification, {
 // Notification appartient à un utilisateur
 Notification.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'
+  as: 'notificationUser'
 });
 
 // User peut avoir plusieurs favoris
@@ -73,7 +73,7 @@ User.hasMany(Favorite, {
 // Favorite appartient à un utilisateur
 Favorite.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'
+  as: 'favoriteUser'
 });
 
 // User peut avoir plusieurs produits marketplace
@@ -85,7 +85,7 @@ User.hasMany(MarketplaceProduct, {
 // MarketplaceProduct appartient à un utilisateur
 MarketplaceProduct.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'
+  as: 'marketplaceUser'
 });
 
 // User peut avoir plusieurs annonces de service
@@ -97,7 +97,7 @@ User.hasMany(ServiceListing, {
 // ServiceListing appartient à un utilisateur
 ServiceListing.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'
+  as: 'serviceUser'
 });
 
 // User peut avoir plusieurs annonces auto
@@ -109,7 +109,7 @@ User.hasMany(AutoListing, {
 // AutoListing appartient à un utilisateur
 AutoListing.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'
+  as: 'autoUser'
 });
 
 // User peut avoir plusieurs annonces immobilières
@@ -121,7 +121,7 @@ User.hasMany(RealEstateListing, {
 // RealEstateListing appartient à un utilisateur
 RealEstateListing.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'
+  as: 'realEstateUser'
 });
 
 // Synchronisation des modèles avec la base de données
