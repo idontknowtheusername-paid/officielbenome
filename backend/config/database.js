@@ -26,7 +26,6 @@ const databaseConfig = {
     logging: false,
   },
   production: {
-    use_env_variable: 'DATABASE_URL',
     dialect: 'postgres',
     dialectOptions: {
       ssl: {
@@ -47,6 +46,8 @@ const databaseConfig = {
 const env = process.env.NODE_ENV || 'development';
 const config = { ...databaseConfig[env] };
 
+let sequelize;
+
 // Si nous sommes en production et que nous avons une DATABASE_URL, nous l'utilisons
 if (env === 'production' && process.env.DATABASE_URL) {
   try {
@@ -66,28 +67,32 @@ if (env === 'production' && process.env.DATABASE_URL) {
       // Reconstruire l'URL avec le mot de passe encodé
       const encodedUrl = `postgresql://${username}:${encodedPassword}@${host}:${port}/${database}`;
       
-      // Mettre à jour la configuration avec l'URL encodée
-      config.url = encodedUrl;
+      // Mettre à jour l'environnement avec l'URL encodée
+      process.env.DATABASE_URL = encodedUrl;
       console.log('✅ URL de base de données encodée correctement');
+      
+      // Initialiser Sequelize avec l'URL encodée
+      sequelize = new Sequelize(encodedUrl, {
+        ...config,
+        logging: config.logging ? console.log : false,
+      });
     } else {
       console.error('❌ Format d\'URL de base de données invalide');
-      config.url = process.env.DATABASE_URL;
+      sequelize = new Sequelize(process.env.DATABASE_URL, {
+        ...config,
+        logging: config.logging ? console.log : false,
+      });
     }
   } catch (error) {
     console.error('❌ Erreur lors de l\'encodage de l\'URL de base de données:', error.message);
     // Fallback vers l'URL originale
-    config.url = process.env.DATABASE_URL;
+    sequelize = new Sequelize(process.env.DATABASE_URL, {
+      ...config,
+      logging: config.logging ? console.log : false,
+    });
   }
-}
-
-let sequelize;
-
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], {
-    ...config,
-    logging: config.logging ? console.log : false,
-  });
 } else {
+  // Configuration pour development/test
   sequelize = new Sequelize(
     config.database,
     config.username,
