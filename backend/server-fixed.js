@@ -161,8 +161,7 @@ async function startServer() {
     console.log('🔄 Tentative de connexion à la base de données...');
     // Tentative de connexion à la base de données (optionnelle)
     try {
-      const { sequelize } = await import('./config/database.js');
-      await sequelize.authenticate();
+      const sequelize = await import('./config/database.js');
       console.log('✅ Base de données connectée avec succès');
     } catch (dbError) {
       console.log('⚠️  Base de données non disponible, poursuite sans base de données:', dbError.message);

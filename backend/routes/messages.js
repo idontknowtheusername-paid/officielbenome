@@ -81,15 +81,6 @@ const router = express.Router();
  *       404:
  *         description: Message non trouvé
  *
- * /api/messages/conversations:
- *   get:
- *     summary: Liste des conversations de l'utilisateur
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Liste des conversations
- *
  * /api/messages/conversations/{conversationId}/messages:
  *   get:
  *     summary: Liste paginée des messages d'une conversation
@@ -111,8 +102,6 @@ const router = express.Router();
  *         description: Liste paginée des messages
  *       404:
  *         description: Conversation non trouvée
- *
- * /api/messages/conversations/{conversationId}/messages:
  *   post:
  *     summary: Envoyer un message dans une conversation
  *     security:
@@ -142,6 +131,13 @@ const router = express.Router();
  *         description: Conversation non trouvée
  *
  * /api/messages/conversations:
+ *   get:
+ *     summary: Liste des conversations de l'utilisateur
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des conversations
  *   post:
  *     summary: Démarrer une nouvelle conversation
  *     security:
