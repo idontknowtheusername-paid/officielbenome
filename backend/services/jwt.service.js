@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { promisify } from 'util';
 import redisClient from '../config/redis.js';
+import { JWT_CONFIG } from '../config/constants.js';
 
 const signToken = (payload, secret, options) => 
   new Promise((resolve, reject) => {
@@ -18,20 +19,20 @@ const verifyToken = (token, secret) =>
     });
   });
 
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || JWT_CONFIG.EXPIRES_IN;
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || JWT_CONFIG.REFRESH_EXPIRES_IN;
 
 class JwtService {
   static async generateTokens(user) {
     const accessToken = await signToken(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || JWT_CONFIG.SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
     const refreshToken = await signToken(
       { id: user.id },
-      process.env.JWT_REFRESH_SECRET,
+      process.env.JWT_REFRESH_SECRET || JWT_CONFIG.REFRESH_SECRET,
       { expiresIn: JWT_REFRESH_EXPIRES_IN }
     );
 
@@ -53,7 +54,7 @@ class JwtService {
 
   static async verifyAccessToken(token) {
     try {
-      return await verifyToken(token, process.env.JWT_SECRET);
+      return await verifyToken(token, process.env.JWT_SECRET || JWT_CONFIG.SECRET);
     } catch (error) {
       throw new Error('Invalid access token');
     }
@@ -61,7 +62,7 @@ class JwtService {
 
   static async verifyRefreshToken(token) {
     try {
-      const decoded = await verifyToken(token, process.env.JWT_REFRESH_SECRET);
+      const decoded = await verifyToken(token, process.env.JWT_REFRESH_SECRET || JWT_CONFIG.REFRESH_SECRET);
       
       // Vérifier le token dans Redis (si disponible)
       try {
