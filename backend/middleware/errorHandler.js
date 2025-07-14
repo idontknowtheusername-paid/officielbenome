@@ -65,6 +65,7 @@ const errorResponse = (error) => ({
  */
 const errorHandler = (err, req, res, next) => {
   // Journalisation de l'erreur
+  console.error('ERROR_HANDLER:', err, err?.stack);
   logger.error({
     message: err.message,
     stack: err.stack,
