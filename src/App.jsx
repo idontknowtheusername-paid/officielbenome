@@ -29,7 +29,7 @@ import AdminListingsPage from '@/pages/admin/listings/ListingsPage';
 import AdminTransactionsPage from '@/pages/admin/transactions/TransactionsPage';
 import AdminAnalyticsPage from '@/pages/admin/analytics/AnalyticsPage';
 import AdminModerationPage from '@/pages/admin/moderation/ModerationPage';
-import AdminSettingsPage from '@/pages/admin/settings/SettingsPage';
+// import AdminSettingsPage from '@/pages/admin/settings/SettingsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 // Static Pages
@@ -122,7 +122,7 @@ function App() {
                   path="parametres" 
                   element={
                     <AdminRoute requiredPermissions={['admin:settings']}>
-                      <AdminSettingsPage />
+                      {/* <AdminSettingsPage /> */}
                     </AdminRoute>
                   } 
                 />
