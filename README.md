@@ -1,6 +1,6 @@
-# Benome Marketplace - Frontend
+# MaxiMarket - Frontend
 
-Benome est une plateforme marketplace moderne et innovante conçue pour l'Afrique de l'Ouest, facilitant l'achat et la vente de biens immobiliers, véhicules, services professionnels et divers autres produits.
+MaxiMarket est une plateforme marketplace moderne et innovante conçue pour l'Afrique de l'Ouest, facilitant l'achat et la vente de biens immobiliers, véhicules, services professionnels et divers autres produits.
 
 ## 🚀 Fonctionnalités
 
@@ -35,7 +35,7 @@ Benome est une plateforme marketplace moderne et innovante conçue pour l'Afriqu
 1.  **Clonez le repository** (si ce n'est pas déjà fait) :
     ```bash
     git clone [URL_DU_REPOSITORY_GIT_ICI]
-    cd benome-marketplace-frontend 
+    cd maximarket-frontend 
     ```
     (Remplacez `[URL_DU_REPOSITORY_GIT_ICI]` par l'URL réelle de votre dépôt Git.)
 
@@ -63,8 +63,8 @@ Le frontend utilise des variables d'environnement pour configurer son comporteme
 # URL de base de votre API backend. 
 # Le frontend ajoutera les endpoints spécifiques à cette URL.
 # Exemple : VITE_API_BASE_URL=http://localhost:3001/api
-# Pour la production : VITE_API_BASE_URL=https://benome4ubackend.onrender.com/api
-VITE_API_BASE_URL=https://benome4ubackend.onrender.com/api
+# Pour la production : VITE_API_BASE_URL=https://maximarket-backend.onrender.com/api
+VITE_API_BASE_URL=https://maximarket-backend.onrender.com/api
 
 # === Clés pour Services Externes (Optionnel) ===
 # Clé publique Stripe pour l'intégration des paiements (Mode Test).
@@ -73,7 +73,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_VOTRE_CLE_PUBLIQUE_STRIPE
 
 # === Configuration Générale de l'Application ===
 # Nom de l'application (utilisé pour l'affichage si nécessaire)
-VITE_APP_NAME=Benome
+VITE_APP_NAME=MaxiMarket
 
 # Version de l'application
 VITE_APP_VERSION=1.0.0
@@ -86,7 +86,7 @@ VITE_APP_VERSION=1.0.0
 
 ## 🔧 Intégration Backend : Guide pour le Développeur Backend
 
-Cette section détaille tout ce dont un développeur backend a besoin pour connecter efficacement le frontend Benome à un service backend.
+Cette section détaille tout ce dont un développeur backend a besoin pour connecter efficacement le frontend MaxiMarket à un service backend.
 
 ### A. Configuration de l'URL de l'API Backend
 
@@ -97,7 +97,7 @@ Le frontend s'attend à trouver l'URL de base de l'API backend dans une variable
     *   Le développeur frontend mettra cette URL dans son fichier `.env` local : `VITE_API_BASE_URL=http://localhost:3001/api`.
 
 2.  **En Production :**
-    *   L'URL de l'API de production (ex: `https://benome4ubackend.onrender.com/api`) sera configurée comme variable d'environnement sur la plateforme d'hébergement du frontend.
+    *   L'URL de l'API de production (ex: `https://maximarket-backend.onrender.com/api`) sera configurée comme variable d'environnement sur la plateforme d'hébergement du frontend.
 
 Le fichier `src/lib/api.js` utilise cette variable pour construire toutes les requêtes.
 
@@ -435,7 +435,7 @@ Pour toute question concernant l'intégration du frontend ou si vous rencontrez 
     - `src/contexts/AuthContext.jsx` pour la gestion de l'authentification.
     - Les composants dans `src/pages/` pour voir comment les données sont utilisées.
 - **Utilisez les outils de développement de votre navigateur** pour inspecter les requêtes réseau et les erreurs console.
-- En dernier recours, contactez le développeur frontend principal du projet Benome via `dev@benome.com`.
+- En dernier recours, contactez le développeur frontend principal du projet MaxiMarket via `dev@maximarket.com`.
 
 ---
 
