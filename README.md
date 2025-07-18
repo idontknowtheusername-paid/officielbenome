@@ -440,3 +440,4 @@ Pour toute question concernant l'intégration du frontend ou si vous rencontrez 
 ---
 
 **Note** : Ce frontend est conçu pour être une base solide et moderne. Une collaboration étroite entre les équipes frontend et backend est essentielle pour une intégration réussie.
+```
