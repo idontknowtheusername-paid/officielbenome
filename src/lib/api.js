@@ -361,9 +361,25 @@ export const getListingsByCategory = async (params = {}) => {
 export const getSalesByCategory = async (params = {}) => {
   const queryParams = new URLSearchParams(params).toString();
   return fetchData(`/admin/analytics/sales-by-category${queryParams ? `?${queryParams}` : ''}`);
-};exp
-ort const deleteListing = async (listingId) => {
+};
+
+export const deleteListing = async (listingId) => {
   return fetchData(`/admin/listings/${listingId}`, {
     method: 'DELETE',
   });
+};
+export const getTrafficSources = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics/traffic-sources${queryParams ? `?${queryParams}` : ''}`);
+};
+
+// Fonctions analytics supplémentaires
+export const getUserAcquisitionData = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics/user-acquisition${queryParams ? `?${queryParams}` : ''}`);
+};
+
+export const getTopProducts = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics/top-products${queryParams ? `?${queryParams}` : ''}`);
 };
