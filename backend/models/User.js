@@ -101,6 +101,9 @@ const User = sequelize.define('User', {
 
 // Méthode pour comparer les mots de passe
 User.prototype.isValidPassword = async function(password) {
+  if (typeof this.password !== 'string') {
+    throw new Error('Hash de mot de passe invalide : attendu une string, reçu ' + typeof this.password);
+  }
   return await bcrypt.compare(password, this.password);
 };
 
