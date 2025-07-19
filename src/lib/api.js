@@ -293,8 +293,8 @@ export const getAdminTransactions = async (params = {}) => {
   const queryParams = new URLSearchParams(params).toString();
   return fetchData(`${API_ENDPOINTS.ADMIN_TRANSACTIONS}?${queryParams}`);
 };
-//
- Fonctions de modération
+
+// Fonctions de modération
 export const getReportedContent = async (params = {}) => {
   const queryParams = new URLSearchParams(params).toString();
   return fetchData(`/admin/moderation/reports${queryParams ? `?${queryParams}` : ''}`);
