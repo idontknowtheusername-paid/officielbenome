@@ -13,6 +13,7 @@ import {
   Shield,
   Mail,
   ChevronDown,
+  ChevronUp,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
