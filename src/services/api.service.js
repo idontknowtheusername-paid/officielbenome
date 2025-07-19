@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { API_ENDPOINTS } from '../config/api.config';
+import { API_ENDPOINTS, API_BASE_URL } from '../config/api.config';
 
 // Création d'une instance axios avec une configuration de base
 const api = axios.create({
-  baseURL: '', // Utilisation du proxy configuré dans vite.config.js
+  baseURL: API_BASE_URL, // Correction ici : utiliser la vraie base URL
   headers: {
     'Content-Type': 'application/json',
   },
