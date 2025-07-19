@@ -790,4 +790,3 @@ export function ModerationPage() {
     </div>
   );
 }
-```
