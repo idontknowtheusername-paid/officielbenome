@@ -92,9 +92,10 @@ const validate = (method) => {
         body('lastName', 'Le nom est requis').notEmpty().trim().isLength({ min: 2, max: 50 }),
         body('email', 'Email invalide').isEmail().normalizeEmail(),
         body('phoneNumber', 'Numéro de téléphone invalide').matches(/^\+?[1-9]\d{1,14}$/),
-        body('password', 'Le mot de passe doit contenir au moins 8 caractères')
-          .isLength({ min: 8 })
-          .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial')
+        body('password')
+          .isLength({ min: 8 }).withMessage('Le mot de passe doit contenir au moins 8 caractères')
+          .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+          .withMessage('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial')
       ];
     }
     case 'login': {
