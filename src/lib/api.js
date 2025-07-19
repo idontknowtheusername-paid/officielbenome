@@ -293,3 +293,72 @@ export const getAdminTransactions = async (params = {}) => {
   const queryParams = new URLSearchParams(params).toString();
   return fetchData(`${API_ENDPOINTS.ADMIN_TRANSACTIONS}?${queryParams}`);
 };
+//
+ Fonctions de modération
+export const getReportedContent = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/moderation/reports${queryParams ? `?${queryParams}` : ''}`);
+};
+
+export const moderateContent = async (reportId, actionData) => {
+  return fetchData(`/admin/moderation/reports/${reportId}/moderate`, {
+    method: 'POST',
+    body: JSON.stringify(actionData),
+  });
+};
+
+export const getModerationStats = async () => {
+  return fetchData('/admin/moderation/stats');
+};
+
+export const getModerationLogs = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/moderation/logs${queryParams ? `?${queryParams}` : ''}`);
+};
+
+// Fonctions utilisateur supplémentaires
+export const deleteUser = async (userId) => {
+  return fetchData(`/admin/users/${userId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const updateUserRole = async (userId, roleData) => {
+  return fetchData(`/admin/users/${userId}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify(roleData),
+  });
+};
+
+// Fonctions de listing supplémentaires
+export const featureListing = async (listingId) => {
+  return fetchData(`/admin/listings/${listingId}/feature`, {
+    method: 'PATCH',
+  });
+};
+
+// Fonctions d'analytics
+export const getAnalyticsData = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics${queryParams ? `?${queryParams}` : ''}`);
+};
+
+export const getUserGrowthData = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics/users${queryParams ? `?${queryParams}` : ''}`);
+};
+
+export const getRevenueData = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics/revenue${queryParams ? `?${queryParams}` : ''}`);
+};
+
+export const getListingsByCategory = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics/listings-by-category${queryParams ? `?${queryParams}` : ''}`);
+};
+
+export const getSalesByCategory = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  return fetchData(`/admin/analytics/sales-by-category${queryParams ? `?${queryParams}` : ''}`);
+};
