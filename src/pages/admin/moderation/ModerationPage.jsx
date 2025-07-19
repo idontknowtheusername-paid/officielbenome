@@ -20,7 +20,8 @@ import {
   AlertTriangle,
   Eye,
   EyeOff,
-  Clock
+  Clock,
+  Download
 } from 'lucide-react';
 import { 
   getReportedContent, 
@@ -463,5 +464,330 @@ export function ModerationPage() {
           </div>
 
           {/* Reports Table */}
-          <div className="rounded-md border
+          <div className="rounded-md border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Contenu</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Gravité</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <span className="ml-2">Chargement...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex items-center justify-center text-red-500">
+                        <AlertCircle className="h-5 w-5 mr-2" />
+                        Erreur lors du chargement des signalements
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : data?.reports?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <Flag className="h-12 w-12 mb-4 opacity-50" />
+                        <p className="text-lg font-medium">Aucun signalement trouvé</p>
+                        <p className="text-sm">Il n'y a pas de signalements correspondant à vos critères.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data?.reports?.map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleExpandReport(report.id)}
+                            >
+                              {expandedReports[report.id] ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <div>
+                              <p className="font-medium">{report.title || 'Contenu signalé'}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Par {report.reportedBy?.name || 'Utilisateur anonyme'}
+                              </p>
+                            </div>
+                          </div>
+                          {expandedReports[report.id] && (
+                            <div className="ml-8 p-3 bg-muted rounded-md">
+                              <p className="text-sm">{report.reason}</p>
+                              {report.description && (
+                                <p className="text-sm text-muted-foreground mt-2">
+                                  {report.description}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <ContentTypeBadge type={report.contentType} />
+                      </TableCell>
+                      <TableCell>
+                        <SeverityBadge level={report.severity} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={report.status} />
+                      </TableCell>
+                      <TableCell>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Clock className="h-4 w-4 mr-1" />
+                                {formatDistanceToNow(new Date(report.createdAt), { 
+                                  addSuffix: true, 
+                                  locale: fr 
+                                })}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {new Date(report.createdAt).toLocaleString('fr-FR')}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-1">
+                          {report.status === ReportStatus.PENDING && (
+                            <>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleModerationAction(report.id, 'approve')}
+                                      disabled={isModerating}
+                                    >
+                                      <Check className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Approuver</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleModerationAction(report.id, 'reject')}
+                                      disabled={isModerating}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Rejeter</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleModerationAction(report.id, 'ignore')}
+                                      disabled={isModerating}
+                                    >
+                                      <EyeOff className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Ignorer</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </>
+                          )}
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleModerationAction(report.id, 'delete')}
+                                  disabled={isModerating}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Supprimer</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {data?.pagination && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-muted-foreground">
+                  Affichage de {((page - 1) * perPage) + 1} à {Math.min(page * perPage, data.pagination.total)} sur {data.pagination.total} signalements
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm">
+                  Page {page} sur {data.pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page === data.pagination.totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(data.pagination.totalPages)}
+                  disabled={page === data.pagination.totalPages}
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="logs" className="space-y-4">
+          <div className="rounded-md border bg-card">
+            <div className="p-4 border-b">
+              <h3 className="text-lg font-medium">Journal de modération</h3>
+              <p className="text-sm text-muted-foreground">
+                Historique des actions de modération effectuées
+              </p>
+            </div>
+            <div className="p-4">
+              {logs?.length === 0 ? (
+                <div className="text-center py-8">
+                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">Aucun journal disponible</p>
+                  <p className="text-sm text-muted-foreground">
+                    Les actions de modération apparaîtront ici.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {logs?.map((log) => (
+                    <div key={log.id} className="flex items-start space-x-3 p-3 rounded-md bg-muted">
+                      <div className="flex-shrink-0">
+                        {getActionIcon(log.action)}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          <span className="font-medium">{log.moderator?.name}</span> a {getActionLabel(log.action).toLowerCase()} 
+                          un {log.contentType} signalé
+                        </p>
+                        {log.reason && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Raison: {log.reason}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {formatDistanceToNow(new Date(log.createdAt), { 
+                            addSuffix: true, 
+                            locale: fr 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-4">
+          <div className="rounded-md border bg-card">
+            <div className="p-4 border-b">
+              <h3 className="text-lg font-medium">Paramètres de modération</h3>
+              <p className="text-sm text-muted-foreground">
+                Configurez les règles et seuils de modération
+              </p>
+            </div>
+            <div className="p-4">
+              <div className="text-center py-8">
+                <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium">Paramètres à venir</p>
+                <p className="text-sm text-muted-foreground">
+                  Les paramètres de modération seront disponibles prochainement.
+                </p>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer l'action</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir {getActionLabel(pendingAction)?.toLowerCase()} ce signalement ?
+              Cette action ne peut pas être annulée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmAction}
+              className={getActionVariant(pendingAction) === 'destructive' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+            >
+              {getActionLabel(pendingAction)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
 ```
