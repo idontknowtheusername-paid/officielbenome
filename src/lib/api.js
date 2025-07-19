@@ -361,4 +361,9 @@ export const getListingsByCategory = async (params = {}) => {
 export const getSalesByCategory = async (params = {}) => {
   const queryParams = new URLSearchParams(params).toString();
   return fetchData(`/admin/analytics/sales-by-category${queryParams ? `?${queryParams}` : ''}`);
+};exp
+ort const deleteListing = async (listingId) => {
+  return fetchData(`/admin/listings/${listingId}`, {
+    method: 'DELETE',
+  });
 };
