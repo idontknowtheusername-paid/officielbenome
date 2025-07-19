@@ -33,6 +33,16 @@ import blogRoutes from './routes/blog.routes.js';
 import projectRoutes from './routes/project.routes.js';
 import contactRoutes from './routes/contact.routes.js';
 import usersRoutes from './routes/users.js';
+import adminRoutes from './routes/admin.js';
+import listingsRoutes from './routes/listings.js';
+import notificationsRoutes from './routes/notifications.js';
+import paymentsRoutes from './routes/payments.js';
+import marketplaceProductRoutes from './routes/marketplace/product.routes.js';
+import realEstateRoutes from './routes/listings/realEstate.routes.js';
+import autoRoutes from './routes/listings/auto.routes.js';
+import serviceRoutes from './routes/listings/service.routes.js';
+import moderationRoutes from './routes/admin/moderation.routes.js';
+import analyticsRoutes from './routes/admin/analytics.routes.js';
 
 // Initialisation de l'application Express
 const app = express();
@@ -72,6 +82,28 @@ app.use(`${API_PREFIX}/projects`, projectRoutes);
 
 // Routes de contact
 app.use(`${API_PREFIX}/contact`, contactRoutes);
+
+// Routes admin
+app.use(`${API_PREFIX}/admin`, adminRoutes);
+app.use(`${API_PREFIX}/admin/moderation`, moderationRoutes);
+app.use(`${API_PREFIX}/admin/analytics`, analyticsRoutes);
+
+// Routes des annonces
+app.use(`${API_PREFIX}/listings`, listingsRoutes);
+
+// Routes des notifications
+app.use(`${API_PREFIX}/notifications`, notificationsRoutes);
+
+// Routes des paiements
+app.use(`${API_PREFIX}/payments`, paymentsRoutes);
+
+// Routes marketplace
+app.use(`${API_PREFIX}/marketplace/listings`, marketplaceProductRoutes);
+
+// Routes spécifiques par catégorie
+app.use(`${API_PREFIX}/real-estate/listings`, realEstateRoutes);
+app.use(`${API_PREFIX}/auto/listings`, autoRoutes);
+app.use(`${API_PREFIX}/services`, serviceRoutes);
 
 // Route de santé
 app.get(`${API_PREFIX}/health`, (req, res) => {
