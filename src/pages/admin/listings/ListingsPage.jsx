@@ -9,18 +9,18 @@ import {
   Edit,
   Trash2,
   Eye,
-  Check,
-  X,
-  AlertCircle,
+  EyeOff,
+  Star,
+  StarOff,
+  CheckCircle,
+  XCircle,
+  Clock,
   ChevronDown,
+  ChevronUp,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight,
-  Clock,
-  Star,
-  TrendingUp,
-  Tag
+  ChevronsRight
 } from 'lucide-react';
 import { 
   getAdminListings, 
@@ -58,7 +58,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export function ListingsPage() {
+export default function ListingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -145,12 +145,12 @@ export function ListingsPage() {
 
   // Feature listing mutation
   const featureMutation = useMutation({
-    mutationFn: ({ listingId, featured }) => featureListing(listingId, featured),
-    onSuccess: (_, { featured }) => {
+    mutationFn: (listingId) => featureListing(listingId),
+    onSuccess: () => {
       queryClient.invalidateQueries(['adminListings']);
       toast({
         title: 'Succès',
-        description: featured ? 'Annonce mise en avant' : 'Annonce retirée des mises en avant',
+        description: 'Statut de mise en avant mis à jour',
       });
     },
     onError: (error) => {
@@ -163,28 +163,26 @@ export function ListingsPage() {
   });
 
   // Handle approve listing
-  const handleApprove = (listingId) => {
+  const handleApproveListing = (listingId) => {
     approveMutation.mutate(listingId);
   };
 
   // Handle reject listing
-  const handleReject = (listingId) => {
-    const reason = prompt('Veuillez indiquer la raison du rejet :');
-    if (reason) {
-      rejectMutation.mutate({ listingId, reason });
-    }
+  const handleRejectListing = (listingId) => {
+    const reason = prompt('Raison du rejet (optionnel):');
+    rejectMutation.mutate({ listingId, reason: reason || 'Non conforme aux règles' });
   };
 
   // Handle delete listing
-  const handleDelete = (listingId) => {
+  const handleDeleteListing = (listingId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.')) {
       deleteMutation.mutate(listingId);
     }
   };
 
   // Handle feature listing
-  const handleFeature = (listingId, currentlyFeatured) => {
-    featureMutation.mutate({ listingId, featured: !currentlyFeatured });
+  const handleFeatureListing = (listingId) => {
+    featureMutation.mutate(listingId);
   };
 
   // Handle search
@@ -193,25 +191,13 @@ export function ListingsPage() {
     setPage(1); // Reset to first page on new search
   };
 
-  // Sample categories - replace with your actual categories
-  const categories = [
-    'Immobilier',
-    'Véhicules',
-    'Emploi',
-    'Mode',
-    'Multimédia',
-    'Loisirs',
-    'Services',
-    'Autres'
-  ];
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Gestion des Annonces</h2>
           <p className="text-muted-foreground">
-            Modérez et gérez les annonces de la plateforme
+            Gérez et modérez les annonces de la plateforme
           </p>
         </div>
         <div className="mt-4 md:mt-0">
@@ -251,8 +237,8 @@ export function ListingsPage() {
                   <SelectItem value="pending">En attente</SelectItem>
                   <SelectItem value="approved">Approuvé</SelectItem>
                   <SelectItem value="rejected">Rejeté</SelectItem>
-                  <SelectItem value="expired">Expiré</SelectItem>
-                  <SelectItem value="sold">Vendu</SelectItem>
+                  <SelectItem value="active">Actif</SelectItem>
+                  <SelectItem value="inactive">Inactif</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -265,11 +251,10 @@ export function ListingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les catégories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category.toLowerCase()}>
-                      {category}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="real-estate">Immobilier</SelectItem>
+                  <SelectItem value="automotive">Automobile</SelectItem>
+                  <SelectItem value="services">Services</SelectItem>
+                  <SelectItem value="general">Général</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -323,10 +308,10 @@ export function ListingsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Annonce</TableHead>
-              <TableHead>Vendeur</TableHead>
+              <TableHead>Catégorie</TableHead>
               <TableHead>Prix</TableHead>
               <TableHead>Statut</TableHead>
-              <TableHead>Date</TableHead>
+              <TableHead>Créé le</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -348,136 +333,111 @@ export function ListingsPage() {
                 <TableRow key={listing._id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-md bg-slate-100 flex items-center justify-center overflow-hidden">
+                      <div className="h-12 w-12 rounded-md bg-slate-100 flex items-center justify-center">
                         {listing.images?.[0] ? (
                           <img 
                             src={listing.images[0]} 
-                            alt={listing.title} 
-                            className="h-full w-full object-cover"
+                            alt={listing.title}
+                            className="h-12 w-12 rounded-md object-cover"
                           />
                         ) : (
-                          <Tag className="h-5 w-5 text-slate-400" />
+                          <div className="text-slate-400">📷</div>
                         )}
                       </div>
                       <div>
-                        <div className="font-medium line-clamp-1">{listing.title}</div>
+                        <div className="font-medium">{listing.title}</div>
                         <div className="text-sm text-muted-foreground">
-                          {listing.category} • {listing.views || 0} vues
+                          Par {listing.user?.name || 'Utilisateur'}
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">
-                      <div className="font-medium">{listing.seller?.name || 'Anonyme'}</div>
-                      <div className="text-muted-foreground">{listing.seller?.email || ''}</div>
-                    </div>
+                    <Badge variant="outline" className="capitalize">
+                      {listing.category === 'real-estate' ? 'Immobilier' :
+                       listing.category === 'automotive' ? 'Automobile' :
+                       listing.category === 'services' ? 'Services' : 'Général'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    {listing.price ? (
-                      <span className="font-medium">{listing.price.toLocaleString()} FCFA</span>
-                    ) : (
-                      <span className="text-muted-foreground">Non spécifié</span>
-                    )}
+                    {listing.price ? `${listing.price.toLocaleString()} FCFA` : 'N/A'}
                   </TableCell>
                   <TableCell>
-                    {listing.status === 'pending' ? (
-                      <Badge variant="warning">
-                        <Clock className="mr-1 h-3 w-3" /> En attente
-                      </Badge>
-                    ) : listing.status === 'approved' ? (
-                      <Badge variant="success">
-                        <Check className="mr-1 h-3 w-3" /> Approuvé
-                      </Badge>
-                    ) : listing.status === 'rejected' ? (
-                      <Badge variant="destructive">
-                        <X className="mr-1 h-3 w-3" /> Rejeté
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">
-                        {listing.status}
-                      </Badge>
-                    )}
-                    {listing.featured && (
-                      <Badge variant="default" className="ml-2 bg-purple-500">
-                        <Star className="mr-1 h-3 w-3" /> À la une
-                      </Badge>
-                    )}
+                    <Badge
+                      variant={listing.status === 'approved' ? 'success' : 
+                              listing.status === 'rejected' ? 'destructive' : 'outline'}
+                      className="capitalize"
+                    >
+                      {listing.status === 'pending' ? 'En attente' :
+                       listing.status === 'approved' ? 'Approuvé' :
+                       listing.status === 'rejected' ? 'Rejeté' :
+                       listing.status === 'active' ? 'Actif' : 'Inactif'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">
-                      <div>{format(new Date(listing.createdAt), 'PP', { locale: fr })}</div>
-                      <div className="text-muted-foreground">
-                        {format(new Date(listing.updatedAt), 'PP', { locale: fr })}
-                      </div>
-                    </div>
+                    {listing.createdAt ? format(new Date(listing.createdAt), 'PP', { locale: fr }) : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end space-x-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">Voir</span>
-                      </Button>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Ouvrir le menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {listing.status === 'pending' && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Ouvrir le menu</span>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Eye className="mr-2 h-4 w-4" />
+                          <span>Voir les détails</span>
+                        </DropdownMenuItem>
+                        
+                        {listing.status === 'pending' && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handleApproveListing(listing._id)}
+                              disabled={approveMutation.isLoading}
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              <span>Approuver</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleRejectListing(listing._id)}
+                              disabled={rejectMutation.isLoading}
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              <span>Rejeter</span>
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        
+                        <DropdownMenuItem
+                          onClick={() => handleFeatureListing(listing._id)}
+                          disabled={featureMutation.isLoading}
+                        >
+                          {listing.featured ? (
                             <>
-                              <DropdownMenuItem 
-                                onClick={() => handleApprove(listing._id)}
-                                disabled={approveMutation.isLoading}
-                              >
-                                <Check className="mr-2 h-4 w-4 text-green-500" />
-                                <span>Approuver</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleReject(listing._id)}
-                                disabled={rejectMutation.isLoading}
-                              >
-                                <X className="mr-2 h-4 w-4 text-red-500" />
-                                <span>Rejeter</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
+                              <StarOff className="mr-2 h-4 w-4" />
+                              <span>Retirer la mise en avant</span>
+                            </>
+                          ) : (
+                            <>
+                              <Star className="mr-2 h-4 w-4" />
+                              <span>Mettre en avant</span>
                             </>
                           )}
-                          <DropdownMenuItem
-                            onClick={() => handleFeature(listing._id, listing.featured)}
-                            disabled={featureMutation.isLoading}
-                          >
-                            {listing.featured ? (
-                              <>
-                                <X className="mr-2 h-4 w-4 text-amber-500" />
-                                <span>Retirer des mises en avant</span>
-                              </>
-                            ) : (
-                              <>
-                                <TrendingUp className="mr-2 h-4 w-4 text-amber-500" />
-                                <span>Mettre en avant</span>
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            <span>Modifier</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDelete(listing._id)}
-                            disabled={deleteMutation.isLoading}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Supprimer</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDeleteListing(listing._id)}
+                          disabled={deleteMutation.isLoading}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Supprimer</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))

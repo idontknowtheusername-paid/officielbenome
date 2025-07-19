@@ -39,7 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export function TransactionsPage() {
+function TransactionsPage() {
   // State for filters and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -455,3 +455,5 @@ export function TransactionsPage() {
     </div>
   );
 }
+
+export default TransactionsPage;
