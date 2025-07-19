@@ -12,7 +12,7 @@ const fetchData = async (endpoint, options = {}) => {
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(endpoint, {
       ...options,
       headers: {
         ...defaultHeaders,
@@ -44,10 +44,18 @@ const fetchData = async (endpoint, options = {}) => {
     return data;
   } catch (error) {
     console.error('API Error:', error);
+    console.error('Endpoint:', endpoint);
+    console.error('Options:', options);
     
     // Si c'est une erreur de réseau ou de connexion
-    if (error.name === 'TypeError' || error.message.includes('fetch')) {
-      throw new Error('Impossible de se connecter au serveur. Vérifiez votre connexion internet.');
+    if (error.name === 'TypeError' || error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+      console.error('Network error detected. Backend might be down or unreachable.');
+      throw new Error('Impossible de se connecter au serveur. Le backend pourrait être indisponible.');
+    }
+    
+    // Si c'est une erreur CORS
+    if (error.message.includes('CORS')) {
+      throw new Error('Erreur de configuration CORS. Contactez l\'administrateur.');
     }
     
     throw error;
@@ -129,15 +137,15 @@ export const resetPassword = async (token, newPassword) => {
 // Fonctions pour les annonces immobilières
 export const getRealEstateListings = async (params = {}) => {
   const queryString = new URLSearchParams(params).toString();
-  return fetchData(`/real-estate/listings${queryString ? `?${queryString}` : ''}`);
+  return fetchData(`${API_ENDPOINTS.REAL_ESTATE_LISTINGS}${queryString ? `?${queryString}` : ''}`);
 };
 
 export const getRealEstateListing = async (id) => {
-  return fetchData(`/real-estate/listings/${id}`);
+  return fetchData(`${API_ENDPOINTS.REAL_ESTATE_LISTINGS}/${id}`);
 };
 
 export const createRealEstateListing = async (listingData) => {
-  return fetchData('/real-estate/listings', {
+  return fetchData(API_ENDPOINTS.REAL_ESTATE_LISTINGS, {
     method: 'POST',
     body: JSON.stringify(listingData),
   });
@@ -213,7 +221,7 @@ export const createBlogPost = async (postData) => {
 
 // Fonctions pour les messages de contact
 export const sendContactMessage = async (messageData) => {
-  return fetchData('/contact', {
+  return fetchData(API_ENDPOINTS.CONTACT, {
     method: 'POST',
     body: JSON.stringify(messageData),
   });
@@ -221,29 +229,29 @@ export const sendContactMessage = async (messageData) => {
 
 // Fonctions pour les favoris
 export const getFavorites = async () => {
-  return fetchData('/favorites');
+  return fetchData(API_ENDPOINTS.FAVORITES);
 };
 
 export const addToFavorites = async (itemId, itemType) => {
-  return fetchData('/favorites', {
+  return fetchData(API_ENDPOINTS.FAVORITES, {
     method: 'POST',
     body: JSON.stringify({ itemId, itemType }),
   });
 };
 
 export const removeFromFavorites = async (itemId) => {
-  return fetchData(`/favorites/${itemId}`, {
+  return fetchData(`${API_ENDPOINTS.FAVORITES}/${itemId}`, {
     method: 'DELETE',
   });
 };
 
 // Fonctions pour les notifications
 export const getNotifications = async () => {
-  return fetchData('/notifications');
+  return fetchData(API_ENDPOINTS.NOTIFICATIONS);
 };
 
 export const markNotificationAsRead = async (notificationId) => {
-  return fetchData(`/notifications/${notificationId}/read`, {
+  return fetchData(`${API_ENDPOINTS.NOTIFICATIONS}/${notificationId}/read`, {
     method: 'PUT',
   });
 };

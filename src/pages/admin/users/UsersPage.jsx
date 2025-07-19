@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Download, 
+import {
+  Plus,
+  Search,
+  Filter,
+  Download,
   MoreVertical,
   Edit,
   Trash2,
@@ -19,36 +19,36 @@ import {
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
-import { 
-  getAdminUsers, 
-  updateUserStatus, 
+import {
+  getAdminUsers,
+  updateUserStatus,
   deleteUser,
-  updateUserRole 
+  updateUserRole
 } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -57,7 +57,7 @@ import { fr } from 'date-fns/locale';
 function UsersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State for filters and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -70,7 +70,7 @@ function UsersPage() {
   // Fetch users with filters and pagination
   const { data, isLoading, isError } = useQuery({
     queryKey: ['adminUsers', { searchTerm, statusFilter, roleFilter, sortBy, sortOrder, page, perPage }],
-    queryFn: () => 
+    queryFn: () =>
       getAdminUsers({
         search: searchTerm,
         status: statusFilter !== 'all' ? statusFilter : undefined,
@@ -196,7 +196,7 @@ function UsersPage() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Statut</label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -212,7 +212,7 @@ function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Rôle</label>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
@@ -228,7 +228,7 @@ function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Trier par</label>
               <div className="flex space-x-2">
@@ -258,7 +258,7 @@ function UsersPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-end space-x-2">
             <Button type="submit" variant="outline">
               <Filter className="mr-2 h-4 w-4" />
@@ -336,13 +336,13 @@ function UsersPage() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={user.status === 'active' ? 'success' : 
-                              user.status === 'suspended' ? 'destructive' : 'outline'}
+                      variant={user.status === 'active' ? 'success' :
+                        user.status === 'suspended' ? 'destructive' : 'outline'}
                       className="capitalize"
                     >
-                      {user.status === 'active' ? 'Actif' : 
-                       user.status === 'suspended' ? 'Suspendu' : 
-                       user.status === 'pending' ? 'En attente' : 'Inactif'}
+                      {user.status === 'active' ? 'Actif' :
+                        user.status === 'suspended' ? 'Suspendu' :
+                          user.status === 'pending' ? 'En attente' : 'Inactif'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -363,7 +363,7 @@ function UsersPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleStatusChange(
-                            user._id, 
+                            user._id,
                             user.status === 'active' ? 'suspended' : 'active'
                           )}
                           disabled={updateStatusMutation.isLoading}

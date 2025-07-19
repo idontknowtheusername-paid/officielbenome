@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://officielbenome-backend.onrender.com/api';
+// Configuration de l'URL de base de l'API avec fallbacks
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.DEV ? 'http://localhost:3000/api' : 'https://officielbenome-backend.onrender.com/api');
 
 export { API_BASE_URL };
 

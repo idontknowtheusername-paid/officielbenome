@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AdminRoute } from '@/components/ProtectedRoute';
+import { initApiTest } from '@/utils/apiTest';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -47,6 +48,11 @@ import BlogPage from '@/pages/BlogPage';
 import BlogPostPage from '@/pages/BlogPostPage';
 
 function App() {
+  // Test de connectivité API en développement
+  React.useEffect(() => {
+    initApiTest();
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
