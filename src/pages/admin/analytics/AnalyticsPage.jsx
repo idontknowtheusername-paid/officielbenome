@@ -51,7 +51,7 @@ import { fr } from 'date-fns/locale';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-export function AnalyticsPage() {
+function AnalyticsPage() {
   // State for date range
   const [dateRange, setDateRange] = useState('7days');
   const [startDate, endDate] = useMemo(() => {
@@ -556,3 +556,4 @@ export function AnalyticsPage() {
     </div>
   );
 }
+export default AnalyticsPage;

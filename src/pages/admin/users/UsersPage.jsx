@@ -54,7 +54,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export function UsersPage() {
+function UsersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -484,3 +484,4 @@ export function UsersPage() {
     </div>
   );
 }
+export default UsersPage;

@@ -164,7 +164,7 @@ const ContentTypeBadge = ({ type }) => {
   );
 };
 
-export function ModerationPage() {
+function ModerationPage() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -790,3 +790,4 @@ export function ModerationPage() {
     </div>
   );
 }
+export default ModerationPage;
