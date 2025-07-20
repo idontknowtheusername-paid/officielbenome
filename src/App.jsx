@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { AdminRoute } from '@/components/ProtectedRoute';
+import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
 import { initApiTest } from '@/utils/apiTest';
 
 // Layouts
