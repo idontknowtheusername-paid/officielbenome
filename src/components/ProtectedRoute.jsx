@@ -20,7 +20,10 @@ export const ProtectedRoute = ({ children, requiredRole = 'user' }) => {
   }
 
   // Vérifier si l'utilisateur a le rôle requis
-  const hasRequiredRole = user.roles?.includes(requiredRole);
+  const hasRequiredRole =
+    (Array.isArray(user.roles) && user.roles.includes(requiredRole)) ||
+    user.role === requiredRole ||
+    user.roles === requiredRole;
   
   // Si un rôle est requis mais que l'utilisateur ne l'a pas, rediriger vers la page d'accueil
   if (requiredRole && !hasRequiredRole) {
