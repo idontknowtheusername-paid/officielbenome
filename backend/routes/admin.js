@@ -143,7 +143,7 @@ router.get(
 router.put(
   '/users/:userId/status',
   [
-    param('userId').isMongoId().withMessage('ID utilisateur invalide'),
+    param('userId').isUUID().withMessage('ID utilisateur invalide'),
     body('status').isIn(['active', 'suspended', 'pending']).withMessage('Statut invalide'),
     body('reason').optional().isString().trim().isLength({ max: 500 }),
   ],
@@ -216,7 +216,7 @@ router.get(
 router.put(
   '/listings/:id/approve',
   [
-    param('id').isMongoId().withMessage('ID d\'annonce invalide')
+    param('id').isUUID().withMessage('ID d\'annonce invalide')
   ],
   validateRequest,
   adminController.approveListing
@@ -260,7 +260,7 @@ router.put(
 router.put(
   '/listings/:id/reject',
   [
-    param('id').isMongoId().withMessage('ID d\'annonce invalide'),
+    param('id').isUUID().withMessage('ID d\'annonce invalide'),
     body('reason').isString().trim().isLength({ min: 10, max: 500 })
   ],
   validateRequest,
