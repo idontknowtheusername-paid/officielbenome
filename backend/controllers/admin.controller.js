@@ -3,6 +3,16 @@ import { validationResult } from 'express-validator';
 import { Op } from 'sequelize';
 import User from '../models/User.js';
 import logger from '../config/logger.js';
+import Listing from '../models/Listing.js';
+import Payment from '../models/Payment.js';
+import Review from '../models/Review.js';
+import Report from '../models/Report.js';
+import AdminSetting from '../models/AdminSetting.js';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import emailService from '../services/emailService.js';
+import redisClient from '../config/redis.js';
 
 /**
  * Récupère les statistiques du tableau de bord admin
@@ -226,6 +236,140 @@ export const getTransactions = async (req, res) => {
       success: false,
       error: 'Erreur lors de la récupération des transactions',
     });
+  }
+};
+
+/**
+ * Récupère les statistiques avancées (analytics)
+ */
+export const getAnalytics = async (req, res) => {
+  try {
+    const [totalUsers, totalListings, totalTransactions, totalReviews] = await Promise.all([
+      User.count(),
+      Listing.count(),
+      Payment.count(),
+      Review.count(),
+    ]);
+    res.json({
+      success: true,
+      data: { totalUsers, totalListings, totalTransactions, totalReviews }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Récupère les signalements (reports)
+ */
+export const getReports = async (req, res) => {
+  try {
+    const reports = await Report.findAll({ order: [['createdAt', 'DESC']] });
+    res.json({ success: true, data: reports });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Récupère les avis (reviews)
+ */
+export const getReviews = async (req, res) => {
+  try {
+    const reviews = await Review.findAll({ order: [['createdAt', 'DESC']] });
+    res.json({ success: true, data: reviews });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Récupère les paramètres admin (settings)
+ */
+export const getAdminSettings = async (req, res) => {
+  try {
+    const settings = await AdminSetting.findAll();
+    res.json({ success: true, data: settings });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Sauvegarde/backup
+ */
+export const backup = async (req, res) => {
+  try {
+    // À adapter selon ta stack (pg_dump, etc.)
+    res.json({ success: true, message: 'Backup lancé (stub)' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Logs système
+ */
+export const getLogs = async (req, res) => {
+  try {
+    // Prend le dernier fichier de logs combinés
+    const logsDir = path.join(process.cwd(), 'backend/logs');
+    const files = fs.readdirSync(logsDir).filter(f => f.startsWith('combined-'));
+    if (!files.length) return res.json({ success: true, data: [] });
+    const latestLog = files.sort().reverse()[0];
+    const logPath = path.join(logsDir, latestLog);
+    const logs = fs.readFileSync(logPath, 'utf8');
+    res.json({ success: true, data: logs.split('\n').slice(-200) });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Infos système
+ */
+export const getSystemInfo = async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: {
+        uptime: os.uptime(),
+        loadavg: os.loadavg(),
+        totalmem: os.totalmem(),
+        freemem: os.freemem(),
+        platform: os.platform(),
+        release: os.release(),
+        nodeVersion: process.version,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Test d'envoi d'email
+ */
+export const emailTest = async (req, res) => {
+  try {
+    const { to } = req.body;
+    await emailService.sendWelcomeEmail({ email: to || 'admin@domaine.com', first_name: 'Admin' });
+    res.json({ success: true, message: 'Email de test envoyé' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Vider le cache
+ */
+export const clearCache = async (req, res) => {
+  try {
+    await redisClient.connect();
+    await redisClient.client.flushAll();
+    res.json({ success: true, message: 'Cache vidé' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 

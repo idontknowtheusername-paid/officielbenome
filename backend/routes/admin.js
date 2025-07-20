@@ -307,4 +307,16 @@ router.get(
   adminController.getTransactions
 );
 
+// Nouvelles routes admin attendues par le frontend
+router.get('/analytics', adminController.getAnalytics);
+router.get('/reports', adminController.getReports);
+router.get('/reviews', adminController.getReviews);
+router.get('/settings', adminController.getAdminSettings);
+router.put('/settings', adminController.updateAdminSettings);
+router.post('/backup', adminController.backup);
+router.get('/logs', adminController.getLogs);
+router.get('/system', adminController.getSystemInfo);
+router.post('/email-test', adminController.emailTest);
+router.post('/cache/clear', adminController.clearCache);
+
 export default router;

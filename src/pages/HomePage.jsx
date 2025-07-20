@@ -187,8 +187,8 @@ const HomePage = () => {
             animate={{ opacity: 1, y:0 }}
             transition={{ duration:0.5, delay:0.4 }}
           >
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
-              Publier une Annonce
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
+              <Link to="/creer-annonce">Publier une Annonce</Link>
             </Button>
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
               Créer un Compte

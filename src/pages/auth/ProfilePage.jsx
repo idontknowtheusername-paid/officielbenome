@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTabNavigation } from '@/hooks/useTabNavigation';
+import { Link } from 'react-router-dom';
 
 // Import des nouveaux composants dashboard
 import { 
@@ -422,9 +423,11 @@ const ProfilePage = () => {
                 <h2 className="text-2xl font-bold">Mes Annonces</h2>
                 <p className="text-muted-foreground">Gérez vos annonces publiées</p>
               </div>
-              <Button className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Nouvelle Annonce
+              <Button asChild className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white">
+                <Link to="/creer-annonce">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle Annonce
+                </Link>
               </Button>
             </div>
 

@@ -57,6 +57,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
 
 export default function ListingsPage() {
   const { toast } = useToast();
@@ -201,9 +202,11 @@ export default function ListingsPage() {
           </p>
         </div>
         <div className="mt-4 md:mt-0">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle Annonce
+          <Button asChild>
+            <Link to="/creer-annonce">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouvelle Annonce
+            </Link>
           </Button>
         </div>
       </div>

@@ -23,6 +23,7 @@ import RealEstatePage from '@/pages/marketplace/RealEstatePage';
 import AutomobilePage from '@/pages/marketplace/AutomobilePage';
 import ServicesPage from '@/pages/marketplace/ServicesPage';
 import GeneralMarketplacePage from '@/pages/marketplace/GeneralMarketplacePage';
+import CreateListingPage from '@/pages/CreateListingPage';
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import AdminUsersPage from '@/pages/admin/users/UsersPage';
@@ -73,6 +74,24 @@ function App() {
               <Route path="automobile" element={<AutomobilePage />} />
               <Route path="services" element={<ServicesPage />} />
               <Route path="marketplace" element={<GeneralMarketplacePage />} />
+              
+              {/* Création d'annonce */}
+              <Route 
+                path="creer-annonce" 
+                element={
+                  <ProtectedRoute>
+                    <CreateListingPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="create-listing" 
+                element={
+                  <ProtectedRoute>
+                    <CreateListingPage />
+                  </ProtectedRoute>
+                } 
+              />
               
               {/* Protected Admin Routes */}
               <Route path="admin">
