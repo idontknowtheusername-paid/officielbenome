@@ -35,6 +35,34 @@ const ListingForm = ({ onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
+  // Ajout des données pays/villes
+  const COUNTRY_CITY_OPTIONS = [
+    {
+      code: 'BJ',
+      name: 'Bénin',
+      cities: [
+        'Cotonou', 'Porto-Novo', 'Parakou', 'Djougou', 'Bohicon',
+        'Kandi', 'Abomey', 'Natitingou', 'Ouidah', 'Lokossa'
+      ]
+    },
+    {
+      code: 'CI',
+      name: 'Côte d\'Ivoire',
+      cities: [
+        'Abidjan', 'Bouaké', 'Daloa', 'Yamoussoukro', 'San Pedro',
+        'Korhogo', 'Man', 'Gagnoa', 'Abengourou', 'Divo'
+      ]
+    },
+    {
+      code: 'NG',
+      name: 'Nigeria',
+      cities: [
+        'Lagos', 'Kano', 'Ibadan', 'Abuja', 'Port Harcourt',
+        'Benin City', 'Maiduguri', 'Zaria', 'Aba', 'Jos'
+      ]
+    }
+  ];
+
   // Gestion des champs principaux
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,10 +88,14 @@ const ListingForm = ({ onSuccess }) => {
     setForm((prev) => ({ ...prev, images: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) }));
   };
 
-  // Gestion de l'upload d'images depuis la galerie
+  // Limitation à 8 images lors de l'upload
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    if (form.images.length + files.length > 8) {
+      toast({ title: 'Limite atteinte', description: 'Vous pouvez uploader jusqu\'à 8 images maximum.', variant: 'destructive' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const uploadedUrls = [];
@@ -310,10 +342,33 @@ const ListingForm = ({ onSuccess }) => {
           <Input id="subCategory" name="subCategory" value={form.subCategory} onChange={handleChange} />
         </div>
         <div className="space-y-2">
-          <Label>Ville</Label>
-          <Input name="location.city" value={form.location.city} onChange={handleChange} />
           <Label>Pays</Label>
-          <Input name="location.country" value={form.location.country} onChange={handleChange} />
+          <select
+            name="location.country"
+            value={form.location.country}
+            onChange={handleChange}
+            required
+            className="input"
+          >
+            <option value="">Sélectionner un pays</option>
+            {COUNTRY_CITY_OPTIONS.map((c) => (
+              <option key={c.code} value={c.name}>{c.name}</option>
+            ))}
+          </select>
+          <Label>Ville</Label>
+          <select
+            name="location.city"
+            value={form.location.city}
+            onChange={handleChange}
+            required
+            className="input"
+            disabled={!form.location.country}
+          >
+            <option value="">Sélectionner une ville</option>
+            {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map(city => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
         </div>
         <div className="space-y-2">
           <Label>Images</Label>
