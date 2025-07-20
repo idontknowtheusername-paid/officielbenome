@@ -11,6 +11,13 @@ const fetchData = async (endpoint, options = {}) => {
     ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 
+  console.log('🔍 API Call:', {
+    endpoint,
+    method: options.method || 'GET',
+    headers: defaultHeaders,
+    body: options.body
+  });
+
   try {
     const response = await fetch(endpoint, {
       ...options,
@@ -20,6 +27,9 @@ const fetchData = async (endpoint, options = {}) => {
       },
       credentials: 'include', // Important pour les cookies d'authentification
     });
+
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
     // Si la réponse est 204 No Content, on ne tente pas de parser le JSON
     if (response.status === 204) {
@@ -33,6 +43,7 @@ const fetchData = async (endpoint, options = {}) => {
     }
 
     const data = await response.json();
+    console.log('📡 Response data:', data);
 
     if (!response.ok) {
       const error = new Error(data.message || 'Une erreur est survenue');
@@ -43,9 +54,15 @@ const fetchData = async (endpoint, options = {}) => {
 
     return data;
   } catch (error) {
-    console.error('API Error:', error);
-    console.error('Endpoint:', endpoint);
-    console.error('Options:', options);
+    console.error('❌ API Error:', error);
+    console.error('❌ Endpoint:', endpoint);
+    console.error('❌ Options:', options);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      status: error.status,
+      data: error.data
+    });
     
     // Si c'est une erreur de réseau ou de connexion
     if (error.name === 'TypeError' || error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
