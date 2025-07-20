@@ -11,14 +11,24 @@ import { ALLOWED_ORIGINS, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX } from '../config
  */
 const corsOptions = {
   origin: (origin, callback) => {
-    // Autoriser les requêtes sans origine (comme les applications mobiles ou Postman)
-    if (!origin) return callback(null, true);
+    console.log('CORS check - Origin:', origin);
+    console.log('CORS check - ALLOWED_ORIGINS:', ALLOWED_ORIGINS);
+    console.log('CORS check - NODE_ENV:', process.env.NODE_ENV);
     
-    // Vérifier si l'origine est autorisée
-    if (ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV === 'development') {
+    // Autoriser les requêtes sans origine (comme les applications mobiles ou Postman)
+    if (!origin) {
+      console.log('CORS: Allowing request without origin');
       return callback(null, true);
     }
     
+    // Vérifier si l'origine est autorisée
+    if (ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV === 'development') {
+      console.log('CORS: Allowing origin:', origin);
+      return callback(null, true);
+    }
+    
+    console.log('CORS: Rejecting origin:', origin);
+    console.log('CORS: Allowed origins:', ALLOWED_ORIGINS);
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
