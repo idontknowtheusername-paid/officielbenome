@@ -101,10 +101,31 @@ const User = sequelize.define('User', {
 
 // Méthode pour comparer les mots de passe
 User.prototype.isValidPassword = async function(password) {
-  if (typeof this.password !== 'string') {
-    throw new Error('Hash de mot de passe invalide : attendu une string, reçu ' + typeof this.password);
+  console.log('isValidPassword called with password type:', typeof password);
+  console.log('this.password type:', typeof this.password);
+  console.log('this.password value:', this.password);
+  console.log('this.dataValues:', this.dataValues);
+  
+  // Essayer de récupérer le hash du mot de passe
+  let passwordHash = this.password;
+  
+  // Si this.password n'est pas défini, essayer dataValues
+  if (!passwordHash && this.dataValues && this.dataValues.password) {
+    passwordHash = this.dataValues.password;
+    console.log('Using password from dataValues:', typeof passwordHash);
   }
-  return await bcrypt.compare(password, this.password);
+  
+  if (typeof passwordHash !== 'string') {
+    console.error('Password hash is not a string:', {
+      type: typeof passwordHash,
+      value: passwordHash,
+      hasDataValues: !!this.dataValues,
+      dataValuesKeys: this.dataValues ? Object.keys(this.dataValues) : 'none'
+    });
+    throw new Error('Hash de mot de passe invalide : attendu une string, reçu ' + typeof passwordHash);
+  }
+  
+  return await bcrypt.compare(password, passwordHash);
 };
 
 // Méthode pour obtenir le nom complet

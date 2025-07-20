@@ -113,6 +113,12 @@ class AuthController {
         });
       }
 
+      // Debug: vérifier la structure de l'utilisateur et du mot de passe
+      console.log('User object:', JSON.stringify(user, null, 2));
+      console.log('Password type:', typeof user.password);
+      console.log('Password value:', user.password);
+      console.log('User dataValues:', JSON.stringify(user.dataValues, null, 2));
+
       // Vérifier le mot de passe
       const isPasswordValid = await user.isValidPassword(password);
       
