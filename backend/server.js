@@ -17,6 +17,7 @@ import setupSwagger from './swagger.js';
 import logger from './config/logger.js';
 import redisClient from './config/redis.js';
 import sequelize from './config/database.js';
+import uploadRoutes from './routes/upload.js';
 
 console.log('📦 Tous les modules chargés avec succès');
 
@@ -104,6 +105,9 @@ app.use(`${API_PREFIX}/marketplace/listings`, marketplaceProductRoutes);
 app.use(`${API_PREFIX}/real-estate/listings`, realEstateRoutes);
 app.use(`${API_PREFIX}/auto/listings`, autoRoutes);
 app.use(`${API_PREFIX}/services`, serviceRoutes);
+
+// Routes d'upload d'images
+app.use(`${API_PREFIX}/upload`, uploadRoutes);
 
 // Route de santé
 app.get(`${API_PREFIX}/health`, (req, res) => {
