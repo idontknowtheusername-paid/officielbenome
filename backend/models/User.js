@@ -115,6 +115,12 @@ User.prototype.isValidPassword = async function(password) {
     console.log('Using password from dataValues:', typeof passwordHash);
   }
   
+  // Si le hash est null ou undefined, l'utilisateur n'a pas de mot de passe
+  if (!passwordHash) {
+    console.log('User has no password hash stored');
+    return false;
+  }
+  
   if (typeof passwordHash !== 'string') {
     console.error('Password hash is not a string:', {
       type: typeof passwordHash,
