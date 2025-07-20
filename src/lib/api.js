@@ -46,7 +46,8 @@ const fetchData = async (endpoint, options = {}) => {
     console.log('📡 Response data:', data);
 
     if (!response.ok) {
-      const error = new Error(data.message || 'Une erreur est survenue');
+      const errorMessage = data.message || data.error?.message || 'Une erreur est survenue';
+      const error = new Error(errorMessage);
       error.status = response.status;
       error.data = data;
       throw error;
