@@ -45,6 +45,8 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Login error:', error); // Debug log
+      alert('Erreur de connexion: ' + (error.message || JSON.stringify(error)));
+      console.error('Erreur détaillée:', error);
       toast({
         title: "Erreur de connexion",
         description: error.message,
