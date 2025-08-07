@@ -50,22 +50,60 @@ function handleViteOverlay(node) {
 `;
 
 const configHorizonsRuntimeErrorHandler = `
-window.onerror = (message, source, lineno, colno, errorObj) => {
-	const errorDetails = errorObj ? JSON.stringify({
-		name: errorObj.name,
-		message: errorObj.message,
-		stack: errorObj.stack,
-		source,
-		lineno,
-		colno,
-	}) : null;
+function showRuntimeErrorBanner(text) {
+  try {
+    var banner = document.getElementById('runtime-error-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'runtime-error-banner';
+      banner.style.position = 'fixed';
+      banner.style.top = '0';
+      banner.style.left = '0';
+      banner.style.right = '0';
+      banner.style.zIndex = '999999';
+      banner.style.background = '#111827';
+      banner.style.color = '#fca5a5';
+      banner.style.fontFamily = 'monospace';
+      banner.style.fontSize = '12px';
+      banner.style.whiteSpace = 'pre-wrap';
+      banner.style.padding = '12px 16px';
+      banner.style.borderBottom = '2px solid #ef4444';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = 'Runtime error: ' + text;
+  } catch (e) {
+    // ignore
+  }
+}
 
-	window.parent.postMessage({
-		type: 'horizons-runtime-error',
-		message,
-		error: errorDetails
-	}, '*');
-};
+window.addEventListener('error', function (event) {
+  var errorObj = event.error || {};
+  var message = (event.message || '') + (errorObj && errorObj.stack ? ('\n' + errorObj.stack) : '');
+  showRuntimeErrorBanner(message);
+  window.parent.postMessage({
+    type: 'horizons-runtime-error',
+    message: message,
+    error: errorObj ? JSON.stringify({
+      name: errorObj.name,
+      message: errorObj.message,
+      stack: errorObj.stack,
+      source: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    }) : null
+  }, '*');
+}, true);
+
+window.addEventListener('unhandledrejection', function (event) {
+  var reason = event.reason;
+  var text = typeof reason === 'string' ? reason : (reason && (reason.stack || reason.message)) || String(reason);
+  showRuntimeErrorBanner('Unhandled promise rejection: ' + text);
+  window.parent.postMessage({
+    type: 'horizons-runtime-error',
+    message: text,
+    error: null
+  }, '*');
+}, true);
 `;
 
 const configHorizonsConsoleErrroHandler = `
