@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
+import VercelDebug from '@/components/VercelDebug';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -92,6 +93,7 @@ const ConfigTest = () => {
 function App() {
   return (
     <>
+      <VercelDebug />
       <ConfigTest />
       <Router>
         <AuthProvider>
