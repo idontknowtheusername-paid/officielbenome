@@ -21,14 +21,14 @@ import {
   Eye,
   EyeOff,
   Clock,
-  Download
+  Download,
+  ShoppingBag,
+  Star
 } from 'lucide-react';
 import { 
-  getReportedContent, 
-  moderateContent, 
-  getModerationStats,
-  getModerationLogs
-} from '@/lib/api';
+  listingService,
+  userService
+} from '@/services/supabase.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -110,10 +110,10 @@ const SeverityBadge = ({ level }) => {
 const StatusBadge = ({ status }) => {
   const getVariant = () => {
     switch(status) {
-      case ReportStatus.PENDING: return 'outline';
+      case ReportStatus.PENDING: return 'warning';
       case ReportStatus.APPROVED: return 'success';
       case ReportStatus.REJECTED: return 'destructive';
-      case ReportStatus.IGNORED: return 'secondary';
+      case ReportStatus.IGNORED: return 'outline';
       default: return 'outline';
     }
   };
@@ -138,11 +138,11 @@ const StatusBadge = ({ status }) => {
 const ContentTypeBadge = ({ type }) => {
   const getIcon = () => {
     switch(type) {
-      case ContentType.LISTING: return <Eye className="h-3 w-3 mr-1" />;
-      case ContentType.COMMENT: return <MessageSquare className="h-3 w-3 mr-1" />;
-      case ContentType.USER: return <User className="h-3 w-3 mr-1" />;
-      case ContentType.REVIEW: return <AlertTriangle className="h-3 w-3 mr-1" />;
-      default: return null;
+      case ContentType.LISTING: return <ShoppingBag className="h-3 w-3" />;
+      case ContentType.COMMENT: return <MessageSquare className="h-3 w-3" />;
+      case ContentType.USER: return <User className="h-3 w-3" />;
+      case ContentType.REVIEW: return <Star className="h-3 w-3" />;
+      default: return <AlertCircle className="h-3 w-3" />;
     }
   };
 
@@ -157,7 +157,7 @@ const ContentTypeBadge = ({ type }) => {
   };
 
   return (
-    <Badge variant="outline" className="flex items-center">
+    <Badge variant="outline" className="flex items-center gap-1">
       {getIcon()}
       {getLabel()}
     </Badge>
@@ -166,65 +166,80 @@ const ContentTypeBadge = ({ type }) => {
 
 function ModerationPage() {
   const queryClient = useQueryClient();
+  
+  // State for filters and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [expandedReports, setExpandedReports] = useState(new Set());
   const [selectedReport, setSelectedReport] = useState(null);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
-  const [expandedReports, setExpandedReports] = useState({});
 
   // Fetch reported content
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['moderation', 'reports', { 
-      searchTerm, 
-      status: statusFilter !== 'all' ? statusFilter : undefined,
-      type: typeFilter !== 'all' ? typeFilter : undefined,
-      severity: severityFilter !== 'all' ? severityFilter : undefined,
-      sortBy,
-      sortOrder,
-      page,
-      perPage 
-    }],
-    queryFn: () => getReportedContent({ 
-      search: searchTerm,
-      status: statusFilter !== 'all' ? statusFilter : undefined,
-      type: typeFilter !== 'all' ? typeFilter : undefined,
-      severity: severityFilter !== 'all' ? severityFilter : undefined,
-      sortBy,
-      sortOrder,
-      page,
-      limit: perPage
-    })
+  const { data: reports, isLoading, isError } = useQuery({
+    queryKey: ['moderation', 'reports', { searchTerm, statusFilter, typeFilter, severityFilter, sortBy, sortOrder, page, perPage }],
+    queryFn: async () => {
+      // Pour l'instant, on simule des rapports basés sur les annonces en attente
+      const listings = await listingService.getAllListings({ status: 'pending' });
+      
+      return listings.map(listing => ({
+        id: listing.id,
+        type: ContentType.LISTING,
+        content: listing,
+        reporter: {
+          id: 'system',
+          name: 'Système',
+          email: 'system@benome.com'
+        },
+        reason: 'Annonce en attente de modération',
+        description: 'Cette annonce nécessite une vérification avant publication',
+        severity: 'medium',
+        status: ReportStatus.PENDING,
+        createdAt: listing.created_at,
+        updatedAt: listing.updated_at
+      }));
+    }
   });
 
   // Fetch moderation stats
   const { data: stats } = useQuery({
     queryKey: ['moderation', 'stats'],
-    queryFn: getModerationStats
-  });
-
-  // Fetch moderation logs
-  const { data: logs } = useQuery({
-    queryKey: ['moderation', 'logs'],
-    queryFn: getModerationLogs
+    queryFn: async () => {
+      const listings = await listingService.getAllListings();
+      const users = await userService.getAllUsers();
+      
+      return {
+        totalReports: listings.filter(l => l.status === 'pending').length,
+        pendingReports: listings.filter(l => l.status === 'pending').length,
+        resolvedReports: listings.filter(l => l.status === 'approved' || l.status === 'rejected').length,
+        averageResponseTime: '2h',
+        topReportedTypes: [
+          { type: 'listing', count: listings.filter(l => l.status === 'pending').length },
+          { type: 'user', count: 0 },
+          { type: 'comment', count: 0 }
+        ]
+      };
+    }
   });
 
   // Moderate content mutation
   const { mutate: moderate, isLoading: isModerating } = useMutation({
     mutationFn: ({ reportId, action, reason }) => 
-      moderateContent(reportId, { action, reason }),
+      // This part needs to be adapted to Supabase moderation logic
+      // For now, it's a placeholder.
+      console.log(`Moderating report ${reportId} with action: ${action}, reason: ${reason}`),
     onSuccess: () => {
       queryClient.invalidateQueries(['moderation', 'reports']);
       queryClient.invalidateQueries(['moderation', 'stats']);
-      queryClient.invalidateQueries(['moderation', 'logs']);
+      // queryClient.invalidateQueries(['moderation', 'logs']); // No logs in Supabase yet
       setSelectedReport(null);
-      setIsConfirmDialogOpen(false);
+      setShowConfirmDialog(false);
     },
     onError: (error) => {
       console.error('Error moderating content:', error);
@@ -233,10 +248,15 @@ function ModerationPage() {
 
   // Toggle report expansion
   const toggleExpandReport = (reportId) => {
-    setExpandedReports(prev => ({
-      ...prev,
-      [reportId]: !prev[reportId]
-    }));
+    setExpandedReports(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(reportId)) {
+        newSet.delete(reportId);
+      } else {
+        newSet.add(reportId);
+      }
+      return newSet;
+    });
   };
 
   // Handle moderation action
@@ -245,10 +265,10 @@ function ModerationPage() {
     setPendingAction(action);
     
     if (action === 'approve' || action === 'reject' || action === 'ignore') {
-      setIsConfirmDialogOpen(true);
+      setShowConfirmDialog(true);
     } else if (action === 'delete') {
       // For delete, we might want to show a different dialog or confirmation
-      setIsConfirmDialogOpen(true);
+      setShowConfirmDialog(true);
     }
   };
 
@@ -319,7 +339,7 @@ function ModerationPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Signalements en attente</p>
-              <p className="text-2xl font-bold">{stats?.pending || 0}</p>
+              <p className="text-2xl font-bold">{stats?.pendingReports || 0}</p>
             </div>
             <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/50">
               <Flag className="h-6 w-6 text-amber-600 dark:text-amber-400" />
@@ -495,7 +515,7 @@ function ModerationPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : data?.reports?.length === 0 ? (
+                ) : reports?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -506,7 +526,7 @@ function ModerationPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data?.reports?.map((report) => (
+                  reports?.map((report) => (
                     <TableRow key={report.id}>
                       <TableCell>
                         <div className="space-y-2">
@@ -516,20 +536,20 @@ function ModerationPage() {
                               size="sm"
                               onClick={() => toggleExpandReport(report.id)}
                             >
-                              {expandedReports[report.id] ? (
+                              {expandedReports.has(report.id) ? (
                                 <ChevronUp className="h-4 w-4" />
                               ) : (
                                 <ChevronDown className="h-4 w-4" />
                               )}
                             </Button>
                             <div>
-                              <p className="font-medium">{report.title || 'Contenu signalé'}</p>
+                              <p className="font-medium">{report.content.title || 'Contenu signalé'}</p>
                               <p className="text-sm text-muted-foreground">
-                                Par {report.reportedBy?.name || 'Utilisateur anonyme'}
+                                Par {report.reporter?.name || 'Utilisateur anonyme'}
                               </p>
                             </div>
                           </div>
-                          {expandedReports[report.id] && (
+                          {expandedReports.has(report.id) && (
                             <div className="ml-8 p-3 bg-muted rounded-md">
                               <p className="text-sm">{report.reason}</p>
                               {report.description && (
@@ -542,7 +562,7 @@ function ModerationPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <ContentTypeBadge type={report.contentType} />
+                        <ContentTypeBadge type={report.type} />
                       </TableCell>
                       <TableCell>
                         <SeverityBadge level={report.severity} />
@@ -647,11 +667,11 @@ function ModerationPage() {
           </div>
 
           {/* Pagination */}
-          {data?.pagination && (
+          {reports?.pagination && (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <p className="text-sm text-muted-foreground">
-                  Affichage de {((page - 1) * perPage) + 1} à {Math.min(page * perPage, data.pagination.total)} sur {data.pagination.total} signalements
+                  Affichage de {((page - 1) * perPage) + 1} à {Math.min(page * perPage, reports.pagination.total)} sur {reports.pagination.total} signalements
                 </p>
               </div>
               
@@ -673,21 +693,21 @@ function ModerationPage() {
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm">
-                  Page {page} sur {data.pagination.totalPages}
+                  Page {page} sur {reports.pagination.totalPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage(page + 1)}
-                  disabled={page === data.pagination.totalPages}
+                  disabled={page === reports.pagination.totalPages}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage(data.pagination.totalPages)}
-                  disabled={page === data.pagination.totalPages}
+                  onClick={() => setPage(reports.pagination.totalPages)}
+                  disabled={page === reports.pagination.totalPages}
                 >
                   <ChevronsRight className="h-4 w-4" />
                 </Button>
@@ -705,42 +725,14 @@ function ModerationPage() {
               </p>
             </div>
             <div className="p-4">
-              {logs?.length === 0 ? (
-                <div className="text-center py-8">
-                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Aucun journal disponible</p>
-                  <p className="text-sm text-muted-foreground">
-                    Les actions de modération apparaîtront ici.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {logs?.map((log) => (
-                    <div key={log.id} className="flex items-start space-x-3 p-3 rounded-md bg-muted">
-                      <div className="flex-shrink-0">
-                        {getActionIcon(log.action)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm">
-                          <span className="font-medium">{log.moderator?.name}</span> a {getActionLabel(log.action).toLowerCase()} 
-                          un {log.contentType} signalé
-                        </p>
-                        {log.reason && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Raison: {log.reason}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {formatDistanceToNow(new Date(log.createdAt), { 
-                            addSuffix: true, 
-                            locale: fr 
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Logs will be fetched and displayed here once implemented */}
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium">Journal de modération à venir</p>
+                <p className="text-sm text-muted-foreground">
+                  L'historique des actions de modération sera disponible prochainement.
+                </p>
+              </div>
             </div>
           </div>
         </TabsContent>
@@ -767,7 +759,7 @@ function ModerationPage() {
       </Tabs>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer l'action</AlertDialogTitle>

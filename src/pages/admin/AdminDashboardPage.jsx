@@ -6,14 +6,10 @@ import {
   MessageSquare as MessageSquareWarning, DollarSign, PackageCheck, Loader2, AlertCircle
 } from 'lucide-react';
 import { 
-  getDashboardStats, 
-  getAdminUsers,
-  getAdminListings,
-  getAdminTransactions,
-  updateUserStatus,
-  approveListing,
-  rejectListing
-} from '@/lib/api';
+  listingService,
+  userService,
+  notificationService
+} from '@/services/supabase.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -73,43 +69,49 @@ const AdminDashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // Récupérer les statistiques du tableau de bord
-      const statsResponse = await getDashboardStats();
       
-      if (statsResponse && statsResponse.success) {
-        const { users, listings, revenue, recentActivities: activities = [] } = statsResponse.data || {};
-        
-        // Mettre à jour les statistiques
-        setStats(prevStats => prevStats.map(stat => {
-          if (stat.key === 'activeUsers') {
-            return { ...stat, value: users?.active?.toLocaleString() || '0', trend: `Total: ${users?.total || 0}` };
-          } else if (stat.key === 'pendingListings') {
-            return { ...stat, value: listings?.pending?.toString() || '0', trend: `Total: ${listings?.total || 0}` };
-          } else if (stat.key === 'revenue') {
-            return { ...stat, value: revenue ? `${revenue.toLocaleString()} FCFA` : '0 FCFA' };
-          } else if (stat.key === 'recentActivities') {
-            return { ...stat, value: activities.length.toString(), trend: 'Dernières activités' };
-          }
-          return stat;
-        }));
+      // Récupérer les données en parallèle
+      const [listings, users, notifications] = await Promise.all([
+        listingService.getAllListings(),
+        userService.getAllUsers(),
+        notificationService.getUserNotifications()
+      ]);
+      
+      // Calculer les statistiques
+      const activeUsers = users.filter(user => user.status === 'active').length;
+      const totalUsers = users.length;
+      const pendingListings = listings.filter(listing => listing.status === 'pending').length;
+      const totalListings = listings.length;
+      const recentNotifications = notifications.slice(0, 5);
+      
+      // Mettre à jour les statistiques
+      setStats(prevStats => prevStats.map(stat => {
+        if (stat.key === 'activeUsers') {
+          return { ...stat, value: activeUsers.toLocaleString(), trend: `Total: ${totalUsers}` };
+        } else if (stat.key === 'pendingListings') {
+          return { ...stat, value: pendingListings.toString(), trend: `Total: ${totalListings}` };
+        } else if (stat.key === 'revenue') {
+          // Pour l'instant, on met 0 car les transactions ne sont pas encore implémentées
+          return { ...stat, value: '0 FCFA', trend: 'Revenus du mois' };
+        } else if (stat.key === 'recentActivities') {
+          return { ...stat, value: recentNotifications.length.toString(), trend: 'Dernières activités' };
+        }
+        return stat;
+      }));
 
-        // Mettre à jour les activités récentes
-        const formattedActivities = Array.isArray(activities) ? activities.map(activity => ({
-          id: activity._id || Math.random().toString(36).substr(2, 9),
-          type: activity.type || 'Activité',
-          item: activity.title || activity.description || 'Nouvelle activité',
-          value: activity.amount ? `${activity.amount} FCFA` : undefined,
-          user: activity.user?.name || activity.user?.email || 'Système',
-          time: activity.createdAt ? formatTimeAgo(activity.createdAt) : 'Récemment',
-          category: activity.category || 'Système',
-          status: activity.status || 'Complétée'
-        })) : [];
-        
-        setRecentActivities(formattedActivities);
-      }
+      // Mettre à jour les activités récentes
+      const formattedActivities = recentNotifications.map(notification => ({
+        id: notification.id,
+        type: notification.type || 'Notification',
+        item: notification.title || notification.message || 'Nouvelle activité',
+        timestamp: notification.created_at,
+        status: notification.read ? 'read' : 'unread'
+      }));
+
+      setRecentActivities(formattedActivities);
     } catch (error) {
-      console.error('Erreur lors du chargement du tableau de bord:', error);
-      toast.error('Erreur lors du chargement des données du tableau de bord');
+      console.error('Erreur lors du chargement des données du tableau de bord:', error);
+      toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
     }

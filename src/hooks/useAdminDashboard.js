@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useApi } from '@/hooks/useApi';
+import { 
+  listingService, 
+  userService, 
+  notificationService,
+  messageService 
+} from '@/services/supabase.service';
 import { toast } from 'sonner';
 
 /**
- * Hook personnalisé pour gérer les données du tableau de bord d'administration
+ * Hook personnalisé pour gérer les données du tableau de bord d'administration avec Supabase
  * @param {Object} options - Options de configuration
- * @param {string} [options.endpoint] - Endpoint de base pour les requêtes
+ * @param {string} [options.dataType] - Type de données à récupérer ('listings', 'users', 'transactions')
  * @param {string} [options.queryKey] - Clé de requête pour le cache
  * @param {Object} [options.defaultFilters] - Filtres par défaut
  * @param {boolean} [options.enabled] - Si la requête doit être exécutée immédiatement
@@ -14,13 +19,12 @@ import { toast } from 'sonner';
  */
 const useAdminDashboard = (options = {}) => {
   const {
-    endpoint = '',
+    dataType = 'listings',
     queryKey = 'admin-dashboard',
     defaultFilters = {},
     enabled = true,
   } = options;
 
-  const api = useApi();
   const queryClient = useQueryClient();
   
   // État pour la pagination et le tri
@@ -34,62 +38,52 @@ const useAdminDashboard = (options = {}) => {
   const [filters, setFilters] = useState(defaultFilters);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Construire les paramètres de requête
-  const buildQueryParams = useCallback(() => {
-    const params = new URLSearchParams();
+  // Fonction pour récupérer les données selon le type
+  const fetchDataByType = useCallback(async () => {
+    const from = (pagination.page - 1) * pagination.pageSize;
+    const to = from + pagination.pageSize - 1;
     
-    // Pagination
-    params.append('page', pagination.page);
-    params.append('limit', pagination.pageSize);
+    let queryFilters = { ...filters };
     
-    // Tri
-    if (sorting.length > 0) {
-      const sort = sorting[0];
-      params.append('sortBy', sort.id);
-      params.append('sortOrder', sort.desc ? 'desc' : 'asc');
-    }
-    
-    // Recherche
+    // Ajouter la recherche si présente
     if (searchQuery) {
-      params.append('search', searchQuery);
+      queryFilters.search = searchQuery;
     }
     
-    // Filtres
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        if (Array.isArray(value)) {
-          if (value.length > 0) {
-            params.append(key, value.join(','));
-          }
-        } else if (typeof value === 'object') {
-          // Gérer les plages de dates
-          if (value.from) params.append(`${key}From`, value.from);
-          if (value.to) params.append(`${key}To`, value.to);
-        } else {
-          params.append(key, value);
-        }
-      }
-    });
+    // Ajouter le tri si présent
+    if (sorting.length > 0) {
+      queryFilters.sortBy = sorting[0].id;
+      queryFilters.sortOrder = sorting[0].desc ? 'desc' : 'asc';
+    }
     
-    return params.toString();
-  }, [pagination, sorting, searchQuery, filters]);
+    switch (dataType) {
+      case 'listings':
+        return await listingService.getAllListings(queryFilters);
+      case 'users':
+        return await userService.getAllUsers();
+      case 'notifications':
+        return await notificationService.getUserNotifications();
+      case 'messages':
+        return await messageService.getUserConversations();
+      default:
+        return await listingService.getAllListings(queryFilters);
+    }
+  }, [dataType, pagination, sorting, filters, searchQuery]);
   
   // Requête pour récupérer les données
   const fetchData = async () => {
-    const queryParams = buildQueryParams();
-    const url = queryParams ? `${endpoint}?${queryParams}` : endpoint;
+    const data = await fetchDataByType();
     
-    const response = await api.get(url);
+    // Calculer le total pour la pagination
+    const total = Array.isArray(data) ? data.length : 0;
     
     // Mettre à jour la pagination avec le total
-    if (response.pagination) {
-      setPagination(prev => ({
-        ...prev,
-        total: response.pagination.total,
-      }));
-    }
+    setPagination(prev => ({
+      ...prev,
+      total,
+    }));
     
-    return response.data || response;
+    return data;
   };
   
   // Utiliser React Query pour gérer les requêtes
@@ -165,33 +159,58 @@ const useAdminDashboard = (options = {}) => {
     }));
   };
   
-  // Mutation pour mettre à jour un élément
+  // Mutation pour mettre à jour un élément selon le type
   const updateMutation = useMutation({
     mutationFn: async ({ id, data: updateData }) => {
-      const response = await api.put(`${endpoint}/${id}`, updateData);
-      return response.data;
+      switch (dataType) {
+        case 'listings':
+          return await listingService.updateListing(id, updateData);
+        case 'users':
+          return await userService.updateUserStatus(id, updateData.status);
+        default:
+          throw new Error(`Type de données non supporté: ${dataType}`);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries([queryKey]);
       toast.success('Élément mis à jour avec succès');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Une erreur est survenue');
+      toast.error(error.message || 'Une erreur est survenue');
     },
   });
   
-  // Mutation pour supprimer un élément
+  // Mutation pour supprimer un élément selon le type
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const response = await api.delete(`${endpoint}/${id}`);
-      return response.data;
+      switch (dataType) {
+        case 'listings':
+          return await listingService.deleteListing(id);
+        default:
+          throw new Error(`Type de données non supporté: ${dataType}`);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries([queryKey]);
       toast.success('Élément supprimé avec succès');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Une erreur est survenue');
+      toast.error(error.message || 'Une erreur est survenue');
+    },
+  });
+  
+  // Mutation pour approuver/rejeter une annonce
+  const approveRejectMutation = useMutation({
+    mutationFn: async ({ id, status }) => {
+      return await listingService.updateListingStatus(id, status);
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries([queryKey]);
+      const action = variables.status === 'approved' ? 'approuvée' : 'rejetée';
+      toast.success(`Annonce ${action} avec succès`);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Une erreur est survenue');
     },
   });
   
@@ -231,6 +250,10 @@ const useAdminDashboard = (options = {}) => {
     deleteItem: deleteMutation.mutate,
     deleteItemAsync: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isLoading,
+    
+    approveRejectItem: approveRejectMutation.mutate,
+    approveRejectItemAsync: approveRejectMutation.mutateAsync,
+    isApprovingRejecting: approveRejectMutation.isLoading,
     
     // Utilitaires
     hasNextPage: pagination.page * pagination.pageSize < pagination.total,

@@ -23,12 +23,9 @@ import {
   ChevronsRight
 } from 'lucide-react';
 import { 
-  getAdminListings, 
-  approveListing, 
-  rejectListing,
-  deleteListing,
-  featureListing
-} from '@/lib/api';
+  listingService,
+  categoryService
+} from '@/services/supabase.service';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,29 +64,33 @@ export default function ListingsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
   // Fetch listings with filters and pagination
-  const { data, isLoading, isError } = useQuery({
+  const { data: listings, isLoading, isError } = useQuery({
     queryKey: ['adminListings', { searchTerm, statusFilter, categoryFilter, sortBy, sortOrder, page, perPage }],
-    queryFn: () => 
-      getAdminListings({
-        search: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        category: categoryFilter !== 'all' ? categoryFilter : undefined,
-        sortBy,
-        sortOrder,
-        page,
-        limit: perPage
-      })
+    queryFn: async () => {
+      const filters = {};
+      if (searchTerm) filters.search = searchTerm;
+      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (categoryFilter !== 'all') filters.category = categoryFilter;
+      
+      return await listingService.getAllListings(filters);
+    }
+  });
+
+  // Fetch categories for filter
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryService.getAllCategories()
   });
 
   // Approve listing mutation
   const approveMutation = useMutation({
-    mutationFn: (listingId) => approveListing(listingId),
+    mutationFn: (listingId) => listingService.updateListingStatus(listingId, 'approved'),
     onSuccess: () => {
       queryClient.invalidateQueries(['adminListings']);
       toast({
@@ -100,15 +101,15 @@ export default function ListingsPage() {
     onError: (error) => {
       toast({
         title: 'Erreur',
-        description: error.message || 'Une erreur est survenue',
+        description: error.message || 'Erreur lors de l\'approbation',
         variant: 'destructive',
       });
-    }
+    },
   });
 
   // Reject listing mutation
   const rejectMutation = useMutation({
-    mutationFn: ({ listingId, reason }) => rejectListing(listingId, reason),
+    mutationFn: (listingId) => listingService.updateListingStatus(listingId, 'rejected'),
     onSuccess: () => {
       queryClient.invalidateQueries(['adminListings']);
       toast({
@@ -119,15 +120,15 @@ export default function ListingsPage() {
     onError: (error) => {
       toast({
         title: 'Erreur',
-        description: error.message || 'Une erreur est survenue',
+        description: error.message || 'Erreur lors du rejet',
         variant: 'destructive',
       });
-    }
+    },
   });
 
   // Delete listing mutation
   const deleteMutation = useMutation({
-    mutationFn: (listingId) => deleteListing(listingId),
+    mutationFn: (listingId) => listingService.deleteListing(listingId),
     onSuccess: () => {
       queryClient.invalidateQueries(['adminListings']);
       toast({
@@ -138,58 +139,53 @@ export default function ListingsPage() {
     onError: (error) => {
       toast({
         title: 'Erreur',
-        description: error.message || 'Une erreur est survenue lors de la suppression',
+        description: error.message || 'Erreur lors de la suppression',
         variant: 'destructive',
       });
-    }
+    },
   });
 
   // Feature listing mutation
   const featureMutation = useMutation({
-    mutationFn: (listingId) => featureListing(listingId),
-    onSuccess: () => {
+    mutationFn: ({ listingId, featured }) => listingService.updateListing(listingId, { featured }),
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['adminListings']);
+      const action = variables.featured ? 'mise en avant' : 'retirée de l\'avant';
       toast({
         title: 'Succès',
-        description: 'Statut de mise en avant mis à jour',
+        description: `Annonce ${action} avec succès`,
       });
     },
     onError: (error) => {
       toast({
         title: 'Erreur',
-        description: error.message || 'Une erreur est survenue',
+        description: error.message || 'Erreur lors de la mise à jour',
         variant: 'destructive',
       });
-    }
+    },
   });
 
-  // Handle approve listing
   const handleApproveListing = (listingId) => {
     approveMutation.mutate(listingId);
   };
 
-  // Handle reject listing
   const handleRejectListing = (listingId) => {
-    const reason = prompt('Raison du rejet (optionnel):');
-    rejectMutation.mutate({ listingId, reason: reason || 'Non conforme aux règles' });
+    rejectMutation.mutate(listingId);
   };
 
-  // Handle delete listing
   const handleDeleteListing = (listingId) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) {
       deleteMutation.mutate(listingId);
     }
   };
 
-  // Handle feature listing
-  const handleFeatureListing = (listingId) => {
-    featureMutation.mutate(listingId);
+  const handleFeatureListing = (listingId, featured) => {
+    featureMutation.mutate({ listingId, featured });
   };
 
-  // Handle search
   const handleSearch = (e) => {
-    e.preventDefault();
-    setPage(1); // Reset to first page on new search
+    setSearchTerm(e.target.value);
+    setPage(1);
   };
 
   return (
@@ -224,7 +220,7 @@ export default function ListingsPage() {
                   placeholder="Rechercher une annonce..."
                   className="pl-8"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearch}
                 />
               </div>
             </div>
@@ -270,7 +266,7 @@ export default function ListingsPage() {
                     <SelectValue placeholder="Trier par" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="createdAt">Date de création</SelectItem>
+                    <SelectItem value="created_at">Date de création</SelectItem>
                     <SelectItem value="title">Titre</SelectItem>
                     <SelectItem value="price">Prix</SelectItem>
                     <SelectItem value="views">Vues</SelectItem>
@@ -331,9 +327,9 @@ export default function ListingsPage() {
                   Erreur lors du chargement des annonces
                 </TableCell>
               </TableRow>
-            ) : data?.listings?.length > 0 ? (
-              data.listings.map((listing) => (
-                <TableRow key={listing._id}>
+            ) : listings?.length > 0 ? (
+              listings.map((listing) => (
+                <TableRow key={listing.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-3">
                       <div className="h-12 w-12 rounded-md bg-slate-100 flex items-center justify-center">
@@ -378,7 +374,7 @@ export default function ListingsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {listing.createdAt ? format(new Date(listing.createdAt), 'PP', { locale: fr }) : 'N/A'}
+                    {listing.created_at ? format(new Date(listing.created_at), 'PP', { locale: fr }) : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
@@ -397,14 +393,14 @@ export default function ListingsPage() {
                         {listing.status === 'pending' && (
                           <>
                             <DropdownMenuItem
-                              onClick={() => handleApproveListing(listing._id)}
+                              onClick={() => handleApproveListing(listing.id)}
                               disabled={approveMutation.isLoading}
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
                               <span>Approuver</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleRejectListing(listing._id)}
+                              onClick={() => handleRejectListing(listing.id)}
                               disabled={rejectMutation.isLoading}
                             >
                               <XCircle className="mr-2 h-4 w-4" />
@@ -414,7 +410,7 @@ export default function ListingsPage() {
                         )}
                         
                         <DropdownMenuItem
-                          onClick={() => handleFeatureListing(listing._id)}
+                          onClick={() => handleFeatureListing(listing.id, !listing.featured)}
                           disabled={featureMutation.isLoading}
                         >
                           {listing.featured ? (
@@ -433,7 +429,7 @@ export default function ListingsPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive"
-                          onClick={() => handleDeleteListing(listing._id)}
+                          onClick={() => handleDeleteListing(listing.id)}
                           disabled={deleteMutation.isLoading}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -456,14 +452,14 @@ export default function ListingsPage() {
       </div>
 
       {/* Pagination */}
-      {data?.totalPages > 1 && (
+      {listings?.total_count > 0 && (
         <div className="flex items-center justify-between px-2">
           <div className="flex-1 text-sm text-muted-foreground">
             Affichage de <span className="font-medium">{(page - 1) * perPage + 1}</span> à{' '}
             <span className="font-medium">
-              {Math.min(page * perPage, data.totalCount)}
+              {Math.min(page * perPage, listings.total_count)}
             </span>{' '}
-            sur <span className="font-medium">{data.totalCount}</span> annonces
+            sur <span className="font-medium">{listings.total_count}</span> annonces
           </div>
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
@@ -488,7 +484,7 @@ export default function ListingsPage() {
               </Select>
             </div>
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              Page {page} sur {data.totalPages}
+              Page {page} sur {listings.total_pages}
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -512,8 +508,8 @@ export default function ListingsPage() {
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => setPage(Math.min(data.totalPages, page + 1))}
-                disabled={page === data.totalPages}
+                onClick={() => setPage(Math.min(listings.total_pages, page + 1))}
+                disabled={page === listings.total_pages}
               >
                 <span className="sr-only">Page suivante</span>
                 <ChevronRight className="h-4 w-4" />
@@ -521,8 +517,8 @@ export default function ListingsPage() {
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => setPage(data.totalPages)}
-                disabled={page === data.totalPages}
+                onClick={() => setPage(listings.total_pages)}
+                disabled={page === listings.total_pages}
               >
                 <span className="sr-only">Aller à la dernière page</span>
                 <ChevronsRight className="h-4 w-4" />

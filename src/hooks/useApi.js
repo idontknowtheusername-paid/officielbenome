@@ -2,10 +2,10 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/config/app';
-import { api } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 /**
- * Custom hook pour gérer les appels API de manière centralisée
+ * Custom hook pour gérer les appels Supabase de manière centralisée
  * @param {Object} options - Options de configuration
  * @param {boolean} [options.showSuccess] - Afficher un toast de succès
  * @param {boolean} [options.showError] - Afficher un toast d'erreur
@@ -13,7 +13,7 @@ import { api } from '@/lib/api';
  * @param {string} [options.redirectPath] - Chemin de redirection
  * @param {boolean} [options.redirectToLogin] - Rediriger vers la page de connexion en cas d'erreur 401
  * @param {boolean} [options.throwError] - Lancer l'erreur pour la gestion en amont
- * @returns {Object} - Fonctions et états pour gérer les appels API
+ * @returns {Object} - Fonctions et états pour gérer les appels Supabase
  */
 const useApi = (options = {}) => {
   const {
@@ -43,15 +43,13 @@ const useApi = (options = {}) => {
   }, []);
 
   /**
-   * Exécute une requête API
-   * @param {string} method - Méthode HTTP (get, post, put, delete, etc.)
-   * @param {string} url - URL de l'API
-   * @param {Object} requestData - Données à envoyer (pour POST, PUT, PATCH)
-   * @param {Object} config - Configuration supplémentaire pour axios
-   * @returns {Promise<Object>} - Réponse de l'API
+   * Exécute une requête Supabase
+   * @param {Function} supabaseCall - Fonction Supabase à exécuter
+   * @param {Object} config - Configuration supplémentaire
+   * @returns {Promise<Object>} - Réponse de Supabase
    */
-  const callApi = useCallback(
-    async (method, url, requestData = null, config = {}) => {
+  const callSupabase = useCallback(
+    async (supabaseCall, config = {}) => {
       // Annuler la requête précédente si elle existe
       if (controllerRef.current) {
         controllerRef.current.abort();
@@ -65,20 +63,24 @@ const useApi = (options = {}) => {
       setError(null);
 
       try {
-        const response = await api({
-          method,
-          url,
-          data: requestData,
-          signal: controller.signal,
-          ...config,
-        });
+        const result = await supabaseCall();
 
-        setData(response.data);
-        setStatus(response.status);
+        // Vérifier si la requête a été annulée
+        if (controller.signal.aborted) {
+          return null;
+        }
+
+        // Gérer les erreurs Supabase
+        if (result.error) {
+          throw result.error;
+        }
+
+        setData(result.data);
+        setStatus(200);
 
         // Afficher un message de succès si nécessaire
-        if (showSuccess && response.data?.message) {
-          toast.success(response.data.message);
+        if (showSuccess && result.data?.message) {
+          toast.success(result.data.message);
         }
 
         // Rediriger si nécessaire
@@ -86,15 +88,15 @@ const useApi = (options = {}) => {
           navigate(redirectPath || ROUTES.DASHBOARD);
         }
 
-        return response.data;
+        return result.data;
       } catch (err) {
         // Ignorer les erreurs d'annulation
         if (err.name === 'CanceledError' || err.name === 'AbortError') {
           return null;
         }
 
-        const errorData = err.response?.data || { message: err.message };
-        const errorStatus = err.response?.status;
+        const errorData = { message: err.message };
+        const errorStatus = err.status || 500;
         
         setError(errorData);
         setStatus(errorStatus);
@@ -128,12 +130,64 @@ const useApi = (options = {}) => {
     [navigate, redirectOnSuccess, redirectPath, showError, showSuccess, throwError, redirectToLogin]
   );
 
-  // Méthodes HTTP courantes
-  const get = useCallback((url, config = {}) => callApi('get', url, null, config), [callApi]);
-  const post = useCallback((url, data, config = {}) => callApi('post', url, data, config), [callApi]);
-  const put = useCallback((url, data, config = {}) => callApi('put', url, data, config), [callApi]);
-  const patch = useCallback((url, data, config = {}) => callApi('patch', url, data, config), [callApi]);
-  const del = useCallback((url, config = {}) => callApi('delete', url, null, config), [callApi]);
+  // Méthodes pour les opérations CRUD courantes
+  const select = useCallback((table, query = {}) => {
+    return callSupabase(() => supabase.from(table).select(query.select || '*').eq(query.eq?.field, query.eq?.value), query);
+  }, [callSupabase]);
+
+  const insert = useCallback((table, data) => {
+    return callSupabase(() => supabase.from(table).insert(data).select(), {});
+  }, [callSupabase]);
+
+  const update = useCallback((table, data, conditions = {}) => {
+    let query = supabase.from(table).update(data).select();
+    
+    if (conditions.eq) {
+      query = query.eq(conditions.eq.field, conditions.eq.value);
+    }
+    
+    return callSupabase(() => query, {});
+  }, [callSupabase]);
+
+  const remove = useCallback((table, conditions = {}) => {
+    let query = supabase.from(table).delete();
+    
+    if (conditions.eq) {
+      query = query.eq(conditions.eq.field, conditions.eq.value);
+    }
+    
+    return callSupabase(() => query, {});
+  }, [callSupabase]);
+
+  // Méthodes pour l'authentification
+  const signIn = useCallback((email, password) => {
+    return callSupabase(() => supabase.auth.signInWithPassword({ email, password }), {});
+  }, [callSupabase]);
+
+  const signUp = useCallback((email, password, userData = {}) => {
+    return callSupabase(() => supabase.auth.signUp({
+      email,
+      password,
+      options: { data: userData }
+    }), {});
+  }, [callSupabase]);
+
+  const signOut = useCallback(() => {
+    return callSupabase(() => supabase.auth.signOut(), {});
+  }, [callSupabase]);
+
+  // Méthodes pour le storage
+  const uploadFile = useCallback((bucket, path, file) => {
+    return callSupabase(() => supabase.storage.from(bucket).upload(path, file), {});
+  }, [callSupabase]);
+
+  const downloadFile = useCallback((bucket, path) => {
+    return callSupabase(() => supabase.storage.from(bucket).download(path), {});
+  }, [callSupabase]);
+
+  const deleteFile = useCallback((bucket, path) => {
+    return callSupabase(() => supabase.storage.from(bucket).remove([path]), {});
+  }, [callSupabase]);
 
   // Réinitialiser l'état
   const reset = useCallback(() => {
@@ -159,21 +213,39 @@ const useApi = (options = {}) => {
     data,
     status,
     
-    // Méthodes
-    callApi,
-    get,
-    post,
-    put,
-    patch,
-    delete: del,
+    // Méthodes CRUD
+    select,
+    insert,
+    update,
+    remove,
+    
+    // Méthodes d'authentification
+    signIn,
+    signUp,
+    signOut,
+    
+    // Méthodes de storage
+    uploadFile,
+    downloadFile,
+    deleteFile,
+    
+    // Méthodes utilitaires
+    callSupabase,
     reset,
     cancelRequest,
     
     // Alias pour la compatibilité
-    execute: callApi,
+    execute: callSupabase,
     isLoading: loading,
     isError: !!error,
     isSuccess: !!data && !error,
+    
+    // Méthodes HTTP pour la compatibilité (dépréciées)
+    get: select,
+    post: insert,
+    put: update,
+    patch: update,
+    delete: remove,
   };
 };
 

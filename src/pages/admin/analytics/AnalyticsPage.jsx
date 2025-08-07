@@ -16,13 +16,9 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import { 
-  getAnalyticsData,
-  getRevenueData,
-  getUserAcquisitionData,
-  getTopProducts,
-  getTrafficSources,
-  getSalesByCategory
-} from '@/lib/api';
+  listingService,
+  userService
+} from '@/services/supabase.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -84,37 +80,90 @@ function AnalyticsPage() {
   // Fetch analytics data
   const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['analytics', 'overview', startDate, endDate],
-    queryFn: () => getAnalyticsData({ startDate, endDate })
+    queryFn: async () => {
+      // Récupérer les données de base pour les analytics
+      const [listings, users] = await Promise.all([
+        listingService.getAllListings(),
+        userService.getAllUsers()
+      ]);
+      
+      // Calculer les statistiques de base
+      const totalListings = listings.length;
+      const approvedListings = listings.filter(l => l.status === 'approved').length;
+      const pendingListings = listings.filter(l => l.status === 'pending').length;
+      const totalUsers = users.length;
+      const activeUsers = users.filter(u => u.status === 'active').length;
+      
+      return {
+        totalListings,
+        approvedListings,
+        pendingListings,
+        totalUsers,
+        activeUsers,
+        revenue: 0, // TODO: Implémenter les transactions
+        growth: {
+          listings: 0,
+          users: 0,
+          revenue: 0
+        }
+      };
+    }
   });
 
   // Fetch revenue data
   const { data: revenueData, isLoading: isLoadingRevenue } = useQuery({
     queryKey: ['analytics', 'revenue', startDate, endDate],
-    queryFn: () => getRevenueData({ startDate, endDate, groupBy: dateRange === 'today' || dateRange === 'yesterday' ? 'hour' : 'day' })
+    queryFn: async () => {
+      // TODO: Implémenter les données de revenus
+      return [];
+    }
   });
 
   // Fetch user acquisition data
   const { data: userData, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['analytics', 'users', startDate, endDate],
-    queryFn: () => getUserAcquisitionData({ startDate, endDate })
+    queryFn: async () => {
+      const users = await userService.getAllUsers();
+      
+      // Grouper les utilisateurs par date de création
+      const userGroups = users.reduce((acc, user) => {
+        const date = format(new Date(user.created_at), 'yyyy-MM-dd');
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {});
+      
+      return Object.entries(userGroups).map(([date, count]) => ({
+        date,
+        users: count
+      }));
+    }
   });
 
   // Fetch top products
   const { data: topProducts, isLoading: isLoadingTopProducts } = useQuery({
     queryKey: ['analytics', 'top-products', startDate, endDate],
-    queryFn: () => getTopProducts({ startDate, endDate, limit: 5 })
+    queryFn: async () => {
+      // TODO: Implémenter les données des produits les plus vendus
+      return [];
+    }
   });
 
   // Fetch traffic sources
   const { data: trafficSources, isLoading: isLoadingTraffic } = useQuery({
     queryKey: ['analytics', 'traffic', startDate, endDate],
-    queryFn: () => getTrafficSources({ startDate, endDate })
+    queryFn: async () => {
+      // TODO: Implémenter les sources de trafic
+      return {};
+    }
   });
 
   // Fetch sales by category
   const { data: salesByCategory, isLoading: isLoadingSalesByCategory } = useQuery({
     queryKey: ['analytics', 'categories', startDate, endDate],
-    queryFn: () => getSalesByCategory({ startDate, endDate })
+    queryFn: async () => {
+      // TODO: Implémenter les ventes par catégorie
+      return {};
+    }
   });
 
   // Format revenue data for charts
@@ -135,9 +184,9 @@ function AnalyticsPage() {
     
     return userData.map(item => ({
       date: format(parseISO(item.date), 'MMM d'),
-      newUsers: item.newUsers,
-      activeUsers: item.activeUsers,
-      returningUsers: item.returningUsers
+      newUsers: item.users,
+      activeUsers: item.users, // Assuming activeUsers is the same as newUsers for simplicity in this example
+      returningUsers: 0 // No returning users data available in this simplified example
     }));
   }, [userData]);
 

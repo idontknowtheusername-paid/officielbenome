@@ -79,7 +79,6 @@ export * from './form/Switch';
 export * from './form/Textarea';
 
 // Export utility hooks
-export * from '../hooks/useApi';
 export * from '../hooks/useDebounce';
 export * from '../hooks/useLocalStorage';
 export * from '../hooks/useMediaQuery';

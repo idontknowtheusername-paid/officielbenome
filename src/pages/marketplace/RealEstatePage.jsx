@@ -1,11 +1,65 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Filter, Search, ArrowRight } from 'lucide-react';
+import { MapPin, Filter, Search, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useListings } from '@/hooks/useListings';
+import ListingCard from '@/components/ListingCard';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const RealEstatePage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState({
+    search: '',
+    location: '',
+    type: '',
+    minPrice: '',
+    maxPrice: ''
+  });
+
+  // Utiliser le hook pour récupérer les annonces immobilières
+  const { 
+    listings, 
+    loading, 
+    error, 
+    hasMore, 
+    loadMore, 
+    toggleFavorite 
+  } = useListings('real_estate', filters);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // La recherche se fait automatiquement via le hook
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      location: '',
+      type: '',
+      minPrice: '',
+      maxPrice: ''
+    });
+  };
+
+  const handleCreateListing = () => {
+    if (!user) {
+      navigate('/connexion');
+      return;
+    }
+    navigate('/creer-annonce/real-estate');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-green-900/10 text-foreground py-12">
       <div className="container mx-auto px-4 md:px-6">
@@ -30,71 +84,209 @@ const RealEstatePage = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="bg-card p-6 rounded-xl shadow-xl mb-12 sticky top-20 z-50 glassmorphic-card"
         >
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
             <div className="md:col-span-2">
-              <label htmlFor="search-location" className="block text-sm font-medium mb-1">Recherche</label>
+              <label htmlFor="search" className="block text-sm font-medium mb-1">Recherche</label>
               <div className="relative">
-                <Input id="search-location" type="text" placeholder="Entrez une ville, quartier, mots-clés..." className="pl-10 h-12 text-base" />
+                <Input 
+                  id="search" 
+                  type="text" 
+                  placeholder="Entrez une ville, quartier, mots-clés..." 
+                  className="pl-10 h-12 text-base"
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               </div>
             </div>
+            
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium mb-1">Localisation</label>
+              <Input 
+                id="location" 
+                type="text" 
+                placeholder="Ville, quartier..." 
+                className="h-12 text-base"
+                value={filters.location}
+                onChange={(e) => handleFilterChange('location', e.target.value)}
+              />
+            </div>
+            
             <div>
               <label htmlFor="property-type" className="block text-sm font-medium mb-1">Type de bien</label>
-              <select id="property-type" className="w-full h-12 rounded-md border border-input bg-transparent px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                <option>Tous types</option>
-                <option>Appartement</option>
-                <option>Maison</option>
-                <option>Terrain</option>
-                <option>Commercial</option>
+              <select 
+                id="property-type" 
+                className="w-full h-12 rounded-md border border-input bg-transparent px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                value={filters.type}
+                onChange={(e) => handleFilterChange('type', e.target.value)}
+              >
+                <option value="">Tous types</option>
+                <option value="appartement">Appartement</option>
+                <option value="maison">Maison</option>
+                <option value="terrain">Terrain</option>
+                <option value="commercial">Commercial</option>
               </select>
             </div>
-            <Button className="h-12 text-base w-full bg-primary hover:bg-primary/90">
-              <Filter className="mr-2 h-5 w-5" /> Rechercher
-            </Button>
-          </div>
+            
+            <div>
+              <label htmlFor="price-range" className="block text-sm font-medium mb-1">Prix (FCFA)</label>
+              <div className="flex gap-2">
+                <Input 
+                  type="number" 
+                  placeholder="Min" 
+                  className="h-12 text-base"
+                  value={filters.minPrice}
+                  onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                />
+                <Input 
+                  type="number" 
+                  placeholder="Max" 
+                  className="h-12 text-base"
+                  value={filters.maxPrice}
+                  onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button type="submit" className="h-12 text-base flex-1 bg-primary hover:bg-primary/90">
+                <Filter className="mr-2 h-5 w-5" /> Rechercher
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="h-12 px-3"
+                onClick={clearFilters}
+              >
+                Effacer
+              </Button>
+            </div>
+          </form>
         </motion.div>
 
-        {/* Listings Area - Placeholder */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3, 4, 5, 6].map((item) => (
-            <motion.div
-              key={item}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: item * 0.1 }}
-              className="bg-card rounded-lg shadow-lg overflow-hidden hover:shadow-primary/20 transition-shadow duration-300 glassmorphic-card"
-            >
-              <div className="relative h-56 bg-muted">
-                <img  
-                    className="w-full h-full object-cover" 
-                    alt={`Propriété ${item} à vendre ou à louer`}
-                 src="https://images.unsplash.com/photo-1687949395814-84675a8042f3" />
-                <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm font-semibold">
-                  À Vendre
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2 truncate">Superbe Villa avec Piscine à Saly</h3>
-                <div className="flex items-center text-muted-foreground mb-2">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  <span>Saly, Sénégal</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3 h-12 overflow-hidden">3 chambres, 2 salles de bain, grand jardin, proche de la mer...</p>
-                <div className="flex justify-between items-center">
-                  <p className="text-2xl font-bold text-primary">150 000 000 FCFA</p>
-                  <Button variant="outline" size="sm">Voir Détails</Button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        
-        <div className="text-center mt-16">
-          <Button size="lg" variant="ghost" className="text-primary hover:text-primary/90">
-            Charger plus d'annonces <ArrowRight className="ml-2 h-5 w-5" />
+        {/* Create Listing Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mb-8 text-center"
+        >
+          <Button 
+            onClick={handleCreateListing}
+            size="lg" 
+            className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
+          >
+            🏠 Publier une annonce immobilière
           </Button>
-        </div>
+        </motion.div>
 
+        {/* Loading State */}
+        {loading && listings.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-20"
+          >
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="text-lg text-muted-foreground">Chargement des annonces...</p>
+          </motion.div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-20"
+          >
+            <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+            <p className="text-lg text-destructive mb-2">Erreur lors du chargement</p>
+            <p className="text-muted-foreground">{error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Réessayer
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Listings Grid */}
+        {!loading && listings.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {listings.map((listing, index) => (
+              <motion.div
+                key={listing.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <ListingCard 
+                  listing={listing} 
+                  onToggleFavorite={toggleFavorite}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && listings.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <div className="text-6xl mb-4">🏠</div>
+            <h3 className="text-2xl font-semibold mb-2">Aucune annonce trouvée</h3>
+            <p className="text-muted-foreground mb-6">
+              Aucune annonce immobilière ne correspond à vos critères de recherche.
+            </p>
+            <Button onClick={clearFilters} variant="outline">
+              Effacer les filtres
+            </Button>
+          </motion.div>
+        )}
+        
+        {/* Load More Button */}
+        {hasMore && listings.length > 0 && (
+          <div className="text-center mt-16">
+            <Button 
+              onClick={loadMore}
+              size="lg" 
+              variant="ghost" 
+              className="text-primary hover:text-primary/90"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Chargement...
+                </>
+              ) : (
+                <>
+                  Charger plus d'annonces <ArrowRight className="ml-2 h-5 w-5" />
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Stats */}
+        {listings.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-16 text-center"
+          >
+            <p className="text-muted-foreground">
+              {listings.length} annonce{listings.length > 1 ? 's' : ''} immobilière{listings.length > 1 ? 's' : ''} trouvée{listings.length > 1 ? 's' : ''}
+            </p>
+          </motion.div>
+        )}
       </div>
     </div>
   );

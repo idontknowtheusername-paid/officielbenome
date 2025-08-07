@@ -1,18 +1,20 @@
-import api from './api.service';
-import { API_ENDPOINTS } from '../config/api.config';
+import { supabase } from '@/lib/supabase';
 
 const AuthService = {
   // Se connecter
   async login(credentials) {
     try {
-      const response = await api.post(API_ENDPOINTS.LOGIN, credentials);
-      const { token, refreshToken, user } = response.data;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password,
+      });
       
-      // Stocker les tokens dans le localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (error) throw error;
       
-      return user;
+      return {
+        user: data.user,
+        session: data.session
+      };
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -22,8 +24,44 @@ const AuthService = {
   // S'inscrire
   async register(userData) {
     try {
-      const response = await api.post(API_ENDPOINTS.REGISTER, userData);
-      return response.data;
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            phone_number: userData.phoneNumber,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // Créer le profil utilisateur dans la table public.users
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: data.user.id,
+              first_name: userData.firstName,
+              last_name: userData.lastName,
+              email: userData.email,
+              phone_number: userData.phoneNumber,
+              role: 'user'
+            }
+          ]);
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+      }
+
+      return {
+        user: data.user,
+        session: data.session
+      };
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -33,21 +71,28 @@ const AuthService = {
   // Se déconnecter
   async logout() {
     try {
-      await api.post(API_ENDPOINTS.LOGOUT);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      // Supprimer les tokens du localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
+      throw error;
     }
   },
 
   // Récupérer le profil utilisateur
   async getProfile() {
     try {
-      const response = await api.get(API_ENDPOINTS.PROFILE);
-      return response.data;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Get profile error:', error);
       throw error;
@@ -56,14 +101,18 @@ const AuthService = {
 
   // Vérifier si l'utilisateur est authentifié
   isAuthenticated() {
-    return !!localStorage.getItem('token');
+    return !!supabase.auth.getSession();
   },
 
   // Réinitialiser le mot de passe
   async forgotPassword(email) {
     try {
-      const response = await api.post(API_ENDPOINTS.FORGOT_PASSWORD, { email });
-      return response.data;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      return { message: 'Email de réinitialisation envoyé' };
     } catch (error) {
       console.error('Forgot password error:', error);
       throw error;
@@ -73,13 +122,50 @@ const AuthService = {
   // Réinitialiser le mot de passe avec un token
   async resetPassword(token, password) {
     try {
-      const response = await api.post(API_ENDPOINTS.RESET_PASSWORD, { token, password });
-      return response.data;
+      const { error } = await supabase.auth.updateUser({
+        password: password
+      });
+
+      if (error) throw error;
+      return { message: 'Mot de passe mis à jour avec succès' };
     } catch (error) {
       console.error('Reset password error:', error);
       throw error;
     }
   },
+
+  // Mettre à jour le profil utilisateur
+  async updateProfile(updates) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
+
+      const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  },
+
+  // Écouter les changements d'authentification
+  onAuthStateChange(callback) {
+    return supabase.auth.onAuthStateChange(callback);
+  },
+
+  // Récupérer la session actuelle
+  async getSession() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return data;
+  }
 };
 
 export default AuthService;

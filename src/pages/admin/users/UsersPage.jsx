@@ -20,11 +20,8 @@ import {
   ChevronsRight
 } from 'lucide-react';
 import {
-  getAdminUsers,
-  updateUserStatus,
-  deleteUser,
-  updateUserRole
-} from '@/lib/api';
+  userService
+} from '@/services/supabase.service';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,29 +59,24 @@ function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
   // Fetch users with filters and pagination
-  const { data, isLoading, isError } = useQuery({
+  const { data: users, isLoading, isError } = useQuery({
     queryKey: ['adminUsers', { searchTerm, statusFilter, roleFilter, sortBy, sortOrder, page, perPage }],
-    queryFn: () =>
-      getAdminUsers({
-        search: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        role: roleFilter !== 'all' ? roleFilter : undefined,
-        sortBy,
-        sortOrder,
-        page,
-        limit: perPage
-      })
+    queryFn: async () => {
+      // Pour l'instant, on récupère tous les utilisateurs
+      // La pagination et les filtres seront implémentés plus tard dans le service
+      return await userService.getAllUsers();
+    }
   });
 
   // Update user status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: ({ userId, status }) => updateUserStatus(userId, status),
+    mutationFn: ({ userId, status }) => userService.updateUserStatus(userId, status),
     onSuccess: () => {
       queryClient.invalidateQueries(['adminUsers']);
       toast({
@@ -103,7 +95,11 @@ function UsersPage() {
 
   // Delete user mutation
   const deleteUserMutation = useMutation({
-    mutationFn: (userId) => deleteUser(userId),
+    mutationFn: (userId) => {
+      // Pour l'instant, on met juste le statut à 'deleted'
+      // La suppression physique sera implémentée plus tard
+      return userService.updateUserStatus(userId, 'deleted');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['adminUsers']);
       toast({
@@ -122,7 +118,7 @@ function UsersPage() {
 
   // Update user role mutation
   const updateRoleMutation = useMutation({
-    mutationFn: ({ userId, role }) => updateUserRole(userId, role),
+    mutationFn: ({ userId, role }) => userService.updateProfile({ role }),
     onSuccess: () => {
       queryClient.invalidateQueries(['adminUsers']);
       toast({
@@ -158,8 +154,8 @@ function UsersPage() {
 
   // Handle search
   const handleSearch = (e) => {
-    e.preventDefault();
-    setPage(1); // Reset to first page on new search
+    setSearchTerm(e.target.value);
+    setPage(1);
   };
 
   return (

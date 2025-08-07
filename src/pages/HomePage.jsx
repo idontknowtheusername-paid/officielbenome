@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; // Added import
 import { ArrowRight, FolderHeart as HomeIcon, BadgeCent as CarIcon, Briefcase as BriefcaseIcon, ShoppingBag as ShoppingBagIcon, SearchCode as SearchIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import { personalData } from '@/lib/personalData';
+import { SupabaseTest } from '@/components/SupabaseTest';
 
 const HomePage = () => {
   // This page is now a redirect or placeholder as MarketplaceHomePage is the main entry.
@@ -162,6 +163,35 @@ const HomePage = () => {
         </div>
       </section>
       
+      {/* Supabase Test Section */}
+      <section className="py-20 md:py-32 bg-background/50">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.h2 
+            className="text-3xl md:text-4xl font-bold text-center mb-6"
+            initial={{ opacity: 0, y:20 }}
+            animate={{ opacity: 1, y:0 }}
+            transition={{ duration:0.5 }}
+          >
+            🧪 <span className="gradient-text">Test Supabase</span>
+          </motion.h2>
+          <motion.p 
+            className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto text-center"
+            initial={{ opacity: 0, y:20 }}
+            animate={{ opacity: 1, y:0 }}
+            transition={{ duration:0.5, delay:0.2 }}
+          >
+            Testez la connexion et l'authentification Supabase
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y:20 }}
+            animate={{ opacity: 1, y:0 }}
+            transition={{ duration:0.5, delay:0.4 }}
+          >
+            <SupabaseTest />
+          </motion.div>
+        </div>
+      </section>
+
       {/* Call to Action */}
       <section className="py-20 md:py-32">
         <div className="container mx-auto px-4 md:px-6 text-center">

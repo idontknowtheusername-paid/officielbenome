@@ -3,7 +3,9 @@
  * Contient les constantes et paramètres globaux de l'application
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+// Configuration Supabase
+export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const APP_NAME = 'MaxiMarket';
 export const APP_DESCRIPTION = 'Plateforme de mise en relation entre particuliers';
 
@@ -212,7 +214,7 @@ export const DEFAULT_METADATA = {
 };
 
 // Chemins d'API
-export const API_ENDPOINTS = {
+export const SUPABASE_CONFIG = {
   // Authentification
   AUTH: {
     LOGIN: '/auth/login',
@@ -452,7 +454,8 @@ export const ROUTE_METADATA = {
 };
 
 export default {
-  API_BASE_URL,
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
   APP_NAME,
   APP_DESCRIPTION,
   PAGINATION,
@@ -466,7 +469,7 @@ export default {
   MODULES,
   EXTERNAL_APIS,
   DEFAULT_METADATA,
-  API_ENDPOINTS,
+  SUPABASE_CONFIG,
   ROUTES,
   ROUTE_METADATA
 };
