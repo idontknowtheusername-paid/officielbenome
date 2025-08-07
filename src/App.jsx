@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
 import VercelDebug from '@/components/VercelDebug';
+import AppWrapper from '@/components/AppWrapper';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -92,7 +93,7 @@ const ConfigTest = () => {
 
 function App() {
   return (
-    <>
+    <AppWrapper>
       <VercelDebug />
       <ConfigTest />
       <Router>
@@ -207,7 +208,7 @@ function App() {
         </AuthProvider>
       </Router>
       <Toaster />
-    </>
+    </AppWrapper>
   );
 }
 

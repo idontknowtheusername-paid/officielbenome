@@ -1,4 +1,11 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+
+// Fonction helper pour vérifier Supabase
+const checkSupabase = () => {
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('Supabase non configuré - variables d\'environnement manquantes');
+  }
+};
 
 // ============================================================================
 // SERVICE AUTHENTIFICATION
@@ -7,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 export const authService = {
   // Connexion
   signIn: async (email, password) => {
+    checkSupabase();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
