@@ -142,11 +142,6 @@ export const listingService = {
           first_name,
           last_name,
           email
-        ),
-        categories!listings_category_id_fkey (
-          id,
-          name,
-          slug
         )
       `)
       .order('created_at', { ascending: false });
