@@ -56,7 +56,42 @@ CREATE TABLE IF NOT EXISTS listings (
   CONSTRAINT check_price_positive CHECK (price >= 0)
 );
 
--- 3. Insérer des catégories par défaut
+-- 3. Ajouter les colonnes manquantes si elles n'existent pas
+DO $$ 
+BEGIN
+  -- Ajouter color si elle n'existe pas
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='color') THEN
+    ALTER TABLE categories ADD COLUMN color VARCHAR(7) DEFAULT '#3B82F6';
+  END IF;
+  
+  -- Ajouter icon si elle n'existe pas
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='icon') THEN
+    ALTER TABLE categories ADD COLUMN icon VARCHAR(100);
+  END IF;
+  
+  -- Ajouter parent_id si elle n'existe pas
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='parent_id') THEN
+    ALTER TABLE categories ADD COLUMN parent_id UUID REFERENCES categories(id) ON DELETE SET NULL;
+  END IF;
+  
+  -- Ajouter is_active si elle n'existe pas
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='is_active') THEN
+    ALTER TABLE categories ADD COLUMN is_active BOOLEAN DEFAULT true;
+  END IF;
+  
+  -- Ajouter sort_order si elle n'existe pas
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='sort_order') THEN
+    ALTER TABLE categories ADD COLUMN sort_order INTEGER DEFAULT 0;
+  END IF;
+  
+  -- Ajouter metadata si elle n'existe pas
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='metadata') THEN
+    ALTER TABLE categories ADD COLUMN metadata JSONB;
+  END IF;
+END
+$$;
+
+-- 4. Insérer des catégories par défaut
 INSERT INTO categories (name, slug, description, icon, color) VALUES
   ('Immobilier', 'real_estate', 'Vente et location de biens immobiliers', 'home', '#10B981'),
   ('Automobile', 'automobile', 'Véhicules neufs et d''occasion', 'car', '#F59E0B'),
@@ -65,7 +100,7 @@ INSERT INTO categories (name, slug, description, icon, color) VALUES
   ('Électronique', 'electronics', 'Appareils électroniques et informatique', 'smartphone', '#3B82F6')
 ON CONFLICT (slug) DO NOTHING;
 
--- 4. Mettre à jour les listings existants pour associer les catégories
+-- 5. Mettre à jour les listings existants pour associer les catégories
 UPDATE listings 
 SET category_id = (
   CASE 
@@ -78,7 +113,7 @@ SET category_id = (
 )
 WHERE category_id IS NULL;
 
--- 5. Créer les index pour optimiser les performances
+-- 6. Créer les index pour optimiser les performances
 CREATE INDEX IF NOT EXISTS idx_listings_category_id ON listings(category_id);
 CREATE INDEX IF NOT EXISTS idx_listings_status ON listings(status);
 CREATE INDEX IF NOT EXISTS idx_listings_user_id ON listings(user_id);
@@ -90,11 +125,11 @@ CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
 CREATE INDEX IF NOT EXISTS idx_categories_is_active ON categories(is_active);
 
--- 6. Activer RLS
+-- 7. Activer RLS
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
 
--- 7. Politiques RLS pour categories (lecture libre)
+-- 8. Politiques RLS pour categories (lecture libre)
 CREATE POLICY "Categories are viewable by everyone" ON categories
   FOR SELECT USING (true);
 
@@ -107,7 +142,7 @@ CREATE POLICY "Categories can be managed by admins" ON categories
     )
   );
 
--- 8. Politiques RLS pour listings
+-- 9. Politiques RLS pour listings
 CREATE POLICY "Listings are viewable by everyone" ON listings
   FOR SELECT USING (status = 'approved' OR user_id = auth.uid());
 
@@ -129,7 +164,7 @@ CREATE POLICY "Admins can manage all listings" ON listings
     )
   );
 
--- 9. Fonctions pour mettre à jour updated_at
+-- 10. Fonctions pour mettre à jour updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -138,7 +173,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 10. Triggers pour updated_at
+-- 11. Triggers pour updated_at
 DROP TRIGGER IF EXISTS update_categories_updated_at ON categories;
 CREATE TRIGGER update_categories_updated_at
   BEFORE UPDATE ON categories
@@ -149,7 +184,7 @@ CREATE TRIGGER update_listings_updated_at
   BEFORE UPDATE ON listings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- 11. Fonction pour incrémenter les vues
+-- 12. Fonction pour incrémenter les vues
 CREATE OR REPLACE FUNCTION increment_listing_views(listing_id UUID)
 RETURNS void AS $$
 BEGIN
@@ -159,7 +194,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 12. Vérifier que les relations fonctionnent
+-- 13. Vérifier que les relations fonctionnent
 SELECT 
   l.id, 
   l.title, 
