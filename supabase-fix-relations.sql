@@ -88,16 +88,28 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='metadata') THEN
     ALTER TABLE categories ADD COLUMN metadata JSONB;
   END IF;
+  
+  -- Gérer la contrainte parent_category NOT NULL si elle existe
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='parent_category') THEN
+    -- Modifier la contrainte pour permettre NULL ou supprimer la contrainte
+    BEGIN
+      ALTER TABLE categories ALTER COLUMN parent_category DROP NOT NULL;
+    EXCEPTION WHEN OTHERS THEN
+      -- Si on ne peut pas modifier, on supprime et recrée la colonne
+      ALTER TABLE categories DROP COLUMN IF EXISTS parent_category;
+      ALTER TABLE categories ADD COLUMN parent_category VARCHAR(255);
+    END;
+  END IF;
 END
 $$;
 
 -- 4. Insérer des catégories par défaut
-INSERT INTO categories (name, slug, description, icon, color) VALUES
-  ('Immobilier', 'real_estate', 'Vente et location de biens immobiliers', 'home', '#10B981'),
-  ('Automobile', 'automobile', 'Véhicules neufs et d''occasion', 'car', '#F59E0B'),
-  ('Services', 'services', 'Services professionnels et particuliers', 'briefcase', '#8B5CF6'),
-  ('Produits', 'marketplace', 'Vente de produits divers', 'shopping-bag', '#EF4444'),
-  ('Électronique', 'electronics', 'Appareils électroniques et informatique', 'smartphone', '#3B82F6')
+INSERT INTO categories (name, slug, description, icon, color, parent_category) VALUES
+  ('Immobilier', 'real_estate', 'Vente et location de biens immobiliers', 'home', '#10B981', 'Principale'),
+  ('Automobile', 'automobile', 'Véhicules neufs et d''occasion', 'car', '#F59E0B', 'Principale'),
+  ('Services', 'services', 'Services professionnels et particuliers', 'briefcase', '#8B5CF6', 'Principale'),
+  ('Produits', 'marketplace', 'Vente de produits divers', 'shopping-bag', '#EF4444', 'Principale'),
+  ('Électronique', 'electronics', 'Appareils électroniques et informatique', 'smartphone', '#3B82F6', 'Principale')
 ON CONFLICT (slug) DO NOTHING;
 
 -- 5. Mettre à jour les listings existants pour associer les catégories
