@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
-import VercelDebug from '@/components/VercelDebug';
+
 import AppWrapper from '@/components/AppWrapper';
 
 // Layouts
@@ -94,8 +94,6 @@ const ConfigTest = () => {
 function App() {
   return (
     <AppWrapper>
-      <VercelDebug />
-      <ConfigTest />
       <Router>
         <AuthProvider>
           <AnimatePresence mode="wait">
