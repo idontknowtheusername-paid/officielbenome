@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Si Supabase n'est pas configuré (production sans variables), on évite toute action
+    // Si Supabase n'est pas configuré (production sans variables), on éviter toute action
     if (!isSupabaseConfigured) {
       setLoading(false);
       return;
@@ -39,9 +39,38 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
 
         if (event === 'SIGNED_IN') {
+          // Vérifier si le profil existe dans public.users
+          if (session?.user) {
+            const { data: existingProfile } = await supabase
+              .from('users')
+              .select('id')
+              .eq('id', session.user.id)
+              .single();
+
+            if (!existingProfile) {
+              // Créer le profil s'il n'existe pas
+              const { error: profileError } = await supabase
+                .from('users')
+                .insert([
+                  {
+                    id: session.user.id,
+                    first_name: session.user.user_metadata?.first_name || '',
+                    last_name: session.user.user_metadata?.last_name || '',
+                    email: session.user.email,
+                    phone_number: session.user.user_metadata?.phone_number || '',
+                    role: 'user'
+                  }
+                ]);
+
+              if (profileError) {
+                console.error('Profile creation error:', profileError);
+              }
+            }
+          }
+
           toast({
             title: "Connexion réussie",
-            description: "Bienvenue sur MaxiMarket !",
+            description: "Bienvenue sur Officiel BenoMe !",
           });
         } else if (event === 'SIGNED_OUT') {
           toast({
@@ -122,13 +151,21 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      toast({
-        title: "Inscription réussie",
-        description: "Vérifiez votre email pour confirmer votre compte !",
-      });
-      
-      navigate('/');
-      return true;
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Inscription réussie",
+          description: "Vérifiez votre email pour confirmer votre compte !",
+        });
+        // Ne pas rediriger immédiatement, rester sur la page d'inscription
+        return { success: true, needsConfirmation: true };
+      } else {
+        toast({
+          title: "Inscription réussie",
+          description: "Bienvenue sur Officiel BenoMe !",
+        });
+        navigate('/');
+        return { success: true, needsConfirmation: false };
+      }
     } catch (error) {
       console.error('Register error:', error);
       toast({
