@@ -3,27 +3,33 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+
+// Ne pas faire planter l'application en production si les variables manquent
+if (!isSupabaseConfigured) {
+  console.error('Supabase non configuré: VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY manquants')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
-    }
-  }
-})
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+      },
+    })
+  : null
 
-// Configuration pour le développement
+// Logs utiles en développement
 if (import.meta.env.DEV) {
-  console.log('🔧 Supabase configuré en mode développement')
-  console.log('📡 URL:', supabaseUrl)
+  console.log('🔧 Mode développement activé')
+  console.log('📡 Supabase URL:', supabaseUrl)
+  console.log('✅ Supabase configuré:', isSupabaseConfigured)
 }
 
-export default supabase 
+export default supabase

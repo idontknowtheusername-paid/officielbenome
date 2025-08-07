@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
 
 const AuthContext = createContext({});
@@ -14,6 +14,12 @@ export const AuthProvider = ({ children }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Si Supabase n'est pas configuré (production sans variables), on évite toute action
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
     // Récupérer la session initiale
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -51,6 +57,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
+      if (!isSupabaseConfigured) {
+        throw new Error('Supabase non configuré');
+      }
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
@@ -74,6 +83,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      if (!isSupabaseConfigured) {
+        throw new Error('Supabase non configuré');
+      }
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
