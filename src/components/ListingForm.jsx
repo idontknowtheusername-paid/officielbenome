@@ -4,8 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { createListing } from '@/lib/api/index.js';
-import { uploadFile } from '@/lib/api/index.js';
+import { listingService, storageService } from '@/services/supabase.service';
 import { Dialog } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 
@@ -100,7 +99,7 @@ const ListingForm = ({ onSuccess }) => {
     try {
       const uploadedUrls = [];
       for (const file of files) {
-        const res = await uploadFile(file, 'annonces');
+        const res = await storageService.uploadFile(file, 'annonces');
         if (res?.url) uploadedUrls.push(res.url);
       }
       setForm((prev) => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
@@ -153,7 +152,7 @@ const ListingForm = ({ onSuccess }) => {
         ...form,
         price: Number(form.price),
       };
-      const res = await createListing(payload);
+      const res = await listingService.createListing(payload);
       toast({ title: 'Annonce créée !', description: 'Votre annonce a été soumise avec succès.' });
       setForm(DEFAULT_FORM);
       if (onSuccess) onSuccess(res);
