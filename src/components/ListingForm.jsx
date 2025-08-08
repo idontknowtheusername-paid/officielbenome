@@ -453,11 +453,11 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   value={form.category}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                  className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-gray-900 bg-white"
                 >
-                  <option value="">Sélectionner une catégorie</option>
+                  <option value="" className="text-gray-900">Sélectionner une catégorie</option>
                   {CATEGORY_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                    <option key={option.value} value={option.value} className="text-gray-900">{option.label}</option>
                   ))}
                 </select>
               </div>
@@ -489,12 +489,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     name="currency"
                     value={form.currency}
                     onChange={handleChange}
-                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-gray-900 bg-white"
                   >
-                    <option value="XOF">XOF (Franc CFA)</option>
-                    <option value="EUR">EUR (Euro)</option>
-                    <option value="USD">USD (Dollar US)</option>
-                    <option value="NGN">NGN (Naira)</option>
+                    <option value="XOF" className="text-gray-900">XOF (Franc CFA)</option>
+                    <option value="EUR" className="text-gray-900">EUR (Euro)</option>
+                    <option value="USD" className="text-gray-900">USD (Dollar US)</option>
+                    <option value="NGN" className="text-gray-900">NGN (Naira)</option>
                   </select>
                 </div>
               </div>
@@ -507,11 +507,11 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     name="location.country"
                     value={form.location.country}
                     onChange={handleChange}
-                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-gray-900 bg-white"
                   >
-                    <option value="">Sélectionner un pays</option>
+                    <option value="" className="text-gray-900">Sélectionner un pays</option>
                     {COUNTRY_CITY_OPTIONS.map(country => (
-                      <option key={country.code} value={country.name}>{country.name}</option>
+                      <option key={country.code} value={country.name} className="text-gray-900">{country.name}</option>
                     ))}
                   </select>
                 </div>
@@ -524,12 +524,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     value={form.location.city}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                     disabled={!form.location.country}
                   >
-                    <option value="">Sélectionner une ville</option>
+                    <option value="" className="text-gray-900">Sélectionner une ville</option>
                     {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map(city => (
-                      <option key={city} value={city}>{city}</option>
+                      <option key={city} value={city} className="text-gray-900">{city}</option>
                     ))}
                   </select>
                 </div>
