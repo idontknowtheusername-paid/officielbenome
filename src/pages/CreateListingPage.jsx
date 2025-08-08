@@ -55,35 +55,21 @@ const CreateListingPage = () => {
     {
       id: 1,
       title: 'Informations de base',
-      description: 'Titre, description et catégorie',
+      description: 'Titre, description, catégorie, prix et localisation',
       icon: FileText,
       completed: false
     },
     {
       id: 2,
-      title: 'Prix et localisation',
-      description: 'Prix, devise et lieu',
-      icon: DollarSign,
-      completed: false
-    },
-    {
-      id: 3,
-      title: 'Médias',
-      description: 'Photos et vidéos',
+      title: 'Médias et détails',
+      description: 'Photos, vidéos et caractéristiques spécifiques',
       icon: Camera,
       completed: false
     },
     {
-      id: 4,
-      title: 'Détails spécifiques',
-      description: 'Caractéristiques détaillées',
-      icon: Settings,
-      completed: false
-    },
-    {
-      id: 5,
+      id: 3,
       title: 'Aperçu et publication',
-      description: 'Vérification finale',
+      description: 'Vérification finale et publication',
       icon: Eye,
       completed: false
     }

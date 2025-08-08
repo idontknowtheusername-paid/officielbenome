@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { listingService, storageService } from '@/services/supabase.service';
+import { Camera } from 'lucide-react';
 
 const CATEGORY_OPTIONS = [
   { value: 'REAL_ESTATE', label: 'Immobilier' },
@@ -461,6 +462,79 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                 </select>
               </div>
             </div>
+            
+            {/* Prix et localisation intégrés dans l'étape 1 */}
+            <div className="space-y-4 pt-6 border-t">
+              <h4 className="text-lg font-medium text-gray-900">Prix et localisation</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Prix *</Label>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    value={form.price}
+                    onChange={handleChange}
+                    placeholder="0"
+                    required
+                    className="h-12"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Devise</Label>
+                  <select
+                    id="currency"
+                    name="currency"
+                    value={form.currency}
+                    onChange={handleChange}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                  >
+                    <option value="XOF">XOF (Franc CFA)</option>
+                    <option value="EUR">EUR (Euro)</option>
+                    <option value="USD">USD (Dollar US)</option>
+                    <option value="NGN">NGN (Naira)</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="country">Pays</Label>
+                  <select
+                    id="country"
+                    name="location.country"
+                    value={form.location.country}
+                    onChange={handleChange}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                  >
+                    <option value="">Sélectionner un pays</option>
+                    {COUNTRY_CITY_OPTIONS.map(country => (
+                      <option key={country.code} value={country.name}>{country.name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ville</Label>
+                  <select
+                    id="city"
+                    name="location.city"
+                    value={form.location.city}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                    disabled={!form.location.country}
+                  >
+                    <option value="">Sélectionner une ville</option>
+                    {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         );
         
@@ -468,89 +542,13 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Prix et localisation</h3>
-              <p className="text-gray-600 mb-6">Définissez le prix et l'emplacement de votre offre.</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Médias et détails</h3>
+              <p className="text-gray-600 mb-6">Ajoutez des photos et des informations spécifiques à votre catégorie.</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="price">Prix *</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  value={form.price}
-                  onChange={handleChange}
-                  placeholder="0"
-                  required
-                  className="h-12"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="currency">Devise</Label>
-                <select
-                  id="currency"
-                  name="currency"
-                  value={form.currency}
-                  onChange={handleChange}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
-                >
-                  <option value="XOF">XOF (Franc CFA)</option>
-                  <option value="EUR">EUR (Euro)</option>
-                  <option value="USD">USD (Dollar US)</option>
-                  <option value="NGN">NGN (Naira)</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="country">Pays</Label>
-                <select
-                  id="country"
-                  name="location.country"
-                  value={form.location.country}
-                  onChange={handleChange}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
-                >
-                  <option value="">Sélectionner un pays</option>
-                  {COUNTRY_CITY_OPTIONS.map(country => (
-                    <option key={country.code} value={country.name}>{country.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="city">Ville</Label>
-                <select
-                  id="city"
-                  name="location.city"
-                  value={form.location.city}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
-                  disabled={!form.location.country}
-                >
-                  <option value="">Sélectionner une ville</option>
-                  {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map(city => (
-                    <option key={city} value={city}>{city}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        );
-        
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Médias</h3>
-              <p className="text-gray-600 mb-6">Ajoutez des photos et vidéos pour présenter votre offre.</p>
-            </div>
-            
+            {/* Section Médias */}
             <div className="space-y-4">
+              <h4 className="text-lg font-medium text-gray-900">Images</h4>
               <div className="space-y-2">
                 <Label>Images</Label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
@@ -601,30 +599,24 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                 </div>
               )}
             </div>
-          </div>
-        );
-        
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Détails spécifiques</h3>
-              <p className="text-gray-600 mb-6">Ajoutez des informations spécifiques à votre catégorie.</p>
-            </div>
             
-            {form.category ? (
-              <div className="space-y-4">
-                {renderSpecificFields()}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Veuillez d'abord sélectionner une catégorie à l'étape 1.</p>
-              </div>
-            )}
+            {/* Section Détails spécifiques */}
+            <div className="space-y-4 pt-6 border-t">
+              <h4 className="text-lg font-medium text-gray-900">Détails spécifiques</h4>
+              {form.category ? (
+                <div className="space-y-4">
+                  {renderSpecificFields()}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-500">Veuillez d'abord sélectionner une catégorie à l'étape 1.</p>
+                </div>
+              )}
+            </div>
           </div>
         );
         
-      case 5:
+      case 3:
         return (
           <div className="space-y-6">
             <div>
@@ -693,7 +685,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         </Button>
         
         <div className="flex items-center space-x-2">
-          {activeStep < 5 ? (
+          {activeStep < 3 ? (
             <Button
               type="button"
               onClick={nextStep}
