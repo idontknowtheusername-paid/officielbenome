@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { listingService, storageService } from '@/services/supabase.service';
-import { Dialog } from '@/components/ui/dialog';
-import { Card } from '@/components/ui/card';
 
 const CATEGORY_OPTIONS = [
   { value: 'REAL_ESTATE', label: 'Immobilier' },
@@ -28,6 +26,17 @@ const DEFAULT_FORM = {
   specificData: {},
 };
 
+// Fonction pour convertir les catégories URL en valeurs du formulaire
+const getCategoryValue = (cat) => {
+  const categoryMap = {
+    'real-estate': 'REAL_ESTATE',
+    'automobile': 'AUTOMOBILE',
+    'services': 'SERVICE',
+    'marketplace': 'PRODUCT'
+  };
+  return categoryMap[cat] || '';
+};
+
 const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onStepChange }) => {
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -35,19 +44,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     category: category ? getCategoryValue(category) : ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [activeStep, setActiveStep] = useState(currentStep);
 
-  // Fonction pour convertir les catégories URL en valeurs du formulaire
-  const getCategoryValue = (cat) => {
-    const categoryMap = {
-      'real-estate': 'REAL_ESTATE',
-      'automobile': 'AUTOMOBILE',
-      'services': 'SERVICE',
-      'marketplace': 'PRODUCT'
-    };
-    return categoryMap[cat] || '';
-  };
+  // Synchroniser les étapes avec le parent
+  useEffect(() => {
+    setActiveStep(currentStep);
+  }, [currentStep]);
 
   // Ajout des données pays/villes
   const COUNTRY_CITY_OPTIONS = [
@@ -404,178 +406,191 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }));
   };
 
-  return (
-    <>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-lg mx-auto p-4 bg-card rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-2">Créer une annonce</h2>
-        <div className="space-y-2">
-          <Label htmlFor="title">Titre *</Label>
-          <Input id="title" name="title" value={form.title} onChange={handleChange} required minLength={5} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="description">Description *</Label>
-          <Textarea id="description" name="description" value={form.description} onChange={handleChange} required minLength={10} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="price">Prix *</Label>
-          <Input id="price" name="price" type="number" value={form.price} onChange={handleChange} required min={0} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="currency">Devise</Label>
-          <Input id="currency" name="currency" value={form.currency} onChange={handleChange} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="category">Catégorie *</Label>
-          <select id="category" name="category" value={form.category} onChange={handleChange} required className="w-full border rounded p-2">
-            <option value="">Sélectionner...</option>
-            {CATEGORY_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="subCategory">Sous-catégorie</Label>
-          <Input id="subCategory" name="subCategory" value={form.subCategory} onChange={handleChange} />
-        </div>
-        <div className="space-y-2">
-          <Label>Pays</Label>
-          <select
-            name="location.country"
-            value={form.location.country}
-            onChange={handleChange}
-            required
-            className="input"
-          >
-            <option value="">Sélectionner un pays</option>
-            {COUNTRY_CITY_OPTIONS.map((c) => (
-              <option key={c.code} value={c.name}>{c.name}</option>
-            ))}
-          </select>
-          <Label>Ville</Label>
-          <select
-            name="location.city"
-            value={form.location.city}
-            onChange={handleChange}
-            required
-            className="input"
-            disabled={!form.location.country}
-          >
-            <option value="">Sélectionner une ville</option>
-            {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map(city => (
-              <option key={city} value={city}>{city}</option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label>Images</Label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-          />
-          {form.images.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {form.images.map((img, idx) => (
-                <div key={idx} className="relative group">
-                  <img
-                    src={img}
-                    alt={`Aperçu ${idx + 1}`}
-                    className="w-20 h-20 object-cover rounded border"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(idx)}
-                    className="absolute top-1 right-1 bg-white/80 rounded-full p-1 text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Supprimer cette image"
-                  >
-                    ×
-                  </button>
-                  {/* Flèches de réorganisation */}
-                  <div className="absolute bottom-1 left-1 flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => moveImage(idx, idx - 1)}
-                      disabled={idx === 0}
-                      className="bg-white/80 rounded-full p-1 text-xs text-gray-500 hover:text-primary disabled:opacity-30"
-                      title="Déplacer à gauche"
-                    >
-                      ←
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveImage(idx, idx + 1)}
-                      disabled={idx === form.images.length - 1}
-                      className="bg-white/80 rounded-full p-1 text-xs text-gray-500 hover:text-primary disabled:opacity-30"
-                      title="Déplacer à droite"
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              ))}
+  // Rendu des étapes du formulaire
+  const renderStep = () => {
+    switch (activeStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Informations de base</h3>
+              <p className="text-gray-600 mb-6">Commencez par les informations essentielles de votre annonce.</p>
             </div>
-          )}
-        </div>
-        {/* Champs spécifiques selon la catégorie */}
-        {form.category && (
-          <div className="space-y-2 border-t pt-4 mt-4">
-            <h3 className="font-semibold">Détails spécifiques</h3>
-            {renderSpecificFields()}
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Titre de l'annonce *</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  placeholder="Ex: Appartement moderne 3 pièces à Cotonou"
+                  required
+                  className="h-12"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Décrivez votre offre en détail..."
+                  rows={6}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="category">Catégorie *</Label>
+                <select
+                  id="category"
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {CATEGORY_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
-        )}
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => setShowPreview(true)}>
-            Prévisualiser
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Publication...' : 'Publier'}
-          </Button>
-        </div>
-      </form>
-      {/* Modale de prévisualisation */}
-      {showPreview && (
-        <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <Card className="max-w-xl w-full p-6 relative">
-              <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl"
-                onClick={() => setShowPreview(false)}
-                aria-label="Fermer la prévisualisation"
-              >
-                ×
-              </button>
-              <h2 className="text-2xl font-bold mb-2">Aperçu de l'annonce</h2>
-              <div className="mb-4">
-                <div className="font-semibold">Titre :</div>
-                <div>{form.title}</div>
+        );
+        
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Prix et localisation</h3>
+              <p className="text-gray-600 mb-6">Définissez le prix et l'emplacement de votre offre.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="price">Prix *</Label>
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  value={form.price}
+                  onChange={handleChange}
+                  placeholder="0"
+                  required
+                  className="h-12"
+                />
               </div>
-              <div className="mb-4">
-                <div className="font-semibold">Description :</div>
-                <div className="whitespace-pre-line text-gray-700">{form.description}</div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="currency">Devise</Label>
+                <select
+                  id="currency"
+                  name="currency"
+                  value={form.currency}
+                  onChange={handleChange}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                >
+                  <option value="XOF">XOF (Franc CFA)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                  <option value="USD">USD (Dollar US)</option>
+                  <option value="NGN">NGN (Naira)</option>
+                </select>
               </div>
-              <div className="mb-4">
-                <div className="font-semibold">Prix :</div>
-                <div>{form.price} {form.currency}</div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="country">Pays</Label>
+                <select
+                  id="country"
+                  name="location.country"
+                  value={form.location.country}
+                  onChange={handleChange}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                >
+                  <option value="">Sélectionner un pays</option>
+                  {COUNTRY_CITY_OPTIONS.map(country => (
+                    <option key={country.code} value={country.name}>{country.name}</option>
+                  ))}
+                </select>
               </div>
-              <div className="mb-4">
-                <div className="font-semibold">Catégorie :</div>
-                <div>{form.category}</div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="city">Ville</Label>
+                <select
+                  id="city"
+                  name="location.city"
+                  value={form.location.city}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                  disabled={!form.location.country}
+                >
+                  <option value="">Sélectionner une ville</option>
+                  {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
               </div>
+            </div>
+          </div>
+        );
+        
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Médias</h3>
+              <p className="text-gray-600 mb-6">Ajoutez des photos et vidéos pour présenter votre offre.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Images</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload" className="cursor-pointer">
+                    <div className="space-y-2">
+                      <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Camera className="h-6 w-6 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Cliquez pour ajouter des images</p>
+                        <p className="text-xs text-gray-500">PNG, JPG jusqu'à 10MB</p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              
               {form.images.length > 0 && (
-                <div className="mb-4">
-                  <div className="font-semibold">Images :</div>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                <div className="space-y-3">
+                  <Label>Images sélectionnées ({form.images.length})</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {form.images.map((img, idx) => (
-                      <div key={idx} className="relative group">
+                      <div key={idx} className="relative group aspect-square">
                         <img
                           src={img}
                           alt={`Aperçu ${idx + 1}`}
-                          className="w-24 h-24 object-cover rounded border"
+                          className="w-full h-full object-cover rounded-lg border"
                         />
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(idx)}
-                          className="absolute top-1 right-1 bg-white/80 rounded-full p-1 text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                           title="Supprimer cette image"
                         >
                           ×
@@ -585,24 +600,120 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   </div>
                 </div>
               )}
-              {/* Affichage des champs spécifiques */}
-              {form.category && (
-                <div className="mb-4">
-                  <div className="font-semibold">Détails spécifiques :</div>
-                  <pre className="bg-gray-50 rounded p-2 text-xs overflow-x-auto">
-                    {JSON.stringify(form.specificData, null, 2)}
-                  </pre>
+            </div>
+          </div>
+        );
+        
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Détails spécifiques</h3>
+              <p className="text-gray-600 mb-6">Ajoutez des informations spécifiques à votre catégorie.</p>
+            </div>
+            
+            {form.category ? (
+              <div className="space-y-4">
+                {renderSpecificFields()}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Veuillez d'abord sélectionner une catégorie à l'étape 1.</p>
+              </div>
+            )}
+          </div>
+        );
+        
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Aperçu et publication</h3>
+              <p className="text-gray-600 mb-6">Vérifiez les informations avant de publier votre annonce.</p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+              <div>
+                <h4 className="font-semibold text-lg">{form.title}</h4>
+                <p className="text-gray-600">{form.description}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Prix:</span> {form.price} {form.currency}
+                </div>
+                <div>
+                  <span className="font-medium">Catégorie:</span> {form.category}
+                </div>
+                <div>
+                  <span className="font-medium">Localisation:</span> {form.location.city}, {form.location.country}
+                </div>
+                <div>
+                  <span className="font-medium">Images:</span> {form.images.length}
+                </div>
+              </div>
+              
+              {form.images.length > 0 && (
+                <div>
+                  <span className="font-medium text-sm">Aperçu des images:</span>
+                  <div className="flex gap-2 mt-2">
+                    {form.images.slice(0, 3).map((img, idx) => (
+                      <img key={idx} src={img} alt="" className="w-16 h-16 object-cover rounded" />
+                    ))}
+                    {form.images.length > 3 && (
+                      <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                        +{form.images.length - 3}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
-              <div className="mb-2">
-                <div className="font-semibold">Localisation :</div>
-                <div>{form.location.city}, {form.location.country}</div>
-              </div>
-            </Card>
+            </div>
           </div>
-        </Dialog>
-      )}
-    </>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {renderStep()}
+      
+      {/* Navigation entre les étapes */}
+      <div className="flex justify-between items-center pt-6 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={prevStep}
+          disabled={activeStep === 1}
+        >
+          Précédent
+        </Button>
+        
+        <div className="flex items-center space-x-2">
+          {activeStep < 5 ? (
+            <Button
+              type="button"
+              onClick={nextStep}
+              disabled={!form.title || !form.description || !form.category}
+            >
+              Suivant
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isSubmitting ? 'Publication...' : 'Publier l\'annonce'}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
