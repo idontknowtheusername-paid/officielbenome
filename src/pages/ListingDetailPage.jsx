@@ -25,15 +25,9 @@ const ListingDetailPage = () => {
       setIsLoading(true);
       try {
         // Vérifier que l'ID est valide (peut être un UUID ou un nombre)
-        console.log('🔍 ID reçu dans l\'URL:', id, 'Type:', typeof id, 'Length:', id?.length);
-        console.log('🔍 ID est null/undefined:', id === null || id === undefined);
-        console.log('🔍 ID est string vide:', id === '');
-        
         if (!id || id === '' || typeof id !== 'string') {
-          throw new Error(`ID d'annonce invalide: "${id}" (Type: ${typeof id})`);
+          throw new Error(`ID d'annonce invalide: "${id}"`);
         }
-        
-        console.log('🔍 Tentative de récupération de l\'annonce ID:', id);
         
         // Récupérer l'annonce spécifique par ID (peut être un UUID)
         const foundListing = await listingService.getListingById(id);
@@ -261,9 +255,9 @@ const ListingDetailPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Colonne principale */}
-        <div className="lg:col-span-2">
+      <div className="max-w-4xl mx-auto">
+        {/* Contenu principal */}
+        <div>
           {/* Images */}
           <div className="mb-8">
             <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
@@ -402,6 +396,63 @@ const ListingDetailPage = () => {
             </div>
           )}
 
+          {/* Carte de contact */}
+          <div className="mt-12 mb-8">
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-4">Contacter le vendeur</h3>
+              
+              {listing.users && (
+                <div className="mb-4">
+                  <p className="text-sm text-muted-foreground">Vendeur</p>
+                  <p className="font-medium">
+                    {listing.users.first_name} {listing.users.last_name}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Button 
+                  className="w-full" 
+                  onClick={() => handleContact('phone')}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Appeler
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => handleContact('email')}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Envoyer un message
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleFavorite}
+                >
+                  <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                  {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Informations de sécurité */}
+          <div className="mb-8">
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Conseils de sécurité</h3>
+              <ul className="text-sm text-muted-foreground space-y-2">
+                <li>• Rencontrez le vendeur dans un lieu public</li>
+                <li>• Vérifiez l'état du bien avant l'achat</li>
+                <li>• Évitez les paiements en espèces</li>
+                <li>• Signalez tout comportement suspect</li>
+              </ul>
+            </div>
+          </div>
+
           {/* Annonces similaires */}
           {relatedListings.length > 0 && (
             <div className="mt-12">
@@ -438,64 +489,6 @@ const ListingDetailPage = () => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-8">
-            {/* Carte de contact */}
-            <div className="bg-card border border-border rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4">Contacter le vendeur</h3>
-              
-              {listing.users && (
-                <div className="mb-4">
-                  <p className="text-sm text-muted-foreground">Vendeur</p>
-                  <p className="font-medium">
-                    {listing.users.first_name} {listing.users.last_name}
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                <Button 
-                  className="w-full" 
-                  onClick={() => handleContact('phone')}
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Appeler
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => handleContact('email')}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Envoyer un message
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleFavorite}
-                >
-                  <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                  {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Informations de sécurité */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Conseils de sécurité</h3>
-              <ul className="text-sm text-muted-foreground space-y-2">
-                <li>• Rencontrez le vendeur dans un lieu public</li>
-                <li>• Vérifiez l'état du bien avant l'achat</li>
-                <li>• Évitez les paiements en espèces</li>
-                <li>• Signalez tout comportement suspect</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </motion.div>

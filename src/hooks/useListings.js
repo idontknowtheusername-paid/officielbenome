@@ -34,14 +34,6 @@ export const useListings = (category = null, filters = {}) => {
       console.log('📡 Service filters:', serviceFilters);
       const result = await listingService.getAllListings(serviceFilters);
       console.log('✅ Data received:', result.data?.length || 0, 'listings');
-      
-      // Vérifier les IDs des annonces
-      if (result.data && result.data.length > 0) {
-        console.log('🔍 Vérification des IDs des annonces:');
-        result.data.forEach((listing, index) => {
-          console.log(`  ${index + 1}. ID: ${listing.id} (Type: ${typeof listing.id}) - ${listing.title}`);
-        });
-      }
 
       if (append) {
         setListings(prev => [...prev, ...result.data]);

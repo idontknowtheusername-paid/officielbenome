@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'; // Added import
 import { ArrowRight, FolderHeart as HomeIcon, BadgeCent as CarIcon, Briefcase as BriefcaseIcon, ShoppingBag as ShoppingBagIcon, SearchCode as SearchIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import { personalData } from '@/lib/personalData';
 import { useAuth } from '@/contexts/AuthContext';
-import TestListings from '@/components/TestListings';
 
 
 const HomePage = () => {
@@ -215,12 +214,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Test Component */}
-      <section className="py-16 bg-background/50">
-        <div className="container mx-auto px-4 md:px-6">
-          <TestListings />
-        </div>
-      </section>
+
     </div>
   );
 };
