@@ -55,7 +55,6 @@ const Footer = () => {
           {/* Logo & Newsletter */}
           <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 pr-4">
             <Link to="/" className="flex items-center space-x-2 mb-6">
-               <img src="/maxi123.jpg" alt="MaxiMarket Logo" className="h-10 w-auto" />
               <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6">
