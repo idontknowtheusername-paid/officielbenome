@@ -39,6 +39,7 @@ export const useListings = (category = null, filters = {}) => {
       };
 
       console.log('📡 Service filters:', serviceFilters);
+      console.log('📡 Appel de listingService.getAllListings...');
       
       // Ajouter un timeout pour éviter les requêtes bloquées
       const timeoutPromise = new Promise((_, reject) => {
@@ -46,7 +47,9 @@ export const useListings = (category = null, filters = {}) => {
       });
 
       const fetchPromise = listingService.getAllListings(serviceFilters);
+      console.log('📡 Attente de la réponse...');
       const result = await Promise.race([fetchPromise, timeoutPromise]);
+      console.log('📡 Réponse reçue');
       
       console.log('✅ Data received:', result.data?.length || 0, 'listings');
 

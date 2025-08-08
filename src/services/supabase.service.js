@@ -173,16 +173,21 @@ export const listingService = {
     const to = from + limit - 1;
     
     try {
+      console.log('🔍 Début de la requête getAllListings');
+      
       // Créer un timeout pour éviter les requêtes bloquées
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Timeout: Requête trop longue')), 10000);
       });
 
+      console.log('🔍 Construction de la requête Supabase...');
       let query = supabase
         .from('listings')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(from, to);
+      
+      console.log('🔍 Requête de base construite');
 
       // Appliquer les filtres
       if (filters.category) {
@@ -205,10 +210,14 @@ export const listingService = {
       }
 
       console.log('🔍 Executing query with filters:', filters);
+      console.log('🔍 URL Supabase:', supabase.supabaseUrl);
+      console.log('🔍 Clé Supabase configurée:', !!supabase.supabaseKey);
       
       // Exécuter la requête avec timeout
       const queryPromise = query;
+      console.log('🔍 Lancement de la requête...');
       const { data, error, count } = await Promise.race([queryPromise, timeoutPromise]);
+      console.log('🔍 Requête terminée');
       
       console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, count, error });
       
