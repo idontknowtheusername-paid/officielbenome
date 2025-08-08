@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tansta
 import { messageService } from '../services/supabase.service';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
-import { supabase } from '../config/supabase';
+import { supabase } from '../lib/supabase';
 
 // Hook pour les conversations
 export const useConversations = (filters = {}) => {

@@ -21,7 +21,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { messageService } from '../services/supabase.service';
-import { supabase } from '../config/supabase';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import ConversationList from './ConversationList';
 import MessageComposer from './MessageComposer';

@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabase } from '../lib/supabase';
 
 class PreferencesService {
   // Récupérer les préférences d'un utilisateur

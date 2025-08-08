@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabase } from '../lib/supabase';
 
 class TransactionService {
   // Récupérer toutes les transactions d'un utilisateur

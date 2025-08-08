@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, HeartOff, Tag, Search, Filter, Grid, List, Trash2, Edit3 } from 'lucide-react';
-import { supabase } from '../config/supabase';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import ListingCard from './ListingCard';
 

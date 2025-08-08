@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabase } from '../lib/supabase';
 
 class ActivityService {
   // Récupérer les activités d'un utilisateur
