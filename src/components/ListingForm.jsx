@@ -8,10 +8,10 @@ import { listingService, storageService } from '@/services/supabase.service';
 import { Camera } from 'lucide-react';
 
 const CATEGORY_OPTIONS = [
-  { value: 'REAL_ESTATE', label: 'Immobilier' },
-  { value: 'AUTOMOBILE', label: 'Automobile' },
-  { value: 'SERVICE', label: 'Service' },
-  { value: 'PRODUCT', label: 'Produit' },
+  { value: 'real_estate', label: 'Immobilier' },
+  { value: 'automobile', label: 'Automobile' },
+  { value: 'services', label: 'Service' },
+  { value: 'marketplace', label: 'Produit' },
 ];
 
 const DEFAULT_FORM = {
@@ -30,10 +30,10 @@ const DEFAULT_FORM = {
 // Fonction pour convertir les catégories URL en valeurs du formulaire
 const getCategoryValue = (cat) => {
   const categoryMap = {
-    'real-estate': 'REAL_ESTATE',
-    'automobile': 'AUTOMOBILE',
-    'services': 'SERVICE',
-    'marketplace': 'PRODUCT'
+    'real-estate': 'real_estate',
+    'automobile': 'automobile',
+    'services': 'services',
+    'marketplace': 'marketplace'
   };
   return categoryMap[cat] || '';
 };
@@ -271,7 +271,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   // Champs spécifiques selon la catégorie
   const renderSpecificFields = () => {
     switch (form.category) {
-      case 'REAL_ESTATE':
+      case 'real_estate':
         return (
           <>
             <Label>Type de bien</Label>
@@ -300,7 +300,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
             <Button type="button" size="sm" variant="outline" onClick={addAmenity} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">+ Ajouter une commodité</Button>
           </>
         );
-      case 'AUTOMOBILE':
+      case 'automobile':
         return (
           <>
             <Label>Type de véhicule</Label>
@@ -315,7 +315,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
             <Input name="mileage" type="number" value={form.specificData.mileage || ''} onChange={handleSpecificChange} />
           </>
         );
-      case 'SERVICE':
+      case 'services':
         return (
           <>
             <Label>Catégorie de service</Label>
@@ -340,7 +340,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
             <Button type="button" size="sm" variant="outline" onClick={addPortfolioLink} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">+ Ajouter un lien</Button>
           </>
         );
-      case 'PRODUCT':
+      case 'marketplace':
         return (
           <>
             <Label>Catégorie de produit</Label>

@@ -28,10 +28,10 @@ const ListingPreview = ({ formData, onClose }) => {
   // Fonction pour obtenir l'icône de catégorie
   const getCategoryIcon = (category) => {
     const iconMap = {
-      'REAL_ESTATE': Building,
-      'AUTOMOBILE': Car,
-      'SERVICE': Briefcase,
-      'PRODUCT': ShoppingBag
+      'real_estate': Building,
+      'automobile': Car,
+      'services': Briefcase,
+      'marketplace': ShoppingBag
     };
     return iconMap[category] || Building;
   };
@@ -39,10 +39,10 @@ const ListingPreview = ({ formData, onClose }) => {
   // Fonction pour obtenir le nom d'affichage de la catégorie
   const getCategoryDisplayName = (category) => {
     const categoryMap = {
-      'REAL_ESTATE': 'Immobilier',
-      'AUTOMOBILE': 'Automobile',
-      'SERVICE': 'Service',
-      'PRODUCT': 'Produit'
+      'real_estate': 'Immobilier',
+      'automobile': 'Automobile',
+      'services': 'Service',
+      'marketplace': 'Produit'
     };
     return categoryMap[category] || 'Autre';
   };
@@ -218,7 +218,7 @@ const ListingPreview = ({ formData, onClose }) => {
                 <div className="text-3xl font-bold text-gray-900">
                   {formData.price ? `${formData.price} ${formData.currency || 'XOF'}` : 'Prix non défini'}
                 </div>
-                {formData.category === 'REAL_ESTATE' && formData.specificData?.areaSqMeters && (
+                {formData.category === 'real_estate' && formData.specificData?.areaSqMeters && (
                   <div className="text-sm text-gray-600 mt-1">
                     {formData.specificData.areaSqMeters} m²
                   </div>
@@ -238,7 +238,7 @@ const ListingPreview = ({ formData, onClose }) => {
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Détails</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    {formData.category === 'REAL_ESTATE' && (
+                    {formData.category === 'real_estate' && (
                       <>
                         {formData.specificData.propertyType && (
                           <div>
@@ -266,7 +266,7 @@ const ListingPreview = ({ formData, onClose }) => {
                         )}
                       </>
                     )}
-                    {formData.category === 'AUTOMOBILE' && (
+                    {formData.category === 'automobile' && (
                       <>
                         {formData.specificData.make && (
                           <div>
