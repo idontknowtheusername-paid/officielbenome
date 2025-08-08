@@ -254,17 +254,35 @@ export const listingService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
+    // Préparer les données en excluant les champs qui pourraient ne pas exister
+    const { currency, specificData, ...baseData } = listingData;
+    
+    const insertData = {
+      ...baseData,
+      user_id: user.id,
+      status: 'pending'
+    };
+
+    // Ajouter currency seulement si la colonne existe
+    if (currency) {
+      insertData.currency = currency;
+    }
+
+    // Ajouter specificData comme JSON si la colonne existe
+    if (specificData && Object.keys(specificData).length > 0) {
+      insertData.specific_data = specificData;
+    }
+
     const { data, error } = await supabase
       .from('listings')
-      .insert([{
-        ...listingData,
-        user_id: user.id,
-        status: 'pending'
-      }])
+      .insert([insertData])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Erreur création annonce:', error);
+      throw error;
+    }
     return data;
   },
 

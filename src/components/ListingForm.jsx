@@ -220,7 +220,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   };
 
   const nextStep = () => {
-    if (activeStep < 5) {
+    if (activeStep < 3) {
       setActiveStep(activeStep + 1);
       if (onStepChange) {
         onStepChange(activeStep + 1);
@@ -285,12 +285,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   onChange={e => handleAmenityChange(i, e.target.value)}
                   placeholder="Ex: Piscine, Parking..."
                 />
-                <Button type="button" size="icon" variant="ghost" onClick={() => removeAmenity(i)} title="Supprimer">
+                <Button type="button" size="icon" variant="destructive" onClick={() => removeAmenity(i)} title="Supprimer" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                   ×
                 </Button>
               </div>
             ))}
-            <Button type="button" size="sm" variant="outline" onClick={addAmenity} className="mb-2">+ Ajouter une commodité</Button>
+            <Button type="button" size="sm" variant="outline" onClick={addAmenity} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">+ Ajouter une commodité</Button>
           </>
         );
       case 'AUTOMOBILE':
@@ -325,12 +325,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   onChange={e => handlePortfolioChange(i, e.target.value)}
                   placeholder="https://..."
                 />
-                <Button type="button" size="icon" variant="ghost" onClick={() => removePortfolioLink(i)} title="Supprimer">
+                <Button type="button" size="icon" variant="destructive" onClick={() => removePortfolioLink(i)} title="Supprimer" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                   ×
                 </Button>
               </div>
             ))}
-            <Button type="button" size="sm" variant="outline" onClick={addPortfolioLink} className="mb-2">+ Ajouter un lien</Button>
+            <Button type="button" size="sm" variant="outline" onClick={addPortfolioLink} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">+ Ajouter un lien</Button>
           </>
         );
       case 'PRODUCT':
@@ -453,7 +453,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   value={form.category}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                  className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
                 >
                   <option value="">Sélectionner une catégorie</option>
                   {CATEGORY_OPTIONS.map(option => (
@@ -489,7 +489,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     name="currency"
                     value={form.currency}
                     onChange={handleChange}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
                   >
                     <option value="XOF">XOF (Franc CFA)</option>
                     <option value="EUR">EUR (Euro)</option>
@@ -507,7 +507,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     name="location.country"
                     value={form.location.country}
                     onChange={handleChange}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
                   >
                     <option value="">Sélectionner un pays</option>
                     {COUNTRY_CITY_OPTIONS.map(country => (
@@ -524,7 +524,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     value={form.location.city}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
+                    className="w-full px-3 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12"
                     disabled={!form.location.country}
                   >
                     <option value="">Sélectionner une ville</option>
@@ -551,7 +551,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
               <h4 className="text-lg font-medium text-gray-900">Images</h4>
               <div className="space-y-2">
                 <Label>Images</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                <div className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center hover:border-primary transition-colors">
                   <input
                     type="file"
                     accept="image/*"
@@ -562,12 +562,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   />
                   <label htmlFor="image-upload" className="cursor-pointer">
                     <div className="space-y-2">
-                      <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Camera className="h-6 w-6 text-gray-400" />
+                      <div className="mx-auto w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        <Camera className="h-6 w-6 text-gray-600" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">Cliquez pour ajouter des images</p>
-                        <p className="text-xs text-gray-500">PNG, JPG jusqu'à 10MB</p>
+                        <p className="text-xs text-gray-600">PNG, JPG jusqu'à 10MB</p>
                       </div>
                     </div>
                   </label>
@@ -588,7 +588,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(idx)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                           title="Supprimer cette image"
                         >
                           ×
@@ -653,7 +653,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                       <img key={idx} src={img} alt="" className="w-16 h-16 object-cover rounded" />
                     ))}
                     {form.images.length > 3 && (
-                      <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                      <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center text-xs text-gray-600 font-medium">
                         +{form.images.length - 3}
                       </div>
                     )}
