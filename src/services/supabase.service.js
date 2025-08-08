@@ -788,33 +788,74 @@ export const searchService = {
 export const storageService = {
   // Uploader une image
   uploadImage: async (file, folder = 'listings') => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
 
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = `${folder}/${user.id}/${fileName}`;
+      // Vérifier le type de fichier
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Le fichier doit être une image');
+      }
 
-    const { data, error } = await supabase.storage
-      .from('images')
-      .upload(filePath, file);
+      // Vérifier la taille (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('L\'image ne doit pas dépasser 10MB');
+      }
 
-    if (error) throw error;
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const filePath = `${folder}/${user.id}/${fileName}`;
 
-    // Récupérer l'URL publique
-    const { data: { publicUrl } } = supabase.storage
-      .from('images')
-      .getPublicUrl(filePath);
+      const { data, error } = await supabase.storage
+        .from('images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-    return publicUrl;
+      if (error) {
+        console.error('Erreur upload Supabase:', error);
+        throw new Error(`Erreur lors de l'upload: ${error.message}`);
+      }
+
+      // Récupérer l'URL publique
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Erreur dans uploadImage:', error);
+      throw error;
+    }
   },
 
   // Supprimer une image
   deleteImage: async (filePath) => {
-    const { error } = await supabase.storage
-      .from('images')
-      .remove([filePath]);
+    try {
+      const { error } = await supabase.storage
+        .from('images')
+        .remove([filePath]);
 
-    if (error) throw error;
+      if (error) throw error;
+    } catch (error) {
+      console.error('Erreur dans deleteImage:', error);
+      throw error;
+    }
+  },
+
+  // Lister les images d'un utilisateur
+  listUserImages: async (userId, folder = 'listings') => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('images')
+        .list(`${folder}/${userId}`);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Erreur dans listUserImages:', error);
+      throw error;
+    }
   }
 };
 

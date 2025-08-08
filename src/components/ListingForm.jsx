@@ -111,21 +111,78 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    
+    // Vérifier la limite d'images
     if (form.images.length + files.length > 8) {
-      toast({ title: 'Limite atteinte', description: 'Vous pouvez uploader jusqu\'à 8 images maximum.', variant: 'destructive' });
+      toast({ 
+        title: 'Limite atteinte', 
+        description: 'Vous pouvez uploader jusqu\'à 8 images maximum.', 
+        variant: 'destructive' 
+      });
       return;
     }
+
+    // Vérifier les types de fichiers
+    const invalidFiles = files.filter(file => !file.type.startsWith('image/'));
+    if (invalidFiles.length > 0) {
+      toast({ 
+        title: 'Type de fichier invalide', 
+        description: 'Seules les images sont acceptées.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    // Vérifier la taille des fichiers (max 10MB chacun)
+    const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      toast({ 
+        title: 'Fichier trop volumineux', 
+        description: 'Chaque image ne doit pas dépasser 10MB.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const uploadedUrls = [];
+      const errors = [];
+
       for (const file of files) {
-        const res = await storageService.uploadFile(file, 'annonces');
-        if (res?.url) uploadedUrls.push(res.url);
+        try {
+          const res = await storageService.uploadImage(file, 'listings');
+          if (res) uploadedUrls.push(res);
+        } catch (error) {
+          console.error('Erreur upload pour', file.name, error);
+          errors.push(`${file.name}: ${error.message}`);
+        }
       }
-      setForm((prev) => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
-      toast({ title: 'Images ajoutées', description: `${uploadedUrls.length} image(s) téléchargée(s).` });
+
+      // Ajouter les images uploadées avec succès
+      if (uploadedUrls.length > 0) {
+        setForm((prev) => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
+        toast({ 
+          title: 'Images ajoutées', 
+          description: `${uploadedUrls.length} image(s) téléchargée(s) avec succès.` 
+        });
+      }
+
+      // Afficher les erreurs s'il y en a
+      if (errors.length > 0) {
+        toast({ 
+          title: 'Erreurs d\'upload', 
+          description: `Erreurs pour ${errors.length} fichier(s): ${errors.join(', ')}`, 
+          variant: 'destructive' 
+        });
+      }
     } catch (err) {
-      toast({ title: 'Erreur upload', description: err?.message || 'Erreur lors de l\'upload.', variant: 'destructive' });
+      console.error('Erreur générale upload:', err);
+      toast({ 
+        title: 'Erreur upload', 
+        description: err?.message || 'Erreur lors de l\'upload.', 
+        variant: 'destructive' 
+      });
     } finally {
       setIsSubmitting(false);
     }
