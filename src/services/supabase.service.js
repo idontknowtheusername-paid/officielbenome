@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 // ============================================================================
 // SERVICE AUTHENTIFICATION
@@ -133,6 +133,10 @@ export const userService = {
 export const listingService = {
   // Récupérer toutes les annonces avec pagination
   getAllListings: async (filters = {}) => {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase non configuré. Veuillez configurer les variables d\'environnement.');
+    }
+    
     console.log('🔍 listingService.getAllListings called with filters:', filters);
     
     const { page = 0, limit = 12 } = filters;
@@ -209,6 +213,9 @@ export const listingService = {
 
   // Récupérer une annonce spécifique par ID (UUID ou nombre)
   getListingById: async (id) => {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase non configuré. Veuillez configurer les variables d\'environnement.');
+    }
     
     try {
       // Essayer d'abord avec une requête simple

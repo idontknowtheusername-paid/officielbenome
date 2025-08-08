@@ -70,7 +70,7 @@ const ConfigTest = () => {
         alignItems: 'center'
       }}>
         <h1 style={{ color: '#e74c3c' }}>⚠️ Configuration Supabase manquante</h1>
-        <p>Veuillez configurer vos variables d'environnement dans le fichier <code>.env</code> :</p>
+        <p>Veuillez configurer vos variables d'environnement sur Vercel :</p>
         <div style={{ 
           backgroundColor: '#fff', 
           padding: '15px', 
@@ -82,10 +82,11 @@ const ConfigTest = () => {
           <div>VITE_SUPABASE_URL=votre-url-supabase</div>
           <div>VITE_SUPABASE_ANON_KEY=votre-clé-anon</div>
         </div>
-        <p>1. Allez dans votre dashboard Supabase</p>
-        <p>2. Copiez l'URL et la clé anonyme</p>
-        <p>3. Remplacez les valeurs dans le fichier .env</p>
-        <p>4. Redémarrez l'application</p>
+        <p>1. Allez dans votre dashboard Vercel</p>
+        <p>2. Sélectionnez votre projet</p>
+        <p>3. Allez dans Settings → Environment Variables</p>
+        <p>4. Ajoutez les variables Supabase</p>
+        <p>5. Redéployez l'application</p>
       </div>
     );
   }
@@ -96,6 +97,7 @@ const ConfigTest = () => {
 function App() {
   return (
     <AppWrapper>
+      <ConfigTest />
       <Router>
         <AuthProvider>
           <AnimatePresence mode="wait">
