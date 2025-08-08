@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
 
 import AppWrapper from '@/components/AppWrapper';
+import TestComponent from '@/components/TestComponent';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -98,6 +99,7 @@ function App() {
   return (
     <AppWrapper>
       <ConfigTest />
+      <TestComponent />
       <Router>
         <AuthProvider>
           <AnimatePresence mode="wait">

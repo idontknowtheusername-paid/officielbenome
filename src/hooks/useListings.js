@@ -164,6 +164,10 @@ export const useListings = (category = null, filters = {}) => {
 
   // Charger les données au montage et quand les filtres changent
   useEffect(() => {
+    console.log('🧪 useListings useEffect déclenché');
+    console.log('🧪 Category:', category);
+    console.log('🧪 Filters:', filters);
+    
     // Réinitialiser l'état quand les filtres changent
     setListings([]);
     setPage(0);
@@ -172,6 +176,7 @@ export const useListings = (category = null, filters = {}) => {
     
     // Délai pour éviter les appels multiples rapides
     const timeoutId = setTimeout(() => {
+      console.log('🧪 Appel de fetchListings après timeout');
       fetchListings(0, false);
     }, 100);
 
