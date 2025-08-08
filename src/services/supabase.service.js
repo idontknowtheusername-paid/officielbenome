@@ -237,7 +237,7 @@ export const listingService = {
         }
       }) || [];
       
-      return { data: cleanedData, count, hasMore: (from + cleanedData.length) < count };
+      return { data: cleanedData, count: cleanedData.length, hasMore: false };
       
     } catch (error) {
       console.error('❌ Erreur dans getAllListings:', error);
