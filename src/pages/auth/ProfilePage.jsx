@@ -123,7 +123,7 @@ const ProfilePage = () => {
           setMessages(userMessages);
 
           // Calculer les statistiques réelles
-          const activeListings = userListings.filter(l => l.status === 'active').length;
+          const activeListings = userListings.filter(l => l.status === 'approved').length;
           const totalViews = userListings.reduce((sum, l) => sum + (l.views_count || 0), 0);
           const unreadMessages = userMessages.filter(m => !m.read).length;
 

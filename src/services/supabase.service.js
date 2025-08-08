@@ -167,9 +167,9 @@ export const listingService = {
       query = query.eq('category', filters.category);
     }
     
-    // Par défaut, ne montrer que les annonces actives
+    // Par défaut, ne montrer que les annonces approuvées
     if (!filters.status) {
-      query = query.eq('status', 'active');
+      query = query.eq('status', 'approved');
     } else if (filters.status) {
       query = query.eq('status', filters.status);
     }
@@ -240,7 +240,7 @@ export const listingService = {
     const insertData = {
       ...baseData,
       user_id: user.id,
-      status: 'active'
+      status: 'approved'
     };
 
     // Ajouter currency seulement si la colonne existe

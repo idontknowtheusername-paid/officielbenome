@@ -101,7 +101,9 @@ const ListingPreview = ({ formData, onClose }) => {
                   <AnimatePresence mode="wait">
                     <motion.img
                       key={currentImageIndex}
-                      src={formData.images[currentImageIndex]}
+                      src={typeof formData.images[currentImageIndex] === 'string' 
+                        ? formData.images[currentImageIndex] 
+                        : formData.images[currentImageIndex]?.url}
                       alt={`Image ${currentImageIndex + 1}`}
                       className="w-full h-full object-cover"
                       initial={{ opacity: 0 }}
@@ -177,7 +179,7 @@ const ListingPreview = ({ formData, onClose }) => {
                     }`}
                   >
                     <img
-                      src={image}
+                      src={typeof image === 'string' ? image : image?.url}
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
