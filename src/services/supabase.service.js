@@ -163,24 +163,14 @@ export const listingService = {
 
     // Appliquer les filtres
     if (filters.category) {
-      // Si category est un slug, on doit d'abord récupérer l'ID de la catégorie
-      if (typeof filters.category === 'string' && !filters.category.includes('-')) {
-        // C'est un slug, récupérer l'ID de la catégorie
-        const { data: categoryData } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('slug', filters.category)
-          .single();
-        
-        if (categoryData) {
-          query = query.eq('category_id', categoryData.id);
-        }
-      } else {
-        // C'est un ID UUID, on filtre directement
-        query = query.eq('category_id', filters.category);
-      }
+      // Filtrer par la colonne category (string)
+      query = query.eq('category', filters.category);
     }
-    if (filters.status) {
+    
+    // Par défaut, ne montrer que les annonces actives
+    if (!filters.status) {
+      query = query.eq('status', 'active');
+    } else if (filters.status) {
       query = query.eq('status', filters.status);
     }
     if (filters.user_id) {
@@ -204,17 +194,7 @@ export const listingService = {
 
     const { data, error } = await supabase
       .from('listings')
-      .select(`
-        *,
-        categories!listings_category_id_fkey (
-          id,
-          name,
-          slug,
-          description,
-          icon,
-          color
-        )
-      `)
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -260,7 +240,7 @@ export const listingService = {
     const insertData = {
       ...baseData,
       user_id: user.id,
-      status: 'pending'
+      status: 'active'
     };
 
     // Ajouter currency seulement si la colonne existe

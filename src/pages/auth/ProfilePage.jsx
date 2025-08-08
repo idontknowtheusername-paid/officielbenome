@@ -104,16 +104,26 @@ const ProfilePage = () => {
           const userListings = await listingService.getUserListings();
           setListings(userListings);
 
-          // Charger les favoris de l'utilisateur
-          const userFavorites = await favoriteService.getUserFavorites();
+          // Charger les favoris de l'utilisateur (gestion d'erreur gracieuse)
+          let userFavorites = [];
+          try {
+            userFavorites = await favoriteService.getUserFavorites();
+          } catch (favoriteError) {
+            console.warn('Erreur lors du chargement des favoris:', favoriteError);
+          }
           setFavorites(userFavorites);
 
-          // Charger les messages de l'utilisateur
-          const userMessages = await messageService.getUserConversations();
+          // Charger les messages de l'utilisateur (gestion d'erreur gracieuse)
+          let userMessages = [];
+          try {
+            userMessages = await messageService.getUserConversations();
+          } catch (messageError) {
+            console.warn('Erreur lors du chargement des messages:', messageError);
+          }
           setMessages(userMessages);
 
           // Calculer les statistiques réelles
-          const activeListings = userListings.filter(l => l.status === 'approved').length;
+          const activeListings = userListings.filter(l => l.status === 'active').length;
           const totalViews = userListings.reduce((sum, l) => sum + (l.views_count || 0), 0);
           const unreadMessages = userMessages.filter(m => !m.read).length;
 

@@ -78,9 +78,15 @@ const CreateListingPage = () => {
   ];
 
   const handleSuccess = (res) => {
-    // Redirige vers la page de l'annonce ou dashboard après création
-    if (res?.listing?.id) {
-      navigate(`/listings/${res.listing.id}`);
+    // Redirige vers le profil avec un message de succès
+    if (res?.id) {
+      // Pour l'instant, rediriger vers le profil car la page de détail n'existe pas encore
+      navigate('/profile', { 
+        state: { 
+          message: 'Annonce créée avec succès ! Elle est maintenant visible sur le site.',
+          type: 'success'
+        }
+      });
     } else {
       navigate('/profile');
     }
