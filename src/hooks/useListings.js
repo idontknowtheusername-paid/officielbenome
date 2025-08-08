@@ -8,11 +8,18 @@ export const useListings = (category = null, filters = {}) => {
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { user } = useAuth();
 
   const ITEMS_PER_PAGE = 12;
 
   const fetchListings = async (pageNum = 0, append = false) => {
+    // Éviter les appels multiples simultanés
+    if (loading && !append) {
+      console.log('🔄 Fetch déjà en cours, ignoré');
+      return;
+    }
+
     try {
       console.log('🔄 Fetching listings...', { pageNum, append, category, filters });
       setLoading(true);
@@ -32,7 +39,15 @@ export const useListings = (category = null, filters = {}) => {
       };
 
       console.log('📡 Service filters:', serviceFilters);
-      const result = await listingService.getAllListings(serviceFilters);
+      
+      // Ajouter un timeout pour éviter les requêtes bloquées
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: Chargement trop long')), 15000);
+      });
+
+      const fetchPromise = listingService.getAllListings(serviceFilters);
+      const result = await Promise.race([fetchPromise, timeoutPromise]);
+      
       console.log('✅ Data received:', result.data?.length || 0, 'listings');
 
       if (append) {
@@ -43,10 +58,16 @@ export const useListings = (category = null, filters = {}) => {
 
       setHasMore(result.hasMore);
       setPage(pageNum);
+      setIsInitialized(true);
 
     } catch (err) {
       console.error('❌ Error fetching listings:', err);
       setError(err.message);
+      
+      // En cas d'erreur, essayer de récupérer des données de cache ou afficher un message
+      if (!isInitialized) {
+        setListings([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -140,7 +161,18 @@ export const useListings = (category = null, filters = {}) => {
 
   // Charger les données au montage et quand les filtres changent
   useEffect(() => {
-    fetchListings(0, false);
+    // Réinitialiser l'état quand les filtres changent
+    setListings([]);
+    setPage(0);
+    setHasMore(true);
+    setIsInitialized(false);
+    
+    // Délai pour éviter les appels multiples rapides
+    const timeoutId = setTimeout(() => {
+      fetchListings(0, false);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [category, JSON.stringify(filters)]);
 
   return {

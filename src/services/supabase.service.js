@@ -139,56 +139,72 @@ export const listingService = {
     const from = page * limit;
     const to = from + limit - 1;
     
-    let query = supabase
-      .from('listings')
-      .select(`
-        *,
-        users!listings_user_id_fkey (
-          id,
-          first_name,
-          last_name,
-          email
-        )
-      `, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to);
+    try {
+      // Créer un timeout pour éviter les requêtes bloquées
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: Requête trop longue')), 10000);
+      });
 
-    // Appliquer les filtres
-    if (filters.category) {
-      // Filtrer par la colonne category (string)
-      query = query.eq('category', filters.category);
-    }
-    
-    // Par défaut, ne montrer que les annonces approuvées
-    if (!filters.status) {
-      query = query.eq('status', 'approved');
-    } else if (filters.status) {
-      query = query.eq('status', filters.status);
-    }
-    if (filters.user_id) {
-      query = query.eq('user_id', filters.user_id);
-    }
-    if (filters.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-    }
+      let query = supabase
+        .from('listings')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-    console.log('🔍 Executing query with filters:', filters);
-    const { data, error, count } = await query;
-    console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, count, error });
-    if (error) throw error;
-    
-    // Nettoyer et valider les données JSONB
-    const cleanedData = data?.map(listing => ({
-      ...listing,
-      location: typeof listing.location === 'string' ? JSON.parse(listing.location) : listing.location,
-      real_estate_details: typeof listing.real_estate_details === 'string' ? JSON.parse(listing.real_estate_details) : listing.real_estate_details,
-      automobile_details: typeof listing.automobile_details === 'string' ? JSON.parse(listing.automobile_details) : listing.automobile_details,
-      service_details: typeof listing.service_details === 'string' ? JSON.parse(listing.service_details) : listing.service_details,
-      product_details: typeof listing.product_details === 'string' ? JSON.parse(listing.product_details) : listing.product_details,
-      contact_info: typeof listing.contact_info === 'string' ? JSON.parse(listing.contact_info) : listing.contact_info,
-    })) || [];
-    
-    return { data: cleanedData, count, hasMore: (from + cleanedData.length) < count };
+      // Appliquer les filtres
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+      
+      // Par défaut, ne montrer que les annonces approuvées
+      if (!filters.status) {
+        query = query.eq('status', 'approved');
+      } else if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+      
+      if (filters.user_id) {
+        query = query.eq('user_id', filters.user_id);
+      }
+      
+      if (filters.search) {
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      }
+
+      console.log('🔍 Executing query with filters:', filters);
+      
+      // Exécuter la requête avec timeout
+      const queryPromise = query;
+      const { data, error, count } = await Promise.race([queryPromise, timeoutPromise]);
+      
+      console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, count, error });
+      
+      if (error) throw error;
+      
+      // Nettoyer et valider les données JSONB de manière sécurisée
+      const cleanedData = data?.map(listing => {
+        try {
+          return {
+            ...listing,
+            location: listing.location ? (typeof listing.location === 'string' ? JSON.parse(listing.location) : listing.location) : null,
+            real_estate_details: listing.real_estate_details ? (typeof listing.real_estate_details === 'string' ? JSON.parse(listing.real_estate_details) : listing.real_estate_details) : null,
+            automobile_details: listing.automobile_details ? (typeof listing.automobile_details === 'string' ? JSON.parse(listing.automobile_details) : listing.automobile_details) : null,
+            service_details: listing.service_details ? (typeof listing.service_details === 'string' ? JSON.parse(listing.service_details) : listing.service_details) : null,
+            product_details: listing.product_details ? (typeof listing.product_details === 'string' ? JSON.parse(listing.product_details) : listing.product_details) : null,
+            contact_info: listing.contact_info ? (typeof listing.contact_info === 'string' ? JSON.parse(listing.contact_info) : listing.contact_info) : null,
+          };
+        } catch (parseError) {
+          console.warn('⚠️ Erreur parsing JSONB pour listing:', listing.id, parseError);
+          return listing; // Retourner les données brutes si le parsing échoue
+        }
+      }) || [];
+      
+      return { data: cleanedData, count, hasMore: (from + cleanedData.length) < count };
+      
+    } catch (error) {
+      console.error('❌ Erreur dans getAllListings:', error);
+      throw error;
+    }
   },
 
   // Récupérer une annonce spécifique par ID (UUID ou nombre)

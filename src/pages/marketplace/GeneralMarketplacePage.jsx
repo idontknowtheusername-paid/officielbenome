@@ -230,10 +230,15 @@ const GeneralMarketplacePage = () => {
           >
             <AlertCircle className="h-12 w-12 text-destructive mb-4" />
             <p className="text-lg text-destructive mb-2">Erreur lors du chargement</p>
-            <p className="text-muted-foreground">{error}</p>
-            <Button onClick={() => window.location.reload()} className="mt-4">
-              Réessayer
-            </Button>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <div className="flex gap-3">
+              <Button onClick={() => window.location.reload()} className="mt-4">
+                Recharger la page
+              </Button>
+              <Button onClick={() => refresh()} variant="outline" className="mt-4">
+                Réessayer
+              </Button>
+            </div>
           </motion.div>
         )}
 
