@@ -81,53 +81,26 @@ const ActivityFeed = ({ activities = [] }) => {
     }
   };
 
-  // Données d'exemple si aucune activité n'est fournie
-  const defaultActivities = [
-    {
-      id: 1,
-      type: 'view',
-      title: 'Nouvelle vue sur votre annonce',
-      description: 'Villa moderne à Cocody a été vue 5 fois aujourd\'hui',
-      time: 'Il y a 2h',
-      listing: 'Villa moderne à Cocody',
-      location: 'Cocody, Abidjan'
-    },
-    {
-      id: 2,
-      type: 'message',
-      title: 'Nouveau message reçu',
-      description: 'Moussa Diallo vous a envoyé un message',
-      time: 'Il y a 3h',
-      sender: 'Moussa Diallo',
-      unread: true
-    },
-    {
-      id: 3,
-      type: 'approval',
-      title: 'Annonce approuvée',
-      description: 'Votre annonce "Service de Plomberie Express" a été approuvée',
-      time: 'Il y a 1j',
-      listing: 'Service de Plomberie Express'
-    },
-    {
-      id: 4,
-      type: 'boost',
-      title: 'Annonce boostée',
-      description: 'Votre annonce "Toyota Prado 2021" est maintenant en vedette',
-      time: 'Il y a 2j',
-      listing: 'Toyota Prado 2021'
-    },
-    {
-      id: 5,
-      type: 'favorite',
-      title: 'Annonce ajoutée aux favoris',
-      description: 'Quelqu\'un a ajouté votre annonce à ses favoris',
-      time: 'Il y a 3j',
-      listing: 'Villa moderne à Cocody'
-    }
-  ];
-
-  const activitiesToShow = activities.length > 0 ? activities : defaultActivities;
+  // Si aucune activité, afficher un message
+  if (activities.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5" />
+            <span>Activité Récente</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-sm">Aucune activité récente</p>
+            <p className="text-xs mt-1">Vos activités apparaîtront ici</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -139,7 +112,7 @@ const ActivityFeed = ({ activities = [] }) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {activitiesToShow.map((activity) => (
+          {activities.map((activity) => (
             <div
               key={activity.id}
               className={cn(
