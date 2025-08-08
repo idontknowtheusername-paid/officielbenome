@@ -25,10 +25,12 @@ const ListingDetailPage = () => {
       setIsLoading(true);
       try {
         // Vérifier que l'ID est valide (peut être un UUID ou un nombre)
-        console.log('🔍 ID reçu dans l\'URL:', id, 'Type:', typeof id);
+        console.log('🔍 ID reçu dans l\'URL:', id, 'Type:', typeof id, 'Length:', id?.length);
+        console.log('🔍 ID est null/undefined:', id === null || id === undefined);
+        console.log('🔍 ID est string vide:', id === '');
         
-        if (!id || typeof id !== 'string') {
-          throw new Error(`ID d'annonce invalide: "${id}"`);
+        if (!id || id === '' || typeof id !== 'string') {
+          throw new Error(`ID d'annonce invalide: "${id}" (Type: ${typeof id})`);
         }
         
         console.log('🔍 Tentative de récupération de l\'annonce ID:', id);

@@ -67,13 +67,24 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   };
 
   const handleCardClick = () => {
-    console.log('🔍 ListingCard click - listing.id:', listing.id, 'Type:', typeof listing.id);
+    console.log('🔍 ListingCard click - listing:', {
+      id: listing.id,
+      idType: typeof listing.id,
+      title: listing.title,
+      category: listing.category
+    });
     
     if (!listing.id) {
       console.error('❌ Listing sans ID:', listing);
       return;
     }
     
+    if (typeof listing.id !== 'string' && typeof listing.id !== 'number') {
+      console.error('❌ Listing avec ID invalide:', listing.id, 'Type:', typeof listing.id);
+      return;
+    }
+    
+    console.log('🔍 Navigation vers:', `/annonce/${listing.id}`);
     navigate(`/annonce/${listing.id}`);
   };
 
