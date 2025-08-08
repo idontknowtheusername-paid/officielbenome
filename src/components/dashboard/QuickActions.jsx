@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import { 
   Plus, 
   MessageSquare, 
@@ -27,7 +28,7 @@ const QuickActions = ({ stats = {} }) => {
       description: 'Publier une nouvelle annonce',
       icon: Plus,
       color: 'from-primary to-blue-600',
-      href: '/create-listing',
+      href: '/creer-annonce',
       badge: null
     },
     {
@@ -92,12 +93,9 @@ const QuickActions = ({ stats = {} }) => {
               key={action.id}
               variant="outline"
               className={`h-12 bg-gradient-to-r ${action.color} hover:from-primary/90 hover:to-blue-600/90 text-white border-0 transition-all duration-200 hover:scale-105`}
-              onClick={() => {
-                // Navigation vers la page correspondante
-                console.log(`Navigating to ${action.href}`);
-              }}
+              asChild
             >
-              <div className="flex items-center space-x-2">
+              <Link to={action.href} className="flex items-center space-x-2">
                 <action.icon className="h-4 w-4" />
                 <span className="text-sm font-medium">{action.title}</span>
                 {action.badge && action.badge > 0 && (

@@ -3,9 +3,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Home, Car, Briefcase, ShoppingBag, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MarketplaceHomePage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const categoryCardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i) => ({
@@ -169,7 +172,17 @@ const MarketplaceHomePage = () => {
             animate={{ opacity: 1, y:0 }}
             transition={{ duration:0.5, delay:0.4 }}
           >
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={() => {
+                if (user) {
+                  navigate('/creer-annonce');
+                } else {
+                  navigate('/connexion', { state: { from: '/creer-annonce' } });
+                }
+              }}
+            >
               Publier une Annonce
             </Button>
             <Button size="lg" variant="outline">
