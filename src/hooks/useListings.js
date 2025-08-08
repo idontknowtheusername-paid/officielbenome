@@ -1,32 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { listingService, favoriteService } from '@/services/supabase.service';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useListings = (category = null, filters = {}) => {
   const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
   const { user } = useAuth();
+  const isFetchingRef = useRef(false);
 
   const ITEMS_PER_PAGE = 12;
 
   const fetchListings = async (pageNum = 0, append = false) => {
     console.log('🔄 Début de fetchListings', { pageNum, append, loading });
     
-    // Éviter les appels multiples simultanés seulement pour les nouveaux appels
-    if (loading && !append && pageNum === 0) {
+    // Éviter les appels multiples simultanés avec useRef
+    if (isFetchingRef.current && !append && pageNum === 0) {
       console.log('🔄 Fetch déjà en cours, ignoré');
       return;
     }
     
-    // Forcer le loading à false pour les nouveaux appels
+    // Marquer comme en cours de fetch
     if (!append && pageNum === 0) {
-      setLoading(false);
-      // Attendre un tick pour que l'état soit mis à jour
-      await new Promise(resolve => setTimeout(resolve, 0));
+      isFetchingRef.current = true;
     }
 
     try {
@@ -75,6 +74,7 @@ export const useListings = (category = null, filters = {}) => {
       }
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
   };
 
