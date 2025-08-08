@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ListingForm from '@/components/ListingForm';
+import ListingPreview from '@/components/ListingPreview';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
@@ -190,76 +191,10 @@ const CreateListingPage = () => {
 
           {/* Aperçu de l'annonce */}
           {showPreview && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
-            >
-              <Card className="shadow-lg border-0">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <Eye className="h-5 w-5 text-blue-500 mr-2" />
-                    Aperçu de votre annonce
-                  </h3>
-                  <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-                    <div>
-                      <h4 className="font-semibold text-lg text-gray-900">
-                        {formData.title || 'Titre de l\'annonce'}
-                      </h4>
-                      <p className="text-gray-600 mt-2">
-                        {formData.description || 'Description de l\'annonce...'}
-                      </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium text-gray-700">Prix:</span> 
-                        <span className="ml-2 text-gray-900">
-                          {formData.price ? `${formData.price} ${formData.currency || 'XOF'}` : 'Non défini'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Catégorie:</span> 
-                        <span className="ml-2 text-gray-900">
-                          {formData.category || 'Non définie'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Localisation:</span> 
-                        <span className="ml-2 text-gray-900">
-                          {formData.location?.city && formData.location?.country 
-                            ? `${formData.location.city}, ${formData.location.country}`
-                            : 'Non définie'
-                          }
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Images:</span> 
-                        <span className="ml-2 text-gray-900">
-                          {formData.images?.length || 0} image(s)
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {formData.images && formData.images.length > 0 && (
-                      <div>
-                        <span className="font-medium text-sm text-gray-700">Aperçu des images:</span>
-                        <div className="flex gap-2 mt-2">
-                          {formData.images.slice(0, 3).map((img, idx) => (
-                            <img key={idx} src={img} alt="" className="w-16 h-16 object-cover rounded" />
-                          ))}
-                          {formData.images.length > 3 && (
-                            <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center text-xs text-gray-600 font-medium">
-                              +{formData.images.length - 3}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <ListingPreview 
+              formData={formData} 
+              onClose={() => setShowPreview(false)} 
+            />
           )}
 
           {/* Contenu principal */}
