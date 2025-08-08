@@ -133,11 +133,40 @@ export const userService = {
 export const listingService = {
   // Récupérer toutes les annonces avec pagination
   getAllListings: async (filters = {}) => {
-    if (!isSupabaseConfigured) {
-      throw new Error('Supabase non configuré. Veuillez configurer les variables d\'environnement.');
-    }
-    
     console.log('🔍 listingService.getAllListings called with filters:', filters);
+    
+    if (!isSupabaseConfigured) {
+      console.warn('⚠️ Supabase non configuré, retour de données de test');
+      // Retourner des données de test si Supabase n'est pas configuré
+      return {
+        data: [
+          {
+            id: 'test-1',
+            title: 'Annonce de test - Immobilier',
+            description: 'Cette annonce est affichée car Supabase n\'est pas configuré.',
+            price: 500000,
+            category: 'real_estate',
+            status: 'approved',
+            created_at: new Date().toISOString(),
+            location: { city: 'Dakar', country: 'Sénégal' },
+            real_estate_details: { type: 'Appartement', rooms: '3 pièces', surface: '80m²' }
+          },
+          {
+            id: 'test-2',
+            title: 'Annonce de test - Automobile',
+            description: 'Cette annonce est affichée car Supabase n\'est pas configuré.',
+            price: 2500000,
+            category: 'automobile',
+            status: 'approved',
+            created_at: new Date().toISOString(),
+            location: { city: 'Thiès', country: 'Sénégal' },
+            automobile_details: { brand: 'Toyota', model: 'Corolla', year: '2020' }
+          }
+        ],
+        count: 2,
+        hasMore: false
+      };
+    }
     
     const { page = 0, limit = 12 } = filters;
     const from = page * limit;
@@ -214,7 +243,19 @@ export const listingService = {
   // Récupérer une annonce spécifique par ID (UUID ou nombre)
   getListingById: async (id) => {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase non configuré. Veuillez configurer les variables d\'environnement.');
+      console.warn('⚠️ Supabase non configuré, retour d\'annonce de test');
+      // Retourner une annonce de test si Supabase n'est pas configuré
+      return {
+        id: 'test-1',
+        title: 'Annonce de test - Immobilier',
+        description: 'Cette annonce est affichée car Supabase n\'est pas configuré. Veuillez configurer les variables d\'environnement VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY.',
+        price: 500000,
+        category: 'real_estate',
+        status: 'approved',
+        created_at: new Date().toISOString(),
+        location: { city: 'Dakar', country: 'Sénégal' },
+        real_estate_details: { type: 'Appartement', rooms: '3 pièces', surface: '80m²' }
+      };
     }
     
     try {
