@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { userService, listingService, favoriteService, messageService } from '@/services/supabase.service';
 import { useNavigate } from 'react-router-dom';
+import Pagination from '@/components/ui/Pagination';
+import { ListingCardSkeleton, MessageCardSkeleton, StatsCardSkeleton } from '@/components/ui/Skeleton';
+import { DeleteConfirmDialog, EditConfirmDialog, RefreshConfirmDialog, BoostConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { 
   User, 
   Mail, 
@@ -70,6 +73,17 @@ const ProfilePage = () => {
     unreadMessages: 0,
     totalFavorites: 0
   });
+  
+  // États pour les confirmations
+  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, item: null });
+  const [editDialog, setEditDialog] = useState({ isOpen: false, item: null });
+  const [refreshDialog, setRefreshDialog] = useState({ isOpen: false, item: null });
+  const [boostDialog, setBoostDialog] = useState({ isOpen: false, item: null });
+  
+  // États pour la pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage] = useState(6);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
@@ -110,6 +124,9 @@ const ProfilePage = () => {
             unreadMessages,
             totalFavorites: userFavorites.length
           });
+          
+          // Calculer la pagination
+          setTotalPages(Math.ceil(userListings.length / itemsPerPage));
 
         } catch (error) {
           console.error('Erreur lors du chargement des données:', error);
@@ -182,11 +199,29 @@ const ProfilePage = () => {
     }
   };
 
-  // Handlers pour les actions des annonces
-  const handleEditListing = async (listing) => {
+  // Handlers pour les actions des annonces avec confirmations
+  const handleEditListing = (listing) => {
+    setEditDialog({ isOpen: true, item: listing });
+  };
+
+  const handleDeleteListing = (listing) => {
+    setDeleteDialog({ isOpen: true, item: listing });
+  };
+
+  const handleBoostListing = (listing) => {
+    setBoostDialog({ isOpen: true, item: listing });
+  };
+
+  const handleRefreshListing = (listing) => {
+    setRefreshDialog({ isOpen: true, item: listing });
+  };
+
+  // Actions confirmées
+  const confirmEdit = async () => {
     try {
-      // Rediriger vers la page d'édition
+      const listing = editDialog.item;
       navigate(`/editer-annonce/${listing.id}`);
+      setEditDialog({ isOpen: false, item: null });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -196,9 +231,11 @@ const ProfilePage = () => {
     }
   };
 
-  const handleDeleteListing = async (listing) => {
+  const confirmDelete = async () => {
     try {
+      const listing = deleteDialog.item;
       await listingService.deleteListing(listing.id);
+      
       // Recharger les données
       const updatedListings = listings.filter(l => l.id !== listing.id);
       setListings(updatedListings);
@@ -207,6 +244,8 @@ const ProfilePage = () => {
         title: "Annonce supprimée",
         description: `"${listing.title}" a été supprimée`,
       });
+      
+      setDeleteDialog({ isOpen: false, item: null });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -216,9 +255,11 @@ const ProfilePage = () => {
     }
   };
 
-  const handleBoostListing = async (listing) => {
+  const confirmBoost = async () => {
     try {
+      const listing = boostDialog.item;
       await listingService.updateListing(listing.id, { boosted: !listing.boosted });
+      
       // Recharger les données
       const updatedListings = listings.map(l => 
         l.id === listing.id ? { ...l, boosted: !l.boosted } : l
@@ -229,6 +270,8 @@ const ProfilePage = () => {
         title: "Annonce boostée",
         description: `"${listing.title}" a été boostée`,
       });
+      
+      setBoostDialog({ isOpen: false, item: null });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -238,14 +281,17 @@ const ProfilePage = () => {
     }
   };
 
-  const handleRefreshListing = async (listing) => {
+  const confirmRefresh = async () => {
     try {
+      const listing = refreshDialog.item;
       await listingService.updateListing(listing.id, { updated_at: new Date().toISOString() });
       
       toast({
         title: "Annonce actualisée",
         description: `"${listing.title}" a été actualisée`,
       });
+      
+      setRefreshDialog({ isOpen: false, item: null });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -253,6 +299,17 @@ const ProfilePage = () => {
         variant: "destructive",
       });
     }
+  };
+
+  // Pagination
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const getPaginatedListings = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return listings.slice(startIndex, endIndex);
   };
 
   // Handlers pour les messages
@@ -384,32 +441,40 @@ const ProfilePage = () => {
 
           {/* Dashboard */}
           <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatsCard 
-                title="Annonces Actives"
-                value={stats.activeListings}
-                icon={Home}
-                color="blue"
-              />
-              <StatsCard 
-                title="Total des Vues"
-                value={stats.totalViews.toLocaleString()}
-                icon={Eye}
-                color="green"
-              />
-              <StatsCard 
-                title="Contacts Reçus"
-                value={stats.totalContacts}
-                icon={Users}
-                color="purple"
-              />
-              <StatsCard 
-                title="Messages Non Lus"
-                value={stats.unreadMessages}
-                icon={Bell}
-                color="orange"
-              />
-            </div>
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <StatsCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatsCard 
+                  title="Annonces Actives"
+                  value={stats.activeListings}
+                  icon={Home}
+                  color="blue"
+                />
+                <StatsCard 
+                  title="Total des Vues"
+                  value={stats.totalViews.toLocaleString()}
+                  icon={Eye}
+                  color="green"
+                />
+                <StatsCard 
+                  title="Contacts Reçus"
+                  value={stats.totalContacts}
+                  icon={Users}
+                  color="purple"
+                />
+                <StatsCard 
+                  title="Messages Non Lus"
+                  value={stats.unreadMessages}
+                  icon={Bell}
+                  color="orange"
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ActivityFeed />
@@ -432,19 +497,38 @@ const ProfilePage = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {listings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                  onEdit={handleEditListing}
-                  onDelete={handleDeleteListing}
-                  onRefresh={handleRefreshListing}
-                  onBoost={handleBoostListing}
-                  showActions={true}
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <ListingCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getPaginatedListings().map((listing) => (
+                    <ListingCard
+                      key={listing.id}
+                      listing={listing}
+                      onEdit={handleEditListing}
+                      onDelete={handleDeleteListing}
+                      onRefresh={handleRefreshListing}
+                      onBoost={handleBoostListing}
+                      showActions={true}
+                    />
+                  ))}
+                </div>
+                
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  hasNextPage={currentPage < totalPages}
+                  hasPrevPage={currentPage > 1}
+                  isLoading={loading}
                 />
-              ))}
-            </div>
+              </>
+            )}
           </TabsContent>
 
           {/* Messages */}
@@ -721,6 +805,39 @@ const ProfilePage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Dialogues de confirmation */}
+      <DeleteConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, item: null })}
+        onConfirm={confirmDelete}
+        itemName={deleteDialog.item?.title}
+        isLoading={isUpdating}
+      />
+
+      <EditConfirmDialog
+        isOpen={editDialog.isOpen}
+        onClose={() => setEditDialog({ isOpen: false, item: null })}
+        onConfirm={confirmEdit}
+        itemName={editDialog.item?.title}
+        isLoading={isUpdating}
+      />
+
+      <RefreshConfirmDialog
+        isOpen={refreshDialog.isOpen}
+        onClose={() => setRefreshDialog({ isOpen: false, item: null })}
+        onConfirm={confirmRefresh}
+        itemName={refreshDialog.item?.title}
+        isLoading={isUpdating}
+      />
+
+      <BoostConfirmDialog
+        isOpen={boostDialog.isOpen}
+        onClose={() => setBoostDialog({ isOpen: false, item: null })}
+        onConfirm={confirmBoost}
+        itemName={boostDialog.item?.title}
+        isLoading={isUpdating}
+      />
     </motion.div>
   );
 };

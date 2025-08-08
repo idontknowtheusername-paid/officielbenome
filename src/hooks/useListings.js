@@ -32,16 +32,16 @@ export const useListings = (category = null, filters = {}) => {
       };
 
       console.log('📡 Service filters:', serviceFilters);
-      const data = await listingService.getAllListings(serviceFilters);
-      console.log('✅ Data received:', data?.length || 0, 'listings');
+      const result = await listingService.getAllListings(serviceFilters);
+      console.log('✅ Data received:', result.data?.length || 0, 'listings');
 
       if (append) {
-        setListings(prev => [...prev, ...data]);
+        setListings(prev => [...prev, ...result.data]);
       } else {
-        setListings(data);
+        setListings(result.data);
       }
 
-      setHasMore(data.length === ITEMS_PER_PAGE);
+      setHasMore(result.hasMore);
       setPage(pageNum);
 
     } catch (err) {

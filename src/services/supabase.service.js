@@ -131,9 +131,13 @@ export const userService = {
 // ============================================================================
 
 export const listingService = {
-  // Récupérer toutes les annonces
+  // Récupérer toutes les annonces avec pagination
   getAllListings: async (filters = {}) => {
     console.log('🔍 listingService.getAllListings called with filters:', filters);
+    
+    const { page = 0, limit = 12 } = filters;
+    const from = page * limit;
+    const to = from + limit - 1;
     
     let query = supabase
       .from('listings')
@@ -153,8 +157,9 @@ export const listingService = {
           icon,
           color
         )
-      `)
-      .order('created_at', { ascending: false });
+      `, { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     // Appliquer les filtres
     if (filters.category) {
@@ -186,10 +191,10 @@ export const listingService = {
     }
 
     console.log('🔍 Executing query with filters:', filters);
-    const { data, error } = await query;
-    console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, error });
+    const { data, error, count } = await query;
+    console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, count, error });
     if (error) throw error;
-    return data;
+    return { data, count, hasMore: (from + data.length) < count };
   },
 
   // Récupérer les annonces d'un utilisateur
