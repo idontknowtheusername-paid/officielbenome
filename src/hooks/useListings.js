@@ -21,6 +21,11 @@ export const useListings = (category = null, filters = {}) => {
     }
     
     console.log('🔄 Début de fetchListings', { pageNum, append, loading });
+    
+    // Forcer le loading à false pour les nouveaux appels
+    if (!append && pageNum === 0) {
+      setLoading(false);
+    }
 
     try {
       console.log('🔄 Fetching listings...', { pageNum, append, category, filters });
@@ -171,11 +176,9 @@ export const useListings = (category = null, filters = {}) => {
     setIsInitialized(false);
     setLoading(false); // Réinitialiser le loading state
     
-    // Délai court pour s'assurer que l'état est mis à jour
-    setTimeout(() => {
-      console.log('🧪 Appel de fetchListings après reset');
-      fetchListings(0, false);
-    }, 50);
+    // Appel direct après reset
+    console.log('🧪 Appel de fetchListings après reset');
+    fetchListings(0, false);
   }, [category, JSON.stringify(filters)]);
 
   return {
