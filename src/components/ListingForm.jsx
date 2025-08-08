@@ -28,11 +28,25 @@ const DEFAULT_FORM = {
   specificData: {},
 };
 
-const ListingForm = ({ onSuccess }) => {
+const ListingForm = ({ onSuccess, category }) => {
   const { toast } = useToast();
-  const [form, setForm] = useState(DEFAULT_FORM);
+  const [form, setForm] = useState({
+    ...DEFAULT_FORM,
+    category: category ? getCategoryValue(category) : ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Fonction pour convertir les catégories URL en valeurs du formulaire
+  const getCategoryValue = (cat) => {
+    const categoryMap = {
+      'real-estate': 'REAL_ESTATE',
+      'automobile': 'AUTOMOBILE',
+      'services': 'SERVICE',
+      'marketplace': 'PRODUCT'
+    };
+    return categoryMap[cat] || '';
+  };
 
   // Ajout des données pays/villes
   const COUNTRY_CITY_OPTIONS = [

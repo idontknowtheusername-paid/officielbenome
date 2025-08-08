@@ -135,6 +135,14 @@ function App() {
                   } 
                 />
                 <Route 
+                  path="creer-annonce/:category" 
+                  element={
+                    <ProtectedRoute>
+                      <CreateListingPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
                   path="create-listing" 
                   element={
                     <ProtectedRoute>
