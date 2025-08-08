@@ -264,14 +264,16 @@ export const listingService = {
     };
 
     // Ajouter currency seulement si la colonne existe
-    if (currency) {
-      insertData.currency = currency;
-    }
+    // Temporairement commenté en attendant la migration de la base de données
+    // if (currency) {
+    //   insertData.currency = currency;
+    // }
 
     // Ajouter specificData comme JSON si la colonne existe
-    if (specificData && Object.keys(specificData).length > 0) {
-      insertData.specific_data = specificData;
-    }
+    // Temporairement commenté en attendant la migration de la base de données
+    // if (specificData && Object.keys(specificData).length > 0) {
+    //   insertData.specific_data = specificData;
+    // }
 
     const { data, error } = await supabase
       .from('listings')
