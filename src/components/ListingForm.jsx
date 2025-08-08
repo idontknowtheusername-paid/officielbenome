@@ -28,7 +28,7 @@ const DEFAULT_FORM = {
   specificData: {},
 };
 
-const ListingForm = ({ onSuccess, category }) => {
+const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onStepChange }) => {
   const { toast } = useToast();
   const [form, setForm] = useState({
     ...DEFAULT_FORM,
@@ -36,6 +36,7 @@ const ListingForm = ({ onSuccess, category }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [activeStep, setActiveStep] = useState(currentStep);
 
   // Fonction pour convertir les catégories URL en valeurs du formulaire
   const getCategoryValue = (cat) => {
@@ -84,6 +85,11 @@ const ListingForm = ({ onSuccess, category }) => {
       setForm((prev) => ({ ...prev, location: { ...prev.location, [locField]: value } }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
+    }
+    
+    // Notifier le parent des changements
+    if (onDataChange) {
+      onDataChange({ [name]: value });
     }
   };
 
@@ -151,6 +157,24 @@ const ListingForm = ({ onSuccess, category }) => {
     if (!form.price || isNaN(Number(form.price))) return 'Le prix est requis et doit être un nombre';
     if (!form.category) return 'La catégorie est requise';
     return null;
+  };
+
+  const nextStep = () => {
+    if (activeStep < 5) {
+      setActiveStep(activeStep + 1);
+      if (onStepChange) {
+        onStepChange(activeStep + 1);
+      }
+    }
+  };
+
+  const prevStep = () => {
+    if (activeStep > 1) {
+      setActiveStep(activeStep - 1);
+      if (onStepChange) {
+        onStepChange(activeStep - 1);
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
