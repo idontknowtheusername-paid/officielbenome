@@ -141,23 +141,6 @@ const ProfilePage = () => {
 
     loadUserData();
   }, [user, toast]);
-        {
-          id: 1,
-          title: "Appartement de luxe à Abidjan",
-          category: "Immobilier",
-          price: "45,000,000 FCFA",
-          image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400"
-        },
-        {
-          id: 2,
-          title: "iPhone 15 Pro Max",
-          category: "Marketplace",
-          price: "850,000 FCFA",
-          image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400"
-        }
-      ]);
-    }
-  }, [user]);
 
   const onUpdateProfile = async (data) => {
     try {
