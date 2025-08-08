@@ -19,6 +19,8 @@ export const useListings = (category = null, filters = {}) => {
       console.log('🔄 Fetch déjà en cours, ignoré');
       return;
     }
+    
+    console.log('🔄 Début de fetchListings', { pageNum, append, loading });
 
     try {
       console.log('🔄 Fetching listings...', { pageNum, append, category, filters });
@@ -160,6 +162,7 @@ export const useListings = (category = null, filters = {}) => {
     console.log('🧪 useListings useEffect déclenché');
     console.log('🧪 Category:', category);
     console.log('🧪 Filters:', filters);
+    console.log('🧪 Loading state:', loading);
     
     // Réinitialiser l'état quand les filtres changent
     setListings([]);
@@ -167,13 +170,9 @@ export const useListings = (category = null, filters = {}) => {
     setHasMore(true);
     setIsInitialized(false);
     
-    // Délai pour éviter les appels multiples rapides
-    const timeoutId = setTimeout(() => {
-      console.log('🧪 Appel de fetchListings après timeout');
-      fetchListings(0, false);
-    }, 100);
-
-    return () => clearTimeout(timeoutId);
+    // Appel direct sans délai pour voir si ça fonctionne
+    console.log('🧪 Appel direct de fetchListings');
+    fetchListings(0, false);
   }, [category, JSON.stringify(filters)]);
 
   return {
