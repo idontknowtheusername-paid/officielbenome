@@ -14,8 +14,8 @@ export const useListings = (category = null, filters = {}) => {
   const ITEMS_PER_PAGE = 12;
 
   const fetchListings = async (pageNum = 0, append = false) => {
-    // Éviter les appels multiples simultanés
-    if (loading && !append) {
+    // Éviter les appels multiples simultanés seulement pour les nouveaux appels
+    if (loading && !append && pageNum === 0) {
       console.log('🔄 Fetch déjà en cours, ignoré');
       return;
     }

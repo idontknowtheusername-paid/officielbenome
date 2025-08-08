@@ -90,7 +90,7 @@ const ContactPage = () => {
               <img  
                 className="w-full h-full object-cover"
                 alt="Carte de localisation"
-               src="https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a" />
+                src="https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a" />
             </div>
           </motion.div>
           
@@ -98,9 +98,12 @@ const ContactPage = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
+            className="space-y-8"
           >
-            <h2 className="text-2xl font-bold mb-6">Envoyez-moi un message</h2>
-            <ContactForm />
+            <div>
+              <h2 className="text-2xl font-bold mb-6">Envoyez un message</h2>
+              <ContactForm />
+            </div>
           </motion.div>
         </div>
       </div>
