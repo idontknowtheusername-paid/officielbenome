@@ -17,6 +17,7 @@ import RegisterPage from '@/pages/auth/RegisterPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import ProfilePage from '@/pages/auth/ProfilePage';
+import MessagingPage from '@/pages/MessagingPage';
 
 // Pages
 import HomePage from '@/pages/HomePage'; 
@@ -107,6 +108,16 @@ function App() {
                 <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
                 <Route path="reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                
+                {/* Messaging */}
+                <Route 
+                  path="messages" 
+                  element={
+                    <ProtectedRoute>
+                      <MessagingPage />
+                    </ProtectedRoute>
+                  } 
+                />
                 
                 {/* Marketplace Sections */}
                 <Route path="immobilier" element={<RealEstatePage />} />

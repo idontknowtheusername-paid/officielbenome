@@ -481,6 +481,63 @@ export const messageService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
+    // D'abord, récupérer les conversations existantes
+    const { data: conversations, error: convError } = await supabase
+      .from('conversations')
+      .select(`
+        *,
+        listing:listings(id, title, price, images),
+        participant1:users!conversations_participant1_id_fkey (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        ),
+        participant2:users!conversations_participant2_id_fkey (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `)
+      .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+      .order('last_message_at', { ascending: false });
+
+    if (convError) throw convError;
+
+    // Pour chaque conversation, récupérer les messages
+    const conversationsWithMessages = await Promise.all(
+      conversations.map(async (conversation) => {
+        const { data: messages, error: msgError } = await supabase
+          .from('messages')
+          .select(`
+            id,
+            content,
+            created_at,
+            is_read,
+            sender_id,
+            conversation_id
+          `)
+          .eq('conversation_id', conversation.id)
+          .order('created_at', { ascending: true });
+
+        if (msgError) {
+          console.error('Erreur récupération messages:', msgError);
+          return { ...conversation, messages: [] };
+        }
+
+        return { ...conversation, messages: messages || [] };
+      })
+    );
+
+    return conversationsWithMessages;
+  },
+
+  // Récupérer les messages d'une conversation
+  getConversationMessages: async (conversationId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
     const { data, error } = await supabase
       .from('messages')
       .select(`
@@ -488,35 +545,174 @@ export const messageService = {
         sender:users!messages_sender_id_fkey (
           id,
           first_name,
-          last_name
+          last_name,
+          avatar_url
         ),
         receiver:users!messages_receiver_id_fkey (
           id,
           first_name,
-          last_name
+          last_name,
+          avatar_url
         )
       `)
-      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-      .order('created_at', { ascending: false });
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
 
     if (error) throw error;
     return data;
   },
 
   // Envoyer un message
-  sendMessage: async (receiverId, content) => {
+  sendMessage: async (conversationId, content, messageType = 'text') => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    const { data, error } = await supabase
+    // Récupérer la conversation pour déterminer le destinataire
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .select('participant1_id, participant2_id')
+      .eq('id', conversationId)
+      .single();
+
+    if (convError) throw convError;
+
+    const receiverId = conversation.participant1_id === user.id 
+      ? conversation.participant2_id 
+      : conversation.participant1_id;
+
+    // Insérer le message
+    const { data: message, error: msgError } = await supabase
       .from('messages')
       .insert([{
         sender_id: user.id,
         receiver_id: receiverId,
-        content
+        conversation_id: conversationId,
+        content,
+        message_type: messageType
       }])
       .select()
       .single();
+
+    if (msgError) throw msgError;
+
+    // Mettre à jour la conversation
+    await supabase
+      .from('conversations')
+      .update({ 
+        last_message_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    return message;
+  },
+
+  // Créer une nouvelle conversation
+  createConversation: async (participantId, listingId = null) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    // Vérifier si une conversation existe déjà
+    const { data: existingConv, error: checkError } = await supabase
+      .from('conversations')
+      .select('id')
+      .or(`and(participant1_id.eq.${user.id},participant2_id.eq.${participantId}),and(participant1_id.eq.${participantId},participant2_id.eq.${user.id})`)
+      .eq('listing_id', listingId)
+      .single();
+
+    if (existingConv) {
+      return existingConv;
+    }
+
+    // Créer une nouvelle conversation
+    const { data, error } = await supabase
+      .from('conversations')
+      .insert([{
+        participant1_id: user.id,
+        participant2_id: participantId,
+        listing_id: listingId,
+        is_active: true
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Marquer les messages comme lus
+  markMessagesAsRead: async (conversationId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { error } = await supabase
+      .from('messages')
+      .update({ 
+        is_read: true,
+        read_at: new Date().toISOString()
+      })
+      .eq('conversation_id', conversationId)
+      .eq('receiver_id', user.id)
+      .eq('is_read', false);
+
+    if (error) throw error;
+    return true;
+  },
+
+  // Supprimer une conversation
+  deleteConversation: async (conversationId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    // Vérifier que l'utilisateur fait partie de la conversation
+    const { data: conversation, error: checkError } = await supabase
+      .from('conversations')
+      .select('participant1_id, participant2_id')
+      .eq('id', conversationId)
+      .single();
+
+    if (checkError) throw checkError;
+
+    if (conversation.participant1_id !== user.id && conversation.participant2_id !== user.id) {
+      throw new Error('Non autorisé');
+    }
+
+    // Supprimer la conversation et tous les messages
+    const { error: deleteError } = await supabase
+      .from('conversations')
+      .delete()
+      .eq('id', conversationId);
+
+    if (deleteError) throw deleteError;
+    return true;
+  },
+
+  // Rechercher des conversations
+  searchConversations: async (searchTerm) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { data, error } = await supabase
+      .from('conversations')
+      .select(`
+        *,
+        listing:listings(id, title),
+        participant1:users!conversations_participant1_id_fkey (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        ),
+        participant2:users!conversations_participant2_id_fkey (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `)
+      .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+      .or(`listing.title.ilike.%${searchTerm}%`)
+      .order('last_message_at', { ascending: false });
 
     if (error) throw error;
     return data;

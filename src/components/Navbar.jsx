@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, Search, Zap } from 'lucide-react';
+import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, Search, Zap, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { personalData } from '@/lib/personalData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -104,11 +104,18 @@ const Navbar = () => {
                 </Link>
               </Button>
             ) : user && (
-              <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
-                <Link to="/profile">
-                  <Settings className="mr-2 h-4 w-4" /> Mon Compte
-                </Link>
-              </Button>
+              <>
+                <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                  <Link to="/messages">
+                    <MessageSquare className="mr-2 h-4 w-4" /> Messages
+                  </Link>
+                </Button>
+                <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                  <Link to="/profile">
+                    <Settings className="mr-2 h-4 w-4" /> Mon Compte
+                  </Link>
+                </Button>
+              </>
             )}
             <div className="md:hidden">
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} aria-label="Ouvrir le menu">
@@ -156,9 +163,14 @@ const Navbar = () => {
                   <Settings className="mr-2 h-4 w-4" /> Admin
                 </NavLink>
               ) : user && (
-                <NavLink to="/profile" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
-                  <Settings className="mr-2 h-4 w-4" /> Mon Compte
-                </NavLink>
+                <>
+                  <NavLink to="/messages" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Messages
+                  </NavLink>
+                  <NavLink to="/profile" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                    <Settings className="mr-2 h-4 w-4" /> Mon Compte
+                  </NavLink>
+                </>
               )}
             </div>
           </motion.div>
