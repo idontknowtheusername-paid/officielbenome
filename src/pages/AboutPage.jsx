@@ -21,7 +21,7 @@ const AboutPage = () => {
         transition={{ duration: 0.5 }}
         className="max-w-3xl mx-auto text-center mb-16"
       >
-        <img src="/maxi123.png.jpg" alt="MaxiMarket Logo" className="h-16 w-16 mx-auto mb-6" />
+        <img src="/maxi123.jpg" alt="MaxiMarket Logo" className="h-16 w-16 mx-auto mb-6" />
         <h1 className="text-4xl md:text-5xl font-bold mb-6">
           À Propos de <span className="gradient-text">{personalData.siteName}</span>
         </h1>
