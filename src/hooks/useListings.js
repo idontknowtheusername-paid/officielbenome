@@ -14,17 +14,19 @@ export const useListings = (category = null, filters = {}) => {
   const ITEMS_PER_PAGE = 12;
 
   const fetchListings = async (pageNum = 0, append = false) => {
+    console.log('🔄 Début de fetchListings', { pageNum, append, loading });
+    
     // Éviter les appels multiples simultanés seulement pour les nouveaux appels
     if (loading && !append && pageNum === 0) {
       console.log('🔄 Fetch déjà en cours, ignoré');
       return;
     }
     
-    console.log('🔄 Début de fetchListings', { pageNum, append, loading });
-    
     // Forcer le loading à false pour les nouveaux appels
     if (!append && pageNum === 0) {
       setLoading(false);
+      // Attendre un tick pour que l'état soit mis à jour
+      await new Promise(resolve => setTimeout(resolve, 0));
     }
 
     try {
