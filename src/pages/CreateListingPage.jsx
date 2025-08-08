@@ -264,38 +264,13 @@ const CreateListingPage = () => {
                 </Card>
               </motion.div>
 
-              {/* Statistiques */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Votre impact</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm opacity-90">Annonces actives</span>
-                        <span className="font-semibold">0</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm opacity-90">Vues totales</span>
-                        <span className="font-semibold">0</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm opacity-90">Contacts reçus</span>
-                        <span className="font-semibold">0</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+
 
               {/* Support */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.4 }}
               >
                 <Card className="shadow-lg border-0">
                   <CardContent className="p-6">
