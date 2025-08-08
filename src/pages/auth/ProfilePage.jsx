@@ -41,7 +41,8 @@ import {
   RefreshCw,
   MoreVertical,
   Filter,
-  Search
+  Search,
+  LogOut
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTabNavigation } from '@/hooks/useTabNavigation';
@@ -57,7 +58,7 @@ import {
 } from '@/components/dashboard';
 
 const ProfilePage = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -322,6 +323,23 @@ const ProfilePage = () => {
       title: "Favori",
       description: `Message ajouté aux favoris`,
     });
+  };
+
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur de déconnexion",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -783,6 +801,31 @@ const ProfilePage = () => {
                     )}
                   </Button>
                 </form>
+              </CardContent>
+            </Card>
+
+            {/* Section Déconnexion */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Déconnexion</CardTitle>
+                <CardDescription>
+                  Déconnectez-vous de votre compte en toute sécurité
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Vous serez redirigé vers la page d'accueil après la déconnexion.
+                  </p>
+                  <Button
+                    onClick={handleLogout}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Se déconnecter
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
