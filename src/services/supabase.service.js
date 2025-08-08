@@ -255,7 +255,7 @@ export const listingService = {
     if (!user) throw new Error('Utilisateur non connecté');
 
     // Préparer les données en excluant les champs qui pourraient ne pas exister
-    const { currency, specificData, subCategory, ...baseData } = listingData;
+    const { currency, specificData, subCategory, videos, ...baseData } = listingData;
     
     const insertData = {
       ...baseData,
@@ -276,6 +276,11 @@ export const listingService = {
     // Ajouter subCategory seulement si la colonne existe
     if (subCategory) {
       insertData.subCategory = subCategory;
+    }
+
+    // Ajouter videos seulement si la colonne existe
+    if (videos && videos.length > 0) {
+      insertData.videos = videos;
     }
 
     const { data, error } = await supabase

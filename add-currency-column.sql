@@ -6,6 +6,10 @@ ADD COLUMN IF NOT EXISTS currency VARCHAR(3) DEFAULT 'XOF';
 ALTER TABLE listings 
 ADD COLUMN IF NOT EXISTS subCategory VARCHAR(100);
 
+-- Ajouter la colonne videos si elle n'existe pas
+ALTER TABLE listings 
+ADD COLUMN IF NOT EXISTS videos TEXT[];
+
 -- Ajouter la colonne specific_data si elle n'existe pas
 ALTER TABLE listings 
 ADD COLUMN IF NOT EXISTS specific_data JSONB;
@@ -14,4 +18,4 @@ ADD COLUMN IF NOT EXISTS specific_data JSONB;
 SELECT column_name, data_type, is_nullable, column_default 
 FROM information_schema.columns 
 WHERE table_name = 'listings' 
-AND column_name IN ('currency', 'subCategory', 'specific_data'); 
+AND column_name IN ('currency', 'subCategory', 'videos', 'specific_data'); 
