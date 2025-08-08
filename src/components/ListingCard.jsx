@@ -178,7 +178,12 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         {/* Location */}
         <div className="flex items-center text-muted-foreground mb-3">
           <MapPin className="h-4 w-4 mr-2" />
-          <span className="truncate">{listing.location?.city ? `${listing.location.city}, ${listing.location.country}` : 'Localisation non spécifiée'}</span>
+          <span className="truncate">
+            {listing.location && typeof listing.location === 'object' && listing.location.city 
+              ? `${listing.location.city}, ${listing.location.country || ''}` 
+              : 'Localisation non spécifiée'
+            }
+          </span>
         </div>
         
         {/* Description */}

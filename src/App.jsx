@@ -26,6 +26,7 @@ import AutomobilePage from '@/pages/marketplace/AutomobilePage';
 import ServicesPage from '@/pages/marketplace/ServicesPage';
 import GeneralMarketplacePage from '@/pages/marketplace/GeneralMarketplacePage';
 import CreateListingPage from '@/pages/CreateListingPage';
+import ListingDetailPage from '@/pages/ListingDetailPage';
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import AdminUsersPage from '@/pages/admin/users/UsersPage';
@@ -150,6 +151,9 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
+                
+                {/* Détails d'annonce */}
+                <Route path="annonce/:id" element={<ListingDetailPage />} />
                 
                 {/* Protected Admin Routes */}
                 <Route path="admin">

@@ -148,14 +148,6 @@ export const listingService = {
           first_name,
           last_name,
           email
-        ),
-        categories!listings_category_id_fkey (
-          id,
-          name,
-          slug,
-          description,
-          icon,
-          color
         )
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
@@ -184,7 +176,57 @@ export const listingService = {
     const { data, error, count } = await query;
     console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, count, error });
     if (error) throw error;
-    return { data, count, hasMore: (from + data.length) < count };
+    
+    // Nettoyer et valider les données JSONB
+    const cleanedData = data?.map(listing => ({
+      ...listing,
+      location: typeof listing.location === 'string' ? JSON.parse(listing.location) : listing.location,
+      real_estate_details: typeof listing.real_estate_details === 'string' ? JSON.parse(listing.real_estate_details) : listing.real_estate_details,
+      automobile_details: typeof listing.automobile_details === 'string' ? JSON.parse(listing.automobile_details) : listing.automobile_details,
+      service_details: typeof listing.service_details === 'string' ? JSON.parse(listing.service_details) : listing.service_details,
+      product_details: typeof listing.product_details === 'string' ? JSON.parse(listing.product_details) : listing.product_details,
+      contact_info: typeof listing.contact_info === 'string' ? JSON.parse(listing.contact_info) : listing.contact_info,
+    })) || [];
+    
+    return { data: cleanedData, count, hasMore: (from + cleanedData.length) < count };
+  },
+
+  // Récupérer une annonce spécifique par ID
+  getListingById: async (id) => {
+    console.log('🔍 listingService.getListingById called with id:', id);
+    
+    const { data, error } = await supabase
+      .from('listings')
+      .select(`
+        *,
+        users!listings_user_id_fkey (
+          id,
+          first_name,
+          last_name,
+          email
+        )
+      `)
+      .eq('id', id)
+      .eq('status', 'approved')
+      .single();
+
+    console.log('🔍 listingService.getListingById result:', { data, error });
+    if (error) throw error;
+    
+    if (data) {
+      // Nettoyer et valider les données JSONB
+      return {
+        ...data,
+        location: typeof data.location === 'string' ? JSON.parse(data.location) : data.location,
+        real_estate_details: typeof data.real_estate_details === 'string' ? JSON.parse(data.real_estate_details) : data.real_estate_details,
+        automobile_details: typeof data.automobile_details === 'string' ? JSON.parse(data.automobile_details) : data.automobile_details,
+        service_details: typeof data.service_details === 'string' ? JSON.parse(data.service_details) : data.service_details,
+        product_details: typeof data.product_details === 'string' ? JSON.parse(data.product_details) : data.product_details,
+        contact_info: typeof data.contact_info === 'string' ? JSON.parse(data.contact_info) : data.contact_info,
+      };
+    }
+    
+    return null;
   },
 
   // Récupérer les annonces d'un utilisateur
@@ -214,12 +256,6 @@ export const listingService = {
           last_name,
           email,
           phone_number
-        ),
-        categories!listings_category_id_fkey (
-          id,
-          name,
-          slug,
-          description
         )
       `)
       .eq('id', id)
