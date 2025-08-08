@@ -67,6 +67,13 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   };
 
   const handleCardClick = () => {
+    console.log('🔍 ListingCard click - listing.id:', listing.id, 'Type:', typeof listing.id);
+    
+    if (!listing.id) {
+      console.error('❌ Listing sans ID:', listing);
+      return;
+    }
+    
     navigate(`/annonce/${listing.id}`);
   };
 

@@ -24,16 +24,17 @@ const ListingDetailPage = () => {
     const fetchListing = async () => {
       setIsLoading(true);
       try {
-        // Vérifier que l'ID est valide
-        const listingId = parseInt(id);
-        if (isNaN(listingId)) {
-          throw new Error('ID d\'annonce invalide');
+        // Vérifier que l'ID est valide (peut être un UUID ou un nombre)
+        console.log('🔍 ID reçu dans l\'URL:', id, 'Type:', typeof id);
+        
+        if (!id || typeof id !== 'string') {
+          throw new Error(`ID d'annonce invalide: "${id}"`);
         }
         
-        console.log('🔍 Tentative de récupération de l\'annonce ID:', listingId);
+        console.log('🔍 Tentative de récupération de l\'annonce ID:', id);
         
-        // Récupérer l'annonce spécifique par ID
-        const foundListing = await listingService.getListingById(listingId);
+        // Récupérer l'annonce spécifique par ID (peut être un UUID)
+        const foundListing = await listingService.getListingById(id);
         
         if (foundListing) {
           setListing(foundListing);

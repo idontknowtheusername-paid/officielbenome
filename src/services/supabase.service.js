@@ -191,9 +191,9 @@ export const listingService = {
     return { data: cleanedData, count, hasMore: (from + cleanedData.length) < count };
   },
 
-  // Récupérer une annonce spécifique par ID
+  // Récupérer une annonce spécifique par ID (UUID ou nombre)
   getListingById: async (id) => {
-    console.log('🔍 listingService.getListingById called with id:', id);
+    console.log('🔍 listingService.getListingById called with id:', id, 'Type:', typeof id);
     
     try {
       // Essayer d'abord avec une requête simple
