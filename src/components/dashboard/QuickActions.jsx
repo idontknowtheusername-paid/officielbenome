@@ -103,7 +103,7 @@ const QuickActions = ({ stats = {} }) => {
                     {action.badge}
                   </Badge>
                 )}
-              </div>
+              </Link>
             </Button>
           ))}
         </div>
