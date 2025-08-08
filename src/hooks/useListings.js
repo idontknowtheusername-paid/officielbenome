@@ -169,10 +169,13 @@ export const useListings = (category = null, filters = {}) => {
     setPage(0);
     setHasMore(true);
     setIsInitialized(false);
+    setLoading(false); // Réinitialiser le loading state
     
-    // Appel direct sans délai pour voir si ça fonctionne
-    console.log('🧪 Appel direct de fetchListings');
-    fetchListings(0, false);
+    // Délai court pour s'assurer que l'état est mis à jour
+    setTimeout(() => {
+      console.log('🧪 Appel de fetchListings après reset');
+      fetchListings(0, false);
+    }, 50);
   }, [category, JSON.stringify(filters)]);
 
   return {
