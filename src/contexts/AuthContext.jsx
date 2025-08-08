@@ -8,6 +8,7 @@ const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const navigate = useNavigate();
@@ -20,11 +21,27 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    // Récupérer la session initiale
+    // Récupérer la session initiale et le profil utilisateur
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Si l'utilisateur est connecté, récupérer son profil
+      if (session?.user) {
+        try {
+          const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Erreur lors de la récupération du profil:', error);
+        }
+      }
+      
       setLoading(false);
     };
 
@@ -36,6 +53,24 @@ export const AuthProvider = ({ children }) => {
         console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Si l'utilisateur est connecté, récupérer son profil
+        if (session?.user) {
+          try {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            setUserProfile(profile);
+          } catch (error) {
+            console.error('Erreur lors de la récupération du profil:', error);
+          }
+        } else {
+          setUserProfile(null);
+        }
+        
         setLoading(false);
 
         if (event === 'SIGNED_IN') {
@@ -244,18 +279,25 @@ export const AuthProvider = ({ children }) => {
   // Vérifie si l'utilisateur a un rôle spécifique
   const hasRole = (role) => {
     if (!user) return false;
+    // Utiliser le profil utilisateur en priorité
+    if (userProfile?.role) return userProfile.role === role;
+    // Fallback sur les métadonnées
     return user.user_metadata?.role === role || user.app_metadata?.role === role;
   };
 
   // Vérifie si l'utilisateur a au moins un des rôles spécifiés
   const hasAnyRole = (roles) => {
     if (!user) return false;
+    // Utiliser le profil utilisateur en priorité
+    if (userProfile?.role) return roles.includes(userProfile.role);
+    // Fallback sur les métadonnées
     const userRole = user.user_metadata?.role || user.app_metadata?.role;
     return roles.includes(userRole);
   };
 
   const value = {
-    user,
+    user: userProfile || user, // Utiliser le profil complet si disponible
+    userProfile,
     session,
     loading,
     login,
