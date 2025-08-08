@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { userService, listingService, favoriteService, messageService } from '@/services/supabase.service';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, 
   Mail, 
@@ -54,6 +56,7 @@ import {
 const ProfilePage = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
   const { activeTab, handleTabChange } = useTabNavigation('dashboard');
   const [listings, setListings] = useState([]);
@@ -77,94 +80,50 @@ const ProfilePage = () => {
     }
   });
 
-  // Simuler le chargement des données
+  // Charger les vraies données de l'utilisateur
   useEffect(() => {
-    if (user) {
-      // Simuler les données de l'utilisateur
-      setStats({
-        totalListings: 12,
-        activeListings: 8,
-        totalViews: 1247,
-        totalContacts: 23,
-        unreadMessages: 5,
-        totalFavorites: 15
-      });
+    const loadUserData = async () => {
+      if (user) {
+        try {
+          // Charger les annonces de l'utilisateur
+          const userListings = await listingService.getUserListings();
+          setListings(userListings);
 
-      setListings([
-        {
-          id: 1,
-          title: "Villa moderne à Cocody",
-          category: "Immobilier",
-          price: "85,000,000 FCFA",
-          status: "active",
-          views: 156,
-          contacts: 8,
-          image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400",
-          createdAt: "2024-01-15",
-          location: "Cocody, Abidjan",
-          featured: true,
-          boosted: false
-        },
-        {
-          id: 2,
-          title: "Toyota Prado 2021",
-          category: "Automobile",
-          price: "25,000,000 FCFA",
-          status: "active",
-          views: 89,
-          contacts: 12,
-          image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400",
-          createdAt: "2024-01-10",
-          location: "Abidjan",
-          featured: false,
-          boosted: true
-        },
-        {
-          id: 3,
-          title: "Service de Plomberie Express",
-          category: "Services",
-          price: "À partir de 15,000 FCFA",
-          status: "pending",
-          views: 45,
-          contacts: 3,
-          image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
-          createdAt: "2024-01-08",
-          location: "Toute l'Afrique de l'Ouest",
-          featured: false,
-          boosted: false
+          // Charger les favoris de l'utilisateur
+          const userFavorites = await favoriteService.getUserFavorites();
+          setFavorites(userFavorites);
+
+          // Charger les messages de l'utilisateur
+          const userMessages = await messageService.getUserConversations();
+          setMessages(userMessages);
+
+          // Calculer les statistiques réelles
+          const activeListings = userListings.filter(l => l.status === 'approved').length;
+          const totalViews = userListings.reduce((sum, l) => sum + (l.views_count || 0), 0);
+          const unreadMessages = userMessages.filter(m => !m.read).length;
+
+          setStats({
+            totalListings: userListings.length,
+            activeListings,
+            totalViews,
+            totalContacts: userMessages.length,
+            unreadMessages,
+            totalFavorites: userFavorites.length
+          });
+
+        } catch (error) {
+          console.error('Erreur lors du chargement des données:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger vos données",
+            variant: "destructive",
+          });
         }
-      ]);
+      }
+    };
 
-      setMessages([
-        {
-          id: 1,
-          sender: "Moussa Diallo",
-          message: "Bonjour, votre villa est-elle toujours disponible ?",
-          time: "2h",
-          unread: true,
-          avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50",
-          type: "inquiry",
-          listing: "Villa moderne à Cocody",
-          location: "Cocody, Abidjan",
-          verified: true,
-          online: true
-        },
-        {
-          id: 2,
-          sender: "Fatou Sall",
-          message: "Je suis intéressée par votre Toyota Prado",
-          time: "5h",
-          unread: true,
-          avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=50",
-          type: "offer",
-          listing: "Toyota Prado 2021",
-          location: "Abidjan",
-          verified: false,
-          online: false
-        }
-      ]);
-
-      setFavorites([
+    loadUserData();
+  }, [user, toast]);
         {
           id: 1,
           title: "Appartement de luxe à Abidjan",
@@ -186,8 +145,7 @@ const ProfilePage = () => {
   const onUpdateProfile = async (data) => {
     try {
       setIsUpdating(true);
-      // Ici, vous appellerez votre API pour mettre à jour le profil
-      // await updateUserProfile(data);
+      await userService.updateProfile(data);
       
       toast({
         title: "Profil mis à jour",
@@ -207,8 +165,7 @@ const ProfilePage = () => {
   const onUpdatePassword = async (data) => {
     try {
       setIsUpdating(true);
-      // Ici, vous appellerez votre API pour changer le mot de passe
-      // await updatePassword(data);
+      await userService.updatePassword(data.newPassword);
       
       toast({
         title: "Mot de passe mis à jour",
@@ -226,32 +183,76 @@ const ProfilePage = () => {
   };
 
   // Handlers pour les actions des annonces
-  const handleEditListing = (listing) => {
-    toast({
-      title: "Modifier l'annonce",
-      description: `Modification de "${listing.title}"`,
-    });
+  const handleEditListing = async (listing) => {
+    try {
+      // Rediriger vers la page d'édition
+      navigate(`/editer-annonce/${listing.id}`);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier l'annonce",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteListing = (listing) => {
-    toast({
-      title: "Supprimer l'annonce",
-      description: `Suppression de "${listing.title}"`,
-    });
+  const handleDeleteListing = async (listing) => {
+    try {
+      await listingService.deleteListing(listing.id);
+      // Recharger les données
+      const updatedListings = listings.filter(l => l.id !== listing.id);
+      setListings(updatedListings);
+      
+      toast({
+        title: "Annonce supprimée",
+        description: `"${listing.title}" a été supprimée`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'annonce",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleBoostListing = (listing) => {
-    toast({
-      title: "Booster l'annonce",
-      description: `Boost de "${listing.title}"`,
-    });
+  const handleBoostListing = async (listing) => {
+    try {
+      await listingService.updateListing(listing.id, { boosted: !listing.boosted });
+      // Recharger les données
+      const updatedListings = listings.map(l => 
+        l.id === listing.id ? { ...l, boosted: !l.boosted } : l
+      );
+      setListings(updatedListings);
+      
+      toast({
+        title: "Annonce boostée",
+        description: `"${listing.title}" a été boostée`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de booster l'annonce",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleRefreshListing = (listing) => {
-    toast({
-      title: "Actualiser l'annonce",
-      description: `Actualisation de "${listing.title}"`,
-    });
+  const handleRefreshListing = async (listing) => {
+    try {
+      await listingService.updateListing(listing.id, { updated_at: new Date().toISOString() });
+      
+      toast({
+        title: "Annonce actualisée",
+        description: `"${listing.title}" a été actualisée`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'actualiser l'annonce",
+        variant: "destructive",
+      });
+    }
   };
 
   // Handlers pour les messages

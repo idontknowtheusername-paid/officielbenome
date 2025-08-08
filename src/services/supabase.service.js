@@ -192,6 +192,31 @@ export const listingService = {
     return data;
   },
 
+  // Récupérer les annonces d'un utilisateur
+  getUserListings: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { data, error } = await supabase
+      .from('listings')
+      .select(`
+        *,
+        categories!listings_category_id_fkey (
+          id,
+          name,
+          slug,
+          description,
+          icon,
+          color
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
   // Récupérer une annonce par ID
   getListingById: async (id) => {
     const { data, error } = await supabase
