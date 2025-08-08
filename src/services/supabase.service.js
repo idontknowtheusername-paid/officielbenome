@@ -195,38 +195,63 @@ export const listingService = {
   getListingById: async (id) => {
     console.log('🔍 listingService.getListingById called with id:', id);
     
-    const { data, error } = await supabase
-      .from('listings')
-      .select(`
-        *,
-        users!listings_user_id_fkey (
-          id,
-          first_name,
-          last_name,
-          email
-        )
-      `)
-      .eq('id', id)
-      .eq('status', 'approved')
-      .single();
+    try {
+      // Essayer d'abord avec une requête simple
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('id', id)
+        .eq('status', 'approved')
+        .single();
 
-    console.log('🔍 listingService.getListingById result:', { data, error });
-    if (error) throw error;
-    
-    if (data) {
-      // Nettoyer et valider les données JSONB
-      return {
-        ...data,
-        location: typeof data.location === 'string' ? JSON.parse(data.location) : data.location,
-        real_estate_details: typeof data.real_estate_details === 'string' ? JSON.parse(data.real_estate_details) : data.real_estate_details,
-        automobile_details: typeof data.automobile_details === 'string' ? JSON.parse(data.automobile_details) : data.automobile_details,
-        service_details: typeof data.service_details === 'string' ? JSON.parse(data.service_details) : data.service_details,
-        product_details: typeof data.product_details === 'string' ? JSON.parse(data.product_details) : data.product_details,
-        contact_info: typeof data.contact_info === 'string' ? JSON.parse(data.contact_info) : data.contact_info,
-      };
+      console.log('🔍 listingService.getListingById result:', { data, error });
+      
+      if (error) {
+        console.log('🔍 Erreur avec requête simple:', error);
+        
+        // Si l'annonce n'est pas trouvée, essayer sans le filtre de statut
+        const { data: allData, error: allError } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('id', id)
+          .single();
+          
+        if (allError) throw allError;
+        
+        if (allData) {
+          console.log('🔍 Annonce trouvée sans filtre de statut:', allData.status);
+          return {
+            ...allData,
+            location: typeof allData.location === 'string' ? JSON.parse(allData.location) : allData.location,
+            real_estate_details: typeof allData.real_estate_details === 'string' ? JSON.parse(allData.real_estate_details) : allData.real_estate_details,
+            automobile_details: typeof allData.automobile_details === 'string' ? JSON.parse(allData.automobile_details) : allData.automobile_details,
+            service_details: typeof allData.service_details === 'string' ? JSON.parse(allData.service_details) : allData.service_details,
+            product_details: typeof allData.product_details === 'string' ? JSON.parse(allData.product_details) : allData.product_details,
+            contact_info: typeof allData.contact_info === 'string' ? JSON.parse(allData.contact_info) : allData.contact_info,
+          };
+        }
+        
+        return null;
+      }
+      
+      if (data) {
+        // Nettoyer et valider les données JSONB
+        return {
+          ...data,
+          location: typeof data.location === 'string' ? JSON.parse(data.location) : data.location,
+          real_estate_details: typeof data.real_estate_details === 'string' ? JSON.parse(data.real_estate_details) : data.real_estate_details,
+          automobile_details: typeof data.automobile_details === 'string' ? JSON.parse(data.automobile_details) : data.automobile_details,
+          service_details: typeof data.service_details === 'string' ? JSON.parse(data.service_details) : data.service_details,
+          product_details: typeof data.product_details === 'string' ? JSON.parse(data.product_details) : data.product_details,
+          contact_info: typeof data.contact_info === 'string' ? JSON.parse(data.contact_info) : data.contact_info,
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('🔍 Erreur dans getListingById:', error);
+      throw error;
     }
-    
-    return null;
   },
 
   // Récupérer les annonces d'un utilisateur
@@ -244,26 +269,7 @@ export const listingService = {
     return data;
   },
 
-  // Récupérer une annonce par ID
-  getListingById: async (id) => {
-    const { data, error } = await supabase
-      .from('listings')
-      .select(`
-        *,
-        users!listings_user_id_fkey (
-          id,
-          first_name,
-          last_name,
-          email,
-          phone_number
-        )
-      `)
-      .eq('id', id)
-      .single();
 
-    if (error) throw error;
-    return data;
-  },
 
   // Créer une nouvelle annonce
   createListing: async (listingData) => {

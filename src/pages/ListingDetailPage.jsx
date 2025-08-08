@@ -24,11 +24,28 @@ const ListingDetailPage = () => {
     const fetchListing = async () => {
       setIsLoading(true);
       try {
+        // Vérifier que l'ID est valide
+        const listingId = parseInt(id);
+        if (isNaN(listingId)) {
+          throw new Error('ID d\'annonce invalide');
+        }
+        
+        console.log('🔍 Tentative de récupération de l\'annonce ID:', listingId);
+        
         // Récupérer l'annonce spécifique par ID
-        const foundListing = await listingService.getListingById(parseInt(id));
+        const foundListing = await listingService.getListingById(listingId);
         
         if (foundListing) {
           setListing(foundListing);
+          
+          // Afficher un avertissement si l'annonce n'est pas approuvée
+          if (foundListing.status !== 'approved') {
+            toast({
+              title: "Annonce en attente",
+              description: "Cette annonce est en cours de modération.",
+              variant: "default",
+            });
+          }
           
           // Récupérer des annonces similaires
           const { data: related } = await listingService.getAllListings({
@@ -48,9 +65,15 @@ const ListingDetailPage = () => {
         }
       } catch (error) {
         console.error('Erreur lors du chargement de l\'annonce:', error);
+        console.error('Détails de l\'erreur:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         toast({
           title: "Erreur",
-          description: "Impossible de charger les détails de l'annonce.",
+          description: `Impossible de charger les détails de l'annonce: ${error.message}`,
           variant: "destructive",
         });
         navigate('/marketplace');
