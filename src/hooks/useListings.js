@@ -14,6 +14,7 @@ export const useListings = (category = null, filters = {}) => {
 
   const fetchListings = async (pageNum = 0, append = false) => {
     try {
+      console.log('🔄 Fetching listings...', { pageNum, append, category, filters });
       setLoading(true);
       setError(null);
 
@@ -30,7 +31,9 @@ export const useListings = (category = null, filters = {}) => {
         ...filters
       };
 
+      console.log('📡 Service filters:', serviceFilters);
       const data = await listingService.getAllListings(serviceFilters);
+      console.log('✅ Data received:', data?.length || 0, 'listings');
 
       if (append) {
         setListings(prev => [...prev, ...data]);
@@ -42,7 +45,7 @@ export const useListings = (category = null, filters = {}) => {
       setPage(pageNum);
 
     } catch (err) {
-      console.error('Error fetching listings:', err);
+      console.error('❌ Error fetching listings:', err);
       setError(err.message);
     } finally {
       setLoading(false);

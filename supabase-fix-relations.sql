@@ -56,6 +56,26 @@ CREATE TABLE IF NOT EXISTS listings (
   CONSTRAINT check_price_positive CHECK (price >= 0)
 );
 
+-- 2. Ajouter la colonne category_id à la table listings si elle n'existe pas
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'listings' AND column_name = 'category_id') THEN
+    ALTER TABLE public.listings ADD COLUMN category_id UUID;
+  END IF;
+END
+$$;
+
+-- 2.1. Ajouter la contrainte de clé étrangère si elle n'existe pas
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'listings_category_id_fkey') THEN
+    ALTER TABLE public.listings
+    ADD CONSTRAINT listings_category_id_fkey
+    FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE SET NULL;
+  END IF;
+END
+$$;
+
 -- 3. Ajouter les colonnes manquantes si elles n'existent pas
 DO $$ 
 BEGIN
@@ -105,11 +125,11 @@ $$;
 
 -- 4. Insérer des catégories par défaut
 INSERT INTO categories (name, slug, description, icon, color, parent_category) VALUES
-  ('Immobilier', 'real_estate', 'Vente et location de biens immobiliers', 'home', '#10B981', 'Principale'),
-  ('Automobile', 'automobile', 'Véhicules neufs et d''occasion', 'car', '#F59E0B', 'Principale'),
-  ('Services', 'services', 'Services professionnels et particuliers', 'briefcase', '#8B5CF6', 'Principale'),
-  ('Produits', 'marketplace', 'Vente de produits divers', 'shopping-bag', '#EF4444', 'Principale'),
-  ('Électronique', 'electronics', 'Appareils électroniques et informatique', 'smartphone', '#3B82F6', 'Principale')
+  ('Immobilier', 'real_estate', 'Vente et location de biens immobiliers', 'home', '#10B981', 'real_estate'),
+  ('Automobile', 'automobile', 'Véhicules neufs et d''occasion', 'car', '#F59E0B', 'automobile'),
+  ('Services', 'services', 'Services professionnels et particuliers', 'briefcase', '#8B5CF6', 'services'),
+  ('Produits', 'marketplace', 'Vente de produits divers', 'shopping-bag', '#EF4444', 'marketplace'),
+  ('Électronique', 'electronics', 'Appareils électroniques et informatique', 'smartphone', '#3B82F6', 'marketplace')
 ON CONFLICT (slug) DO NOTHING;
 
 -- 5. Mettre à jour les listings existants pour associer les catégories
@@ -142,9 +162,11 @@ ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
 
 -- 8. Politiques RLS pour categories (lecture libre)
+DROP POLICY IF EXISTS "Categories are viewable by everyone" ON categories;
 CREATE POLICY "Categories are viewable by everyone" ON categories
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Categories can be managed by admins" ON categories;
 CREATE POLICY "Categories can be managed by admins" ON categories
   FOR ALL USING (
     EXISTS (
@@ -155,18 +177,23 @@ CREATE POLICY "Categories can be managed by admins" ON categories
   );
 
 -- 9. Politiques RLS pour listings
+DROP POLICY IF EXISTS "Listings are viewable by everyone" ON listings;
 CREATE POLICY "Listings are viewable by everyone" ON listings
   FOR SELECT USING (status = 'approved' OR user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Users can create listings" ON listings;
 CREATE POLICY "Users can create listings" ON listings
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own listings" ON listings;
 CREATE POLICY "Users can update own listings" ON listings
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own listings" ON listings;
 CREATE POLICY "Users can delete own listings" ON listings
   FOR DELETE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins can manage all listings" ON listings;
 CREATE POLICY "Admins can manage all listings" ON listings
   FOR ALL USING (
     EXISTS (

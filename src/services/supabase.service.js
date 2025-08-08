@@ -133,6 +133,8 @@ export const userService = {
 export const listingService = {
   // Récupérer toutes les annonces
   getAllListings: async (filters = {}) => {
+    console.log('🔍 listingService.getAllListings called with filters:', filters);
+    
     let query = supabase
       .from('listings')
       .select(`
@@ -142,13 +144,36 @@ export const listingService = {
           first_name,
           last_name,
           email
+        ),
+        categories!listings_category_id_fkey (
+          id,
+          name,
+          slug,
+          description,
+          icon,
+          color
         )
       `)
       .order('created_at', { ascending: false });
 
     // Appliquer les filtres
     if (filters.category) {
-      query = query.eq('category_id', filters.category);
+      // Si category est un slug, on doit d'abord récupérer l'ID de la catégorie
+      if (typeof filters.category === 'string' && !filters.category.includes('-')) {
+        // C'est un slug, récupérer l'ID de la catégorie
+        const { data: categoryData } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', filters.category)
+          .single();
+        
+        if (categoryData) {
+          query = query.eq('category_id', categoryData.id);
+        }
+      } else {
+        // C'est un ID UUID, on filtre directement
+        query = query.eq('category_id', filters.category);
+      }
     }
     if (filters.status) {
       query = query.eq('status', filters.status);
@@ -160,7 +185,9 @@ export const listingService = {
       query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
     }
 
+    console.log('🔍 Executing query with filters:', filters);
     const { data, error } = await query;
+    console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, error });
     if (error) throw error;
     return data;
   },
@@ -260,6 +287,18 @@ export const categoryService = {
       .select('*')
       .order('name');
 
+    if (error) throw error;
+    return data;
+  },
+
+  // Récupérer une catégorie par slug
+  getCategoryBySlug: async (slug) => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
     if (error) throw error;
     return data;
   },
