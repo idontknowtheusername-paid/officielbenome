@@ -794,7 +794,7 @@ export const searchService = {
 // ============================================================================
 
 export const storageService = {
-  // Uploader une image
+  // Uploader une image (optimisé)
   uploadImage: async (file, folder = 'listings') => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -805,19 +805,20 @@ export const storageService = {
         throw new Error('Le fichier doit être une image');
       }
 
-      // Vérifier la taille (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error('L\'image ne doit pas dépasser 10MB');
+      // Vérifier la taille (max 5MB après compression)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('L\'image ne doit pas dépasser 5MB');
       }
 
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       const filePath = `${folder}/${user.id}/${fileName}`;
 
       const { data, error } = await supabase.storage
         .from('images')
         .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
+          cacheControl: '31536000', // 1 an
+          upsert: false,
+          contentType: 'image/jpeg'
         });
 
       if (error) {
@@ -825,7 +826,7 @@ export const storageService = {
         throw new Error(`Erreur lors de l'upload: ${error.message}`);
       }
 
-      // Récupérer l'URL publique
+      // Récupérer l'URL publique avec transformation pour optimisation
       const { data: { publicUrl } } = supabase.storage
         .from('images')
         .getPublicUrl(filePath);

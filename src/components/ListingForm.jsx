@@ -112,7 +112,56 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     setForm((prev) => ({ ...prev, images: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) }));
   };
 
-  // Limitation à 8 images lors de l'upload
+  // Fonction pour compresser une image
+  const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculer les nouvelles dimensions
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Dessiner l'image compressée
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convertir en blob
+        canvas.toBlob((blob) => {
+          const compressedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+          resolve(compressedFile);
+        }, 'image/jpeg', quality);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Fonction pour créer une prévisualisation immédiate
+  const createPreview = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve({
+          url: e.target.result,
+          file: file,
+          id: Date.now() + Math.random()
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -138,42 +187,74 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
       return;
     }
 
-    // Vérifier la taille des fichiers (max 10MB chacun)
-    const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024);
-    if (oversizedFiles.length > 0) {
-      toast({ 
-        title: 'Fichier trop volumineux', 
-        description: 'Chaque image ne doit pas dépasser 10MB.', 
-        variant: 'destructive' 
-      });
-      return;
-    }
-
     setIsUploadingImages(true);
     setUploadProgress({ current: 0, total: files.length });
-    try {
-      const uploadedUrls = [];
-      const errors = [];
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        try {
-          const res = await storageService.uploadImage(file, 'listings');
-          if (res) uploadedUrls.push(res);
-          setUploadProgress({ current: i + 1, total: files.length });
-        } catch (error) {
-          console.error('Erreur upload pour', file.name, error);
-          errors.push(`${file.name}: ${error.message}`);
-          setUploadProgress({ current: i + 1, total: files.length });
-        }
+    try {
+      // Étape 1: Créer les prévisualisations immédiatement
+      const previews = await Promise.all(files.map(createPreview));
+      
+      // Ajouter les prévisualisations au formulaire immédiatement
+      setForm((prev) => ({ 
+        ...prev, 
+        images: [...prev.images, ...previews.map(p => ({ 
+          url: p.url, 
+          isPreview: true, 
+          id: p.id,
+          file: p.file 
+        }))]
+      }));
+
+      // Étape 2: Compresser les images en parallèle
+      const compressedFiles = await Promise.all(
+        files.map(file => compressImage(file, 1920, 0.8))
+      );
+
+      // Étape 3: Uploader en parallèle (max 3 simultanés)
+      const uploadBatch = async (files, startIndex) => {
+        const batch = files.slice(startIndex, startIndex + 3);
+        return Promise.all(
+          batch.map(async (file, batchIndex) => {
+            const globalIndex = startIndex + batchIndex;
+            try {
+              const res = await storageService.uploadImage(file, 'listings');
+              setUploadProgress({ current: globalIndex + 1, total: files.length });
+              return { success: true, url: res, index: globalIndex };
+            } catch (error) {
+              console.error('Erreur upload pour', file.name, error);
+              setUploadProgress({ current: globalIndex + 1, total: files.length });
+              return { success: false, error: error.message, index: globalIndex };
+            }
+          })
+        );
+      };
+
+      const results = [];
+      for (let i = 0; i < compressedFiles.length; i += 3) {
+        const batchResults = await uploadBatch(compressedFiles, i);
+        results.push(...batchResults);
       }
 
-      // Ajouter les images uploadées avec succès
-      if (uploadedUrls.length > 0) {
-        setForm((prev) => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
+      // Étape 4: Remplacer les prévisualisations par les vraies URLs
+      const successfulUploads = results.filter(r => r.success);
+      const errors = results.filter(r => !r.success);
+
+      if (successfulUploads.length > 0) {
+        setForm((prev) => {
+          const newImages = [...prev.images];
+          successfulUploads.forEach(({ url, index }) => {
+            // Trouver l'index de la prévisualisation correspondante
+            const previewIndex = newImages.findIndex(img => img.isPreview && img.id === previews[index].id);
+            if (previewIndex !== -1) {
+              newImages[previewIndex] = { url, isPreview: false };
+            }
+          });
+          return { ...prev, images: newImages };
+        });
+
         toast({ 
           title: 'Images ajoutées', 
-          description: `${uploadedUrls.length} image(s) téléchargée(s) avec succès.` 
+          description: `${successfulUploads.length} image(s) téléchargée(s) avec succès.` 
         });
       }
 
@@ -181,10 +262,11 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
       if (errors.length > 0) {
         toast({ 
           title: 'Erreurs d\'upload', 
-          description: `Erreurs pour ${errors.length} fichier(s): ${errors.join(', ')}`, 
+          description: `Erreurs pour ${errors.length} fichier(s): ${errors.map(e => e.error).join(', ')}`, 
           variant: 'destructive' 
         });
       }
+
     } catch (err) {
       console.error('Erreur générale upload:', err);
       toast({ 
@@ -200,10 +282,23 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
 
   // Suppression d'une image uploadée (avant publication)
   const handleRemoveImage = (idxToRemove) => {
-    setForm((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, idx) => idx !== idxToRemove)
-    }));
+    setForm((prev) => {
+      const imageToRemove = prev.images[idxToRemove];
+      
+      // Si c'est une prévisualisation, on peut la supprimer directement
+      if (imageToRemove.isPreview) {
+        return {
+          ...prev,
+          images: prev.images.filter((_, idx) => idx !== idxToRemove)
+        };
+      }
+      
+      // Si c'est une vraie image uploadée, on peut aussi la supprimer
+      return {
+        ...prev,
+        images: prev.images.filter((_, idx) => idx !== idxToRemove)
+      };
+    });
   };
 
   // Réordonner les images (flèches)
@@ -253,8 +348,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }
     setIsSubmitting(true);
     try {
+      // Filtrer les images pour ne garder que celles qui sont uploadées (pas les prévisualisations)
+      const uploadedImages = form.images.filter(img => !img.isPreview).map(img => img.url);
+      
       const payload = {
         ...form,
+        images: uploadedImages,
         price: Number(form.price),
       };
       const res = await listingService.createListing(payload);
@@ -607,15 +706,23 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     {form.images.map((img, idx) => (
                       <div key={idx} className="relative group aspect-square">
                         <img
-                          src={img}
+                          src={img.url}
                           alt={`Aperçu ${idx + 1}`}
-                          className="w-full h-full object-cover rounded-lg border"
+                          className={`w-full h-full object-cover rounded-lg border ${img.isPreview ? 'opacity-70' : ''}`}
                         />
+                        {img.isPreview && (
+                          <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
+                            <div className="bg-white rounded-full p-2 shadow-lg">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                            </div>
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(idx)}
                           className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                           title="Supprimer cette image"
+                          disabled={img.isPreview}
                         >
                           ×
                         </button>
@@ -676,7 +783,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   <span className="font-medium text-sm">Aperçu des images:</span>
                   <div className="flex gap-2 mt-2">
                     {form.images.slice(0, 3).map((img, idx) => (
-                      <img key={idx} src={img} alt="" className="w-16 h-16 object-cover rounded" />
+                      <img key={idx} src={img.url} alt="" className="w-16 h-16 object-cover rounded" />
                     ))}
                     {form.images.length > 3 && (
                       <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center text-xs text-gray-600 font-medium">
