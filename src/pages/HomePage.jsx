@@ -1,14 +1,18 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; // Added import
 import { ArrowRight, FolderHeart as HomeIcon, BadgeCent as CarIcon, Briefcase as BriefcaseIcon, ShoppingBag as ShoppingBagIcon, SearchCode as SearchIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import { personalData } from '@/lib/personalData';
+import { useAuth } from '@/contexts/AuthContext';
 
 
 const HomePage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   // This page is now a redirect or placeholder as MarketplaceHomePage is the main entry.
   // For a portfolio site, this would be the main landing page.
   // For MaxiMarket, we'll keep it simple and perhaps redirect or show a welcome message.
@@ -190,8 +194,18 @@ const HomePage = () => {
             animate={{ opacity: 1, y:0 }}
             transition={{ duration:0.5, delay:0.4 }}
           >
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
-              <Link to="/creer-annonce">Publier une Annonce</Link>
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+              onClick={() => {
+                if (user) {
+                  navigate('/creer-annonce');
+                } else {
+                  navigate('/connexion', { state: { from: '/creer-annonce' } });
+                }
+              }}
+            >
+              Publier une Annonce
             </Button>
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
               Créer un Compte

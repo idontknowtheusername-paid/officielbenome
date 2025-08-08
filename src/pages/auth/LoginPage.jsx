@@ -2,18 +2,21 @@ import React, { useEffect } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LoginPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Attend que loading soit false pour vérifier l'authentification
     if (!loading && user) {
-      navigate('/admin-dashboard');
+      // Rediriger vers la page d'origine ou le dashboard admin
+      const from = location.state?.from || (user.role === 'admin' ? '/admin-dashboard' : '/');
+      navigate(from, { replace: true });
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, location]);
 
   if (loading) {
     // Un petit spinner ou rien

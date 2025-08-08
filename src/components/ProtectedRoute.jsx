@@ -6,6 +6,8 @@ export const ProtectedRoute = ({ children, requiredRole = 'user' }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  console.log('🔒 ProtectedRoute check:', { user: !!user, loading, requiredRole, path: location.pathname });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -16,6 +18,7 @@ export const ProtectedRoute = ({ children, requiredRole = 'user' }) => {
 
   // Si l'utilisateur n'est pas connecté, rediriger vers la page de connexion
   if (!user) {
+    console.log('🔒 User not authenticated, redirecting to /connexion');
     return <Navigate to="/connexion" state={{ from: location }} replace />;
   }
 
