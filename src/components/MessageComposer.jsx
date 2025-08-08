@@ -19,15 +19,25 @@ const MessageComposer = ({
   onMessageSent, 
   onTyping,
   disabled = false,
-  placeholder = "Tapez votre message..."
+  placeholder = "Tapez votre message...",
+  initialMessage = "",
+  listingInfo = null
 }) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(initialMessage);
   const [isSending, setIsSending] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Pré-remplir le message avec des informations sur l'annonce
+  useEffect(() => {
+    if (listingInfo && !message.trim()) {
+      const defaultMessage = `Bonjour ! Je suis intéressé(e) par votre annonce "${listingInfo.title}".\n\nPouvez-vous me donner plus d'informations ?`;
+      setMessage(defaultMessage);
+    }
+  }, [listingInfo, message]);
 
   // Gérer la saisie
   const handleInputChange = (e) => {

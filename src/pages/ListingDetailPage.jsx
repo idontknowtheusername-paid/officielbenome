@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { listingService } from '@/services/supabase.service';
+import { listingService, messageService } from '@/services/supabase.service';
 
 const ListingDetailPage = () => {
   const { id } = useParams();
@@ -170,17 +170,64 @@ const ListingDetailPage = () => {
     }
   };
 
-  const handleContact = (type) => {
+  const handleContact = async (type) => {
     if (!user) {
       navigate('/connexion');
       return;
     }
-    
-    // Logique pour contacter le vendeur
-    toast({
-      title: "Contact",
-      description: `Fonctionnalité de contact ${type} en cours de développement.`,
-    });
+
+    // Empêcher l'utilisateur de se contacter lui-même
+    if (listing.user_id === user.id) {
+      toast({
+        title: "Action impossible",
+        description: "Vous ne pouvez pas vous contacter vous-même.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      if (type === 'message') {
+        // Créer ou récupérer une conversation existante
+        const conversation = await messageService.createConversation(
+          listing.user_id, 
+          listing.id
+        );
+
+        // Rediriger vers la messagerie avec la conversation
+        navigate(`/messages?conversation=${conversation.id}&listing=${listing.id}`);
+        
+        toast({
+          title: "Conversation créée",
+          description: "Vous avez été redirigé vers la messagerie.",
+        });
+      } else if (type === 'phone') {
+        // Pour l'instant, afficher un message d'information
+        toast({
+          title: "Contact téléphonique",
+          description: "Utilisez la messagerie pour échanger vos coordonnées en toute sécurité.",
+        });
+      } else if (type === 'email') {
+        // Rediriger vers la messagerie
+        const conversation = await messageService.createConversation(
+          listing.user_id, 
+          listing.id
+        );
+        navigate(`/messages?conversation=${conversation.id}&listing=${listing.id}`);
+        
+        toast({
+          title: "Messagerie",
+          description: "Vous avez été redirigé vers la messagerie.",
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création de la conversation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la conversation. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleShare = () => {
@@ -410,19 +457,10 @@ const ListingDetailPage = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Button 
                   className="w-full" 
-                  onClick={() => handleContact('phone')}
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Appeler
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => handleContact('email')}
+                  onClick={() => handleContact('message')}
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Envoyer un message

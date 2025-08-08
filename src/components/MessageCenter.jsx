@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
   MoreVertical, 
@@ -28,6 +29,7 @@ import MessageComposer from './MessageComposer';
 
 const MessageCenter = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -46,6 +48,26 @@ const MessageCenter = () => {
     try {
       const data = await messageService.getUserConversations();
       setConversations(data);
+      
+      // Vérifier s'il y a des paramètres d'URL pour ouvrir une conversation spécifique
+      const conversationId = searchParams.get('conversation');
+      const listingId = searchParams.get('listing');
+      
+      if (conversationId) {
+        // Trouver la conversation dans la liste
+        const conversation = data.find(c => c.id === conversationId);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          loadMessages(conversation.id);
+        }
+      } else if (listingId) {
+        // Trouver une conversation liée à cette annonce
+        const conversation = data.find(c => c.listing_id === listingId);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          loadMessages(conversation.id);
+        }
+      }
     } catch (error) {
       console.error('Erreur chargement conversations:', error);
     } finally {
@@ -436,6 +458,7 @@ const MessageCenter = () => {
               conversationId={selectedConversation.id}
               onMessageSent={handleMessageSent}
               onTyping={setIsTyping}
+              listingInfo={selectedConversation.listing}
             />
           </>
         ) : (

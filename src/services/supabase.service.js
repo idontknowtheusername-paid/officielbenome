@@ -177,35 +177,35 @@ export const listingService = {
       
       // Requête simple sans timeout complexe
       console.log('🔍 Construction de la requête Supabase...');
-      let query = supabase
-        .from('listings')
+    let query = supabase
+      .from('listings')
         .select('*')
-        .order('created_at', { ascending: false })
-        .range(from, to);
+      .order('created_at', { ascending: false })
+      .range(from, to);
       
       console.log('🔍 Requête de base construite');
 
-      // Appliquer les filtres
-      if (filters.category) {
-        query = query.eq('category', filters.category);
-      }
+    // Appliquer les filtres
+    if (filters.category) {
+      query = query.eq('category', filters.category);
+    }
+    
+    // Par défaut, ne montrer que les annonces approuvées
+    if (!filters.status) {
+      query = query.eq('status', 'approved');
+    } else if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
       
-      // Par défaut, ne montrer que les annonces approuvées
-      if (!filters.status) {
-        query = query.eq('status', 'approved');
-      } else if (filters.status) {
-        query = query.eq('status', filters.status);
-      }
+    if (filters.user_id) {
+      query = query.eq('user_id', filters.user_id);
+    }
       
-      if (filters.user_id) {
-        query = query.eq('user_id', filters.user_id);
-      }
-      
-      if (filters.search) {
-        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-      }
+    if (filters.search) {
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    }
 
-      console.log('🔍 Executing query with filters:', filters);
+    console.log('🔍 Executing query with filters:', filters);
       
       // Exécuter la requête
       console.log('🔍 Lancement de la requête...');
@@ -223,7 +223,7 @@ export const listingService = {
       const cleanedData = data?.map(listing => {
         try {
           return {
-            ...listing,
+      ...listing,
             location: listing.location ? (typeof listing.location === 'string' ? JSON.parse(listing.location) : listing.location) : null,
             real_estate_details: listing.real_estate_details ? (typeof listing.real_estate_details === 'string' ? JSON.parse(listing.real_estate_details) : listing.real_estate_details) : null,
             automobile_details: listing.automobile_details ? (typeof listing.automobile_details === 'string' ? JSON.parse(listing.automobile_details) : listing.automobile_details) : null,
