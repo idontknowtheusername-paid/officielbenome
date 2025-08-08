@@ -255,7 +255,7 @@ export const listingService = {
     if (!user) throw new Error('Utilisateur non connecté');
 
     // Préparer les données en excluant les champs qui pourraient ne pas exister
-    const { currency, specificData, ...baseData } = listingData;
+    const { currency, specificData, subCategory, ...baseData } = listingData;
     
     const insertData = {
       ...baseData,
@@ -271,6 +271,11 @@ export const listingService = {
     // Ajouter specificData comme JSON si la colonne existe
     if (specificData && Object.keys(specificData).length > 0) {
       insertData.specific_data = specificData;
+    }
+
+    // Ajouter subCategory seulement si la colonne existe
+    if (subCategory) {
+      insertData.subCategory = subCategory;
     }
 
     const { data, error } = await supabase
