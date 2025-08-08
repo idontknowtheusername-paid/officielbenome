@@ -45,6 +45,8 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     category: category ? getCategoryValue(category) : ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [activeStep, setActiveStep] = useState(currentStep);
 
   // Synchroniser les étapes avec le parent
@@ -147,18 +149,22 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
       return;
     }
 
-    setIsSubmitting(true);
+    setIsUploadingImages(true);
+    setUploadProgress({ current: 0, total: files.length });
     try {
       const uploadedUrls = [];
       const errors = [];
 
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         try {
           const res = await storageService.uploadImage(file, 'listings');
           if (res) uploadedUrls.push(res);
+          setUploadProgress({ current: i + 1, total: files.length });
         } catch (error) {
           console.error('Erreur upload pour', file.name, error);
           errors.push(`${file.name}: ${error.message}`);
+          setUploadProgress({ current: i + 1, total: files.length });
         }
       }
 
@@ -187,7 +193,8 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         variant: 'destructive' 
       });
     } finally {
-      setIsSubmitting(false);
+      setIsUploadingImages(false);
+      setUploadProgress({ current: 0, total: 0 });
     }
   };
 
@@ -551,7 +558,9 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
               <h4 className="text-lg font-medium text-gray-900">Images</h4>
               <div className="space-y-2">
                 <Label>Images</Label>
-                <div className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                <div className={`border-2 border-dashed border-gray-400 rounded-lg p-6 text-center transition-colors ${
+                  isUploadingImages ? 'border-blue-400 bg-blue-50' : 'hover:border-primary'
+                }`}>
                   <input
                     type="file"
                     accept="image/*"
@@ -559,15 +568,32 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     onChange={handleFileChange}
                     className="hidden"
                     id="image-upload"
+                    disabled={isUploadingImages}
                   />
-                  <label htmlFor="image-upload" className="cursor-pointer">
+                  <label htmlFor="image-upload" className={`cursor-pointer ${isUploadingImages ? 'cursor-not-allowed' : ''}`}>
                     <div className="space-y-2">
                       <div className="mx-auto w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <Camera className="h-6 w-6 text-gray-600" />
+                        {isUploadingImages ? (
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                        ) : (
+                          <Camera className="h-6 w-6 text-gray-600" />
+                        )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Cliquez pour ajouter des images</p>
-                        <p className="text-xs text-gray-600">PNG, JPG jusqu'à 10MB</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {isUploadingImages ? 'Chargement en cours...' : 'Cliquez pour ajouter des images'}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {isUploadingImages ? `Veuillez patienter (${uploadProgress.current}/${uploadProgress.total})` : 'PNG, JPG jusqu\'à 10MB'}
+                        </p>
+                        {isUploadingImages && uploadProgress.total > 0 && (
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                            ></div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </label>
