@@ -135,9 +135,9 @@ export const listingService = {
   getAllListings: async (filters = {}) => {
     console.log('🔍 listingService.getAllListings called with filters:', filters);
     
+    // Vérifier la configuration Supabase
     if (!isSupabaseConfigured) {
       console.warn('⚠️ Supabase non configuré, retour de données de test');
-      // Retourner des données de test si Supabase n'est pas configuré
       return {
         data: [
           {
@@ -175,15 +175,11 @@ export const listingService = {
     try {
       console.log('🔍 Début de la requête getAllListings');
       
-      // Créer un timeout pour éviter les requêtes bloquées
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: Requête trop longue')), 10000);
-      });
-
+      // Requête simple sans timeout complexe
       console.log('🔍 Construction de la requête Supabase...');
       let query = supabase
         .from('listings')
-        .select('*', { count: 'exact' })
+        .select('*')
         .order('created_at', { ascending: false })
         .range(from, to);
       
@@ -210,18 +206,18 @@ export const listingService = {
       }
 
       console.log('🔍 Executing query with filters:', filters);
-      console.log('🔍 URL Supabase:', supabase.supabaseUrl);
-      console.log('🔍 Clé Supabase configurée:', !!supabase.supabaseKey);
       
-      // Exécuter la requête avec timeout
-      const queryPromise = query;
+      // Exécuter la requête
       console.log('🔍 Lancement de la requête...');
-      const { data, error, count } = await Promise.race([queryPromise, timeoutPromise]);
+      const { data, error } = await query;
       console.log('🔍 Requête terminée');
       
-      console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, count, error });
+      console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, error });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur Supabase:', error);
+        throw error;
+      }
       
       // Nettoyer et valider les données JSONB de manière sécurisée
       const cleanedData = data?.map(listing => {
