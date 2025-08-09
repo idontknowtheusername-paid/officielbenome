@@ -144,9 +144,9 @@ const ChatWidget = ({ pageContext = {} }) => {
           left: 'auto',
           top: 'auto',
           zIndex: 9999,
-          width: isMobile ? '60vw' : 420,
+          width: isMobile ? '80vw' : 420,
           maxWidth: isMobile ? '95vw' : '95vw',
-          height: isMobile ? '65vh' : 560,
+          height: isMobile ? '80vw' : 560,
           maxHeight: isMobile ? '78vh' : '78vh',
           background: '#0b0f14', border: '1px solid #111827', borderRadius: 16,
           display: 'flex', flexDirection: 'column', boxShadow: '0 18px 38px rgba(0,0,0,0.6)'
