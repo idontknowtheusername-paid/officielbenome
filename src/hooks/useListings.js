@@ -15,11 +15,8 @@ export const useListings = (category = null, filters = {}) => {
   const ITEMS_PER_PAGE = 12;
 
   const fetchListings = async (pageNum = 0, append = false) => {
-    console.log('🔄 Début de fetchListings', { pageNum, append, loading });
-    
     // Éviter les appels multiples simultanés avec useRef
     if (isFetchingRef.current && !append && pageNum === 0) {
-      console.log('🔄 Fetch déjà en cours, ignoré');
       return;
     }
     
@@ -29,7 +26,6 @@ export const useListings = (category = null, filters = {}) => {
     }
 
     try {
-      console.log('🔄 Fetching listings...', { pageNum, append, category, filters });
       setLoading(true);
       setError(null);
 
@@ -45,14 +41,8 @@ export const useListings = (category = null, filters = {}) => {
         limit: ITEMS_PER_PAGE,
         ...filters
       };
-
-      console.log('📡 Service filters:', serviceFilters);
-      console.log('📡 Appel de listingService.getAllListings...');
       
       const result = await listingService.getAllListings(serviceFilters);
-      console.log('📡 Réponse reçue');
-      
-      console.log('✅ Data received:', result.data?.length || 0, 'listings');
 
       if (append) {
         setListings(prev => [...prev, ...result.data]);
@@ -166,22 +156,16 @@ export const useListings = (category = null, filters = {}) => {
 
   // Charger les données au montage et quand les filtres changent
   useEffect(() => {
-    console.log('🧪 useListings useEffect déclenché');
-    console.log('🧪 Category:', category);
-    console.log('🧪 Filters:', filters);
-    console.log('🧪 Loading state:', loading);
-    
     // Réinitialiser l'état quand les filtres changent
     setListings([]);
     setPage(0);
     setHasMore(true);
     setIsInitialized(false);
-    setLoading(false); // Réinitialiser le loading state
+    setLoading(false);
     
     // Appel direct après reset
-    console.log('🧪 Appel de fetchListings après reset');
     fetchListings(0, false);
-  }, [category, JSON.stringify(filters)]);
+  }, [category, filters.search, filters.minPrice, filters.maxPrice, filters.location]);
 
   return {
     listings,

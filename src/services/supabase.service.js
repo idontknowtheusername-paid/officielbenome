@@ -133,7 +133,6 @@ export const userService = {
 export const listingService = {
   // Récupérer toutes les annonces avec pagination
   getAllListings: async (filters = {}) => {
-    console.log('🔍 listingService.getAllListings called with filters:', filters);
     
     // Vérifier la configuration Supabase
     if (!isSupabaseConfigured) {
@@ -296,7 +295,7 @@ export const listingService = {
     const { data, error } = await query;
     console.log('🔍 Requête terminée');
     
-    console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, error });
+
       
       if (error) {
         console.error('❌ Erreur Supabase:', error);
@@ -374,7 +373,7 @@ export const listingService = {
         .eq('status', 'approved')
         .single();
 
-      console.log('🔍 listingService.getListingById result:', { data, error });
+  
       
       if (error) {
         console.log('🔍 Erreur avec requête simple:', error);

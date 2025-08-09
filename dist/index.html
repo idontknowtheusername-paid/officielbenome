@@ -1,0 +1,186 @@
+
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<meta name="generator" content="Hostinger Horizons" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="Benome - Votre marketplace futuriste pour l'immobilier, l'automobile, les services et plus en Afrique de l'Ouest." />
+		<title>Benome | Marketplace Afrique de l'Ouest</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		<script type="module" crossorigin src="/assets/index-C63yxCVY.js"></script>
+		<link rel="stylesheet" crossorigin href="/assets/index-CoFfKVf6.css">
+		<script type="module">
+function showRuntimeErrorBanner(text) {
+  try {
+    var banner = document.getElementById('runtime-error-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'runtime-error-banner';
+      banner.style.position = 'fixed';
+      banner.style.top = '0';
+      banner.style.left = '0';
+      banner.style.right = '0';
+      banner.style.zIndex = '999999';
+      banner.style.background = '#111827';
+      banner.style.color = '#fca5a5';
+      banner.style.fontFamily = 'monospace';
+      banner.style.fontSize = '12px';
+      banner.style.whiteSpace = 'pre-wrap';
+      banner.style.padding = '12px 16px';
+      banner.style.borderBottom = '2px solid #ef4444';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = 'Runtime error: ' + text;
+  } catch (e) {
+    // ignore
+  }
+}
+
+window.addEventListener('error', function (event) {
+  var errorObj = event.error || {};
+  var message = (event.message || '') + (errorObj && errorObj.stack ? ('
+' + errorObj.stack) : '');
+  showRuntimeErrorBanner(message);
+  window.parent.postMessage({
+    type: 'horizons-runtime-error',
+    message: message,
+    error: errorObj ? JSON.stringify({
+      name: errorObj.name,
+      message: errorObj.message,
+      stack: errorObj.stack,
+      source: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    }) : null
+  }, '*');
+}, true);
+
+window.addEventListener('unhandledrejection', function (event) {
+  var reason = event.reason;
+  var text = typeof reason === 'string' ? reason : (reason && (reason.stack || reason.message)) || String(reason);
+  showRuntimeErrorBanner('Unhandled promise rejection: ' + text);
+  window.parent.postMessage({
+    type: 'horizons-runtime-error',
+    message: text,
+    error: null
+  }, '*');
+}, true);
+</script>
+		<script type="module">
+const observer = new MutationObserver((mutations) => {
+	for (const mutation of mutations) {
+		for (const addedNode of mutation.addedNodes) {
+			if (
+				addedNode.nodeType === Node.ELEMENT_NODE &&
+				(
+					addedNode.tagName?.toLowerCase() === 'vite-error-overlay' ||
+					addedNode.classList?.contains('backdrop')
+				)
+			) {
+				handleViteOverlay(addedNode);
+			}
+		}
+	}
+});
+
+observer.observe(document.documentElement, {
+	childList: true,
+	subtree: true
+});
+
+function handleViteOverlay(node) {
+	if (!node.shadowRoot) {
+		return;
+	}
+
+	const backdrop = node.shadowRoot.querySelector('.backdrop');
+
+	if (backdrop) {
+		const overlayHtml = backdrop.outerHTML;
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(overlayHtml, 'text/html');
+		const messageBodyElement = doc.querySelector('.message-body');
+		const fileElement = doc.querySelector('.file');
+		const messageText = messageBodyElement ? messageBodyElement.textContent.trim() : '';
+		const fileText = fileElement ? fileElement.textContent.trim() : '';
+		const error = messageText + (fileText ? ' File:' + fileText : '');
+
+		window.parent.postMessage({
+			type: 'horizons-vite-error',
+			error,
+		}, '*');
+	}
+}
+</script>
+		<script type="module">
+const originalConsoleError = console.error;
+console.error = function(...args) {
+	originalConsoleError.apply(console, args);
+
+	let errorString = '';
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg instanceof Error) {
+			errorString = arg.stack || `${arg.name}: ${arg.message}`;
+			break;
+		}
+	}
+
+	if (!errorString) {
+		errorString = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+	}
+
+	window.parent.postMessage({
+		type: 'horizons-console-error',
+		error: errorString
+	}, '*');
+};
+</script>
+		<script type="module">
+const originalFetch = window.fetch;
+
+window.fetch = function(...args) {
+	const url = args[0] instanceof Request ? args[0].url : args[0];
+
+	// Skip WebSocket URLs
+	if (url.startsWith('ws:') || url.startsWith('wss:')) {
+		return originalFetch.apply(this, args);
+	}
+
+	return originalFetch.apply(this, args)
+		.then(async response => {
+			const contentType = response.headers.get('Content-Type') || '';
+
+			// Exclude HTML document responses
+			const isDocumentResponse =
+				contentType.includes('text/html') ||
+				contentType.includes('application/xhtml+xml');
+
+			if (!response.ok && !isDocumentResponse) {
+					const responseClone = response.clone();
+					const errorFromRes = await responseClone.text();
+					const requestUrl = response.url;
+					console.error(`Fetch error from ${requestUrl}: ${errorFromRes}`);
+			}
+
+			return response;
+		})
+		.catch(error => {
+			if (!url.match(/.html?$/i)) {
+				console.error(error);
+			}
+
+			throw error;
+		});
+};
+</script>
+	</head>
+	<body>
+		<div id="root"></div>
+	</body>
+</html>
