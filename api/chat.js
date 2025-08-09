@@ -19,12 +19,8 @@ export default async (req, res) => {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // Clé API Mistral depuis les variables d'environnement
-    const apiKey = process.env.MISTRAL_API_KEY;
-    if (!apiKey) {
-      console.error('MISTRAL_API_KEY environment variable is not set');
-      return res.status(500).json({ error: 'API configuration error' });
-    }
+    // Clé API Mistral (hardcodée pour la production)
+    const apiKey = 'rJHJdTtKsu58p2k1j5jkBmUwyc56z5tP';
 
     const { messages, context = {}, model, stream } = req.body || {};
     if (!Array.isArray(messages) || messages.length === 0) {
