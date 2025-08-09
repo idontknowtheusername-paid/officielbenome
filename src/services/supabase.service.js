@@ -239,7 +239,7 @@ export const listingService = {
       };
     }
     
-    const { page = 0, limit = 12 } = filters;
+    const { page = 0, limit = 12, sort } = filters;
     const from = page * limit;
     const to = from + limit - 1;
     
@@ -251,7 +251,7 @@ export const listingService = {
     let query = supabase
       .from('listings')
         .select('*')
-      .order('created_at', { ascending: false })
+      .order(sort === 'popular' ? 'views_count' : 'created_at', { ascending: false })
       .range(from, to);
       
       console.log('🔍 Requête de base construite');
@@ -274,6 +274,19 @@ export const listingService = {
       
     if (filters.search) {
       query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    }
+    
+    if (filters.minPrice) {
+      query = query.gte('price', Number(filters.minPrice));
+    }
+    if (filters.maxPrice) {
+      query = query.lte('price', Number(filters.maxPrice));
+    }
+    if (filters.location) {
+      const loc = String(filters.location).trim();
+      if (loc) {
+        query = query.or(`location->>city.ilike.%${loc}%,location->>country.ilike.%${loc}%`);
+      }
     }
 
     console.log('🔍 Executing query with filters:', filters);
@@ -416,6 +429,54 @@ export const listingService = {
       return null;
     } catch (error) {
       console.error('🔍 Erreur dans getListingById:', error);
+      throw error;
+    }
+  },
+
+  // Incrémenter les vues d'une annonce
+  incrementViews: async (id) => {
+    try {
+      // Appeler la fonction RPC (à créer côté Supabase)
+      const { error } = await supabase.rpc('increment_listing_views', { listing_id: id });
+      if (error) throw error;
+    } catch (e) {
+      console.warn('⚠️ Impossible d\'incrémenter views_count pour', id, e?.message);
+    }
+  },
+
+  // Récupérer le top N des annonces les plus vues (populaires)
+  getTopViewedListings: async (limit = 6) => {
+    if (!isSupabaseConfigured) {
+      console.warn('⚠️ Supabase non configuré, retour de données de test (top vues)');
+      const mock = [
+        { id: 'test-2', title: 'Toyota Corolla 2020 - Excellent état', price: 2500000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Thiès', country: 'Sénégal' }, images: [], views_count: 1200 },
+        { id: 'test-1', title: 'Appartement 3 pièces au Centre-Ville', price: 500000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 980 },
+        { id: 'test-4', title: 'iPhone 13 Pro - Comme neuf', price: 450000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 800 }
+      ];
+      return mock.slice(0, limit);
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('status', 'approved')
+        .order('views_count', { ascending: false, nullsFirst: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      return (data || []).map((listing) => ({
+        ...listing,
+        location: listing.location ? (typeof listing.location === 'string' ? JSON.parse(listing.location) : listing.location) : null,
+        real_estate_details: listing.real_estate_details ? (typeof listing.real_estate_details === 'string' ? JSON.parse(listing.real_estate_details) : listing.real_estate_details) : null,
+        automobile_details: listing.automobile_details ? (typeof listing.automobile_details === 'string' ? JSON.parse(listing.automobile_details) : listing.automobile_details) : null,
+        service_details: listing.service_details ? (typeof listing.service_details === 'string' ? JSON.parse(listing.service_details) : listing.service_details) : null,
+        product_details: listing.product_details ? (typeof listing.product_details === 'string' ? JSON.parse(listing.product_details) : listing.product_details) : null,
+        contact_info: listing.contact_info ? (typeof listing.contact_info === 'string' ? JSON.parse(listing.contact_info) : listing.contact_info) : null,
+      }));
+    } catch (error) {
+      console.error('❌ Erreur dans getTopViewedListings:', error);
       throw error;
     }
   },

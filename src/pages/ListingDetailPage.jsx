@@ -34,6 +34,8 @@ const ListingDetailPage = () => {
         
         if (foundListing) {
           setListing(foundListing);
+          // Incrémenter les vues de façon asynchrone (sans bloquer)
+          try { listingService.incrementViews(foundListing.id); } catch {}
           
           // Afficher un avertissement si l'annonce n'est pas approuvée
           if (foundListing.status !== 'approved') {
@@ -83,6 +85,32 @@ const ListingDetailPage = () => {
       fetchListing();
     }
   }, [id, navigate, toast]);
+
+  // Injecter un contexte global pour le chatbot quand l'annonce est chargée
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && listing) {
+        const locationCity = (listing?.location && typeof listing.location === 'object') ? (listing.location.city || '') : '';
+        window.__BENOME_CONTEXT = {
+          listing: {
+            id: listing.id,
+            title: listing.title,
+            price: listing.price,
+            locationCity,
+            sellerId: listing.user_id,
+            category: listing.category,
+          }
+        };
+      }
+    } catch {}
+    return () => {
+      try {
+        if (typeof window !== 'undefined' && window.__BENOME_CONTEXT) {
+          delete window.__BENOME_CONTEXT;
+        }
+      } catch {}
+    };
+  }, [listing]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-FR', {

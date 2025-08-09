@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Filter, Search, ArrowRight, Loader2, AlertCircle, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,18 +7,29 @@ import { Input } from '@/components/ui/input';
 import { useListings } from '@/hooks/useListings';
 import ListingCard from '@/components/ListingCard';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const GeneralMarketplacePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const initialSort = query.get('sort') || '';
+  const initialPer = parseInt(query.get('per') || '12', 10);
+  const initialSearch = query.get('search') || '';
+  const initialMinPrice = query.get('minPrice') || '';
+  const initialMaxPrice = query.get('maxPrice') || '';
+  const initialLocation = query.get('location') || '';
+
   const [filters, setFilters] = useState({
-    search: '',
-    location: '',
+    search: initialSearch,
+    location: initialLocation,
     category: '',
-    minPrice: '',
-    maxPrice: '',
-    condition: ''
+    minPrice: initialMinPrice,
+    maxPrice: initialMaxPrice,
+    condition: '',
+    sort: initialSort,
+    per: isNaN(initialPer) ? 12 : Math.min(Math.max(initialPer, 6), 48)
   });
 
   // Utiliser le hook pour récupérer les annonces marketplace
@@ -35,6 +46,14 @@ const GeneralMarketplacePage = () => {
     e.preventDefault();
     // La recherche se fait automatiquement via le hook
   };
+
+  // Tri local si sort=popular (par sécurité si le service ne le fait pas)
+  const sortedListings = useMemo(() => {
+    if (filters.sort === 'popular') {
+      return [...listings].sort((a, b) => (b?.views_count || 0) - (a?.views_count || 0));
+    }
+    return listings;
+  }, [filters.sort, listings]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({

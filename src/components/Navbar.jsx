@@ -104,12 +104,12 @@ const Navbar = () => {
               </Button>
             ) : user && (
               <>
-                <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Link to="/messages">
                     <MessageSquare className="mr-2 h-4 w-4" /> Messages
                   </Link>
                 </Button>
-                <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
+                <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Link to="/profile">
                     <Settings className="mr-2 h-4 w-4" /> Mon Compte
                   </Link>

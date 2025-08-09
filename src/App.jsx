@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
 
 import AppWrapper from '@/components/AppWrapper';
+import ChatWidget from '@/components/ChatWidget';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -232,6 +233,7 @@ function App() {
           </AnimatePresence>
         </AuthProvider>
       </Router>
+      <ChatWidget />
       <Toaster />
     </AppWrapper>
   );

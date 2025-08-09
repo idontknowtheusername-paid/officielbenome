@@ -228,15 +228,23 @@ export default defineConfig({
 			'Cross-Origin-Embedder-Policy': 'credentialless',
 		},
 		allowedHosts: true,
-		proxy: {
-			'/api': {
-				target: 'https://officielbenome-backend.onrender.com',
-				changeOrigin: true,
-				secure: false,
-				ws: true,
-				rewrite: (path) => path.replace(/^\/api/, '')
-			}
-		}
+    proxy: {
+      // Chatbot local (ne pas proxy /api/chat)
+      '/api/chat': {
+        target: 'http://localhost:5173',
+        changeOrigin: false,
+        secure: false,
+        ws: false,
+      },
+      // Backend historique
+      '/api': {
+        target: 'https://officielbenome-backend.onrender.com',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
 	},
 	resolve: {
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json', ],

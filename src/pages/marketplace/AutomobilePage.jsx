@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Filter, Search, ArrowRight, Loader2, AlertCircle, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,17 +7,25 @@ import { Input } from '@/components/ui/input';
 import { useListings } from '@/hooks/useListings';
 import ListingCard from '@/components/ListingCard';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const AutomobilePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const locationHook = useLocation();
+  const query = useMemo(() => new URLSearchParams(locationHook.search), [locationHook.search]);
+  const initialSearch = query.get('search') || '';
+  const initialMinPrice = query.get('minPrice') || '';
+  const initialMaxPrice = query.get('maxPrice') || '';
+  const initialLocation = query.get('location') || '';
+  const initialBrand = query.get('brand') || '';
+
   const [filters, setFilters] = useState({
-    search: '',
-    location: '',
-    brand: '',
-    minPrice: '',
-    maxPrice: '',
+    search: initialSearch,
+    location: initialLocation,
+    brand: initialBrand,
+    minPrice: initialMinPrice,
+    maxPrice: initialMaxPrice,
     year: '',
     fuel: ''
   });

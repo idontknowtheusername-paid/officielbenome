@@ -1,17 +1,42 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; // Added import
 import { ArrowRight, FolderHeart as HomeIcon, BadgeCent as CarIcon, Briefcase as BriefcaseIcon, ShoppingBag as ShoppingBagIcon, SearchCode as SearchIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import { personalData } from '@/lib/personalData';
+import { resolveSearchIntent } from '@/lib/search-intent';
 import { useAuth } from '@/contexts/AuthContext';
+import { listingService } from '@/services/supabase.service';
+import ListingCard from '@/components/ListingCard';
 
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [popularListings, setPopularListings] = useState([]);
+  const [loadingPopular, setLoadingPopular] = useState(true);
+  const [errorPopular, setErrorPopular] = useState(null);
+
+  useEffect(() => {
+    let timerId;
+    const loadPopular = async () => {
+      try {
+        setLoadingPopular(true);
+        const data = await listingService.getTopViewedListings(6);
+        setPopularListings(data || []);
+      } catch (e) {
+        setErrorPopular(e?.message || 'Erreur lors du chargement des annonces populaires');
+      } finally {
+        setLoadingPopular(false);
+      }
+    };
+    loadPopular();
+    // Rafraîchissement périodique toutes les 30 minutes
+    timerId = setInterval(loadPopular, 1800000);
+    return () => clearInterval(timerId);
+  }, []);
   
   // This page is now a redirect or placeholder as MarketplaceHomePage is the main entry.
   // For a portfolio site, this would be the main landing page.
@@ -85,14 +110,26 @@ const HomePage = () => {
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <div className="relative">
-              <Input 
-                type="search" 
-                placeholder="Que recherchez-vous sur MaxiMarket ?" 
-                className="w-full py-4 px-6 pr-16 rounded-full text-lg bg-white/10 text-white placeholder-gray-400 border-2 border-transparent focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-16"
-              />
-              <Button size="lg" className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-12 w-12 p-0">
-                <SearchIcon className="h-6 w-6 text-white" />
-              </Button>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const input = form.querySelector('input[name="q"]');
+                const q = input?.value || '';
+                const { section, params } = resolveSearchIntent(q);
+                const usp = new URLSearchParams(params);
+                const path = section === 'immobilier' ? '/immobilier' : section === 'automobile' ? '/automobile' : section === 'services' ? '/services' : '/marketplace';
+                navigate(`${path}?${usp.toString()}`);
+              }}>
+                <Input 
+                  name="q"
+                  type="search" 
+                  placeholder="Que recherchez-vous sur MaxiMarket ?" 
+                  className="w-full py-4 px-6 pr-16 rounded-full text-lg bg-white/10 text-white placeholder-gray-400 border-2 border-transparent focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-16"
+                />
+                <Button type="submit" size="lg" className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-12 w-12 p-0">
+                  <SearchIcon className="h-6 w-6 text-white" />
+                </Button>
+              </form>
             </div>
           </motion.div>
         </div>
@@ -134,34 +171,45 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured Listings Placeholder */}
+      {/* Popular Listings */}
       <section className="py-16 md:py-24 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
             Annonces <span className="gradient-text">Populaires</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map(i => (
-              <motion.div 
-                key={i} 
-                className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent hover:border-secondary/50"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: i * 0.1}}
-              >
-                <div className="h-60 bg-muted animate-pulse"><img  alt={`Placeholder image ${i} for featured listing`}  src="https://images.unsplash.com/photo-1604703021135-92b25e6415e4" /></div>
-                <div className="p-6">
-                  <div className="h-6 w-3/4 bg-muted rounded mb-3 animate-pulse"></div>
-                  <div className="h-4 w-1/2 bg-muted rounded mb-4 animate-pulse"></div>
-                  <div className="h-10 w-1/3 bg-primary/50 rounded animate-pulse"></div>
+          {errorPopular && (
+            <p className="text-center text-destructive mb-8">{errorPopular}</p>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {loadingPopular && !popularListings.length && (
+              Array.from({ length: 6 }).map((_, idx) => (
+                <div key={idx} className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent">
+                  <div className="h-56 bg-muted animate-pulse" />
+                  <div className="p-6">
+                    <div className="h-6 w-3/4 bg-muted rounded mb-3 animate-pulse" />
+                    <div className="h-4 w-1/2 bg-muted rounded mb-4 animate-pulse" />
+                    <div className="h-10 w-1/3 bg-muted rounded animate-pulse" />
+                  </div>
                 </div>
-              </motion.div>
+              ))
+            )}
+
+            {!loadingPopular && popularListings.length === 0 && (
+              <p className="col-span-full text-center text-muted-foreground">Aucune annonce populaire pour le moment.</p>
+            )}
+
+            {popularListings.slice(0, 6).map((listing) => (
+              <ListingCard key={listing.id} listing={listing} showActions={false} />
             ))}
           </div>
           <div className="text-center mt-12">
-            <Button size="lg" variant="default" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-primary-foreground">
-                Voir Toutes les Annonces <ArrowRight className="ml-2 h-5 w-5" />
+            <Button
+              size="lg"
+              variant="default"
+              className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-primary-foreground"
+              onClick={() => navigate('/marketplace?sort=popular&per=24')}
+            >
+              Voir Toutes les Annonces <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>
