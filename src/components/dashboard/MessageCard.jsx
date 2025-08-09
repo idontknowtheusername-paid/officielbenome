@@ -27,6 +27,48 @@ const MessageCard = ({
   onStar,
   showActions = true 
 }) => {
+  // Vérifier si c'est un message système (assistant MaxiMarket)
+  const isSystemMessage = message.sender_id === '00000000-0000-0000-0000-000000000000' || 
+                         message.message_type === 'system';
+
+  // Si c'est un message système, afficher un style spécial
+  if (isSystemMessage) {
+    return (
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex items-start space-x-4">
+            {/* Avatar Assistant */}
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-lg">🤖</span>
+              </div>
+            </div>
+
+            {/* Message Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-2 mb-2">
+                <h3 className="font-semibold text-blue-800">Assistant MaxiMarket</h3>
+                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                  Système
+                </Badge>
+              </div>
+              
+              <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
+                {message.content}
+              </p>
+              
+              <div className="flex items-center space-x-1 mt-2">
+                <span className="text-xs text-muted-foreground flex items-center">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {formatTime(message.time || 'À l\'instant')}
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   const getMessageTypeIcon = (type) => {
     switch (type) {
       case 'inquiry':

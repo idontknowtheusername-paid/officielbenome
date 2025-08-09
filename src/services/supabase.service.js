@@ -751,6 +751,49 @@ export const notificationService = {
 // SERVICE MESSAGES
 // ============================================================================
 
+// Fonction pour ajouter le message de bienvenue
+const addWelcomeMessage = async (userId) => {
+  const welcomeMessage = {
+    content: `🤖 Bienvenue sur MaxiMarket !
+
+Votre marketplace de confiance pour l'Afrique de l'Ouest.
+
+✨ Découvrez nos fonctionnalités :
+• 🏠 Immobilier : Achetez, vendez, louez
+• 🚗 Automobile : Véhicules neufs et d'occasion
+• 🛠️ Services : Trouvez des professionnels
+• 🛍️ Marketplace : Tout ce dont vous avez besoin
+
+🔒 Sécurité garantie avec nos partenaires vérifiés
+💬 Support 24/7 disponible
+
+Besoin d'aide ? Je suis là pour vous accompagner !`,
+    message_type: 'system',
+    sender_id: '00000000-0000-0000-0000-000000000000', // ID système pour l'assistant
+    receiver_id: userId,
+    is_read: false,
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([welcomeMessage])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erreur ajout message de bienvenue:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Erreur ajout message de bienvenue:', error);
+    return null;
+  }
+};
+
 export const messageService = {
   // Recuperer les conversations d'un utilisateur
   getUserConversations: async () => {
@@ -780,6 +823,30 @@ export const messageService = {
       .order('last_message_at', { ascending: false });
 
     if (convError) throw convError;
+
+    // Si aucune conversation, créer un message de bienvenue
+    if (!conversations || conversations.length === 0) {
+      // Vérifier si l'utilisateur a déjà reçu le message de bienvenue
+      const { data: existingWelcome, error: welcomeError } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('receiver_id', user.id)
+        .eq('sender_id', '00000000-0000-0000-0000-000000000000')
+        .eq('message_type', 'system')
+        .limit(1);
+
+      if (welcomeError) {
+        console.error('Erreur vérification message de bienvenue:', welcomeError);
+      }
+
+      // Si pas de message de bienvenue, l'ajouter
+      if (!existingWelcome || existingWelcome.length === 0) {
+        await addWelcomeMessage(user.id);
+      }
+
+      // Retourner un tableau vide pour éviter l'erreur
+      return [];
+    }
 
     // Pour chaque conversation, recuperer les messages
     const conversationsWithMessages = await Promise.all(
