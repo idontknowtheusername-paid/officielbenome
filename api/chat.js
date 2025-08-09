@@ -12,7 +12,7 @@
 const ALLOWED_MODELS = ['mistral-small-latest', 'mistral-large-latest'];
 const DEFAULT_MODEL = 'mistral-small-latest';
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.setHeader('Allow', 'POST');
