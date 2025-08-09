@@ -1,7 +1,7 @@
 // Script de diagnostic pour l'API Mistral
 // Usage: node debug-vercel.js
 
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
 async function testMistralAPI() {
   console.log('🔍 Diagnostic de l\'API Mistral...\n');
