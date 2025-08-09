@@ -97,7 +97,7 @@ const VercelDebug = () => {
           <strong>🔧 Solution :</strong>
           <ol style={{ margin: '5px 0', paddingLeft: '20px' }}>
             <li>Allez sur vercel.com</li>
-            <li>Sélectionnez votre projet officielbenome</li>
+                            <li>Sélectionnez votre projet maximarket</li>
             <li>Settings > Environment Variables</li>
             <li>Ajoutez les variables Supabase manquantes</li>
             <li>Redeployez l'application</li>

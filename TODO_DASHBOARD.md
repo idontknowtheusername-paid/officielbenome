@@ -1,4 +1,4 @@
-# 📋 TODO - Dashboard Utilisateur Benome
+# 📋 TODO - Dashboard Utilisateur MaxiMarket
 
 ## ✅ **TERMINÉ**
 
@@ -67,7 +67,7 @@ npm install clsx tailwind-merge
 
 ### **1. Installation des dépendances**
 ```bash
-cd /Users/bv/officielbenome
+cd /Users/bv/maximarket
 npm install clsx tailwind-merge
 ```
 
@@ -118,7 +118,7 @@ npm install clsx tailwind-merge
 
 ## 🎉 **RÉSULTAT ATTENDU**
 
-Une interface "Mon Compte" moderne et complète qui rivalise avec les meilleures plateformes marketplace du monde, offrant une expérience utilisateur exceptionnelle pour gérer efficacement toutes les activités sur Benome.
+Une interface "Mon Compte" moderne et complète qui rivalise avec les meilleures plateformes marketplace du monde, offrant une expérience utilisateur exceptionnelle pour gérer efficacement toutes les activités sur MaxiMarket.
 
 ---
 

@@ -333,7 +333,7 @@ export default defineConfig({
       },
       // Backend historique
       '/api': {
-        target: 'https://officielbenome-backend.onrender.com',
+        target: 'https://maximarket-backend.onrender.com',
         changeOrigin: true,
         secure: false,
         ws: true,

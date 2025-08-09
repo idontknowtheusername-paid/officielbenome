@@ -5,7 +5,7 @@ export const DEFAULT_CONFIG = {
     anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key',
   },
   app: {
-    name: import.meta.env.VITE_APP_NAME || 'Officiel BenoMe',
+    name: import.meta.env.VITE_APP_NAME || 'MaxiMarket',
     url: import.meta.env.VITE_APP_URL || 'http://localhost:5173',
   },
   debug: import.meta.env.VITE_DEBUG === 'true',

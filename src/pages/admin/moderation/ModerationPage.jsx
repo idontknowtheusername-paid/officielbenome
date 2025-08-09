@@ -195,7 +195,7 @@ function ModerationPage() {
         reporter: {
           id: 'system',
           name: 'Système',
-          email: 'system@benome.com'
+          email: 'system@maximarket.com'
         },
         reason: 'Annonce en attente de modération',
         description: 'Cette annonce nécessite une vérification avant publication',

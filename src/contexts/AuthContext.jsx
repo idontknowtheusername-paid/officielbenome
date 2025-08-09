@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
 
           toast({
             title: "Connexion réussie",
-            description: "Bienvenue sur Officiel BenoMe !",
+            description: "Bienvenue sur MaxiMarket !",
           });
           // Rediriger automatiquement apres confirmation/connexion
           navigate('/');
@@ -209,7 +209,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         toast({
           title: "Inscription réussie",
-          description: "Bienvenue sur Officiel BenoMe !",
+          description: "Bienvenue sur MaxiMarket !",
         });
         navigate('/');
         return { success: true, needsConfirmation: false };

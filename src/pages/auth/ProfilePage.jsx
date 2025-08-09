@@ -612,7 +612,7 @@ const ProfilePage = () => {
                   <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Aucune transaction</h3>
                   <p className="text-muted-foreground mb-4">
-                    Vous n'avez pas encore effectué de transactions sur Benome.
+                    Vous n'avez pas encore effectué de transactions sur MaxiMarket.
                   </p>
                   <Button variant="outline">
                     Découvrir nos services

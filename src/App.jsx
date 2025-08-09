@@ -1,10 +1,18 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from '@/components/ui/toaster';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
+import { queryClient } from '@/lib/queryClient';
+import { usePreload } from '@/hooks/usePreload';
+import { swManager } from '@/lib/swManager';
+import { CacheMonitor } from '@/components/CacheMonitor';
+import { AdvancedCacheMonitor } from '@/components/AdvancedCacheMonitor';
+import { QueryErrorBoundary } from '@/components/QueryErrorBoundary';
 
 import AppWrapper from '@/components/AppWrapper';
 import ChatWidget from '@/components/ChatWidget';
@@ -98,6 +106,26 @@ const ConfigTest = () => {
 };
 
 function App() {
+  // Enregistrer le Service Worker
+  React.useEffect(() => {
+    swManager.register();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <QueryErrorBoundary>
+        <AppContent />
+      </QueryErrorBoundary>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+
+// Composant séparé pour utiliser les hooks React Query
+function AppContent() {
+  // Activer le préchargement des données (maintenant à l'intérieur du QueryClientProvider)
+  usePreload();
+
   return (
     <AppWrapper>
       <ConfigTest />
@@ -246,6 +274,8 @@ function App() {
       </Router>
       <ChatWidget />
       <Toaster />
+      <CacheMonitor />
+      <AdvancedCacheMonitor />
     </AppWrapper>
   );
 }

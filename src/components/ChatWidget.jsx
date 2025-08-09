@@ -22,7 +22,7 @@ const ChatWidget = ({ pageContext = {} }) => {
 
   const context = useMemo(() => ({
     path: window.location.pathname,
-    ...(typeof window !== 'undefined' && window.__BENOME_CONTEXT ? window.__BENOME_CONTEXT : {}),
+          ...(typeof window !== 'undefined' && window.__MAXIMARKET_CONTEXT ? window.__MAXIMARKET_CONTEXT : {}),
     ...pageContext,
   }), [pageContext]);
 

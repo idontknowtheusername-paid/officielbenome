@@ -91,7 +91,7 @@ const ListingDetailPage = () => {
     try {
       if (typeof window !== 'undefined' && listing) {
         const locationCity = (listing?.location && typeof listing.location === 'object') ? (listing.location.city || '') : '';
-        window.__BENOME_CONTEXT = {
+        window.__MAXIMARKET_CONTEXT = {
           listing: {
             id: listing.id,
             title: listing.title,
@@ -105,8 +105,8 @@ const ListingDetailPage = () => {
     } catch {}
     return () => {
       try {
-        if (typeof window !== 'undefined' && window.__BENOME_CONTEXT) {
-          delete window.__BENOME_CONTEXT;
+            if (typeof window !== 'undefined' && window.__MAXIMARKET_CONTEXT) {
+      delete window.__MAXIMARKET_CONTEXT;
         }
       } catch {}
     };
