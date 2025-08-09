@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Heart, Phone, Mail, Calendar, Eye, Share2, Flag } from 'lucide-react';
+import { ArrowLeft, MapPin, Heart, Phone, Mail, Calendar, Eye, Share2, Flag, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -186,6 +186,18 @@ const ListingDetailPage = () => {
       return;
     }
 
+    // Vérifier que l'annonce a un user_id valide (sauf pour les tests)
+    const isTestListing = !listing.user_id || listing.user_id === 'test-user-1';
+    
+    if (type === 'message' && isTestListing) {
+      toast({
+        title: "Annonce de test",
+        description: "Cette annonce est en mode test. Les fonctionnalités de contact ne sont pas disponibles.",
+        variant: "default",
+      });
+      return;
+    }
+
     try {
       if (type === 'message') {
         // Créer ou récupérer une conversation existante
@@ -202,23 +214,62 @@ const ListingDetailPage = () => {
           description: "Vous avez été redirigé vers la messagerie.",
         });
       } else if (type === 'phone') {
-        // Pour l'instant, afficher un message d'information
-        toast({
-          title: "Contact téléphonique",
-          description: "Utilisez la messagerie pour échanger vos coordonnées en toute sécurité.",
-        });
-      } else if (type === 'email') {
-        // Rediriger vers la messagerie
-        const conversation = await messageService.createConversation(
-          listing.user_id, 
-          listing.id
-        );
-        navigate(`/messages?conversation=${conversation.id}&listing=${listing.id}`);
+        // Logique intelligente pour le numéro de téléphone
+        const phoneNumber = listing.contact_info?.phone || listing.users?.phone_number;
         
-        toast({
-          title: "Messagerie",
-          description: "Vous avez été redirigé vers la messagerie.",
-        });
+        if (phoneNumber) {
+          // Nettoyer le numéro (enlever espaces, tirets, etc.)
+          const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+          
+          // Ajouter l'indicatif pays si nécessaire (pour le Sénégal)
+          const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : 
+                                 cleanNumber.startsWith('221') ? `+${cleanNumber}` :
+                                 `+221${cleanNumber}`;
+          
+          // Ouvrir l'appel téléphonique
+          window.open(`tel:${formattedNumber}`, '_blank');
+          
+          toast({
+            title: "Appel en cours",
+            description: `Appel vers ${formattedNumber}`,
+          });
+        } else {
+          toast({
+            title: "Pas de numéro disponible",
+            description: "Aucun numéro de téléphone n'est disponible pour cette annonce.",
+            variant: "destructive",
+          });
+        }
+      } else if (type === 'whatsapp') {
+        // Logique pour WhatsApp
+        const phoneNumber = listing.contact_info?.phone || listing.users?.phone_number;
+        
+        if (phoneNumber) {
+          // Nettoyer le numéro
+          const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+          const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : 
+                                 cleanNumber.startsWith('221') ? `+${cleanNumber}` :
+                                 `+221${cleanNumber}`;
+          
+          // Message pré-rempli pour WhatsApp
+          const message = encodeURIComponent(
+            `Bonjour ! Je suis intéressé(e) par votre annonce "${listing.title}".\n\nPouvez-vous me donner plus d'informations ?`
+          );
+          
+          // Ouvrir WhatsApp
+          window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank');
+          
+          toast({
+            title: "WhatsApp ouvert",
+            description: `Conversation WhatsApp avec ${formattedNumber}`,
+          });
+        } else {
+          toast({
+            title: "Pas de numéro disponible",
+            description: "Aucun numéro de téléphone n'est disponible pour cette annonce.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error('Erreur lors de la création de la conversation:', error);
@@ -457,13 +508,30 @@ const ListingDetailPage = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700" 
+                  onClick={() => handleContact('whatsapp')}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+                
                 <Button 
                   className="w-full" 
+                  onClick={() => handleContact('phone')}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Appeler
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full"
                   onClick={() => handleContact('message')}
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Envoyer un message
+                  Message
                 </Button>
                 
                 <Button 
@@ -472,7 +540,7 @@ const ListingDetailPage = () => {
                   onClick={handleFavorite}
                 >
                   <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                  {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                  {isFavorite ? 'Retirer' : 'Favoris'}
                 </Button>
               </div>
             </div>

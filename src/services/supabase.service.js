@@ -142,28 +142,99 @@ export const listingService = {
         data: [
           {
             id: 'test-1',
-            title: 'Annonce de test - Immobilier',
-            description: 'Cette annonce est affichée car Supabase n\'est pas configuré.',
+            title: 'Appartement 3 pièces au Centre-Ville',
+            description: 'Bel appartement moderne au cœur de Dakar, proche de tous les commerces et transports.',
             price: 500000,
             category: 'real_estate',
             status: 'approved',
+            user_id: 'test-user-1',
             created_at: new Date().toISOString(),
             location: { city: 'Dakar', country: 'Sénégal' },
-            real_estate_details: { type: 'Appartement', rooms: '3 pièces', surface: '80m²' }
+            real_estate_details: { type: 'Appartement', rooms: '3 pièces', surface: '80m²' },
+            contact_info: { phone: '+221 77 123 4567', email: 'vendeur@test.com' },
+            users: {
+              id: 'test-user-1',
+              first_name: 'Mamadou',
+              last_name: 'Diallo',
+              phone_number: '+221 77 123 4567',
+              email: 'mamadou.diallo@test.com'
+            }
           },
           {
             id: 'test-2',
-            title: 'Annonce de test - Automobile',
-            description: 'Cette annonce est affichée car Supabase n\'est pas configuré.',
+            title: 'Toyota Corolla 2020 - Excellent état',
+            description: 'Véhicule en parfait état, entretien régulier, première main.',
             price: 2500000,
             category: 'automobile',
             status: 'approved',
+            user_id: 'test-user-2',
             created_at: new Date().toISOString(),
             location: { city: 'Thiès', country: 'Sénégal' },
-            automobile_details: { brand: 'Toyota', model: 'Corolla', year: '2020' }
+            automobile_details: { brand: 'Toyota', model: 'Corolla', year: '2020' },
+            contact_info: { phone: '+221 76 987 6543', email: 'vendeur-auto@test.com' },
+            users: {
+              id: 'test-user-2',
+              first_name: 'Fatou',
+              last_name: 'Sall',
+              phone_number: '+221 76 987 6543',
+              email: 'fatou.sall@test.com'
+            }
+          },
+          {
+            id: 'test-3',
+            title: 'Service de Plomberie Professionnel',
+            description: 'Plombier qualifié avec 10 ans d\'expérience. Réparation, installation, maintenance. Intervention rapide 24h/24.',
+            price: 15000,
+            category: 'services',
+            status: 'approved',
+            user_id: 'test-user-3',
+            created_at: new Date().toISOString(),
+            location: { city: 'Dakar', country: 'Sénégal' },
+            service_details: { 
+              expertise: 'Plomberie', 
+              experience: '10 ans', 
+              availability: '24h/24',
+              verified: true,
+              certifications: ['Certification professionnelle', 'Assurance responsabilité civile']
+            },
+            contact_info: { phone: '+221 78 555 1234', email: 'plombier@test.com', website: 'www.plombier-dakar.com' },
+            users: {
+              id: 'test-user-3',
+              first_name: 'Ibrahima',
+              last_name: 'Ndiaye',
+              phone_number: '+221 78 555 1234',
+              email: 'ibrahima.ndiaye@test.com'
+            }
+          },
+          {
+            id: 'test-4',
+            title: 'iPhone 13 Pro - Comme neuf',
+            description: 'iPhone 13 Pro 128GB en excellent état, acheté il y a 6 mois. Boîte et accessoires inclus.',
+            price: 450000,
+            category: 'marketplace',
+            status: 'approved',
+            user_id: 'test-user-4',
+            created_at: new Date().toISOString(),
+            location: { city: 'Dakar', country: 'Sénégal' },
+            product_details: { 
+              brand: 'Apple', 
+              model: 'iPhone 13 Pro', 
+              condition: 'Excellent',
+              warranty: 'Garantie constructeur',
+              dimensions: '146.7 x 71.5 x 7.65 mm',
+              weight: '203g'
+            },
+            contact_info: { phone: '+221 77 888 9999', email: 'tech@test.com' },
+            users: {
+              id: 'test-user-4',
+              first_name: 'Aissatou',
+              last_name: 'Diop',
+              phone_number: '+221 77 888 9999',
+              email: 'aissatou.diop@test.com'
+            },
           }
         ],
-        count: 2,
+        count: 4,
         hasMore: false
       };
     }
@@ -206,13 +277,13 @@ export const listingService = {
     }
 
     console.log('🔍 Executing query with filters:', filters);
-      
-      // Exécuter la requête
-      console.log('🔍 Lancement de la requête...');
-      const { data, error } = await query;
-      console.log('🔍 Requête terminée');
-      
-      console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, error });
+    
+    // Exécuter la requête
+    console.log('🔍 Lancement de la requête...');
+    const { data, error } = await query;
+    console.log('🔍 Requête terminée');
+    
+    console.log('🔍 listingService.getAllListings result:', { data: data?.length || 0, error });
       
       if (error) {
         console.error('❌ Erreur Supabase:', error);
@@ -223,7 +294,7 @@ export const listingService = {
       const cleanedData = data?.map(listing => {
         try {
           return {
-      ...listing,
+            ...listing,
             location: listing.location ? (typeof listing.location === 'string' ? JSON.parse(listing.location) : listing.location) : null,
             real_estate_details: listing.real_estate_details ? (typeof listing.real_estate_details === 'string' ? JSON.parse(listing.real_estate_details) : listing.real_estate_details) : null,
             automobile_details: listing.automobile_details ? (typeof listing.automobile_details === 'string' ? JSON.parse(listing.automobile_details) : listing.automobile_details) : null,
@@ -252,14 +323,23 @@ export const listingService = {
       // Retourner une annonce de test si Supabase n'est pas configuré
       return {
         id: 'test-1',
-        title: 'Annonce de test - Immobilier',
-        description: 'Cette annonce est affichée car Supabase n\'est pas configuré. Veuillez configurer les variables d\'environnement VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY.',
+        title: 'Appartement 3 pièces au Centre-Ville',
+        description: 'Bel appartement moderne au cœur de Dakar, proche de tous les commerces et transports.',
         price: 500000,
         category: 'real_estate',
         status: 'approved',
+        user_id: 'test-user-1',
         created_at: new Date().toISOString(),
         location: { city: 'Dakar', country: 'Sénégal' },
-        real_estate_details: { type: 'Appartement', rooms: '3 pièces', surface: '80m²' }
+        real_estate_details: { type: 'Appartement', rooms: '3 pièces', surface: '80m²' },
+        contact_info: { phone: '+221 77 123 4567', email: 'vendeur@test.com' },
+        users: {
+          id: 'test-user-1',
+          first_name: 'Mamadou',
+          last_name: 'Diallo',
+          phone_number: '+221 77 123 4567',
+          email: 'mamadou.diallo@test.com'
+        }
       };
     }
     
@@ -1291,4 +1371,4 @@ export default {
   transactions: transactionService,
   reports: reportService,
   analytics: analyticsService
-}; 
+};
