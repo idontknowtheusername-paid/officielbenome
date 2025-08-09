@@ -61,6 +61,11 @@ export const CacheMonitor = () => {
     }
   };
 
+  // Ne pas afficher en production
+  if (import.meta.env.PROD) {
+    return null;
+  }
+
   if (!isVisible) {
     return (
       <div className="fixed bottom-4 right-4 z-50">

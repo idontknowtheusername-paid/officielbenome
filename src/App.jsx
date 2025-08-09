@@ -116,7 +116,7 @@ function App() {
       <QueryErrorBoundary>
         <AppContent />
       </QueryErrorBoundary>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }
