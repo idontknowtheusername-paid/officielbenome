@@ -81,7 +81,7 @@ async function testMistralAPI() {
       const data = await localResponse.json();
       console.log('✅ Endpoint local fonctionne');
       console.log(`   Réponse: ${data.content?.substring(0, 50)}...`);
-    } else {
+} else {
       const errorData = await localResponse.json().catch(() => ({}));
       console.log('❌ Erreur endpoint local:');
       console.log(`   Détails: ${errorData.error || 'Erreur inconnue'}`);
