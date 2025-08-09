@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { listingService, storageService } from '@/services/supabase.service';
 import { Camera } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CATEGORY_OPTIONS = [
   { value: 'real_estate', label: 'Immobilier' },
@@ -40,6 +41,7 @@ const getCategoryValue = (cat) => {
 
 const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onStepChange }) => {
   const { toast } = useToast();
+  const { user, userProfile } = useAuth();
   const [form, setForm] = useState({
     ...DEFAULT_FORM,
     category: category ? getCategoryValue(category) : ''
@@ -318,6 +320,8 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     if (!form.description || form.description.length < 10) return 'La description est requise (min 10 caractères)';
     if (!form.price || isNaN(Number(form.price))) return 'Le prix est requis et doit être un nombre';
     if (!form.category) return 'La catégorie est requise';
+    const userPhone = userProfile?.phone_number || user?.user_metadata?.phone_number || user?.phone_number;
+    if (!userPhone) return 'Votre numéro de téléphone est requis pour publier une annonce. Veuillez l’ajouter dans votre profil.';
     return null;
   };
 
