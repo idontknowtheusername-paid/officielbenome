@@ -29,14 +29,7 @@ const ChatWidget = ({ pageContext = {} }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Bloquer le scroll de fond sur mobile quand le widget est ouvert
-  useEffect(() => {
-    if (isMobile && open) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = prev; };
-    }
-  }, [isMobile, open]);
+  // (Mobile flottant => pas de scroll lock nécessaire)
 
   const send = async () => {
     const msg = input.trim();
@@ -146,16 +139,16 @@ const ChatWidget = ({ pageContext = {} }) => {
       {open && (
         <div style={{
           position: 'fixed',
-          bottom: isMobile ? 0 : 20,
-          right: isMobile ? 0 : 20,
-          left: isMobile ? 0 : 'auto',
-          top: isMobile ? 0 : 'auto',
+          bottom: isMobile ? 'calc(16px + env(safe-area-inset-bottom, 0px))' : 20,
+          right: isMobile ? 'calc(16px + env(safe-area-inset-right, 0px))' : 20,
+          left: 'auto',
+          top: 'auto',
           zIndex: 9999,
-          width: isMobile ? '100vw' : 420,
-          maxWidth: isMobile ? '100vw' : '95vw',
-          height: isMobile ? '100dvh' : 560,
-          maxHeight: isMobile ? '100dvh' : '78vh',
-          background: '#0b0f14', border: '1px solid #111827', borderRadius: isMobile ? 0 : 16,
+          width: isMobile ? '60vw' : 420,
+          maxWidth: isMobile ? '95vw' : '95vw',
+          height: isMobile ? '65vh' : 560,
+          maxHeight: isMobile ? '78vh' : '78vh',
+          background: '#0b0f14', border: '1px solid #111827', borderRadius: 16,
           display: 'flex', flexDirection: 'column', boxShadow: '0 18px 38px rgba(0,0,0,0.6)'
         }}>
           <div style={{ padding: '12px 14px', borderBottom: '1px solid #1f2937', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0e141b', position: isMobile ? 'sticky' : 'static', top: 0 }}>
@@ -175,7 +168,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             </div>
           </div>
 
-          <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 14, paddingBottom: isMobile ? 'calc(14px + env(safe-area-inset-bottom, 0px))' : 14 }}>
+          <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 14, paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
             {history.length === 0 && (
               <div style={{ fontSize: 14, color: '#9ca3af' }}>
                 Bonjour. Je suis l’assistant Maximarket. Indiquez ce que vous recherchez (catégorie, budget, ville) ou posez votre question.
@@ -197,7 +190,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             {loading && <div style={{ color: '#9ca3af', fontSize: 14 }}>Rédaction…</div>}
           </div>
 
-          <div style={{ display: 'flex', gap: 8, padding: 12, paddingBottom: isMobile ? 'calc(12px + env(safe-area-inset-bottom, 0px))' : 12, borderTop: '1px solid #1f2937', background: '#0e141b', borderBottomLeftRadius: isMobile ? 0 : 16, borderBottomRightRadius: isMobile ? 0 : 16 }}>
+          <div style={{ display: 'flex', gap: 8, padding: 12, paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid #1f2937', background: '#0e141b', borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
