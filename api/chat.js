@@ -20,10 +20,7 @@ module.exports = async (req, res) => {
     }
 
     // Clé API Mistral (dépôt privé)
-    const apiKey = process.env.MISTRAL_API_KEY || 'rJHJdTtKsu58p2k1j5jkBmUwyc56z5tP';
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Missing MISTRAL_API_KEY' });
-    }
+    const apiKey = 'rJHJdTtKsu58p2k1j5jkBmUwyc56z5tP';
 
     const { messages, context = {}, model, stream } = req.body || {};
     if (!Array.isArray(messages) || messages.length === 0) {
