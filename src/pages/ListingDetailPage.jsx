@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { listingService, messageService } from '@/services/supabase.service';
+import ImageGallery from '@/components/ImageGallery';
+import { useListingImages } from '@/hooks';
 
 const ListingDetailPage = () => {
   const { id } = useParams();
@@ -19,6 +21,7 @@ const ListingDetailPage = () => {
   const [relatedListings, setRelatedListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const { images } = useListingImages(listing);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -159,22 +162,7 @@ const ListingDetailPage = () => {
     }
   };
 
-  const getListingImage = () => {
-    if (listing?.images && listing.images.length > 0) {
-      return listing.images[0];
-    }
-    // Image par defaut selon la categorie
-    switch (listing?.category) {
-      case 'real_estate':
-        return 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop';
-      case 'automobile':
-        return 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=600&fit=crop';
-      case 'services':
-        return 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop';
-      default:
-        return 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop';
-    }
-  };
+
 
   const handleFavorite = async () => {
     if (!user) {
@@ -386,13 +374,10 @@ const ListingDetailPage = () => {
         <div>
           {/* Images */}
           <div className="mb-8">
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-              <img
-                src={getListingImage()}
-                alt={listing.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <ImageGallery 
+              images={images} 
+              title={listing.title}
+            />
           </div>
 
           {/* Informations principales */}
@@ -603,7 +588,7 @@ const ListingDetailPage = () => {
                         <img   
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           alt={relatedListing.title}
-                          src={relatedListing.images?.[0] || getListingImage()}
+                          src={relatedListing.images?.[0] || images[0]}
                         />
                       </div>
                       <div className="p-4">

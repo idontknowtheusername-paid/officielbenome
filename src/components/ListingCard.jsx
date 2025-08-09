@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import MiniImageGallery from '@/components/MiniImageGallery';
+import { useListingImages } from '@/hooks';
 
 const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { images } = useListingImages(listing);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -74,22 +77,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
     navigate(`/annonce/${listing.id}`);
   };
 
-  const getListingImage = () => {
-    // Utiliser l'image principale ou une image par defaut
-    if (listing.images && listing.images.length > 0) {
-      return listing.images[0];
-    }
-    
-    // Images par defaut selon la categorie
-    const defaultImages = {
-      real_estate: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop',
-      automobile: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=300&fit=crop',
-      services: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
-      marketplace: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop'
-    };
-    
-    return defaultImages[listing.category] || defaultImages.marketplace;
-  };
+
 
   const getListingDetails = () => {
     const category = listing.category;
@@ -144,11 +132,10 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
     >
       {/* Image */}
       <div className="relative h-56 bg-muted overflow-hidden">
-        <img  
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-          alt={listing.title}
-          src={getListingImage()}
-          loading="lazy"
+        <MiniImageGallery 
+          images={images}
+          title={listing.title}
+          className="h-full"
         />
         
         {/* Badges */}

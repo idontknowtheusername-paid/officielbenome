@@ -14,6 +14,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import MiniImageGallery from '@/components/MiniImageGallery';
 
 const ListingCard = ({ 
   listing, 
@@ -71,10 +72,10 @@ const ListingCard = ({
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
       <div className="relative">
-        <img
-          src={listing.image}
-          alt={listing.title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+        <MiniImageGallery 
+          images={listing.images || [listing.image]}
+          title={listing.title}
+          className="h-48"
         />
         <div className="absolute top-2 right-2 flex space-x-1">
           <Badge 

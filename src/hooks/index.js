@@ -1,34 +1,24 @@
 // Export all custom hooks for easier imports
 // Example: import { useApi, useAdminDashboard } from '@/hooks';
 
+// Core hooks
 export { default as useApi } from './useApi';
 export { default as useAdminDashboard } from './useAdminDashboard';
+export { default as useAuth } from './useAuth';
+export { default as useListings } from './useListings';
+export { default as useMessages } from './useMessages';
+export { default as useNotifications } from './useNotifications';
+export { default as usePreload } from './usePreload';
+export { default as useTabNavigation } from './useTabNavigation';
 
-// Utility hooks
-export { default as useDebounce } from './useDebounce';
-export { default as useLocalStorage } from './useLocalStorage';
-export { default as useSessionStorage } from './useSessionStorage';
-export { default as useMediaQuery } from './useMediaQuery';
-export { default as useOnClickOutside } from './useOnClickOutside';
-export { default as useWindowSize } from './useWindowSize';
+// Image gallery hook
+export { useListingImages } from './useListingImages';
 
-// Auth hooks
-export { useAuth } from '../contexts/AuthContext';
+// Auth context (alternative import)
+export { useAuth as useAuthContext } from '../contexts/AuthContext';
 
-// Form hooks
-export { default as useForm } from './useForm';
-
-export * from './use-toast';
-
-// UI hooks
-export { default as useTheme } from './useTheme';
-export { default as useToast } from './useToast';
-
-// Data fetching hooks
+// Data fetching hooks from React Query
 export { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-// Export any additional hooks you create in the future
-// export * from './your-custom-hook';
 
 // This file serves as a central export point for all custom hooks
 // Import and export any additional hooks you create in the future
