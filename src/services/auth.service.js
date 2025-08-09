@@ -24,6 +24,15 @@ const AuthService = {
   // S'inscrire
   async register(userData) {
     try {
+      // Validation bloquante du numéro (format E.164 minimal)
+      const phoneRaw = (userData?.phoneNumber || '').trim();
+      const e164Regex = /^\+?[1-9]\d{1,14}$/;
+      if (!phoneRaw) {
+        throw new Error('Le numéro de téléphone est obligatoire pour créer un compte.');
+      }
+      if (!e164Regex.test(phoneRaw)) {
+        throw new Error('Veuillez saisir un numéro de téléphone valide (format international).');
+      }
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -32,7 +41,7 @@ const AuthService = {
           data: {
             first_name: userData.firstName,
             last_name: userData.lastName,
-            phone_number: userData.phoneNumber,
+            phone_number: phoneRaw,
           }
         }
       });
@@ -49,7 +58,7 @@ const AuthService = {
               first_name: userData.firstName,
               last_name: userData.lastName,
               email: userData.email,
-              phone_number: userData.phoneNumber,
+              phone_number: phoneRaw,
               role: 'user'
             }
           ], { onConflict: 'id' });

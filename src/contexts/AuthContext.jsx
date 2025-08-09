@@ -143,6 +143,25 @@ export const AuthProvider = ({ children }) => {
       if (!isSupabaseConfigured) {
         throw new Error('Supabase non configuré');
       }
+      // Validation bloquante du numéro (format E.164 minimal)
+      const phoneRaw = (userData?.phoneNumber || '').trim();
+      const e164Regex = /^\+?[1-9]\d{1,14}$/;
+      if (!phoneRaw) {
+        toast({
+          title: 'Numéro requis',
+          description: 'Le numéro de téléphone est obligatoire pour créer un compte.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      if (!e164Regex.test(phoneRaw)) {
+        toast({
+          title: 'Numéro invalide',
+          description: 'Veuillez saisir un numéro de téléphone valide (format international).',
+          variant: 'destructive',
+        });
+        return false;
+      }
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -151,7 +170,7 @@ export const AuthProvider = ({ children }) => {
           data: {
             first_name: userData.firstName,
             last_name: userData.lastName,
-             phone_number: userData.phoneNumber,
+             phone_number: phoneRaw,
           }
         }
       });
@@ -170,7 +189,7 @@ export const AuthProvider = ({ children }) => {
                first_name: userData.firstName,
                last_name: userData.lastName,
                email: userData.email,
-               phone_number: userData.phoneNumber,
+               phone_number: phoneRaw,
                role: 'user'
              }
            ], { onConflict: 'id' });
