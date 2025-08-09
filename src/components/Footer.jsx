@@ -22,31 +22,31 @@ const Footer = () => {
     {
       title: "Entreprise",
       links: [
-        { name: "À Propos", path: "/about" },
-        { name: "Carrières", path: "/careers" },
-        { name: "Presse", path: "/press" },
+        { name: "À Propos", path: "/a-propos" },
+        { name: "Carrières", path: "/carrieres" },
+        { name: "Presse", path: "/presse" },
         { name: "Blog", path: "/blog" },
       ],
     },
     {
       title: "Support",
       links: [
-        { name: "Centre d'Aide", path: "/help" },
+        { name: "Centre d'Aide", path: "/aide" },
         { name: "Contactez-nous", path: "/contact" },
         { name: "FAQ", path: "/faq" },
-        { name: "Politique de Confidentialité", path: "/privacy" },
-        { name: "Termes & Conditions", path: "/terms" },
+        { name: "Politique de Confidentialité", path: "/politique-confidentialite" },
+        { name: "Termes & Conditions", path: "/conditions-utilisation" },
       ],
     },
   ];
 
   const socialLinks = [
-    { name: "Facebook", icon: <Facebook className="h-5 w-5" />, path: personalData.socials.facebook || "#" },
-    { name: "Twitter", icon: <Twitter className="h-5 w-5" />, path: personalData.socials.twitter || "#" },
-    { name: "Instagram", icon: <Instagram className="h-5 w-5" />, path: personalData.socials.instagram || "#" },
-    { name: "LinkedIn", icon: <Linkedin className="h-5 w-5" />, path: personalData.socials.linkedin || "#" },
-    { name: "YouTube", icon: <Youtube className="h-5 w-5" />, path: personalData.socials.youtube || "#" },
-  ];
+    { name: "Facebook", icon: <Facebook className="h-5 w-5" />, path: personalData.socials.facebook },
+    { name: "Twitter", icon: <Twitter className="h-5 w-5" />, path: personalData.socials.twitter },
+    { name: "Instagram", icon: <Instagram className="h-5 w-5" />, path: personalData.socials.instagram },
+    { name: "LinkedIn", icon: <Linkedin className="h-5 w-5" />, path: personalData.socials.linkedin },
+    { name: "YouTube", icon: <Youtube className="h-5 w-5" />, path: personalData.socials.youtube },
+  ].filter(social => social.path && !social.path.includes('yourusername'));
 
   return (
     <footer className="bg-card text-card-foreground border-t border-border pt-16 pb-8">

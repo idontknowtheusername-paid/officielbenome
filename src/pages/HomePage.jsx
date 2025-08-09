@@ -255,7 +255,12 @@ const HomePage = () => {
             >
               Publier une Annonce
             </Button>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="w-full sm:w-auto"
+              onClick={() => navigate('/inscription')}
+            >
               Créer un Compte
             </Button>
           </motion.div>

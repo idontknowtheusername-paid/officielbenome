@@ -13,7 +13,7 @@ const LoginPage = () => {
     // Attend que loading soit false pour vérifier l'authentification
     if (!loading && user) {
       // Rediriger vers la page d'origine ou le dashboard admin
-      const from = location.state?.from || (user.role === 'admin' ? '/admin-dashboard' : '/');
+      const from = location.state?.from || (user.role === 'admin' ? '/admin' : '/');
       navigate(from, { replace: true });
     }
   }, [user, loading, navigate, location]);

@@ -55,7 +55,7 @@ const QuickActions = ({ stats = {} }) => {
       description: 'Voir vos statistiques',
       icon: TrendingUp,
       color: 'from-purple-500 to-purple-600',
-      href: '/analytics',
+      href: '/admin/analytics', // Redirigé vers admin analytics
       badge: null
     },
     {
@@ -64,7 +64,7 @@ const QuickActions = ({ stats = {} }) => {
       description: 'Configurer votre compte',
       icon: Settings,
       color: 'from-gray-500 to-gray-600',
-      href: '/settings',
+      href: '/profile',
       badge: null
     },
     {
@@ -73,7 +73,7 @@ const QuickActions = ({ stats = {} }) => {
       description: 'Besoin d\'aide ?',
       icon: HelpCircle,
       color: 'from-orange-500 to-orange-600',
-      href: '/support',
+      href: '/aide',
       badge: null
     }
   ];

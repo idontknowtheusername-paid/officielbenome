@@ -29,6 +29,7 @@ import ServicesPage from '@/pages/marketplace/ServicesPage';
 import GeneralMarketplacePage from '@/pages/marketplace/GeneralMarketplacePage';
 import CreateListingPage from '@/pages/CreateListingPage';
 import ListingDetailPage from '@/pages/ListingDetailPage';
+import FavoritesPage from '@/pages/FavoritesPage';
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import AdminUsersPage from '@/pages/admin/users/UsersPage';
@@ -159,6 +160,16 @@ function App() {
                 
                 {/* Détails d'annonce */}
                 <Route path="annonce/:id" element={<ListingDetailPage />} />
+                
+                {/* Favoris */}
+                <Route 
+                  path="favorites" 
+                  element={
+                    <ProtectedRoute>
+                      <FavoritesPage />
+                    </ProtectedRoute>
+                  } 
+                />
                 
                 {/* Protected Admin Routes */}
                 <Route path="admin">

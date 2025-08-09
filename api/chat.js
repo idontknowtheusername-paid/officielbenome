@@ -19,8 +19,12 @@ module.exports = async (req, res) => {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // Clé API Mistral (dépôt privé)
-    const apiKey = 'rJHJdTtKsu58p2k1j5jkBmUwyc56z5tP';
+    // Clé API Mistral depuis les variables d'environnement
+    const apiKey = process.env.MISTRAL_API_KEY;
+    if (!apiKey) {
+      console.error('MISTRAL_API_KEY environment variable is not set');
+      return res.status(500).json({ error: 'API configuration error' });
+    }
 
     const { messages, context = {}, model, stream } = req.body || {};
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -67,7 +71,17 @@ module.exports = async (req, res) => {
 
       if (!upstream.ok) {
         const errText = await upstream.text();
-        return res.status(upstream.status).json({ error: 'Mistral API error', details: errText });
+        console.error('Mistral API streaming error:', {
+          status: upstream.status,
+          statusText: upstream.statusText,
+          error: errText,
+          model: chosenModel
+        });
+        return res.status(upstream.status).json({ 
+          error: 'Mistral API error', 
+          details: errText,
+          status: upstream.status 
+        });
       }
 
       res.setHeader('Content-Type', 'text/event-stream');
@@ -98,7 +112,17 @@ module.exports = async (req, res) => {
 
     if (!upstream.ok) {
       const errText = await upstream.text();
-      return res.status(upstream.status).json({ error: 'Mistral API error', details: errText });
+      console.error('Mistral API error:', {
+        status: upstream.status,
+        statusText: upstream.statusText,
+        error: errText,
+        model: chosenModel
+      });
+      return res.status(upstream.status).json({ 
+        error: 'Mistral API error', 
+        details: errText,
+        status: upstream.status 
+      });
     }
 
     const data = await upstream.json();
@@ -106,7 +130,10 @@ module.exports = async (req, res) => {
     return res.status(200).json({ content, model: data?.model || chosenModel });
   } catch (error) {
     console.error('Chat API error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ 
+      error: 'Internal Server Error',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+    });
   }
 };
 

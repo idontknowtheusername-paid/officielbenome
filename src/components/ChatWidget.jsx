@@ -134,10 +134,26 @@ const ChatWidget = ({ pageContext = {} }) => {
       if (e?.name === 'AbortError') {
         // Interruption volontaire: ne rien afficher
       } else {
+        console.error('Chat error:', e);
+        
+        // Diagnostic de l'erreur
+        let errorMessage = "Une erreur serveur est survenue côté assistant.";
+        
+        if (e.message?.includes('API configuration error')) {
+          errorMessage = "Erreur de configuration API. Veuillez contacter l'administrateur.";
+        } else if (e.message?.includes('401') || e.message?.includes('Unauthorized')) {
+          errorMessage = "Erreur d'authentification API. Veuillez réessayer plus tard.";
+        } else if (e.message?.includes('429') || e.message?.includes('Too Many Requests')) {
+          errorMessage = "Limite de requêtes atteinte. Veuillez réessayer dans quelques minutes.";
+        } else if (e.message?.includes('500') || e.message?.includes('Internal Server Error')) {
+          errorMessage = "Erreur serveur temporaire. Veuillez réessayer dans un instant.";
+        }
+        
         const fallbackHello = "Bonjour. Je reste à votre disposition pour la recherche et vos questions.";
         const fallbackError = hasSuggestions
-          ? "Une erreur serveur est survenue côté assistant. Vous pouvez cliquer sur « Voir plus » pour ouvrir tous les résultats, ou réessayer dans un instant."
-          : "Une erreur serveur est survenue côté assistant. Veuillez réessayer dans un instant ou lancer la recherche complète depuis le marketplace.";
+          ? `${errorMessage} Vous pouvez cliquer sur « Voir plus » pour ouvrir tous les résultats, ou réessayer dans un instant.`
+          : `${errorMessage} Veuillez réessayer dans un instant ou lancer la recherche complète depuis le marketplace.`;
+        
         setHistory(h => [
           ...h,
           { role: 'assistant', content: fallbackHello },

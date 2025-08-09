@@ -98,7 +98,7 @@ const Navbar = () => {
             )}
             {user && user.role === 'admin' ? (
               <Button asChild className="hidden md:inline-flex bg-secondary hover:bg-secondary/90 text-primary">
-                <Link to="/admin-dashboard">
+                <Link to="/admin">
                   <Settings className="mr-2 h-4 w-4" /> Admin
                 </Link>
               </Button>
@@ -158,7 +158,7 @@ const Navbar = () => {
                 </>
               )}
               {user && user.role === 'admin' ? (
-                <NavLink to="/admin-dashboard" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
+                <NavLink to="/admin" onClick={() => setIsOpen(false)} className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}>
                   <Settings className="mr-2 h-4 w-4" /> Admin
                 </NavLink>
               ) : user && (
