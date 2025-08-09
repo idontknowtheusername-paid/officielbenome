@@ -99,6 +99,11 @@ const MessagingPageContent = () => {
   const { data: conversations, isLoading, error } = useConversations();
   const [showStats, setShowStats] = useState(true);
 
+  // Debug logs
+  console.log('MessagingPage - isLoading:', isLoading);
+  console.log('MessagingPage - error:', error);
+  console.log('MessagingPage - conversations:', conversations);
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-96">

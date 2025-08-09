@@ -797,83 +797,96 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
 export const messageService = {
   // Recuperer les conversations d'un utilisateur
   getUserConversations: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
 
-    // D'abord, recuperer les conversations existantes
-    const { data: conversations, error: convError } = await supabase
-      .from('conversations')
-      .select(`
-        *,
-        listing:listings(id, title, price, images),
-        participant1:users!conversations_participant1_id_fkey (
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        ),
-        participant2:users!conversations_participant2_id_fkey (
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
-      .order('last_message_at', { ascending: false });
-
-    if (convError) throw convError;
-
-    // Si aucune conversation, créer un message de bienvenue
-    if (!conversations || conversations.length === 0) {
-      // Vérifier si l'utilisateur a déjà reçu le message de bienvenue
-      const { data: existingWelcome, error: welcomeError } = await supabase
-        .from('messages')
-        .select('id')
-        .eq('receiver_id', user.id)
-        .eq('sender_id', '00000000-0000-0000-0000-000000000000')
-        .eq('message_type', 'system')
-        .limit(1);
-
-      if (welcomeError) {
-        console.error('Erreur vérification message de bienvenue:', welcomeError);
-      }
-
-      // Si pas de message de bienvenue, l'ajouter
-      if (!existingWelcome || existingWelcome.length === 0) {
-        await addWelcomeMessage(user.id);
-      }
-
-      // Retourner un tableau vide pour éviter l'erreur
-      return [];
-    }
-
-    // Pour chaque conversation, recuperer les messages
-    const conversationsWithMessages = await Promise.all(
-      conversations.map(async (conversation) => {
-        const { data: messages, error: msgError } = await supabase
-          .from('messages')
-          .select(`
+      // D'abord, recuperer les conversations existantes
+      const { data: conversations, error: convError } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          listing:listings(id, title, price, images),
+          participant1:users!conversations_participant1_id_fkey (
             id,
-            content,
-            created_at,
-            is_read,
-            sender_id,
-            conversation_id
-          `)
-          .eq('conversation_id', conversation.id)
-          .order('created_at', { ascending: true });
+            first_name,
+            last_name,
+            avatar_url
+          ),
+          participant2:users!conversations_participant2_id_fkey (
+            id,
+            first_name,
+            last_name,
+            avatar_url
+          )
+        `)
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+        .order('last_message_at', { ascending: false });
 
-        if (msgError) {
-          console.error('Erreur récupération messages:', msgError);
-          return { ...conversation, messages: [] };
+      if (convError) {
+        console.error('Erreur récupération conversations:', convError);
+        throw convError;
+      }
+
+      // Si aucune conversation, créer un message de bienvenue et retourner vide
+      if (!conversations || conversations.length === 0) {
+        console.log('Aucune conversation trouvée, ajout du message de bienvenue...');
+        
+        // Vérifier si l'utilisateur a déjà reçu le message de bienvenue
+        const { data: existingWelcome, error: welcomeError } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('receiver_id', user.id)
+          .eq('sender_id', '00000000-0000-0000-0000-000000000000')
+          .eq('message_type', 'system')
+          .limit(1);
+
+        if (welcomeError) {
+          console.error('Erreur vérification message de bienvenue:', welcomeError);
         }
 
-        return { ...conversation, messages: messages || [] };
-      })
-    );
+        // Si pas de message de bienvenue, l'ajouter
+        if (!existingWelcome || existingWelcome.length === 0) {
+          console.log('Ajout du message de bienvenue pour l\'utilisateur:', user.id);
+          await addWelcomeMessage(user.id);
+        } else {
+          console.log('Message de bienvenue déjà existant pour l\'utilisateur:', user.id);
+        }
 
-    return conversationsWithMessages;
+        // Retourner un tableau vide - la page gérera l'affichage du message de bienvenue
+        return [];
+      }
+
+      // Pour chaque conversation, recuperer les messages
+      const conversationsWithMessages = await Promise.all(
+        conversations.map(async (conversation) => {
+          const { data: messages, error: msgError } = await supabase
+            .from('messages')
+            .select(`
+              id,
+              content,
+              created_at,
+              is_read,
+              sender_id,
+              conversation_id
+            `)
+            .eq('conversation_id', conversation.id)
+            .order('created_at', { ascending: true });
+
+          if (msgError) {
+            console.error('Erreur récupération messages:', msgError);
+            return { ...conversation, messages: [] };
+          }
+
+          return { ...conversation, messages: messages || [] };
+        })
+      );
+
+      return conversationsWithMessages;
+    } catch (error) {
+      console.error('Erreur dans getUserConversations:', error);
+      throw error;
+    }
   },
 
   // Recuperer les messages d'une conversation
