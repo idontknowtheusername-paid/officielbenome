@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,17 +7,114 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { User, Mail, Lock, Phone, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, Phone, Loader2, CheckCircle2, RefreshCcw } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const RegisterForm = () => {
   const { register: registerUser } = useAuth();
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
+  const [confirmation, setConfirmation] = useState({ shown: false, email: '' });
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState(null);
 
   const onSubmit = async (data) => {
-    await registerUser(data);
+    const result = await registerUser(data);
+    if (result && result.needsConfirmation) {
+      setConfirmation({ shown: true, email: data.email });
+    }
   };
 
   const password = watch('password');
+
+  if (confirmation.shown) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md mx-auto p-4"
+      >
+        <Card>
+          <CardHeader>
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <CardTitle>Inscription réussie</CardTitle>
+            </div>
+            <CardDescription>
+              Vérifiez votre email pour confirmer votre compte.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Nous avons envoyé un lien de confirmation à:
+              <div className="mt-1 font-medium text-foreground">{confirmation.email}</div>
+            </div>
+
+            {resendMessage && (
+              <div className="text-sm">
+                {resendMessage}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                onClick={async () => {
+                  try {
+                    setIsResending(true);
+                    setResendMessage(null);
+                    const { error } = await supabase.auth.resend({
+                      type: 'signup',
+                      email: confirmation.email,
+                      options: {
+                        emailRedirectTo: `${window.location.origin}/auth/callback`
+                      }
+                    });
+                    if (error) throw error;
+                    setResendMessage('Un nouvel email de confirmation a été envoyé.');
+                  } catch (e) {
+                    setResendMessage(e.message || "Impossible d'envoyer l'email de confirmation.");
+                  } finally {
+                    setIsResending(false);
+                  }
+                }}
+                disabled={isResending}
+                className="inline-flex items-center"
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Envoi...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    Renvoyer l'email
+                  </>
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirmation({ shown: false, email: '' })}
+              >
+                Utiliser une autre adresse
+              </Button>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col items-start gap-2">
+            <p className="text-sm text-muted-foreground">
+              Déjà confirmé ?
+            </p>
+            <Link to="/connexion" className="text-primary hover:underline text-sm">
+              Se connecter
+            </Link>
+          </CardFooter>
+        </Card>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

@@ -74,32 +74,23 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
 
         if (event === 'SIGNED_IN') {
-          // Vérifier si le profil existe dans public.users
+          // Mettre à jour/Créer le profil dans public.users via upsert
           if (session?.user) {
-            const { data: existingProfile } = await supabase
+            const profilePayload = {
+              id: session.user.id,
+              first_name: session.user.user_metadata?.first_name || '',
+              last_name: session.user.user_metadata?.last_name || '',
+              email: session.user.email,
+              phone_number: session.user.user_metadata?.phone_number || '',
+              role: 'user'
+            };
+
+            const { error: upsertError } = await supabase
               .from('users')
-              .select('id')
-              .eq('id', session.user.id)
-              .single();
+              .upsert([profilePayload], { onConflict: 'id' });
 
-            if (!existingProfile) {
-              // Créer le profil s'il n'existe pas
-              const { error: profileError } = await supabase
-                .from('users')
-                .insert([
-                  {
-                    id: session.user.id,
-                    first_name: session.user.user_metadata?.first_name || '',
-                    last_name: session.user.user_metadata?.last_name || '',
-                    email: session.user.email,
-                    phone_number: session.user.user_metadata?.phone_number || '',
-                    role: 'user'
-                  }
-                ]);
-
-              if (profileError) {
-                console.error('Profile creation error:', profileError);
-              }
+            if (upsertError) {
+              console.error('Profile upsert error:', upsertError);
             }
           }
 
@@ -107,6 +98,8 @@ export const AuthProvider = ({ children }) => {
             title: "Connexion réussie",
             description: "Bienvenue sur Officiel BenoMe !",
           });
+          // Rediriger automatiquement après confirmation/connexion
+          navigate('/');
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Déconnexion réussie",
@@ -145,7 +138,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (userData) => {
+   const register = async (userData) => {
     try {
       if (!isSupabaseConfigured) {
         throw new Error('Supabase non configuré');
@@ -154,10 +147,11 @@ export const AuthProvider = ({ children }) => {
         email: userData.email,
         password: userData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             first_name: userData.firstName,
             last_name: userData.lastName,
-            phone_number: userData.phoneNumber,
+             phone_number: userData.phoneNumber,
           }
         }
       });
@@ -166,25 +160,25 @@ export const AuthProvider = ({ children }) => {
 
       console.log('Supabase register successful:', data);
       
-      // Créer le profil utilisateur dans la table public.users
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: data.user.id,
-              first_name: userData.firstName,
-              last_name: userData.lastName,
-              email: userData.email,
-              phone_number: userData.phoneNumber,
-              role: 'user'
-            }
-          ]);
+       // Upsert du profil utilisateur dans la table public.users (assure la présence du téléphone)
+       if (data.user) {
+         const { error: profileError } = await supabase
+           .from('users')
+           .upsert([
+             {
+               id: data.user.id,
+               first_name: userData.firstName,
+               last_name: userData.lastName,
+               email: userData.email,
+               phone_number: userData.phoneNumber,
+               role: 'user'
+             }
+           ], { onConflict: 'id' });
 
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-      }
+         if (profileError) {
+           console.error('Profile upsert error:', profileError);
+         }
+       }
 
       if (data.user && !data.user.email_confirmed_at) {
         toast({

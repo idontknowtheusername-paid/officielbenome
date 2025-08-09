@@ -347,7 +347,16 @@ export const listingService = {
       // Essayer d'abord avec une requête simple
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          users:users!listings_user_id_fkey (
+            id,
+            first_name,
+            last_name,
+            phone_number,
+            email
+          )
+        `)
         .eq('id', id)
         .eq('status', 'approved')
         .single();
@@ -360,7 +369,16 @@ export const listingService = {
         // Si l'annonce n'est pas trouvée, essayer sans le filtre de statut
         const { data: allData, error: allError } = await supabase
           .from('listings')
-          .select('*')
+          .select(`
+            *,
+            users:users!listings_user_id_fkey (
+              id,
+              first_name,
+              last_name,
+              phone_number,
+              email
+            )
+          `)
           .eq('id', id)
           .single();
           

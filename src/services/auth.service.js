@@ -28,6 +28,7 @@ const AuthService = {
         email: userData.email,
         password: userData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             first_name: userData.firstName,
             last_name: userData.lastName,
@@ -38,11 +39,11 @@ const AuthService = {
 
       if (error) throw error;
 
-      // Créer le profil utilisateur dans la table public.users
+      // Upsert du profil utilisateur dans la table public.users (évite les doublons et s'assure du téléphone)
       if (data.user) {
         const { error: profileError } = await supabase
           .from('users')
-          .insert([
+          .upsert([
             {
               id: data.user.id,
               first_name: userData.firstName,
@@ -51,10 +52,10 @@ const AuthService = {
               phone_number: userData.phoneNumber,
               role: 'user'
             }
-          ]);
+          ], { onConflict: 'id' });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          console.error('Profile upsert error:', profileError);
         }
       }
 

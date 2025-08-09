@@ -17,6 +17,7 @@ import RegisterPage from '@/pages/auth/RegisterPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import ProfilePage from '@/pages/auth/ProfilePage';
+import AuthCallbackPage from '@/pages/auth/AuthCallbackPage';
 import MessagingPage from '@/pages/MessagingPage';
 
 // Pages
@@ -108,6 +109,7 @@ function App() {
                 {/* Auth Routes */}
                 <Route path="connexion" element={<LoginPage />} />
                 <Route path="inscription" element={<RegisterPage />} />
+                <Route path="auth/callback" element={<AuthCallbackPage />} />
                 <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
                 <Route path="reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
                 <Route path="profile" element={<ProfilePage />} />
