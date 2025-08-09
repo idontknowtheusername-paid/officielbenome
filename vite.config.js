@@ -221,7 +221,101 @@ logger.error = (msg, options) => {
 
 export default defineConfig({
 	customLogger: logger,
-	plugins: [react(), addTransformIndexHtml],
+  plugins: [
+    react(),
+    addTransformIndexHtml,
+    {
+      name: 'dev-chat-endpoint',
+      apply: 'serve',
+      configureServer(server) {
+        server.middlewares.use('/api/chat', async (req, res, next) => {
+          try {
+            if (req.method !== 'POST') {
+              res.setHeader('Allow', 'POST');
+              res.statusCode = 405;
+              res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+              return;
+            }
+            const apiKey = process.env.MISTRAL_API_KEY;
+            const chunks = [];
+            for await (const chunk of req) chunks.push(chunk);
+            const body = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
+            const { messages, context = {}, model = 'mistral-small-latest', stream } = body;
+            if (!Array.isArray(messages) || messages.length === 0) {
+              res.statusCode = 400;
+              res.end(JSON.stringify({ error: 'messages is required' }));
+              return;
+            }
+            const systemPrompt = [
+              "Tu es MaxiMarket Assistant, le chatbot du site MaxiMarket (marketplace Afrique de l'Ouest).",
+              'Règles:',
+              '- Réponds en français, ton professionnel, concis et actionnable.',
+              "- Si l'utilisateur demande à trouver des annonces, propose des filtres (catégorie, prix XOF, localisation) et des actions (ouvrir résultats, affiner).",
+              "- Si un contexte d'annonce est présent (context.listing), priorise des réponses spécifiques à cette annonce: cite le titre, le prix (XOF) et la ville si disponibles; propose d'ouvrir la page /annonce/:id, de contacter le vendeur ou d'ouvrir WhatsApp.",
+              "- N'invente pas de données; si une information manque, dis-le et propose une action (recherche, contacter vendeur).",
+              '- Évite les données personnelles sensibles. Aucune clé/API côté client.',
+              '- Style: réponses courtes, listes claires si utile, pas de verbiage inutile.'
+            ].join('\n');
+            const contextBlock = `\nContexte page: ${JSON.stringify(context)}`;
+            const mistralBody = {
+              model,
+              messages: [
+                { role: 'system', content: systemPrompt + contextBlock },
+                ...messages,
+              ],
+              temperature: 0.4,
+              max_tokens: 600,
+              stream: !!stream,
+              safe_prompt: true,
+            };
+            if (!apiKey) {
+              // Fallback local: renvoyer une réponse minimale en dev si la clé manque
+              const content = 'Le chatbot n\'est pas configuré en local (MISTRAL_API_KEY manquante). Les suggestions ci-dessus restent valables.';
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ content, model: 'offline-dev' }));
+              return;
+            }
+
+            const upstream = await fetch('https://api.mistral.ai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify(mistralBody),
+            });
+            if (!upstream.ok) {
+              const errText = await upstream.text();
+              res.statusCode = upstream.status;
+              res.end(JSON.stringify({ error: 'Mistral API error', details: errText }));
+              return;
+            }
+            if (mistralBody.stream) {
+              res.setHeader('Content-Type', 'text/event-stream');
+              res.setHeader('Cache-Control', 'no-cache');
+              res.setHeader('Connection', 'keep-alive');
+              const reader = upstream.body.getReader();
+              const decoder = new TextDecoder();
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                res.write(decoder.decode(value));
+              }
+              res.end();
+              return;
+            }
+            const data = await upstream.json();
+            const content = data?.choices?.[0]?.message?.content || '';
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ content, model: data?.model || model }));
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: 'Internal Server Error (dev chat)', details: String(err?.message || err) }));
+          }
+        });
+      }
+    }
+  ],
 	server: {
 		cors: true,
 		headers: {

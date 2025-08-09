@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { chatWithMistral, chatWithMistralStream } from '@/lib/mistralClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ const ChatWidget = ({ pageContext = {} }) => {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]); // {role, content}
   const [hasSuggestions, setHasSuggestions] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const listRef = useRef(null);
   const abortRef = useRef(null);
 
@@ -19,6 +20,23 @@ const ChatWidget = ({ pageContext = {} }) => {
     ...(typeof window !== 'undefined' && window.__BENOME_CONTEXT ? window.__BENOME_CONTEXT : {}),
     ...pageContext,
   }), [pageContext]);
+
+  // Détecter mobile et gérer le resize
+  useEffect(() => {
+    const update = () => setIsMobile(window.matchMedia('(max-width: 640px)').matches);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  // Bloquer le scroll de fond sur mobile quand le widget est ouvert
+  useEffect(() => {
+    if (isMobile && open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [isMobile, open]);
 
   const send = async () => {
     const msg = input.trim();
@@ -77,7 +95,15 @@ const ChatWidget = ({ pageContext = {} }) => {
       if (e?.name === 'AbortError') {
         // Interruption volontaire: ne rien afficher
       } else {
-        setHistory(h => [...h, { role: 'assistant', content: "Désolé, une erreur est survenue. Réessayez." }]);
+        const fallbackHello = "Bonjour. Je reste à votre disposition pour la recherche et vos questions.";
+        const fallbackError = hasSuggestions
+          ? "Une erreur serveur est survenue côté assistant. Vous pouvez cliquer sur « Voir plus » pour ouvrir tous les résultats, ou réessayer dans un instant."
+          : "Une erreur serveur est survenue côté assistant. Veuillez réessayer dans un instant ou lancer la recherche complète depuis le marketplace.";
+        setHistory(h => [
+          ...h,
+          { role: 'assistant', content: fallbackHello },
+          { role: 'assistant', content: fallbackError }
+        ]);
       }
     } finally {
       setLoading(false);
@@ -101,7 +127,10 @@ const ChatWidget = ({ pageContext = {} }) => {
           onClick={() => setOpen(true)}
           aria-label="Ouvrir le chat"
           style={{
-            position: 'fixed', bottom: 20, right: 20, zIndex: 9999,
+            position: 'fixed',
+            bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            right: 'calc(16px + env(safe-area-inset-right, 0px))',
+            zIndex: 9999,
             width: 56, height: 56, borderRadius: 14,
             background: 'linear-gradient(135deg,#111827,#0b0f14)', color: 'white', border: '1px solid #1f2937',
             boxShadow: '0 10px 30px rgba(0,0,0,0.55)', display: 'grid', placeItems: 'center'
@@ -116,12 +145,20 @@ const ChatWidget = ({ pageContext = {} }) => {
 
       {open && (
         <div style={{
-          position: 'fixed', bottom: 20, right: 20, zIndex: 9999,
-          width: 420, maxWidth: '95vw', height: 560, maxHeight: '78vh',
-          background: '#0b0f14', border: '1px solid #111827', borderRadius: 16,
+          position: 'fixed',
+          bottom: isMobile ? 0 : 20,
+          right: isMobile ? 0 : 20,
+          left: isMobile ? 0 : 'auto',
+          top: isMobile ? 0 : 'auto',
+          zIndex: 9999,
+          width: isMobile ? '100vw' : 420,
+          maxWidth: isMobile ? '100vw' : '95vw',
+          height: isMobile ? '100dvh' : 560,
+          maxHeight: isMobile ? '100dvh' : '78vh',
+          background: '#0b0f14', border: '1px solid #111827', borderRadius: isMobile ? 0 : 16,
           display: 'flex', flexDirection: 'column', boxShadow: '0 18px 38px rgba(0,0,0,0.6)'
         }}>
-          <div style={{ padding: '12px 14px', borderBottom: '1px solid #1f2937', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0e141b' }}>
+          <div style={{ padding: '12px 14px', borderBottom: '1px solid #1f2937', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0e141b', position: isMobile ? 'sticky' : 'static', top: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#111827,#0b0f14)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800, border: '1px solid #1f2937', letterSpacing: 0.3 }}>M</div>
               <div>
@@ -138,7 +175,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             </div>
           </div>
 
-          <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
+          <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 14, paddingBottom: isMobile ? 'calc(14px + env(safe-area-inset-bottom, 0px))' : 14 }}>
             {history.length === 0 && (
               <div style={{ fontSize: 14, color: '#9ca3af' }}>
                 Bonjour. Je suis l’assistant Maximarket. Indiquez ce que vous recherchez (catégorie, budget, ville) ou posez votre question.
@@ -160,7 +197,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             {loading && <div style={{ color: '#9ca3af', fontSize: 14 }}>Rédaction…</div>}
           </div>
 
-          <div style={{ display: 'flex', gap: 8, padding: 12, borderTop: '1px solid #1f2937', background: '#0e141b', borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+          <div style={{ display: 'flex', gap: 8, padding: 12, paddingBottom: isMobile ? 'calc(12px + env(safe-area-inset-bottom, 0px))' : 12, borderTop: '1px solid #1f2937', background: '#0e141b', borderBottomLeftRadius: isMobile ? 0 : 16, borderBottomRightRadius: isMobile ? 0 : 16 }}>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
