@@ -152,19 +152,18 @@ const ChatWidget = ({ pageContext = {} }) => {
           display: 'flex', flexDirection: 'column', boxShadow: '0 18px 38px rgba(0,0,0,0.6)'
         }}>
           <div style={{ padding: '12px 14px', borderBottom: '1px solid #1f2937', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0e141b', position: isMobile ? 'sticky' : 'static', top: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#111827,#0b0f14)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800, border: '1px solid #1f2937', letterSpacing: 0.3 }}>M</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#111827,#0b0f14)', color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 800, border: '1px solid #1f2937', letterSpacing: 0.3, fontSize: 16 }}>M</div>
               <div>
-                <div style={{ fontWeight: 700, color: '#e5e7eb' }}>Assistant MaxiMarket</div>
-                <div style={{ fontSize: 12, color: '#9ca3af' }}>Trouver des annonces, répondre aux questions</div>
+                <div style={{ fontWeight: 700, color: '#e5e7eb', fontSize: 15 }}>Assistant MaxiMarket</div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={newChat} title="Nouveau chat" aria-label="Nouveau chat" style={{ border: '1px solid #374151', background: '#0b0f14', color: '#e5e7eb', borderRadius: 8, padding: '4px 8px', fontWeight: 700 }}>+</button>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={newChat} title="Nouveau chat" aria-label="Nouveau chat" style={{ width: 32, height: 32, border: '1px solid #374151', background: '#0b0f14', color: '#e5e7eb', borderRadius: 8, display: 'grid', placeItems: 'center', fontWeight: 600, fontSize: 16 }}>+</button>
               {loading && (
-                <button onClick={() => abortRef.current?.abort()} title="Arrêter" style={{ border: '1px solid #374151', background: '#0b0f14', color: '#e5e7eb', borderRadius: 8, padding: '4px 8px' }}>Stop</button>
+                <button onClick={() => abortRef.current?.abort()} title="Arrêter" style={{ width: 32, height: 32, border: '1px solid #374151', background: '#0b0f14', color: '#e5e7eb', borderRadius: 8, display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 600 }}>⏹</button>
               )}
-              <button onClick={() => setOpen(false)} aria-label="Fermer" style={{ border: '1px solid #374151', background: '#0b0f14', color: '#e5e7eb', borderRadius: 8, padding: '4px 8px' }}>Fermer</button>
+              <button onClick={() => setOpen(false)} aria-label="Fermer" style={{ width: 32, height: 32, border: '1px solid #374151', background: '#0b0f14', color: '#e5e7eb', borderRadius: 8, display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 600 }}>×</button>
             </div>
           </div>
 
