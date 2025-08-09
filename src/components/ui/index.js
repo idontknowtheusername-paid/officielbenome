@@ -78,11 +78,11 @@ export * from './form/Select';
 export * from './form/Switch';
 export * from './form/Textarea';
 
-// Export utility hooks
-export * from '../hooks/useDebounce';
-export * from '../hooks/useLocalStorage';
-export * from '../hooks/useMediaQuery';
-export * from '../hooks/useTheme';
+// Export utility hooks (commented out - files don't exist yet)
+// export * from '../hooks/useDebounce';
+// export * from '../hooks/useLocalStorage';
+// export * from '../hooks/useMediaQuery';
+// export * from '../hooks/useTheme';
 
 // If you have any context providers, you can export them like this:
 // export { ThemeProvider, useTheme } from './theme-provider';

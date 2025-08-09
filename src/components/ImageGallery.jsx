@@ -2,18 +2,24 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useImagePreloader, useGalleryTouchGestures } from '@/hooks';
+import OptimizedImage from '@/components/OptimizedImage';
 
-const ImageGallery = ({ images = [], title = "Galerie d'images" }) => {
+const ImageGallery = React.memo(({ images = [], title = "Galerie d'images" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
   const containerRef = useRef(null);
-  const imageRef = useRef(null);
 
-  // Configuration du swipe
-  const minSwipeDistance = 50;
+  // Préchargement intelligent des images
+  const { isImagePreloaded, getImageLoadingState } = useImagePreloader(images, currentIndex);
+
+  // Gestes tactiles améliorés
+  const { touchHandlers, zoomLevel, resetZoom } = useGalleryTouchGestures(
+    () => setCurrentIndex((prev) => (prev + 1) % images.length),
+    () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length),
+    (level) => setIsZoomed(level > 1)
+  );
 
   // Navigation
   const goToNext = useCallback(() => {
@@ -65,29 +71,7 @@ const ImageGallery = ({ images = [], title = "Galerie d'images" }) => {
     };
   }, [isFullscreen, isZoomed, goToNext, goToPrevious]);
 
-  // Gestion du swipe tactile
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
 
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      goToNext();
-    } else if (isRightSwipe) {
-      goToPrevious();
-    }
-  };
 
   // Zoom et pan
   const handleImageClick = () => {
@@ -123,17 +107,16 @@ const ImageGallery = ({ images = [], title = "Galerie d'images" }) => {
         <div 
           ref={containerRef}
           className="relative aspect-video rounded-lg overflow-hidden bg-muted cursor-pointer group"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
+          {...touchHandlers}
           onClick={handleImageClick}
         >
-          <img
-            ref={imageRef}
+          <OptimizedImage
             src={currentImage}
             alt={`${title} - Image ${currentIndex + 1}`}
-            className="w-full h-full object-cover transition-transform duration-300"
-            loading="lazy"
+            className="w-full h-full"
+            context="gallery"
+            quality="high"
+            showSkeleton={true}
           />
           
           {/* Overlay avec contrôles */}
@@ -216,9 +199,7 @@ const ImageGallery = ({ images = [], title = "Galerie d'images" }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
+            {...touchHandlers}
           >
             {/* Bouton fermer */}
             <Button
@@ -245,20 +226,20 @@ const ImageGallery = ({ images = [], title = "Galerie d'images" }) => {
 
             {/* Image principale */}
             <div className="relative w-full h-full flex items-center justify-center p-4">
-              <motion.img
+              <OptimizedImage
                 src={currentImage}
                 alt={`${title} - Image ${currentIndex + 1}`}
                 className={`max-w-full max-h-full object-contain transition-transform duration-300 ${
                   isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'
                 }`}
+                context="fullscreen"
+                quality="high"
+                showSkeleton={false}
                 onClick={handleImageClick}
-                drag={isZoomed}
-                dragConstraints={{ left: -100, right: 100, top: -100, bottom: 100 }}
-                dragElastic={0.1}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                style={{
+                  transform: `scale(${zoomLevel})`,
+                  cursor: isZoomed ? 'zoom-out' : 'zoom-in'
+                }}
               />
             </div>
 

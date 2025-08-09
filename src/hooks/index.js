@@ -14,6 +14,11 @@ export { default as useTabNavigation } from './useTabNavigation';
 // Image gallery hook
 export { useListingImages } from './useListingImages';
 
+// Image optimization hooks
+export { useImagePreloader } from './useImagePreloader';
+export { useIntersectionObserver, useImageLazyLoading, useMultiImageLazyLoading, useLazyImageWithPlaceholder } from './useIntersectionObserver';
+export { useTouchGestures, useGalleryTouchGestures } from './useTouchGestures';
+
 // Auth context (alternative import)
 export { useAuth as useAuthContext } from '../contexts/AuthContext';
 

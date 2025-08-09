@@ -196,6 +196,64 @@ Besoin d'aide ? Je suis là pour vous accompagner !
     );
   }
 
+  // Si il y a des conversations mais qu'elles sont des messages système
+  if (!isLoading && conversations && conversations.length > 0 && conversations[0].is_system) {
+    const systemMessage = conversations[0];
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Centre de Messages</h1>
+              <p className="text-gray-600">
+                Gérez vos conversations et échangez avec d'autres utilisateurs
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle Conversation
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Message de bienvenue */}
+        <div className="max-w-2xl mx-auto mt-8 px-4">
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-2xl">🤖</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <h2 className="text-xl font-bold text-blue-800">Assistant MaxiMarket</h2>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      Système
+                    </Badge>
+                  </div>
+                  <div className="text-gray-700 whitespace-pre-line leading-relaxed">
+                    {systemMessage.content}
+                  </div>
+                  <div className="mt-4 flex space-x-2">
+                    <Button variant="outline" size="sm">
+                      Explorer les annonces
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      Publier une annonce
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

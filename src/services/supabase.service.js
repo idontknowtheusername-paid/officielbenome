@@ -828,7 +828,7 @@ export const messageService = {
         throw convError;
       }
 
-      // Si aucune conversation, créer un message de bienvenue et retourner vide
+      // Si aucune conversation, créer un message de bienvenue et retourner un message système
       if (!conversations || conversations.length === 0) {
         console.log('Aucune conversation trouvée, ajout du message de bienvenue...');
         
@@ -853,8 +853,33 @@ export const messageService = {
           console.log('Message de bienvenue déjà existant pour l\'utilisateur:', user.id);
         }
 
-        // Retourner un tableau vide - la page gérera l'affichage du message de bienvenue
-        return [];
+        // Retourner un message système pour l'affichage
+        return [{
+          id: 'welcome-message',
+          type: 'system',
+          content: `🤖 Bienvenue sur MaxiMarket !
+
+Votre marketplace de confiance pour l'Afrique de l'Ouest.
+
+✨ Découvrez nos fonctionnalités :
+• 🏠 Immobilier : Achetez, vendez, louez
+• 🚗 Automobile : Véhicules neufs et d'occasion
+• 🛠️ Services : Trouvez des professionnels
+• 🛍️ Marketplace : Tout ce dont vous avez besoin
+
+🔒 Sécurité garantie avec nos partenaires vérifiés
+💬 Support 24/7 disponible
+
+Besoin d'aide ? Je suis là pour vous accompagner !`,
+          sender: {
+            id: '00000000-0000-0000-0000-000000000000',
+            first_name: 'Assistant',
+            last_name: 'MaxiMarket',
+            avatar_url: null
+          },
+          created_at: new Date().toISOString(),
+          is_system: true
+        }];
       }
 
       // Pour chaque conversation, recuperer les messages

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { optimizeImageList } from '@/utils/imageOptimizer';
 
 export const useListingImages = (listing) => {
   const images = useMemo(() => {
@@ -49,7 +50,10 @@ export const useListingImages = (listing) => {
       category = categoryMap[category.toLowerCase()] || category;
     }
 
-    return defaultImages[category] || defaultImages.marketplace;
+    const rawImages = defaultImages[category] || defaultImages.marketplace;
+    
+    // Optimiser les images selon le contexte
+    return optimizeImageList(rawImages, 'gallery', 'medium');
   }, [listing?.images, listing?.category]);
 
   const mainImage = useMemo(() => images[0], [images]);
