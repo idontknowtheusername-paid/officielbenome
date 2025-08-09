@@ -12,6 +12,8 @@ const ChatWidget = ({ pageContext = {} }) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]); // {role, content}
+  const [conversations, setConversations] = useState([]); // [{id, title, messages, date}]
+  const [currentConversationId, setCurrentConversationId] = useState(null);
   const [hasSuggestions, setHasSuggestions] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -24,27 +26,27 @@ const ChatWidget = ({ pageContext = {} }) => {
     ...pageContext,
   }), [pageContext]);
 
-  // Charger l'historique depuis localStorage
+  // Charger les conversations depuis localStorage
   useEffect(() => {
-    const savedHistory = localStorage.getItem('chatbot_history');
-    if (savedHistory) {
+    const savedConversations = localStorage.getItem('chatbot_conversations');
+    if (savedConversations) {
       try {
-        const parsed = JSON.parse(savedHistory);
+        const parsed = JSON.parse(savedConversations);
         if (Array.isArray(parsed)) {
-          setHistory(parsed);
+          setConversations(parsed);
         }
       } catch (e) {
-        console.error('Erreur parsing historique:', e);
+        console.error('Erreur parsing conversations:', e);
       }
     }
   }, []);
 
-  // Sauvegarder l'historique dans localStorage
+  // Sauvegarder les conversations dans localStorage
   useEffect(() => {
-    if (history.length > 0) {
-      localStorage.setItem('chatbot_history', JSON.stringify(history));
+    if (conversations.length > 0) {
+      localStorage.setItem('chatbot_conversations', JSON.stringify(conversations));
     }
-  }, [history]);
+  }, [conversations]);
 
   // Détecter mobile et gérer le resize
   useEffect(() => {
@@ -57,18 +59,39 @@ const ChatWidget = ({ pageContext = {} }) => {
   const send = async () => {
     const msg = input.trim();
     if (!msg || loading) return;
+    
+    // Créer une nouvelle conversation si c'est le premier message
+    if (history.length === 0) {
+      const newConversationId = Date.now().toString();
+      setCurrentConversationId(newConversationId);
+      setConversations(prev => [...prev, {
+        id: newConversationId,
+        title: msg.length > 30 ? msg.substring(0, 30) + '...' : msg,
+        date: new Date().toLocaleDateString(),
+        messages: []
+      }]);
+    }
+    
     const newHistory = [...history, { role: 'user', content: msg }];
     setHistory(newHistory);
     setInput('');
     setLoading(true);
     try {
-      // Détection d'intention de recherche simple
-      const intent = resolveSearchIntent(msg);
+      // Vérifier si c'est vraiment une recherche (pas juste un salut)
+      const isGreeting = /^(yo|salut|bonjour|hello|hi|hey|ciao|hola|bonsoir|bonne\s+nuit)$/i.test(msg.trim());
+      const hasSearchKeywords = /\b(appartement|maison|voiture|service|immobilier|auto|plombier|electricien|terrain|studio|villa|moto|scooter|camion|menage|jardinage|coiffure|reparation|demenagement|cours|prof|informatique|evenementiel)\b/i.test(msg.toLowerCase());
+      const hasPriceOrLocation = /\d+\s*(k|m|xof|frs?)|(dakar|abidjan|lome|cotonou|thiès|saint-louis|kaolack|ziguinchor|touba|mbour|rufisque|pikine|guediawaye)/i.test(msg.toLowerCase());
 
-      // Si l'intention est une recherche, tenter une requête de 3 résultats
+      // Détection d'intention de recherche simple (seulement si ce n'est pas un salut)
+      let intent = null;
       let prefixedContent = '';
       let suggestions = [];
       setHasSuggestions(false);
+      
+      if (!isGreeting && (hasSearchKeywords || hasPriceOrLocation)) {
+        intent = resolveSearchIntent(msg);
+      }
+      
       if (intent) {
         const { section, params } = intent;
         const categoryMap = {
@@ -128,10 +151,27 @@ const ChatWidget = ({ pageContext = {} }) => {
 
   const newChat = () => {
     try { abortRef.current?.abort(); } catch {}
+    
+    // Sauvegarder la conversation actuelle si elle existe
+    if (history.length > 0 && currentConversationId) {
+      const firstUserMessage = history.find(h => h.role === 'user')?.content || 'Nouvelle conversation';
+      const title = firstUserMessage.length > 30 ? firstUserMessage.substring(0, 30) + '...' : firstUserMessage;
+      
+      const updatedConversations = conversations.map(conv => 
+        conv.id === currentConversationId 
+          ? { ...conv, messages: history, title }
+          : conv
+      );
+      setConversations(updatedConversations);
+    }
+    
+    // Créer une nouvelle conversation
+    const newConversationId = Date.now().toString();
+    setCurrentConversationId(newConversationId);
     setHistory([]);
     setInput('');
     setLoading(false);
-    localStorage.removeItem('chatbot_history');
+    
     // Remonter en haut
     setTimeout(() => listRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
   };
@@ -174,12 +214,16 @@ const ChatWidget = ({ pageContext = {} }) => {
     return suggestions.slice(0, 3); // Max 3 suggestions
   };
 
-  // Obtenir l'historique des recherches utilisateur
-  const getSearchHistory = () => {
-    return history
-      .filter(h => h.role === 'user')
-      .map(h => h.content)
-      .slice(-10) // Dernières 10 recherches
+  // Obtenir l'historique des conversations
+  const getConversationHistory = () => {
+    return conversations
+      .map(conv => ({
+        id: conv.id,
+        title: conv.title || 'Conversation sans titre',
+        date: conv.date || new Date(conv.id).toLocaleDateString(),
+        messageCount: conv.messages?.length || 0
+      }))
+      .slice(-10) // Dernières 10 conversations
       .reverse(); // Plus récent en premier
   };
 
@@ -288,6 +332,21 @@ const ChatWidget = ({ pageContext = {} }) => {
               background: 'rgba(0,0,0,0.3)'
             }}
           />
+          {/* Overlay pour fermer le menu hamburger en cliquant ailleurs */}
+          {showMenu && (
+            <div 
+              onClick={() => setShowMenu(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 9997,
+                background: 'transparent'
+              }}
+            />
+          )}
           <div style={{
             position: 'fixed',
             bottom: isMobile ? 'calc(16px + env(safe-area-inset-bottom, 0px))' : 20,
@@ -322,11 +381,43 @@ const ChatWidget = ({ pageContext = {} }) => {
                   onMouseEnter={(e) => e.target.style.background = 'linear-gradient(135deg,#1f2937,#111827)'}
                   onMouseLeave={(e) => e.target.style.background = 'linear-gradient(135deg,#111827,#0b0f14)'}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
-                    <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
-                    <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
-                  </div>
+                  {showMenu ? (
+                    // Icône X quand le menu est ouvert
+                    <div style={{ 
+                      position: 'relative', 
+                      width: 16, 
+                      height: 16,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <div style={{ 
+                        position: 'absolute', 
+                        width: 16, 
+                        height: 2, 
+                        background: '#e5e7eb', 
+                        borderRadius: 1,
+                        transform: 'rotate(45deg)',
+                        transition: 'all 0.2s'
+                      }}></div>
+                      <div style={{ 
+                        position: 'absolute', 
+                        width: 16, 
+                        height: 2, 
+                        background: '#e5e7eb', 
+                        borderRadius: 1,
+                        transform: 'rotate(-45deg)',
+                        transition: 'all 0.2s'
+                      }}></div>
+                    </div>
+                  ) : (
+                    // Icône hamburger quand le menu est fermé
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
+                      <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
+                      <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
+                    </div>
+                  )}
                 </button>
                 
                 {/* Menu déroulant */}
@@ -355,17 +446,22 @@ const ChatWidget = ({ pageContext = {} }) => {
                       </div>
                     </div>
 
-                    {/* Historique des recherches */}
+                    {/* Historique des conversations */}
                     <div style={{ marginBottom: 16 }}>
-                      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, fontWeight: 600 }}>RECHERCHES RÉCENTES</div>
+                      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, fontWeight: 600 }}>CONVERSATIONS RÉCENTES</div>
                       <div style={{ maxHeight: 120, overflowY: 'auto' }}>
-                        {getSearchHistory().length > 0 ? (
-                          getSearchHistory().map((search, index) => (
+                        {getConversationHistory().length > 0 ? (
+                          getConversationHistory().map((conv, index) => (
                             <button
-                              key={index}
+                              key={conv.id}
                               onClick={() => {
-                                setInput(search);
-                                setShowMenu(false);
+                                // Charger cette conversation
+                                const conversation = conversations.find(c => c.id === conv.id);
+                                if (conversation) {
+                                  setHistory(conversation.messages || []);
+                                  setCurrentConversationId(conv.id);
+                                  setShowMenu(false);
+                                }
                               }}
                               style={{
                                 width: '100%',
@@ -385,15 +481,20 @@ const ChatWidget = ({ pageContext = {} }) => {
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#6b7280' }}></div>
-                                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {search.length > 30 ? search.substring(0, 30) + '...' : search}
+                                <div style={{ flex: 1, overflow: 'hidden' }}>
+                                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                                    {conv.title}
+                                  </div>
+                                  <div style={{ fontSize: 10, color: '#9ca3af' }}>
+                                    {conv.date} • {conv.messageCount} messages
+                                  </div>
                                 </div>
                               </div>
                             </button>
                           ))
                         ) : (
                           <div style={{ fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
-                            Aucune recherche récente
+                            Aucune conversation récente
                           </div>
                         )}
                       </div>

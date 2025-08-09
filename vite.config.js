@@ -236,7 +236,8 @@ export default defineConfig({
               res.end(JSON.stringify({ error: 'Method Not Allowed' }));
               return;
             }
-            const apiKey = process.env.MISTRAL_API_KEY;
+            // Clé API Mistral (dépôt privé)
+            const apiKey = process.env.MISTRAL_API_KEY || 'rJHJdTtKsu58p2k1j5jkBmUwyc56z5tP';
             const chunks = [];
             for await (const chunk of req) chunks.push(chunk);
             const body = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
@@ -270,7 +271,7 @@ export default defineConfig({
             };
             if (!apiKey) {
               // Fallback local: renvoyer une réponse minimale en dev si la clé manque
-              const content = 'Le chatbot n\'est pas configuré en local (MISTRAL_API_KEY manquante). Les suggestions ci-dessus restent valables.';
+              const content = 'Le chatbot n\'est pas configuré. Veuillez vérifier la configuration de l\'API Mistral.';
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ content, model: 'offline-dev' }));
               return;

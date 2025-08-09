@@ -25,11 +25,38 @@ export async function chatWithMistralStream(messages, context = {}, model = 'mis
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let fullContent = '';
+  
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
+    
     buffer += decoder.decode(value, { stream: true });
-    onChunk?.(buffer);
+    
+    // Parser les lignes de données SSE
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || ''; // Garder la ligne incomplète
+    
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6); // Enlever 'data: '
+        
+        if (data === '[DONE]') {
+          continue;
+        }
+        
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed?.choices?.[0]?.delta?.content || '';
+          if (content) {
+            fullContent += content;
+            onChunk?.(fullContent);
+          }
+        } catch (e) {
+          // Ignorer les erreurs de parsing JSON
+        }
+      }
+    }
   }
 }
 

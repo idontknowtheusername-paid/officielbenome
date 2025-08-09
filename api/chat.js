@@ -19,7 +19,8 @@ module.exports = async (req, res) => {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const apiKey = process.env.MISTRAL_API_KEY;
+    // Clé API Mistral (dépôt privé)
+    const apiKey = process.env.MISTRAL_API_KEY || 'rJHJdTtKsu58p2k1j5jkBmUwyc56z5tP';
     if (!apiKey) {
       return res.status(500).json({ error: 'Missing MISTRAL_API_KEY' });
     }
