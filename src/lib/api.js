@@ -15,7 +15,7 @@ import {
 } from '@/services/supabase.service';
 
 // ============================================================================
-// FONCTIONS D'AUTHENTIFICATION (Compatibilité)
+// FONCTIONS D'AUTHENTIFICATION (Compatibilite)
 // ============================================================================
 export const registerUser = async (userData) => {
   const result = await authService.signUp(userData.email, userData.password, {
@@ -60,7 +60,7 @@ export const resetPassword = async (token, newPassword) => {
 };
 
 // ============================================================================
-// FONCTIONS POUR LES ANNONCES (Compatibilité)
+// FONCTIONS POUR LES ANNONCES (Compatibilite)
 // ============================================================================
 
 export const getRealEstateListings = async (params = {}) => {
@@ -140,7 +140,7 @@ export const createMarketplaceListing = async (listingData) => {
 };
 
 // ============================================================================
-// FONCTIONS POUR LES FAVORIS (Compatibilité)
+// FONCTIONS POUR LES FAVORIS (Compatibilite)
 // ============================================================================
 
 export const getFavorites = async () => {
@@ -156,7 +156,7 @@ export const removeFromFavorites = async (itemId) => {
 };
 
 // ============================================================================
-// FONCTIONS POUR LES NOTIFICATIONS (Compatibilité)
+// FONCTIONS POUR LES NOTIFICATIONS (Compatibilite)
 // ============================================================================
 
 export const getNotifications = async () => {
@@ -168,7 +168,7 @@ export const markNotificationAsRead = async (notificationId) => {
 };
 
 // ============================================================================
-// FONCTION DE RECHERCHE GLOBALE (Compatibilité)
+// FONCTION DE RECHERCHE GLOBALE (Compatibilite)
 // ============================================================================
 
 export const searchAll = async (query, filters = {}) => {
@@ -176,12 +176,12 @@ export const searchAll = async (query, filters = {}) => {
 };
 
 // ============================================================================
-// FONCTIONS D'ADMINISTRATION (Compatibilité)
+// FONCTIONS D'ADMINISTRATION (Compatibilite)
 // ============================================================================
 
 export const getDashboardStats = async () => {
   try {
-    // Récupérer les statistiques depuis Supabase
+    // Recuperer les statistiques depuis Supabase
     const [users, listings, categories] = await Promise.all([
       userService.getAllUsers(),
       listingService.getAllListings(),
@@ -191,7 +191,7 @@ export const getDashboardStats = async () => {
     // Calculer les statistiques
     const activeUsers = users.filter(u => u.status === 'active').length;
     const pendingListings = listings.filter(l => l.status === 'pending').length;
-    const totalRevenue = 0; // À implémenter avec la table payments
+    const totalRevenue = 0; // À implementer avec la table payments
 
     return {
       success: true,
@@ -205,7 +205,7 @@ export const getDashboardStats = async () => {
           pending: pendingListings
         },
         revenue: totalRevenue,
-        recentActivities: [] // À implémenter
+        recentActivities: [] // À implementer
       }
     };
   } catch (error) {
@@ -281,7 +281,7 @@ export const rejectListing = async (listingId, reason) => {
 
 export const getAdminTransactions = async (params = {}) => {
   try {
-    // À implémenter avec la table payments
+    // À implementer avec la table payments
     return {
       success: true,
       data: []
@@ -293,12 +293,12 @@ export const getAdminTransactions = async (params = {}) => {
 };
 
 // ============================================================================
-// FONCTIONS DE MODÉRATION (Compatibilité)
+// FONCTIONS DE MODÉRATION (Compatibilite)
 // ============================================================================
 
 export const getReportedContent = async (params = {}) => {
   try {
-    // À implémenter avec la table reports
+    // À implementer avec la table reports
     return {
       success: true,
       data: []
@@ -311,7 +311,7 @@ export const getReportedContent = async (params = {}) => {
 
 export const moderateContent = async (reportId, actionData) => {
   try {
-    // À implémenter avec la table reports
+    // À implementer avec la table reports
     return {
       success: true,
       data: { id: reportId, action: actionData }
@@ -324,7 +324,7 @@ export const moderateContent = async (reportId, actionData) => {
 
 export const getModerationStats = async () => {
   try {
-    // À implémenter avec la table reports
+    // À implementer avec la table reports
     return {
       success: true,
       data: {
@@ -341,7 +341,7 @@ export const getModerationStats = async () => {
 
 export const getModerationLogs = async (params = {}) => {
   try {
-    // À implémenter avec la table reports
+    // À implementer avec la table reports
     return {
       success: true,
       data: []
@@ -353,12 +353,12 @@ export const getModerationLogs = async (params = {}) => {
 };
 
 // ============================================================================
-// FONCTIONS UTILISATEUR SUPPLÉMENTAIRES (Compatibilité)
+// FONCTIONS UTILISATEUR SUPPLÉMENTAIRES (Compatibilite)
 // ============================================================================
 
 export const deleteUser = async (userId) => {
   try {
-    // À implémenter avec Supabase
+    // À implementer avec Supabase
     return {
       success: true,
       data: { id: userId }
@@ -383,7 +383,7 @@ export const updateUserRole = async (userId, roleData) => {
 };
 
 // ============================================================================
-// FONCTIONS DE LISTING SUPPLÉMENTAIRES (Compatibilité)
+// FONCTIONS DE LISTING SUPPLÉMENTAIRES (Compatibilite)
 // ============================================================================
 
 export const featureListing = async (listingId) => {
@@ -413,12 +413,12 @@ export const deleteListing = async (listingId) => {
 };
 
 // ============================================================================
-// FONCTIONS D'ANALYTICS (Compatibilité)
+// FONCTIONS D'ANALYTICS (Compatibilite)
 // ============================================================================
 
 export const getAnalyticsData = async (params = {}) => {
   try {
-    // À implémenter avec les données Supabase
+    // À implementer avec les donnees Supabase
     return {
       success: true,
       data: {}
@@ -431,7 +431,7 @@ export const getAnalyticsData = async (params = {}) => {
 
 export const getUserGrowthData = async (params = {}) => {
   try {
-    // À implémenter avec les données Supabase
+    // À implementer avec les donnees Supabase
     return {
       success: true,
       data: []
@@ -444,7 +444,7 @@ export const getUserGrowthData = async (params = {}) => {
 
 export const getRevenueData = async (params = {}) => {
   try {
-    // À implémenter avec la table payments
+    // À implementer avec la table payments
     return {
       success: true,
       data: []
@@ -477,7 +477,7 @@ export const getListingsByCategory = async (params = {}) => {
 
 export const getSalesByCategory = async (params = {}) => {
   try {
-    // À implémenter avec la table payments
+    // À implementer avec la table payments
     return {
       success: true,
       data: []
@@ -490,7 +490,7 @@ export const getSalesByCategory = async (params = {}) => {
 
 export const getTrafficSources = async (params = {}) => {
   try {
-    // À implémenter avec les données Supabase
+    // À implementer avec les donnees Supabase
     return {
       success: true,
       data: []
@@ -503,7 +503,7 @@ export const getTrafficSources = async (params = {}) => {
 
 export const getUserAcquisitionData = async (params = {}) => {
   try {
-    // À implémenter avec les données Supabase
+    // À implementer avec les donnees Supabase
     return {
       success: true,
       data: []
@@ -516,7 +516,7 @@ export const getUserAcquisitionData = async (params = {}) => {
 
 export const getTopProducts = async (params = {}) => {
   try {
-    // À implémenter avec les données Supabase
+    // À implementer avec les donnees Supabase
     return {
       success: true,
       data: []
@@ -528,12 +528,12 @@ export const getTopProducts = async (params = {}) => {
 };
 
 // ============================================================================
-// FONCTIONS SUPPLÉMENTAIRES (Compatibilité)
+// FONCTIONS SUPPLÉMENTAIRES (Compatibilite)
 // ============================================================================
 
 export const getBlogPosts = async (params = {}) => {
   try {
-    // À implémenter avec une table blog_posts
+    // À implementer avec une table blog_posts
     return {
       success: true,
       data: []
@@ -546,7 +546,7 @@ export const getBlogPosts = async (params = {}) => {
 
 export const getBlogPost = async (id) => {
   try {
-    // À implémenter avec une table blog_posts
+    // À implementer avec une table blog_posts
     return {
       success: true,
       data: null
@@ -559,7 +559,7 @@ export const getBlogPost = async (id) => {
 
 export const createBlogPost = async (postData) => {
   try {
-    // À implémenter avec une table blog_posts
+    // À implementer avec une table blog_posts
     return {
       success: true,
       data: postData
@@ -572,7 +572,7 @@ export const createBlogPost = async (postData) => {
 
 export const sendContactMessage = async (messageData) => {
   try {
-    // À implémenter avec une table contact_messages
+    // À implementer avec une table contact_messages
     return {
       success: true,
       data: messageData
@@ -584,7 +584,7 @@ export const sendContactMessage = async (messageData) => {
 };
 
 // ============================================================================
-// EXPORT PAR DÉFAUT (Compatibilité)
+// EXPORT PAR DÉFAUT (Compatibilite)
 // ============================================================================
 
 export default {

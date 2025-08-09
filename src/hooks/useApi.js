@@ -32,7 +32,7 @@ const useApi = (options = {}) => {
   const controllerRef = useRef(null);
   const navigate = useNavigate();
 
-  // Annuler la requête en cours lors du démontage du composant
+  // Annuler la requete en cours lors du demontage du composant
   useEffect(() => {
     const controller = controllerRef.current;
     return () => {
@@ -50,12 +50,12 @@ const useApi = (options = {}) => {
    */
   const callSupabase = useCallback(
     async (supabaseCall, config = {}) => {
-      // Annuler la requête précédente si elle existe
+      // Annuler la requete precedente si elle existe
       if (controllerRef.current) {
         controllerRef.current.abort();
       }
 
-      // Créer un nouveau contrôleur pour cette requête
+      // Creer un nouveau controleur pour cette requete
       const controller = new AbortController();
       controllerRef.current = controller;
 
@@ -65,12 +65,12 @@ const useApi = (options = {}) => {
       try {
         const result = await supabaseCall();
 
-        // Vérifier si la requête a été annulée
+        // Verifier si la requete a ete annulee
         if (controller.signal.aborted) {
           return null;
         }
 
-        // Gérer les erreurs Supabase
+        // Gerer les erreurs Supabase
         if (result.error) {
           throw result.error;
         }
@@ -78,12 +78,12 @@ const useApi = (options = {}) => {
         setData(result.data);
         setStatus(200);
 
-        // Afficher un message de succès si nécessaire
+        // Afficher un message de succes si necessaire
         if (showSuccess && result.data?.message) {
           toast.success(result.data.message);
         }
 
-        // Rediriger si nécessaire
+        // Rediriger si necessaire
         if (redirectOnSuccess) {
           navigate(redirectPath || ROUTES.DASHBOARD);
         }
@@ -101,27 +101,27 @@ const useApi = (options = {}) => {
         setError(errorData);
         setStatus(errorStatus);
 
-        // Gérer les erreurs spécifiques
+        // Gerer les erreurs specifiques
         if (errorStatus === 401 && redirectToLogin) {
           // Rediriger vers la page de connexion avec la redirection actuelle
           navigate(`${ROUTES.LOGIN}?redirect=${encodeURIComponent(window.location.pathname)}`);
           return null;
         }
 
-        // Afficher un message d'erreur si nécessaire
+        // Afficher un message d'erreur si necessaire
         if (showError) {
           const errorMessage = errorData.message || 'Une erreur est survenue';
           toast.error(errorMessage);
         }
 
-        // Lancer l'erreur si nécessaire
+        // Lancer l'erreur si necessaire
         if (throwError) {
           throw err;
         }
 
         return null;
       } finally {
-        // Ne pas mettre à jour l'état si la requête a été annulée
+        // Ne pas mettre a jour l'etat si la requete a ete annulee
         if (!controller.signal.aborted) {
           setLoading(false);
         }
@@ -130,7 +130,7 @@ const useApi = (options = {}) => {
     [navigate, redirectOnSuccess, redirectPath, showError, showSuccess, throwError, redirectToLogin]
   );
 
-  // Méthodes pour les opérations CRUD courantes
+  // Methodes pour les operations CRUD courantes
   const select = useCallback((table, query = {}) => {
     return callSupabase(() => supabase.from(table).select(query.select || '*').eq(query.eq?.field, query.eq?.value), query);
   }, [callSupabase]);
@@ -159,7 +159,7 @@ const useApi = (options = {}) => {
     return callSupabase(() => query, {});
   }, [callSupabase]);
 
-  // Méthodes pour l'authentification
+  // Methodes pour l'authentification
   const signIn = useCallback((email, password) => {
     return callSupabase(() => supabase.auth.signInWithPassword({ email, password }), {});
   }, [callSupabase]);
@@ -176,7 +176,7 @@ const useApi = (options = {}) => {
     return callSupabase(() => supabase.auth.signOut(), {});
   }, [callSupabase]);
 
-  // Méthodes pour le storage
+  // Methodes pour le storage
   const uploadFile = useCallback((bucket, path, file) => {
     return callSupabase(() => supabase.storage.from(bucket).upload(path, file), {});
   }, [callSupabase]);
@@ -189,7 +189,7 @@ const useApi = (options = {}) => {
     return callSupabase(() => supabase.storage.from(bucket).remove([path]), {});
   }, [callSupabase]);
 
-  // Réinitialiser l'état
+  // Reinitialiser l'etat
   const reset = useCallback(() => {
     setLoading(false);
     setError(null);
@@ -197,7 +197,7 @@ const useApi = (options = {}) => {
     setStatus(null);
   }, []);
 
-  // Annuler la requête en cours
+  // Annuler la requete en cours
   const cancelRequest = useCallback(() => {
     if (controllerRef.current) {
       controllerRef.current.abort();
@@ -213,34 +213,34 @@ const useApi = (options = {}) => {
     data,
     status,
     
-    // Méthodes CRUD
+    // Methodes CRUD
     select,
     insert,
     update,
     remove,
     
-    // Méthodes d'authentification
+    // Methodes d'authentification
     signIn,
     signUp,
     signOut,
     
-    // Méthodes de storage
+    // Methodes de storage
     uploadFile,
     downloadFile,
     deleteFile,
     
-    // Méthodes utilitaires
+    // Methodes utilitaires
     callSupabase,
     reset,
     cancelRequest,
     
-    // Alias pour la compatibilité
+    // Alias pour la compatibilite
     execute: callSupabase,
     isLoading: loading,
     isError: !!error,
     isSuccess: !!data && !error,
     
-    // Méthodes HTTP pour la compatibilité (dépréciées)
+    // Methodes HTTP pour la compatibilite (depreciees)
     get: select,
     post: insert,
     put: update,

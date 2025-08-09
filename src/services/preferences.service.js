@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 
 class PreferencesService {
-  // Récupérer les préférences d'un utilisateur
+  // Recuperer les preferences d'un utilisateur
   async getUserPreferences(userId) {
     try {
       const { data, error } = await supabase
@@ -12,7 +12,7 @@ class PreferencesService {
 
       if (error && error.code !== 'PGRST116') throw error;
       
-      // Retourner les préférences par défaut si aucune n'existe
+      // Retourner les preferences par defaut si aucune n'existe
       return data || this.getDefaultPreferences(userId);
     } catch (error) {
       console.error('Erreur récupération préférences:', error);
@@ -20,7 +20,7 @@ class PreferencesService {
     }
   }
 
-  // Créer ou mettre à jour les préférences
+  // Creer ou mettre a jour les preferences
   async updateUserPreferences(userId, preferences) {
     try {
       const { data, error } = await supabase
@@ -41,7 +41,7 @@ class PreferencesService {
     }
   }
 
-  // Préférences par défaut
+  // Preferences par defaut
   getDefaultPreferences(userId) {
     return {
       user_id: userId,
@@ -77,7 +77,7 @@ class PreferencesService {
         compact_view: false
       },
       
-      // Confidentialité
+      // Confidentialite
       privacy_settings: {
         profile_visibility: 'public',
         show_online_status: true,
@@ -85,7 +85,7 @@ class PreferencesService {
         show_last_seen: true
       },
       
-      // Sécurité
+      // Securite
       security_settings: {
         two_factor_auth: false,
         login_notifications: true,
@@ -103,7 +103,7 @@ class PreferencesService {
     };
   }
 
-  // Mettre à jour le thème
+  // Mettre a jour le theme
   async updateTheme(userId, theme) {
     try {
       const { data, error } = await supabase
@@ -124,7 +124,7 @@ class PreferencesService {
     }
   }
 
-  // Mettre à jour les préférences de notification
+  // Mettre a jour les preferences de notification
   async updateNotificationPreferences(userId, notificationType, settings) {
     try {
       const currentPrefs = await this.getUserPreferences(userId);
@@ -144,7 +144,7 @@ class PreferencesService {
     }
   }
 
-  // Mettre à jour les préférences d'affichage
+  // Mettre a jour les preferences d'affichage
   async updateDisplayPreferences(userId, displaySettings) {
     try {
       const currentPrefs = await this.getUserPreferences(userId);
@@ -164,7 +164,7 @@ class PreferencesService {
     }
   }
 
-  // Mettre à jour les paramètres de confidentialité
+  // Mettre a jour les parametres de confidentialite
   async updatePrivacySettings(userId, privacySettings) {
     try {
       const currentPrefs = await this.getUserPreferences(userId);
@@ -184,7 +184,7 @@ class PreferencesService {
     }
   }
 
-  // Mettre à jour les paramètres de sécurité
+  // Mettre a jour les parametres de securite
   async updateSecuritySettings(userId, securitySettings) {
     try {
       const currentPrefs = await this.getUserPreferences(userId);
@@ -204,7 +204,7 @@ class PreferencesService {
     }
   }
 
-  // Mettre à jour la personnalisation
+  // Mettre a jour la personnalisation
   async updateCustomization(userId, customizationSettings) {
     try {
       const currentPrefs = await this.getUserPreferences(userId);
@@ -224,7 +224,7 @@ class PreferencesService {
     }
   }
 
-  // Réinitialiser les préférences
+  // Reinitialiser les preferences
   async resetPreferences(userId) {
     try {
       const defaultPrefs = this.getDefaultPreferences(userId);
@@ -235,7 +235,7 @@ class PreferencesService {
     }
   }
 
-  // Exporter les préférences
+  // Exporter les preferences
   async exportPreferences(userId) {
     try {
       const prefs = await this.getUserPreferences(userId);
@@ -262,7 +262,7 @@ class PreferencesService {
     }
   }
 
-  // Vérifier si une notification est activée
+  // Verifier si une notification est activee
   async isNotificationEnabled(userId, notificationType, channel = 'email') {
     try {
       const prefs = await this.getUserPreferences(userId);
@@ -274,7 +274,7 @@ class PreferencesService {
     }
   }
 
-  // Obtenir les préférences de thème
+  // Obtenir les preferences de theme
   async getThemePreferences(userId) {
     try {
       const prefs = await this.getUserPreferences(userId);

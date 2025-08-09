@@ -44,7 +44,7 @@ export function SupabaseTest() {
     try {
       setTestResult('Test en cours...')
       
-      // Test de connexion à Supabase
+      // Test de connexion a Supabase
       const { data, error } = await supabase.from('_test_connection').select('*').limit(1)
       
       if (error && error.code === 'PGRST116') {

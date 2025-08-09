@@ -27,7 +27,7 @@ const NotificationCenter = () => {
       const data = await notificationService.getUserNotifications(user.id, filters);
       setNotifications(data);
       
-      // Mettre à jour le compteur de non lues
+      // Mettre a jour le compteur de non lues
       const count = await notificationService.getUnreadCount(user.id);
       setUnreadCount(count);
     } catch (error) {
@@ -74,7 +74,7 @@ const NotificationCenter = () => {
     try {
       await notificationService.deleteNotification(notificationId);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      // Vérifier si c'était une notification non lue
+      // Verifier si c'etait une notification non lue
       const notification = notifications.find(n => n.id === notificationId);
       if (notification && !notification.is_read) {
         setUnreadCount(prev => Math.max(0, prev - 1));
@@ -84,7 +84,7 @@ const NotificationCenter = () => {
     }
   };
 
-  // Écouter les nouvelles notifications en temps réel
+  // Écouter les nouvelles notifications en temps reel
   useEffect(() => {
     if (!user) return;
 
@@ -101,7 +101,7 @@ const NotificationCenter = () => {
     };
   }, [user]);
 
-  // Fermer le dropdown en cliquant à l'extérieur
+  // Fermer le dropdown en cliquant a l'exterieur
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -120,7 +120,7 @@ const NotificationCenter = () => {
     }
   }, [filter, typeFilter, isOpen]);
 
-  // Obtenir l'icône selon le type
+  // Obtenir l'icone selon le type
   const getNotificationIcon = (type, icon) => {
     const iconMap = {
       'check-circle': '✓',

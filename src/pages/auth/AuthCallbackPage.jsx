@@ -7,8 +7,8 @@ const AuthCallbackPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // detectSessionInUrl: true permet déjà à Supabase de traiter le hash
-    // On attend simplement que la session soit prête puis on redirige
+    // detectSessionInUrl: true permet deja a Supabase de traiter le hash
+    // On attend simplement que la session soit prete puis on redirige
     const process = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();

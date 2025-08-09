@@ -20,7 +20,7 @@ export const useNotifications = () => {
       const data = await notificationService.getUserNotifications(user.id, filters);
       setNotifications(data);
       
-      // Mettre à jour le compteur de non lues
+      // Mettre a jour le compteur de non lues
       const count = await notificationService.getUnreadCount(user.id);
       setUnreadCount(count);
     } catch (err) {
@@ -75,7 +75,7 @@ export const useNotifications = () => {
       await notificationService.deleteNotification(notificationId);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
-      // Vérifier si c'était une notification non lue
+      // Verifier si c'etait une notification non lue
       const notification = notifications.find(n => n.id === notificationId);
       if (notification && !notification.is_read) {
         setUnreadCount(prev => Math.max(0, prev - 1));
@@ -94,7 +94,7 @@ export const useNotifications = () => {
     }
   }, []);
 
-  // Écouter les nouvelles notifications en temps réel
+  // Écouter les nouvelles notifications en temps reel
   useEffect(() => {
     if (!user) return;
 
@@ -173,13 +173,13 @@ export const useNotifications = () => {
     searchNotifications,
     getStats,
     
-    // État dérivé
+    // État derive
     hasUnread: unreadCount > 0,
     totalCount: notifications.length
   };
 };
 
-// Hook pour les notifications temps réel uniquement
+// Hook pour les notifications temps reel uniquement
 export const useRealtimeNotifications = () => {
   const { user } = useAuth();
   const [latestNotification, setLatestNotification] = useState(null);
@@ -190,7 +190,7 @@ export const useRealtimeNotifications = () => {
     notificationService.subscribeToNotifications(user.id, (newNotification) => {
       setLatestNotification(newNotification);
       
-      // Afficher une notification toast si supporté
+      // Afficher une notification toast si supporte
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(newNotification.title, {
           body: newNotification.message,
@@ -210,7 +210,7 @@ export const useRealtimeNotifications = () => {
   };
 };
 
-// Hook pour les préférences de notification
+// Hook pour les preferences de notification
 export const useNotificationPreferences = () => {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState(null);
@@ -240,7 +240,7 @@ export const useNotificationPreferences = () => {
         [type]: enabled
       });
       
-      // Recharger les préférences
+      // Recharger les preferences
       await loadPreferences();
     } catch (error) {
       console.error('Erreur mise à jour préférence notification:', error);

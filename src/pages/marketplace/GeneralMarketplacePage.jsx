@@ -32,7 +32,7 @@ const GeneralMarketplacePage = () => {
     per: isNaN(initialPer) ? 12 : Math.min(Math.max(initialPer, 6), 48)
   });
 
-  // Utiliser le hook pour récupérer les annonces marketplace
+  // Utiliser le hook pour recuperer les annonces marketplace
   const { 
     listings, 
     loading, 
@@ -47,7 +47,7 @@ const GeneralMarketplacePage = () => {
     // La recherche se fait automatiquement via le hook
   };
 
-  // Tri local si sort=popular (par sécurité si le service ne le fait pas)
+  // Tri local si sort=popular (par securite si le service ne le fait pas)
   const sortedListings = useMemo(() => {
     if (filters.sort === 'popular') {
       return [...listings].sort((a, b) => (b?.views_count || 0) - (a?.views_count || 0));

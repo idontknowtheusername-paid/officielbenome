@@ -83,7 +83,7 @@ const ConfirmDialog = ({
   );
 };
 
-// Composants spécialisés pour des actions courantes
+// Composants specialises pour des actions courantes
 export const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm, itemName, isLoading }) => (
   <ConfirmDialog
     isOpen={isOpen}

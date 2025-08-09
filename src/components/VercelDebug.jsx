@@ -5,7 +5,7 @@ const VercelDebug = () => {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
-    // Vérifier les variables d'environnement
+    // Verifier les variables d'environnement
     const vars = {
       'VITE_SUPABASE_URL': import.meta.env.VITE_SUPABASE_URL,
       'VITE_SUPABASE_ANON_KEY': import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -17,11 +17,11 @@ const VercelDebug = () => {
     };
     setEnvVars(vars);
 
-    // Vérifier les erreurs
+    // Verifier les erreurs
     const errorList = [];
     if (!vars['VITE_SUPABASE_URL']) errorList.push('VITE_SUPABASE_URL manquante');
     if (!vars['VITE_SUPABASE_ANON_KEY']) errorList.push('VITE_SUPABASE_ANON_KEY manquante');
-    if (vars['VITE_SUPABASE_URL'] === 'https://your-project-id.supabase.co') errorList.push('VITE_SUPABASE_URL non configurée');
+    if (vars['VITE_SUPABASE_URL'] === 'https://your-project-id.supabase.co') errorList.push('VITE_SUPABASE_URL non configuree');
     
     setErrors(errorList);
 
@@ -35,7 +35,7 @@ const VercelDebug = () => {
     });
   }, []);
 
-  // Ne s'afficher qu'en mode développement ou si il y a des erreurs
+  // Ne s'afficher qu'en mode developpement ou si il y a des erreurs
   if (import.meta.env.PROD && errors.length === 0) {
     return null;
   }

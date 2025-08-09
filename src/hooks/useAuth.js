@@ -7,7 +7,7 @@ export function useAuth() {
   const [session, setSession] = useState(null)
 
   useEffect(() => {
-    // Récupérer la session initiale
+    // Recuperer la session initiale
     const getInitialSession = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession()

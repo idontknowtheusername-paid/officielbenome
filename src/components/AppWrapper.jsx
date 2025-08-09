@@ -2,7 +2,7 @@ import React from 'react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
 const AppWrapper = ({ children }) => {
-  // Si Supabase n'est pas configuré, afficher un message au lieu de planter
+  // Si Supabase n'est pas configure, afficher un message au lieu de planter
   if (!isSupabaseConfigured) {
     return (
       <div style={{
@@ -54,7 +54,7 @@ const AppWrapper = ({ children }) => {
     );
   }
 
-  // Si Supabase est configuré, afficher l'app normale
+  // Si Supabase est configure, afficher l'app normale
   return children;
 };
 

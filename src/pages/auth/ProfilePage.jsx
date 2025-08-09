@@ -95,7 +95,7 @@ const ProfilePage = () => {
     }
   });
 
-  // Charger les vraies données de l'utilisateur
+  // Charger les vraies donnees de l'utilisateur
   useEffect(() => {
     const loadUserData = async () => {
       if (user) {
@@ -122,7 +122,7 @@ const ProfilePage = () => {
           }
           setMessages(userMessages);
 
-          // Calculer les statistiques réelles
+          // Calculer les statistiques reelles
           const activeListings = userListings.filter(l => l.status === 'approved').length;
           const totalViews = userListings.reduce((sum, l) => sum + (l.views_count || 0), 0);
           const unreadMessages = userMessages.filter(m => !m.read).length;
@@ -210,7 +210,7 @@ const ProfilePage = () => {
     setRefreshDialog({ isOpen: true, item: listing });
   };
 
-  // Actions confirmées
+  // Actions confirmees
   const confirmEdit = async () => {
     try {
       const listing = editDialog.item;
@@ -230,7 +230,7 @@ const ProfilePage = () => {
       const listing = deleteDialog.item;
       await listingService.deleteListing(listing.id);
       
-      // Recharger les données
+      // Recharger les donnees
       const updatedListings = listings.filter(l => l.id !== listing.id);
       setListings(updatedListings);
       
@@ -254,7 +254,7 @@ const ProfilePage = () => {
       const listing = boostDialog.item;
       await listingService.updateListing(listing.id, { boosted: !listing.boosted });
       
-      // Recharger les données
+      // Recharger les donnees
       const updatedListings = listings.map(l => 
         l.id === listing.id ? { ...l, boosted: !l.boosted } : l
       );
@@ -335,7 +335,7 @@ const ProfilePage = () => {
     });
   };
 
-  // Fonction de déconnexion
+  // Fonction de deconnexion
   const handleLogout = async () => {
     try {
       await logout();

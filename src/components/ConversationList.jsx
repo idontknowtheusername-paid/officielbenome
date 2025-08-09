@@ -64,7 +64,7 @@ const ConversationList = ({
     }
   };
 
-  // Vérifier s'il y a des messages non lus
+  // Verifier s'il y a des messages non lus
   const hasUnreadMessages = (conversation) => {
     return conversation.messages?.some(msg => 
       !msg.is_read && msg.sender_id !== user?.id

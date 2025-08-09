@@ -48,11 +48,11 @@ export const useSendMessage = () => {
     
     // Optimistic update
     onMutate: async ({ conversationId, content, messageType }) => {
-      // Annuler les requêtes en cours
+      // Annuler les requetes en cours
       await queryClient.cancelQueries({ queryKey: ['conversation-messages', conversationId] });
       await queryClient.cancelQueries({ queryKey: ['conversations'] });
 
-      // Snapshot de l'état précédent
+      // Snapshot de l'etat precedent
       const previousMessages = queryClient.getQueryData(['conversation-messages', conversationId]);
       const previousConversations = queryClient.getQueryData(['conversations']);
 
@@ -105,7 +105,7 @@ export const useSendMessage = () => {
       return { previousMessages, previousConversations };
     },
 
-    // En cas d'erreur, restaurer l'état précédent
+    // En cas d'erreur, restaurer l'etat precedent
     onError: (err, variables, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData(['conversation-messages', variables.conversationId], context.previousMessages);
@@ -115,7 +115,7 @@ export const useSendMessage = () => {
       }
     },
 
-    // Succès - invalider et refetch
+    // Succes - invalider et refetch
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ queryKey: ['conversation-messages', variables.conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
@@ -132,7 +132,7 @@ export const useMarkMessagesAsRead = () => {
     mutationFn: (conversationId) => messageService.markMessagesAsRead(conversationId),
     
     onSuccess: (data, conversationId) => {
-      // Mettre à jour les messages dans le cache
+      // Mettre a jour les messages dans le cache
       queryClient.setQueryData(['conversation-messages', conversationId], (old) => {
         if (!old) return old;
         
@@ -149,7 +149,7 @@ export const useMarkMessagesAsRead = () => {
         };
       });
 
-      // Mettre à jour les conversations
+      // Mettre a jour les conversations
       queryClient.setQueryData(['conversations'], (old) => {
         if (!old) return old;
         
@@ -169,7 +169,7 @@ export const useMarkMessagesAsRead = () => {
   });
 };
 
-// Hook pour créer une nouvelle conversation
+// Hook pour creer une nouvelle conversation
 export const useCreateConversation = () => {
   const queryClient = useQueryClient();
 
@@ -265,7 +265,7 @@ export const useMessageStats = () => {
   });
 };
 
-// Hook pour la synchronisation temps réel
+// Hook pour la synchronisation temps reel
 export const useRealtimeMessages = (conversationId) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -281,7 +281,7 @@ export const useRealtimeMessages = (conversationId) => {
         table: 'messages',
         filter: `conversation_id=eq.${conversationId}`
       }, (payload) => {
-        // Mettre à jour le cache avec le nouveau message
+        // Mettre a jour le cache avec le nouveau message
         queryClient.setQueryData(['conversation-messages', conversationId], (old) => {
           if (!old) return old;
           
@@ -298,7 +298,7 @@ export const useRealtimeMessages = (conversationId) => {
           };
         });
 
-        // Mettre à jour les conversations
+        // Mettre a jour les conversations
         queryClient.setQueryData(['conversations'], (old) => {
           if (!old) return old;
           

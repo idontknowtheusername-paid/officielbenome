@@ -37,7 +37,7 @@ const AdminDashboardPage = () => {
   ]);
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est connecté et a le rôle admin
+    // Verifier si l'utilisateur est connecte et a le role admin
     const checkAuthorization = async () => {
       try {
         if (user) {
@@ -48,10 +48,10 @@ const AdminDashboardPage = () => {
             navigate('/');
             return;
           }
-          // Si l'utilisateur est admin, charger les données du tableau de bord
+          // Si l'utilisateur est admin, charger les donnees du tableau de bord
           await fetchDashboardData();
         } else {
-          // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+          // Rediriger vers la page de connexion si l'utilisateur n'est pas connecte
           navigate('/connexion', { state: { from: '/admin' } });
         }
       } catch (error) {
@@ -70,7 +70,7 @@ const AdminDashboardPage = () => {
     try {
       setLoading(true);
       
-      // Récupérer les données en parallèle
+      // Recuperer les donnees en parallele
       const [listings, users, notifications] = await Promise.all([
         listingService.getAllListings(),
         userService.getAllUsers(),
@@ -84,14 +84,14 @@ const AdminDashboardPage = () => {
       const totalListings = listings.length;
       const recentNotifications = notifications.slice(0, 5);
       
-      // Mettre à jour les statistiques
+      // Mettre a jour les statistiques
       setStats(prevStats => prevStats.map(stat => {
         if (stat.key === 'activeUsers') {
           return { ...stat, value: activeUsers.toLocaleString(), trend: `Total: ${totalUsers}` };
         } else if (stat.key === 'pendingListings') {
           return { ...stat, value: pendingListings.toString(), trend: `Total: ${totalListings}` };
         } else if (stat.key === 'revenue') {
-          // Pour l'instant, on met 0 car les transactions ne sont pas encore implémentées
+          // Pour l'instant, on met 0 car les transactions ne sont pas encore implementees
           return { ...stat, value: '0 FCFA', trend: 'Revenus du mois' };
         } else if (stat.key === 'recentActivities') {
           return { ...stat, value: recentNotifications.length.toString(), trend: 'Dernières activités' };
@@ -99,7 +99,7 @@ const AdminDashboardPage = () => {
         return stat;
       }));
 
-      // Mettre à jour les activités récentes
+      // Mettre a jour les activites recentes
       const formattedActivities = recentNotifications.map(notification => ({
         id: notification.id,
         type: notification.type || 'Notification',

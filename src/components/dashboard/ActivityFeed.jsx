@@ -81,7 +81,7 @@ const ActivityFeed = ({ activities = [] }) => {
     }
   };
 
-  // Si aucune activité, afficher un message
+  // Si aucune activite, afficher un message
   if (activities.length === 0) {
     return (
       <Card>

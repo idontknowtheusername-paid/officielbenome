@@ -29,7 +29,7 @@ const FavoritesManager = () => {
 
       if (favoritesError) throw favoritesError;
 
-      // Récupérer les annonces correspondantes
+      // Recuperer les annonces correspondantes
       const listingIds = favoritesData.map(f => f.listing_id);
       if (listingIds.length > 0) {
         const { data: listingsData, error: listingsError } = await supabase
@@ -44,14 +44,14 @@ const FavoritesManager = () => {
 
         if (listingsError) throw listingsError;
 
-        // Combiner les données
+        // Combiner les donnees
         const combinedData = favoritesData.map(favorite => {
           const listing = listingsData.find(l => l.id === favorite.listing_id);
           return {
             ...favorite,
             listing
           };
-        }).filter(item => item.listing); // Filtrer les annonces supprimées
+        }).filter(item => item.listing); // Filtrer les annonces supprimees
 
         setFavorites(combinedData);
         setListings(listingsData);
@@ -109,7 +109,7 @@ const FavoritesManager = () => {
     }
   };
 
-  // Mettre à jour les notes
+  // Mettre a jour les notes
   const updateNotes = async (favoriteId, notes) => {
     try {
       const { error } = await supabase
@@ -131,7 +131,7 @@ const FavoritesManager = () => {
     }
   };
 
-  // Mettre à jour les tags
+  // Mettre a jour les tags
   const updateTags = async (favoriteId, tags) => {
     try {
       const { error } = await supabase

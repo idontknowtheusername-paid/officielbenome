@@ -1,4 +1,4 @@
-// Configuration par défaut pour éviter les erreurs de build
+// Configuration par defaut pour eviter les erreurs de build
 export const DEFAULT_CONFIG = {
   supabase: {
     url: import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -12,7 +12,7 @@ export const DEFAULT_CONFIG = {
   logLevel: import.meta.env.VITE_LOG_LEVEL || 'info',
 };
 
-// Vérifier si la configuration est valide
+// Verifier si la configuration est valide
 export const isConfigValid = () => {
   const { supabase } = DEFAULT_CONFIG;
   return supabase.url !== 'https://placeholder.supabase.co' && 

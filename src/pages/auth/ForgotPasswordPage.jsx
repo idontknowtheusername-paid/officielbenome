@@ -16,7 +16,7 @@ const ForgotPasswordPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      // Ici, vous appellerez votre API pour initier la réinitialisation du mot de passe
+      // Ici, vous appellerez votre API pour initier la reinitialisation du mot de passe
       // await forgotPassword(data.email);
       
       toast({

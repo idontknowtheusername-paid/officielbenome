@@ -29,7 +29,7 @@ const CreateListingPage = () => {
   const [formData, setFormData] = useState({});
   const [showPreview, setShowPreview] = useState(false);
 
-  // Fonction pour convertir les catégories en noms d'affichage
+  // Fonction pour convertir les categories en noms d'affichage
   const getCategoryDisplayName = (cat) => {
     const categoryMap = {
       'real-estate': 'Immobilière',
@@ -40,7 +40,7 @@ const CreateListingPage = () => {
     return categoryMap[cat] || '';
   };
 
-  // Fonction pour obtenir l'icône de catégorie
+  // Fonction pour obtenir l'icone de categorie
   const getCategoryIcon = (cat) => {
     const iconMap = {
       'real-estate': Home,
@@ -78,9 +78,9 @@ const CreateListingPage = () => {
   ];
 
   const handleSuccess = (res) => {
-    // Redirige vers le profil avec un message de succès
+    // Redirige vers le profil avec un message de succes
     if (res?.id) {
-      // Pour l'instant, rediriger vers le profil car la page de détail n'existe pas encore
+      // Pour l'instant, rediriger vers le profil car la page de detail n'existe pas encore
       navigate('/profile', { 
         state: { 
           message: 'Annonce créée avec succès ! Elle est maintenant visible sur le site.',

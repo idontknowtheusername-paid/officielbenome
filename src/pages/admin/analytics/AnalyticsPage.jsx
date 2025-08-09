@@ -81,7 +81,7 @@ function AnalyticsPage() {
   const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['analytics', 'overview', startDate, endDate],
     queryFn: async () => {
-      // Récupérer les données de base pour les analytics
+      // Recuperer les donnees de base pour les analytics
       const [listings, users] = await Promise.all([
         listingService.getAllListings(),
         userService.getAllUsers()
@@ -100,7 +100,7 @@ function AnalyticsPage() {
         pendingListings,
         totalUsers,
         activeUsers,
-        revenue: 0, // TODO: Implémenter les transactions
+        revenue: 0, // TODO: Implementer les transactions
         growth: {
           listings: 0,
           users: 0,
@@ -114,7 +114,7 @@ function AnalyticsPage() {
   const { data: revenueData, isLoading: isLoadingRevenue } = useQuery({
     queryKey: ['analytics', 'revenue', startDate, endDate],
     queryFn: async () => {
-      // TODO: Implémenter les données de revenus
+      // TODO: Implementer les donnees de revenus
       return [];
     }
   });
@@ -125,7 +125,7 @@ function AnalyticsPage() {
     queryFn: async () => {
       const users = await userService.getAllUsers();
       
-      // Grouper les utilisateurs par date de création
+      // Grouper les utilisateurs par date de creation
       const userGroups = users.reduce((acc, user) => {
         const date = format(new Date(user.created_at), 'yyyy-MM-dd');
         acc[date] = (acc[date] || 0) + 1;
@@ -143,7 +143,7 @@ function AnalyticsPage() {
   const { data: topProducts, isLoading: isLoadingTopProducts } = useQuery({
     queryKey: ['analytics', 'top-products', startDate, endDate],
     queryFn: async () => {
-      // TODO: Implémenter les données des produits les plus vendus
+      // TODO: Implementer les donnees des produits les plus vendus
       return [];
     }
   });
@@ -152,7 +152,7 @@ function AnalyticsPage() {
   const { data: trafficSources, isLoading: isLoadingTraffic } = useQuery({
     queryKey: ['analytics', 'traffic', startDate, endDate],
     queryFn: async () => {
-      // TODO: Implémenter les sources de trafic
+      // TODO: Implementer les sources de trafic
       return {};
     }
   });
@@ -161,7 +161,7 @@ function AnalyticsPage() {
   const { data: salesByCategory, isLoading: isLoadingSalesByCategory } = useQuery({
     queryKey: ['analytics', 'categories', startDate, endDate],
     queryFn: async () => {
-      // TODO: Implémenter les ventes par catégorie
+      // TODO: Implementer les ventes par categorie
       return {};
     }
   });

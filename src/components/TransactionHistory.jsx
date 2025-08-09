@@ -77,14 +77,14 @@ const TransactionHistory = () => {
     try {
       const exportData = await transactionService.exportTransactions(user.id, filters);
       
-      // Créer le fichier CSV
+      // Creer le fichier CSV
       const headers = Object.keys(exportData[0] || {});
       const csvContent = [
         headers.join(','),
         ...exportData.map(row => headers.map(header => `"${row[header]}"`).join(','))
       ].join('\n');
 
-      // Télécharger le fichier
+      // Telecharger le fichier
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -99,7 +99,7 @@ const TransactionHistory = () => {
     }
   };
 
-  // Obtenir l'icône selon le type
+  // Obtenir l'icone selon le type
   const getTransactionIcon = (type) => {
     const icons = {
       'purchase': <TrendingDown className="text-red-500" />,

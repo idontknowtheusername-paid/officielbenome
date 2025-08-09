@@ -26,7 +26,7 @@ const RealEstatePage = () => {
     maxPrice: initialMaxPrice
   });
 
-  // Utiliser le hook pour récupérer les annonces immobilières
+  // Utiliser le hook pour recuperer les annonces immobilieres
   const { 
     listings, 
     loading, 

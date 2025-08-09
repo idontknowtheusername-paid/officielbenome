@@ -185,7 +185,7 @@ function ModerationPage() {
   const { data: reports, isLoading, isError } = useQuery({
     queryKey: ['moderation', 'reports', { searchTerm, statusFilter, typeFilter, severityFilter, sortBy, sortOrder, page, perPage }],
     queryFn: async () => {
-      // Pour l'instant, on simule des rapports basés sur les annonces en attente
+      // Pour l'instant, on simule des rapports bases sur les annonces en attente
       const listings = await listingService.getAllListings({ status: 'pending' });
       
       return listings.map(listing => ({

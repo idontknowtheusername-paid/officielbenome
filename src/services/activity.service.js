@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 
 class ActivityService {
-  // Récupérer les activités d'un utilisateur
+  // Recuperer les activites d'un utilisateur
   async getUserActivities(userId, filters = {}) {
     try {
       let query = supabase
@@ -28,7 +28,7 @@ class ActivityService {
     }
   }
 
-  // Créer une activité
+  // Creer une activite
   async createActivity(activityData) {
     try {
       const { data, error } = await supabase
@@ -48,7 +48,7 @@ class ActivityService {
     }
   }
 
-  // Activités par type
+  // Activites par type
   async logListingActivity(userId, listingId, action, metadata = {}) {
     const activities = {
       'created': { description: 'A créé une annonce', icon: 'plus-circle', color: 'green' },
@@ -136,7 +136,7 @@ class ActivityService {
     });
   }
 
-  // Récupérer les statistiques d'activité
+  // Recuperer les statistiques d'activite
   async getActivityStats(userId) {
     try {
       const { data, error } = await supabase
@@ -173,7 +173,7 @@ class ActivityService {
     }
   }
 
-  // Rechercher des activités
+  // Rechercher des activites
   async searchActivities(userId, searchTerm) {
     try {
       const { data, error } = await supabase
@@ -195,7 +195,7 @@ class ActivityService {
     }
   }
 
-  // Exporter les activités
+  // Exporter les activites
   async exportActivities(userId, filters = {}) {
     try {
       const activities = await this.getUserActivities(userId, filters);
@@ -216,7 +216,7 @@ class ActivityService {
     }
   }
 
-  // Nettoyer les anciennes activités
+  // Nettoyer les anciennes activites
   async cleanupOldActivities(daysToKeep = 90) {
     try {
       const cutoffDate = new Date();

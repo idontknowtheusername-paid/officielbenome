@@ -1,5 +1,5 @@
 // Vercel Serverless Function: /api/chat
-// Utilise l'API Mistral pour générer des réponses de chatbot
+// Utilise l'API Mistral pour generer des reponses de chatbot
 
 /**
  * Expected POST body:
@@ -19,7 +19,7 @@ export default async (req, res) => {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // Clé API Mistral (hardcodée pour la production)
+    // Cle API Mistral (hardcodee pour la production)
     const apiKey = 'rJHJdTtKsu58p2k1j5jkBmUwyc56z5tP';
 
     const { messages, context = {}, model, stream } = req.body || {};

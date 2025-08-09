@@ -49,7 +49,7 @@ const MessageCenter = () => {
       const data = await messageService.getUserConversations();
       setConversations(data);
       
-      // Vérifier s'il y a des paramètres d'URL pour ouvrir une conversation spécifique
+      // Verifier s'il y a des parametres d'URL pour ouvrir une conversation specifique
       const conversationId = searchParams.get('conversation');
       const listingId = searchParams.get('listing');
       
@@ -61,7 +61,7 @@ const MessageCenter = () => {
           loadMessages(conversation.id);
         }
       } else if (listingId) {
-        // Trouver une conversation liée à cette annonce
+        // Trouver une conversation liee a cette annonce
         const conversation = data.find(c => c.listing_id === listingId);
         if (conversation) {
           setSelectedConversation(conversation);
@@ -98,20 +98,20 @@ const MessageCenter = () => {
     }
   };
 
-  // Sélectionner une conversation
+  // Selectionner une conversation
   const handleSelectConversation = (conversation) => {
     setSelectedConversation(conversation);
     loadMessages(conversation.id);
     setShowMobileMenu(false); // Fermer le menu mobile
   };
 
-  // Message envoyé
+  // Message envoye
   const handleMessageSent = () => {
     // Recharger les messages
     if (selectedConversation) {
       loadMessages(selectedConversation.id);
     }
-    // Recharger les conversations pour mettre à jour le dernier message
+    // Recharger les conversations pour mettre a jour le dernier message
     loadConversations();
   };
 
@@ -133,7 +133,7 @@ const MessageCenter = () => {
   // Archiver une conversation
   const handleArchiveConversation = async (conversationId) => {
     try {
-      // Mettre à jour le statut de la conversation
+      // Mettre a jour le statut de la conversation
       const { error } = await supabase
         .from('conversations')
         .update({ is_active: false })
@@ -220,7 +220,7 @@ const MessageCenter = () => {
     });
   };
 
-  // Vérifier si un message est lu
+  // Verifier si un message est lu
   const isMessageRead = (message) => {
     return message.is_read || message.sender_id === user?.id;
   };

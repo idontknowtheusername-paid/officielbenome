@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Fix pour URL Supabase malformée (manque https://)
+// Fix pour URL Supabase malformee (manque https://)
 let supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
@@ -34,7 +34,7 @@ export const supabase = createClient(
   }
 )
 
-// Logs utiles en développement
+// Logs utiles en developpement
 if (import.meta.env.DEV) {
   console.log('🔧 Mode développement activé')
   console.log('📡 Supabase URL:', supabaseUrl)

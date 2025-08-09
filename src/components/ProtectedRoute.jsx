@@ -16,19 +16,19 @@ export const ProtectedRoute = ({ children, requiredRole = 'user' }) => {
     );
   }
 
-  // Si l'utilisateur n'est pas connecté, rediriger vers la page de connexion
+  // Si l'utilisateur n'est pas connecte, rediriger vers la page de connexion
   if (!user) {
     console.log('🔒 User not authenticated, redirecting to /connexion');
     return <Navigate to="/connexion" state={{ from: location }} replace />;
   }
 
-  // Vérifier si l'utilisateur a le rôle requis
+  // Verifier si l'utilisateur a le role requis
   const hasRequiredRole =
     (Array.isArray(user.roles) && user.roles.includes(requiredRole)) ||
     user.role === requiredRole ||
     user.roles === requiredRole;
   
-  // Si un rôle est requis mais que l'utilisateur ne l'a pas, rediriger vers la page d'accueil
+  // Si un role est requis mais que l'utilisateur ne l'a pas, rediriger vers la page d'accueil
   if (requiredRole && !hasRequiredRole) {
     return <Navigate to="/" replace />;
   }

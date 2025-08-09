@@ -24,7 +24,7 @@ const UserSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Charger les préférences
+  // Charger les preferences
   const loadPreferences = async () => {
     if (!user) return;
 
@@ -39,7 +39,7 @@ const UserSettings = () => {
     }
   };
 
-  // Sauvegarder les préférences
+  // Sauvegarder les preferences
   const savePreferences = async () => {
     if (!user || !preferences) return;
 
@@ -47,7 +47,7 @@ const UserSettings = () => {
     try {
       await preferencesService.updateUserPreferences(user.id, preferences);
       setHasChanges(false);
-      // Appliquer le thème immédiatement
+      // Appliquer le theme immediatement
       applyTheme(preferences.theme);
     } catch (error) {
       console.error('Erreur sauvegarde préférences:', error);
@@ -56,7 +56,7 @@ const UserSettings = () => {
     }
   };
 
-  // Réinitialiser les préférences
+  // Reinitialiser les preferences
   const resetPreferences = async () => {
     if (!user) return;
 
@@ -70,7 +70,7 @@ const UserSettings = () => {
     }
   };
 
-  // Exporter les préférences
+  // Exporter les preferences
   const exportPreferences = async () => {
     if (!user) return;
 
@@ -92,20 +92,20 @@ const UserSettings = () => {
     }
   };
 
-  // Appliquer le thème
+  // Appliquer le theme
   const applyTheme = (theme) => {
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
     
-    // Mettre à jour la meta tag pour la couleur du thème
+    // Mettre a jour la meta tag pour la couleur du theme
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', theme === 'dark' ? '#1f2937' : '#ffffff');
     }
   };
 
-  // Mettre à jour une préférence
+  // Mettre a jour une preference
   const updatePreference = (path, value) => {
     if (!preferences) return;
 
@@ -127,7 +127,7 @@ const UserSettings = () => {
     loadPreferences();
   }, [user]);
 
-  // Appliquer le thème au chargement
+  // Appliquer le theme au chargement
   useEffect(() => {
     if (preferences?.theme) {
       applyTheme(preferences.theme);

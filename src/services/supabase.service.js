@@ -28,13 +28,13 @@ export const authService = {
     return data;
   },
 
-  // Déconnexion
+  // Deconnexion
   signOut: async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },
 
-  // Réinitialisation mot de passe
+  // Reinitialisation mot de passe
   resetPassword: async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -42,7 +42,7 @@ export const authService = {
     if (error) throw error;
   },
 
-  // Mise à jour mot de passe
+  // Mise a jour mot de passe
   updatePassword: async (newPassword) => {
     const { error } = await supabase.auth.updateUser({
       password: newPassword
@@ -50,7 +50,7 @@ export const authService = {
     if (error) throw error;
   },
 
-  // Récupérer la session actuelle
+  // Recuperer la session actuelle
   getSession: async () => {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
@@ -68,7 +68,7 @@ export const authService = {
 // ============================================================================
 
 export const userService = {
-  // Récupérer le profil utilisateur
+  // Recuperer le profil utilisateur
   getProfile: async (userId = null) => {
     const { data: { user } } = await supabase.auth.getUser();
     const targetUserId = userId || user?.id;
@@ -85,7 +85,7 @@ export const userService = {
     return data;
   },
 
-  // Mettre à jour le profil utilisateur
+  // Mettre a jour le profil utilisateur
   updateProfile: async (updates) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -101,7 +101,7 @@ export const userService = {
     return data;
   },
 
-  // Récupérer tous les utilisateurs (admin)
+  // Recuperer tous les utilisateurs (admin)
   getAllUsers: async () => {
     const { data, error } = await supabase
       .from('users')
@@ -112,7 +112,7 @@ export const userService = {
     return data;
   },
 
-  // Mettre à jour le statut d'un utilisateur (admin)
+  // Mettre a jour le statut d'un utilisateur (admin)
   updateUserStatus: async (userId, status) => {
     const { data, error } = await supabase
       .from('users')
@@ -131,10 +131,10 @@ export const userService = {
 // ============================================================================
 
 export const listingService = {
-  // Récupérer toutes les annonces avec pagination
+  // Recuperer toutes les annonces avec pagination
   getAllListings: async (filters = {}) => {
     
-    // Vérifier la configuration Supabase
+    // Verifier la configuration Supabase
     if (!isSupabaseConfigured) {
       console.warn('⚠️ Supabase non configuré, retour de données de test');
       return {
@@ -245,7 +245,7 @@ export const listingService = {
     try {
       console.log('🔍 Début de la requête getAllListings');
       
-      // Requête simple sans timeout complexe
+      // Requete simple sans timeout complexe
       console.log('🔍 Construction de la requête Supabase...');
     let query = supabase
       .from('listings')
@@ -260,7 +260,7 @@ export const listingService = {
       query = query.eq('category', filters.category);
     }
     
-    // Par défaut, ne montrer que les annonces approuvées
+    // Par defaut, ne montrer que les annonces approuvees
     if (!filters.status) {
       query = query.eq('status', 'approved');
     } else if (filters.status) {
@@ -290,7 +290,7 @@ export const listingService = {
 
     console.log('🔍 Executing query with filters:', filters);
     
-    // Exécuter la requête
+    // Executer la requete
     console.log('🔍 Lancement de la requête...');
     const { data, error } = await query;
     console.log('🔍 Requête terminée');
@@ -302,7 +302,7 @@ export const listingService = {
         throw error;
       }
       
-      // Nettoyer et valider les données JSONB de manière sécurisée
+      // Nettoyer et valider les donnees JSONB de maniere securisee
       const cleanedData = data?.map(listing => {
         try {
           return {
@@ -316,7 +316,7 @@ export const listingService = {
           };
         } catch (parseError) {
           console.warn('⚠️ Erreur parsing JSONB pour listing:', listing.id, parseError);
-          return listing; // Retourner les données brutes si le parsing échoue
+          return listing; // Retourner les donnees brutes si le parsing echoue
         }
       }) || [];
       
@@ -328,11 +328,11 @@ export const listingService = {
     }
   },
 
-  // Récupérer une annonce spécifique par ID (UUID ou nombre)
+  // Recuperer une annonce specifique par ID (UUID ou nombre)
   getListingById: async (id) => {
     if (!isSupabaseConfigured) {
       console.warn('⚠️ Supabase non configuré, retour d\'annonce de test');
-      // Retourner une annonce de test si Supabase n'est pas configuré
+      // Retourner une annonce de test si Supabase n'est pas configure
       return {
         id: 'test-1',
         title: 'Appartement 3 pièces au Centre-Ville',
@@ -356,7 +356,7 @@ export const listingService = {
     }
     
     try {
-      // Essayer d'abord avec une requête simple
+      // Essayer d'abord avec une requete simple
       const { data, error } = await supabase
         .from('listings')
         .select(`
@@ -378,7 +378,7 @@ export const listingService = {
       if (error) {
         console.log('🔍 Erreur avec requête simple:', error);
         
-        // Si l'annonce n'est pas trouvée, essayer sans le filtre de statut
+        // Si l'annonce n'est pas trouvee, essayer sans le filtre de statut
         const { data: allData, error: allError } = await supabase
           .from('listings')
           .select(`
@@ -413,7 +413,7 @@ export const listingService = {
       }
       
       if (data) {
-        // Nettoyer et valider les données JSONB
+        // Nettoyer et valider les donnees JSONB
         return {
           ...data,
           location: typeof data.location === 'string' ? JSON.parse(data.location) : data.location,
@@ -432,10 +432,10 @@ export const listingService = {
     }
   },
 
-  // Incrémenter les vues d'une annonce
+  // Incrementer les vues d'une annonce
   incrementViews: async (id) => {
     try {
-      // Appeler la fonction RPC (à créer côté Supabase)
+      // Appeler la fonction RPC (a creer cote Supabase)
       const { error } = await supabase.rpc('increment_listing_views', { listing_id: id });
       if (error) throw error;
     } catch (e) {
@@ -443,7 +443,7 @@ export const listingService = {
     }
   },
 
-  // Récupérer le top N des annonces les plus vues (populaires)
+  // Recuperer le top N des annonces les plus vues (populaires)
   getTopViewedListings: async (limit = 6) => {
     if (!isSupabaseConfigured) {
       console.warn('⚠️ Supabase non configuré, retour de données de test (top vues)');
@@ -480,7 +480,7 @@ export const listingService = {
     }
   },
 
-  // Récupérer les annonces d'un utilisateur
+  // Recuperer les annonces d'un utilisateur
   getUserListings: async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -497,12 +497,12 @@ export const listingService = {
 
 
 
-  // Créer une nouvelle annonce
+  // Creer une nouvelle annonce
   createListing: async (listingData) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    // Préparer les données en excluant les champs qui pourraient ne pas exister
+    // Preparer les donnees en excluant les champs qui pourraient ne pas exister
     const { currency, specificData, subCategory, videos, ...baseData } = listingData;
     
     const insertData = {
@@ -544,7 +544,7 @@ export const listingService = {
     return data;
   },
 
-  // Mettre à jour une annonce
+  // Mettre a jour une annonce
   updateListing: async (id, updates) => {
     const { data, error } = await supabase
       .from('listings')
@@ -586,7 +586,7 @@ export const listingService = {
 // ============================================================================
 
 export const categoryService = {
-  // Récupérer toutes les catégories
+  // Recuperer toutes les categories
   getAllCategories: async () => {
     const { data, error } = await supabase
       .from('categories')
@@ -597,7 +597,7 @@ export const categoryService = {
     return data;
   },
 
-  // Récupérer une catégorie par slug
+  // Recuperer une categorie par slug
   getCategoryBySlug: async (slug) => {
     const { data, error } = await supabase
       .from('categories')
@@ -609,7 +609,7 @@ export const categoryService = {
     return data;
   },
 
-  // Récupérer les catégories par type
+  // Recuperer les categories par type
   getCategoriesByType: async (type) => {
     const { data, error } = await supabase
       .from('categories')
@@ -627,7 +627,7 @@ export const categoryService = {
 // ============================================================================
 
 export const favoriteService = {
-  // Récupérer les favoris d'un utilisateur
+  // Recuperer les favoris d'un utilisateur
   getUserFavorites: async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -684,7 +684,7 @@ export const favoriteService = {
     if (error) throw error;
   },
 
-  // Vérifier si une annonce est en favori
+  // Verifier si une annonce est en favori
   isFavorite: async (listingId) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
@@ -706,7 +706,7 @@ export const favoriteService = {
 // ============================================================================
 
 export const notificationService = {
-  // Récupérer les notifications d'un utilisateur
+  // Recuperer les notifications d'un utilisateur
   getUserNotifications: async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -734,7 +734,7 @@ export const notificationService = {
     return data;
   },
 
-  // Créer une notification
+  // Creer une notification
   createNotification: async (notificationData) => {
     const { data, error } = await supabase
       .from('notifications')
@@ -752,12 +752,12 @@ export const notificationService = {
 // ============================================================================
 
 export const messageService = {
-  // Récupérer les conversations d'un utilisateur
+  // Recuperer les conversations d'un utilisateur
   getUserConversations: async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    // D'abord, récupérer les conversations existantes
+    // D'abord, recuperer les conversations existantes
     const { data: conversations, error: convError } = await supabase
       .from('conversations')
       .select(`
@@ -781,7 +781,7 @@ export const messageService = {
 
     if (convError) throw convError;
 
-    // Pour chaque conversation, récupérer les messages
+    // Pour chaque conversation, recuperer les messages
     const conversationsWithMessages = await Promise.all(
       conversations.map(async (conversation) => {
         const { data: messages, error: msgError } = await supabase
@@ -809,7 +809,7 @@ export const messageService = {
     return conversationsWithMessages;
   },
 
-  // Récupérer les messages d'une conversation
+  // Recuperer les messages d'une conversation
   getConversationMessages: async (conversationId) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -843,7 +843,7 @@ export const messageService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    // Récupérer la conversation pour déterminer le destinataire
+    // Recuperer la conversation pour determiner le destinataire
     const { data: conversation, error: convError } = await supabase
       .from('conversations')
       .select('participant1_id, participant2_id')
@@ -856,7 +856,7 @@ export const messageService = {
       ? conversation.participant2_id 
       : conversation.participant1_id;
 
-    // Insérer le message
+    // Inserer le message
     const { data: message, error: msgError } = await supabase
       .from('messages')
       .insert([{
@@ -871,7 +871,7 @@ export const messageService = {
 
     if (msgError) throw msgError;
 
-    // Mettre à jour la conversation
+    // Mettre a jour la conversation
     await supabase
       .from('conversations')
       .update({ 
@@ -883,12 +883,12 @@ export const messageService = {
     return message;
   },
 
-  // Créer une nouvelle conversation
+  // Creer une nouvelle conversation
   createConversation: async (participantId, listingId = null) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    // Vérifier si une conversation existe déjà
+    // Verifier si une conversation existe deja
     const { data: existingConv, error: checkError } = await supabase
       .from('conversations')
       .select('id')
@@ -900,7 +900,7 @@ export const messageService = {
       return existingConv;
     }
 
-    // Créer une nouvelle conversation
+    // Creer une nouvelle conversation
     const { data, error } = await supabase
       .from('conversations')
       .insert([{
@@ -940,7 +940,7 @@ export const messageService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    // Vérifier que l'utilisateur fait partie de la conversation
+    // Verifier que l'utilisateur fait partie de la conversation
     const { data: conversation, error: checkError } = await supabase
       .from('conversations')
       .select('participant1_id, participant2_id')
@@ -1021,7 +1021,7 @@ export const searchService = {
       .eq('status', 'approved')
       .order('created_at', { ascending: false });
 
-    // Appliquer les filtres supplémentaires
+    // Appliquer les filtres supplementaires
     if (filters.category_id) {
       searchQuery = searchQuery.eq('category_id', filters.category_id);
     }
@@ -1062,18 +1062,18 @@ export const searchService = {
 // ============================================================================
 
 export const storageService = {
-  // Uploader une image (optimisé)
+  // Uploader une image (optimise)
   uploadImage: async (file, folder = 'listings') => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      // Vérifier le type de fichier
+      // Verifier le type de fichier
       if (!file.type.startsWith('image/')) {
         throw new Error('Le fichier doit être une image');
       }
 
-      // Vérifier la taille (max 5MB après compression)
+      // Verifier la taille (max 5MB apres compression)
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('L\'image ne doit pas dépasser 5MB');
       }
@@ -1094,7 +1094,7 @@ export const storageService = {
         throw new Error(`Erreur lors de l'upload: ${error.message}`);
       }
 
-      // Récupérer l'URL publique avec transformation pour optimisation
+      // Recuperer l'URL publique avec transformation pour optimisation
       const { data: { publicUrl } } = supabase.storage
         .from('images')
         .getPublicUrl(filePath);
@@ -1141,7 +1141,7 @@ export const storageService = {
 // ============================================================================
 
 export const transactionService = {
-  // Récupérer toutes les transactions
+  // Recuperer toutes les transactions
   getAllTransactions: async (filters = {}) => {
     let query = supabase
       .from('transactions')
@@ -1183,7 +1183,7 @@ export const transactionService = {
     return data;
   },
 
-  // Récupérer une transaction par ID
+  // Recuperer une transaction par ID
   getTransactionById: async (id) => {
     const { data, error } = await supabase
       .from('transactions')
@@ -1209,7 +1209,7 @@ export const transactionService = {
     return data;
   },
 
-  // Créer une nouvelle transaction
+  // Creer une nouvelle transaction
   createTransaction: async (transactionData) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -1228,7 +1228,7 @@ export const transactionService = {
     return data;
   },
 
-  // Mettre à jour le statut d'une transaction
+  // Mettre a jour le statut d'une transaction
   updateTransactionStatus: async (id, status, reason = null) => {
     const updateData = { status };
     if (reason) updateData.reason = reason;
@@ -1268,7 +1268,7 @@ export const transactionService = {
 // ============================================================================
 
 export const reportService = {
-  // Récupérer tous les rapports
+  // Recuperer tous les rapports
   getAllReports: async (filters = {}) => {
     let query = supabase
       .from('reports')
@@ -1304,7 +1304,7 @@ export const reportService = {
     return data;
   },
 
-  // Créer un nouveau rapport
+  // Creer un nouveau rapport
   createReport: async (reportData) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
@@ -1323,7 +1323,7 @@ export const reportService = {
     return data;
   },
 
-  // Modérer un rapport
+  // Moderer un rapport
   moderateReport: async (id, action, reason = null) => {
     const updateData = {
       status: action,
@@ -1348,7 +1348,7 @@ export const reportService = {
 // ============================================================================
 
 export const analyticsService = {
-  // Obtenir les statistiques générales
+  // Obtenir les statistiques generales
   getDashboardStats: async () => {
     const [users, listings, transactions] = await Promise.all([
       userService.getAllUsers(),
@@ -1382,7 +1382,7 @@ export const analyticsService = {
     };
   },
 
-  // Obtenir les données de croissance utilisateurs
+  // Obtenir les donnees de croissance utilisateurs
   getUserGrowthData: async (days = 30) => {
     const users = await userService.getAllUsers();
     const cutoffDate = new Date();
@@ -1405,7 +1405,7 @@ export const analyticsService = {
     }));
   },
 
-  // Obtenir les données de revenus
+  // Obtenir les donnees de revenus
   getRevenueData: async (days = 30) => {
     const transactions = await transactionService.getAllTransactions();
     const cutoffDate = new Date();
@@ -1435,7 +1435,7 @@ export const analyticsService = {
   }
 };
 
-// Export par défaut mis à jour
+// Export par defaut mis a jour
 export default {
   auth: authService,
   users: userService,

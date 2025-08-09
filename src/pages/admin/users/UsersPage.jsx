@@ -68,8 +68,8 @@ function UsersPage() {
   const { data: users, isLoading, isError } = useQuery({
     queryKey: ['adminUsers', { searchTerm, statusFilter, roleFilter, sortBy, sortOrder, page, perPage }],
     queryFn: async () => {
-      // Pour l'instant, on récupère tous les utilisateurs
-      // La pagination et les filtres seront implémentés plus tard dans le service
+      // Pour l'instant, on recupere tous les utilisateurs
+      // La pagination et les filtres seront implementes plus tard dans le service
       return await userService.getAllUsers();
     }
   });
@@ -96,8 +96,8 @@ function UsersPage() {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: (userId) => {
-      // Pour l'instant, on met juste le statut à 'deleted'
-      // La suppression physique sera implémentée plus tard
+      // Pour l'instant, on met juste le statut a 'deleted'
+      // La suppression physique sera implementee plus tard
       return userService.updateUserStatus(userId, 'deleted');
     },
     onSuccess: () => {

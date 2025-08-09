@@ -30,7 +30,7 @@ const AutomobilePage = () => {
     fuel: ''
   });
 
-  // Utiliser le hook pour récupérer les annonces automobiles
+  // Utiliser le hook pour recuperer les annonces automobiles
   const { 
     listings, 
     loading, 

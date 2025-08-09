@@ -75,12 +75,12 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   };
 
   const getListingImage = () => {
-    // Utiliser l'image principale ou une image par défaut
+    // Utiliser l'image principale ou une image par defaut
     if (listing.images && listing.images.length > 0) {
       return listing.images[0];
     }
     
-    // Images par défaut selon la catégorie
+    // Images par defaut selon la categorie
     const defaultImages = {
       real_estate: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop',
       automobile: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=300&fit=crop',

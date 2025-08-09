@@ -33,9 +33,9 @@ export async function chatWithMistralStream(messages, context = {}, model = 'mis
     
     buffer += decoder.decode(value, { stream: true });
     
-    // Parser les lignes de données SSE
+    // Parser les lignes de donnees SSE
     const lines = buffer.split('\n');
-    buffer = lines.pop() || ''; // Garder la ligne incomplète
+    buffer = lines.pop() || ''; // Garder la ligne incomplete
     
     for (const line of lines) {
       if (line.startsWith('data: ')) {

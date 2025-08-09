@@ -46,8 +46,8 @@ L'optimisation des performances pour un chargement rapide, en particulier avec d
 MaxiMarket vise à devenir la plateforme de référence en Afrique de l'Ouest, en offrant une expérience d'achat et de vente inégalée, stimulant ainsi l'économie numérique locale et régionale.
     `,
     coverImage: "maximarket-platform-digital-art",
-    demoUrl: "#", // Le site actuel est la démo
-    repoUrl: "#", // Le code est géré en interne
+    demoUrl: "#", // Le site actuel est la demo
+    repoUrl: "#", // Le code est gere en interne
     technologies: ["React", "Vite", "TailwindCSS", "Shadcn/UI", "Framer Motion", "JavaScript"],
     category: "Plateforme Web",
     featured: true,

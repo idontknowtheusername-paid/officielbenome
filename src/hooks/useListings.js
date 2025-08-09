@@ -15,7 +15,7 @@ export const useListings = (category = null, filters = {}) => {
   const ITEMS_PER_PAGE = 12;
 
   const fetchListings = async (pageNum = 0, append = false) => {
-    // Éviter les appels multiples simultanés avec useRef
+    // Éviter les appels multiples simultanes avec useRef
     if (isFetchingRef.current && !append && pageNum === 0) {
       return;
     }
@@ -58,7 +58,7 @@ export const useListings = (category = null, filters = {}) => {
       console.error('❌ Error fetching listings:', err);
       setError(err.message);
       
-      // En cas d'erreur, essayer de récupérer des données de cache ou afficher un message
+      // En cas d'erreur, essayer de recuperer des donnees de cache ou afficher un message
       if (!isInitialized) {
         setListings([]);
       }
@@ -90,7 +90,7 @@ export const useListings = (category = null, filters = {}) => {
         status: 'pending'
       });
 
-      // Rafraîchir la liste
+      // Rafraichir la liste
       refresh();
 
       return data;
@@ -104,7 +104,7 @@ export const useListings = (category = null, filters = {}) => {
     try {
       const data = await listingService.updateListing(id, updates);
 
-      // Mettre à jour la liste locale
+      // Mettre a jour la liste locale
       setListings(prev => 
         prev.map(listing => 
           listing.id === id ? { ...listing, ...data } : listing
@@ -122,7 +122,7 @@ export const useListings = (category = null, filters = {}) => {
     try {
       await listingService.deleteListing(id);
 
-      // Mettre à jour la liste locale
+      // Mettre a jour la liste locale
       setListings(prev => prev.filter(listing => listing.id !== id));
 
     } catch (err) {
@@ -139,7 +139,7 @@ export const useListings = (category = null, filters = {}) => {
 
       const result = await favoriteService.toggleFavorite(listingId);
 
-      // Mettre à jour la liste locale
+      // Mettre a jour la liste locale
       setListings(prev => 
         prev.map(listing => 
           listing.id === listingId 
@@ -154,16 +154,16 @@ export const useListings = (category = null, filters = {}) => {
     }
   };
 
-  // Charger les données au montage et quand les filtres changent
+  // Charger les donnees au montage et quand les filtres changent
   useEffect(() => {
-    // Réinitialiser l'état quand les filtres changent
+    // Reinitialiser l'etat quand les filtres changent
     setListings([]);
     setPage(0);
     setHasMore(true);
     setIsInitialized(false);
     setLoading(false);
     
-    // Appel direct après reset
+    // Appel direct apres reset
     fetchListings(0, false);
   }, [category, filters.search, filters.minPrice, filters.maxPrice, filters.location]);
 

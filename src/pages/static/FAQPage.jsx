@@ -12,7 +12,7 @@ import {
 import { Link } from 'react-router-dom'; // Importez Link
 
 const FAQPage = () => {
-  const siteName = personalData.siteName || "MaxiMarket"; // Fallback au cas où siteName n'est pas défini
+  const siteName = personalData.siteName || "MaxiMarket"; // Fallback au cas ou siteName n'est pas defini
   const faqs = [
     {
       id: "general-1",

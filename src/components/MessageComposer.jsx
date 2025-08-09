@@ -31,7 +31,7 @@ const MessageComposer = ({
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Pré-remplir le message avec des informations sur l'annonce
+  // Pre-remplir le message avec des informations sur l'annonce
   useEffect(() => {
     if (listingInfo && !message.trim()) {
       const defaultMessage = `Bonjour ! Je suis intéressé(e) par votre annonce "${listingInfo.title}".\n\nPouvez-vous me donner plus d'informations ?`;
@@ -39,7 +39,7 @@ const MessageComposer = ({
     }
   }, [listingInfo, message]);
 
-  // Gérer la saisie
+  // Gerer la saisie
   const handleInputChange = (e) => {
     const value = e.target.value;
     setMessage(value);
@@ -50,7 +50,7 @@ const MessageComposer = ({
     }
   };
 
-  // Gérer l'envoi du message
+  // Gerer l'envoi du message
   const handleSendMessage = async () => {
     if (!message.trim() && attachments.length === 0) return;
     if (!conversationId) return;
@@ -63,12 +63,12 @@ const MessageComposer = ({
         await messageService.sendMessage(conversationId, message.trim());
       }
 
-      // Envoyer les pièces jointes
+      // Envoyer les pieces jointes
       for (const attachment of attachments) {
         await messageService.sendMessage(conversationId, attachment.url, 'file');
       }
 
-      // Réinitialiser le formulaire
+      // Reinitialiser le formulaire
       setMessage('');
       setAttachments([]);
       
@@ -89,7 +89,7 @@ const MessageComposer = ({
     }
   };
 
-  // Gérer l'envoi avec Entrée
+  // Gerer l'envoi avec Entree
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -97,18 +97,18 @@ const MessageComposer = ({
     }
   };
 
-  // Gérer les pièces jointes
+  // Gerer les pieces jointes
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     
     files.forEach(file => {
-      // Vérifier la taille (max 10MB)
+      // Verifier la taille (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         alert('Fichier trop volumineux. Taille maximum : 10MB');
         return;
       }
 
-      // Créer un objet URL pour prévisualisation
+      // Creer un objet URL pour previsualisation
       const url = URL.createObjectURL(file);
       
       setAttachments(prev => [...prev, {
@@ -121,11 +121,11 @@ const MessageComposer = ({
       }]);
     });
 
-    // Réinitialiser l'input
+    // Reinitialiser l'input
     e.target.value = '';
   };
 
-  // Supprimer une pièce jointe
+  // Supprimer une piece jointe
   const removeAttachment = (attachmentId) => {
     setAttachments(prev => {
       const attachment = prev.find(a => a.id === attachmentId);
@@ -145,7 +145,7 @@ const MessageComposer = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Obtenir l'icône selon le type de fichier
+  // Obtenir l'icone selon le type de fichier
   const getFileIcon = (type) => {
     if (type.startsWith('image/')) return <Image size={16} />;
     if (type.startsWith('video/')) return <Video size={16} />;
@@ -161,7 +161,7 @@ const MessageComposer = ({
     }
   }, [message]);
 
-  // Nettoyer les URLs des objets lors du démontage
+  // Nettoyer les URLs des objets lors du demontage
   useEffect(() => {
     return () => {
       attachments.forEach(attachment => {
@@ -257,7 +257,7 @@ const MessageComposer = ({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => {
-                        // Ouvrir la caméra
+                        // Ouvrir la camera
                         setShowAttachmentMenu(false);
                       }}
                       className="p-3 text-center hover:bg-gray-50 rounded-lg transition-colors"

@@ -24,7 +24,7 @@ const AuthService = {
   // S'inscrire
   async register(userData) {
     try {
-      // Validation bloquante du numéro (format E.164 minimal)
+      // Validation bloquante du numero (format E.164 minimal)
       const phoneRaw = (userData?.phoneNumber || '').trim();
       const e164Regex = /^\+?[1-9]\d{1,14}$/;
       if (!phoneRaw) {
@@ -48,7 +48,7 @@ const AuthService = {
 
       if (error) throw error;
 
-      // Upsert du profil utilisateur dans la table public.users (évite les doublons et s'assure du téléphone)
+      // Upsert du profil utilisateur dans la table public.users (evite les doublons et s'assure du telephone)
       if (data.user) {
         const { error: profileError } = await supabase
           .from('users')
@@ -78,7 +78,7 @@ const AuthService = {
     }
   },
 
-  // Se déconnecter
+  // Se deconnecter
   async logout() {
     try {
       const { error } = await supabase.auth.signOut();
@@ -89,7 +89,7 @@ const AuthService = {
     }
   },
 
-  // Récupérer le profil utilisateur
+  // Recuperer le profil utilisateur
   async getProfile() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -109,12 +109,12 @@ const AuthService = {
     }
   },
 
-  // Vérifier si l'utilisateur est authentifié
+  // Verifier si l'utilisateur est authentifie
   isAuthenticated() {
     return !!supabase.auth.getSession();
   },
 
-  // Réinitialiser le mot de passe
+  // Reinitialiser le mot de passe
   async forgotPassword(email) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -129,7 +129,7 @@ const AuthService = {
     }
   },
 
-  // Réinitialiser le mot de passe avec un token
+  // Reinitialiser le mot de passe avec un token
   async resetPassword(token, password) {
     try {
       const { error } = await supabase.auth.updateUser({
@@ -144,7 +144,7 @@ const AuthService = {
     }
   },
 
-  // Mettre à jour le profil utilisateur
+  // Mettre a jour le profil utilisateur
   async updateProfile(updates) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -170,7 +170,7 @@ const AuthService = {
     return supabase.auth.onAuthStateChange(callback);
   },
 
-  // Récupérer la session actuelle
+  // Recuperer la session actuelle
   async getSession() {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;

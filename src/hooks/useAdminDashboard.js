@@ -38,19 +38,19 @@ const useAdminDashboard = (options = {}) => {
   const [filters, setFilters] = useState(defaultFilters);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Fonction pour récupérer les données selon le type
+  // Fonction pour recuperer les donnees selon le type
   const fetchDataByType = useCallback(async () => {
     const from = (pagination.page - 1) * pagination.pageSize;
     const to = from + pagination.pageSize - 1;
     
     let queryFilters = { ...filters };
     
-    // Ajouter la recherche si présente
+    // Ajouter la recherche si presente
     if (searchQuery) {
       queryFilters.search = searchQuery;
     }
     
-    // Ajouter le tri si présent
+    // Ajouter le tri si present
     if (sorting.length > 0) {
       queryFilters.sortBy = sorting[0].id;
       queryFilters.sortOrder = sorting[0].desc ? 'desc' : 'asc';
@@ -70,14 +70,14 @@ const useAdminDashboard = (options = {}) => {
     }
   }, [dataType, pagination, sorting, filters, searchQuery]);
   
-  // Requête pour récupérer les données
+  // Requete pour recuperer les donnees
   const fetchData = async () => {
     const data = await fetchDataByType();
     
     // Calculer le total pour la pagination
     const total = Array.isArray(data) ? data.length : 0;
     
-    // Mettre à jour la pagination avec le total
+    // Mettre a jour la pagination avec le total
     setPagination(prev => ({
       ...prev,
       total,
@@ -86,7 +86,7 @@ const useAdminDashboard = (options = {}) => {
     return data;
   };
   
-  // Utiliser React Query pour gérer les requêtes
+  // Utiliser React Query pour gerer les requetes
   const {
     data,
     isLoading,
@@ -101,7 +101,7 @@ const useAdminDashboard = (options = {}) => {
     refetchOnWindowFocus: false,
   });
   
-  // Gérer le changement de page
+  // Gerer le changement de page
   const handlePageChange = (page) => {
     setPagination(prev => ({
       ...prev,
@@ -109,34 +109,34 @@ const useAdminDashboard = (options = {}) => {
     }));
   };
   
-  // Gérer le changement de taille de page
+  // Gerer le changement de taille de page
   const handlePageSizeChange = (pageSize) => {
     setPagination(prev => ({
       ...prev,
       pageSize,
-      page: 1, // Retour à la première page
+      page: 1, // Retour a la premiere page
     }));
   };
   
-  // Gérer le tri
+  // Gerer le tri
   const handleSortingChange = (newSorting) => {
     setSorting(newSorting);
     setPagination(prev => ({
       ...prev,
-      page: 1, // Retour à la première page lors du tri
+      page: 1, // Retour a la premiere page lors du tri
     }));
   };
   
-  // Gérer la recherche
+  // Gerer la recherche
   const handleSearch = (query) => {
     setSearchQuery(query);
     setPagination(prev => ({
       ...prev,
-      page: 1, // Retour à la première page lors d'une nouvelle recherche
+      page: 1, // Retour a la premiere page lors d'une nouvelle recherche
     }));
   };
   
-  // Gérer les filtres
+  // Gerer les filtres
   const handleFilter = (newFilters) => {
     setFilters(prev => ({
       ...prev,
@@ -144,11 +144,11 @@ const useAdminDashboard = (options = {}) => {
     }));
     setPagination(prev => ({
       ...prev,
-      page: 1, // Retour à la première page lors de l'application de nouveaux filtres
+      page: 1, // Retour a la premiere page lors de l'application de nouveaux filtres
     }));
   };
   
-  // Réinitialiser les filtres
+  // Reinitialiser les filtres
   const resetFilters = () => {
     setFilters(defaultFilters);
     setSearchQuery('');
@@ -159,7 +159,7 @@ const useAdminDashboard = (options = {}) => {
     }));
   };
   
-  // Mutation pour mettre à jour un élément selon le type
+  // Mutation pour mettre a jour un element selon le type
   const updateMutation = useMutation({
     mutationFn: async ({ id, data: updateData }) => {
       switch (dataType) {
@@ -180,7 +180,7 @@ const useAdminDashboard = (options = {}) => {
     },
   });
   
-  // Mutation pour supprimer un élément selon le type
+  // Mutation pour supprimer un element selon le type
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       switch (dataType) {
@@ -214,9 +214,9 @@ const useAdminDashboard = (options = {}) => {
     },
   });
   
-  // Exposer les méthodes et états
+  // Exposer les methodes et etats
   return {
-    // Données
+    // Donnees
     data,
     isLoading,
     isError,
@@ -233,7 +233,7 @@ const useAdminDashboard = (options = {}) => {
     filters,
     searchQuery,
     
-    // Méthodes
+    // Methodes
     refetch,
     setPagination: handlePageChange,
     setPageSize: handlePageSizeChange,

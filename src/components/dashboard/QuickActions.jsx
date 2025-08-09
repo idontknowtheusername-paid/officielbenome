@@ -55,7 +55,7 @@ const QuickActions = ({ stats = {} }) => {
       description: 'Voir vos statistiques',
       icon: TrendingUp,
       color: 'from-purple-500 to-purple-600',
-      href: '/admin/analytics', // Redirigé vers admin analytics
+      href: '/admin/analytics', // Redirige vers admin analytics
       badge: null
     },
     {

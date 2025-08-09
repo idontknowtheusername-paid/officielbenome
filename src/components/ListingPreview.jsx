@@ -25,7 +25,7 @@ const ListingPreview = ({ formData, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
 
-  // Fonction pour obtenir l'icône de catégorie
+  // Fonction pour obtenir l'icone de categorie
   const getCategoryIcon = (category) => {
     const iconMap = {
       'real_estate': Building,
@@ -36,7 +36,7 @@ const ListingPreview = ({ formData, onClose }) => {
     return iconMap[category] || Building;
   };
 
-  // Fonction pour obtenir le nom d'affichage de la catégorie
+  // Fonction pour obtenir le nom d'affichage de la categorie
   const getCategoryDisplayName = (category) => {
     const categoryMap = {
       'real_estate': 'Immobilier',

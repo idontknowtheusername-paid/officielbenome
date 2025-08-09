@@ -10,7 +10,7 @@ const LoginPage = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Attend que loading soit false pour vérifier l'authentification
+    // Attend que loading soit false pour verifier l'authentification
     if (!loading && user) {
       // Rediriger vers la page d'origine ou le dashboard admin
       const from = location.state?.from || (user.role === 'admin' ? '/admin' : '/');
@@ -24,7 +24,7 @@ const LoginPage = () => {
   }
 
   if (user) {
-    // L'utilisateur est déjà connecté, on peut return null ou un spinner
+    // L'utilisateur est deja connecte, on peut return null ou un spinner
     return null;
   }
 

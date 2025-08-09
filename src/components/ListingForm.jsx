@@ -27,7 +27,7 @@ const DEFAULT_FORM = {
   specificData: {},
 };
 
-// Fonction pour convertir les catégories URL en valeurs du formulaire
+// Fonction pour convertir les categories URL en valeurs du formulaire
 const getCategoryValue = (cat) => {
   const categoryMap = {
     'real-estate': 'real_estate',
@@ -49,12 +49,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [activeStep, setActiveStep] = useState(currentStep);
 
-  // Synchroniser les étapes avec le parent
+  // Synchroniser les etapes avec le parent
   useEffect(() => {
     setActiveStep(currentStep);
   }, [currentStep]);
 
-  // Ajout des données pays/villes
+  // Ajout des donnees pays/villes
   const COUNTRY_CITY_OPTIONS = [
     {
       code: 'BJ',
@@ -98,7 +98,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }
   };
 
-  // Gestion des champs spécifiques selon la catégorie
+  // Gestion des champs specifiques selon la categorie
   const handleSpecificChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -130,7 +130,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         canvas.width = width;
         canvas.height = height;
         
-        // Dessiner l'image compressée
+        // Dessiner l'image compressee
         ctx.drawImage(img, 0, 0, width, height);
         
         // Convertir en blob
@@ -147,7 +147,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     });
   };
 
-  // Fonction pour créer une prévisualisation immédiate
+  // Fonction pour creer une previsualisation immediate
   const createPreview = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -166,7 +166,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     const files = Array.from(e.target.files);
     if (!files.length) return;
     
-    // Vérifier la limite d'images
+    // Verifier la limite d'images
     if (form.images.length + files.length > 8) {
       toast({ 
         title: 'Limite atteinte', 
@@ -176,7 +176,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
       return;
     }
 
-    // Vérifier les types de fichiers
+    // Verifier les types de fichiers
     const invalidFiles = files.filter(file => !file.type.startsWith('image/'));
     if (invalidFiles.length > 0) {
       toast({ 
@@ -191,10 +191,10 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     setUploadProgress({ current: 0, total: files.length });
 
     try {
-      // Étape 1: Créer les prévisualisations immédiatement
+      // Étape 1: Creer les previsualisations immediatement
       const previews = await Promise.all(files.map(createPreview));
       
-      // Ajouter les prévisualisations au formulaire immédiatement
+      // Ajouter les previsualisations au formulaire immediatement
       setForm((prev) => ({ 
         ...prev, 
         images: [...prev.images, ...previews.map(p => ({ 
@@ -205,12 +205,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         }))]
       }));
 
-      // Étape 2: Compresser les images en parallèle
+      // Étape 2: Compresser les images en parallele
       const compressedFiles = await Promise.all(
         files.map(file => compressImage(file, 1920, 0.8))
       );
 
-      // Étape 3: Uploader en parallèle (max 3 simultanés)
+      // Étape 3: Uploader en parallele (max 3 simultanes)
       const uploadBatch = async (files, startIndex) => {
         const batch = files.slice(startIndex, startIndex + 3);
         return Promise.all(
@@ -235,7 +235,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         results.push(...batchResults);
       }
 
-      // Étape 4: Remplacer les prévisualisations par les vraies URLs
+      // Étape 4: Remplacer les previsualisations par les vraies URLs
       const successfulUploads = results.filter(r => r.success);
       const errors = results.filter(r => !r.success);
 
@@ -243,7 +243,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         setForm((prev) => {
           const newImages = [...prev.images];
           successfulUploads.forEach(({ url, index }) => {
-            // Trouver l'index de la prévisualisation correspondante
+            // Trouver l'index de la previsualisation correspondante
             const previewIndex = newImages.findIndex(img => img.isPreview && img.id === previews[index].id);
             if (previewIndex !== -1) {
               newImages[previewIndex] = { url, isPreview: false };
@@ -280,12 +280,12 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }
   };
 
-  // Suppression d'une image uploadée (avant publication)
+  // Suppression d'une image uploadee (avant publication)
   const handleRemoveImage = (idxToRemove) => {
     setForm((prev) => {
       const imageToRemove = prev.images[idxToRemove];
       
-      // Si c'est une prévisualisation, on peut la supprimer directement
+      // Si c'est une previsualisation, on peut la supprimer directement
       if (imageToRemove.isPreview) {
         return {
           ...prev,
@@ -293,7 +293,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         };
       }
       
-      // Si c'est une vraie image uploadée, on peut aussi la supprimer
+      // Si c'est une vraie image uploadee, on peut aussi la supprimer
       return {
         ...prev,
         images: prev.images.filter((_, idx) => idx !== idxToRemove)
@@ -301,7 +301,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     });
   };
 
-  // Réordonner les images (flèches)
+  // Reordonner les images (fleches)
   const moveImage = (fromIdx, toIdx) => {
     setForm((prev) => {
       const images = [...prev.images];
@@ -348,7 +348,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }
     setIsSubmitting(true);
     try {
-      // Filtrer les images pour ne garder que celles qui sont uploadées (pas les prévisualisations)
+      // Filtrer les images pour ne garder que celles qui sont uploadees (pas les previsualisations)
       const uploadedImages = form.images.filter(img => !img.isPreview).map(img => img.url);
       
       const payload = {
@@ -367,7 +367,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }
   };
 
-  // Champs spécifiques selon la catégorie
+  // Champs specifiques selon la categorie
   const renderSpecificFields = () => {
     switch (form.category) {
       case 'real_estate':
@@ -455,7 +455,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }
   };
 
-  // Champs dynamiques avancés pour les sous-champs
+  // Champs dynamiques avances pour les sous-champs
   // Ajout/suppression de liens de portfolio (Service)
   const handlePortfolioChange = (i, value) => {
     setForm((prev) => ({
@@ -513,7 +513,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }));
   };
 
-  // Rendu des étapes du formulaire
+  // Rendu des etapes du formulaire
   const renderStep = () => {
     switch (activeStep) {
       case 1:

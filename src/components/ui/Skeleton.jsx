@@ -10,7 +10,7 @@ const Skeleton = ({ className, ...props }) => {
   );
 };
 
-// Composants skeleton spécialisés
+// Composants skeleton specialises
 export const ListingCardSkeleton = () => (
   <div className="bg-card rounded-lg shadow-lg overflow-hidden">
     <Skeleton className="h-48 w-full" />

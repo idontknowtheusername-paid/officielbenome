@@ -5,7 +5,7 @@ class NotificationService {
     this.subscription = null;
   }
 
-  // Récupérer les notifications d'un utilisateur
+  // Recuperer les notifications d'un utilisateur
   async getUserNotifications(userId, filters = {}) {
     try {
       let query = supabase
@@ -27,7 +27,7 @@ class NotificationService {
     }
   }
 
-  // Créer une notification
+  // Creer une notification
   async createNotification(notificationData) {
     try {
       const { data, error } = await supabase
@@ -129,7 +129,7 @@ class NotificationService {
     });
   }
 
-  // Temps réel
+  // Temps reel
   subscribeToNotifications(userId, callback) {
     if (this.subscription) this.subscription.unsubscribe();
 

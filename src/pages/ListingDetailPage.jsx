@@ -24,20 +24,20 @@ const ListingDetailPage = () => {
     const fetchListing = async () => {
       setIsLoading(true);
       try {
-        // Vérifier que l'ID est valide (peut être un UUID ou un nombre)
+        // Verifier que l'ID est valide (peut etre un UUID ou un nombre)
         if (!id || id === '' || typeof id !== 'string') {
           throw new Error(`ID d'annonce invalide: "${id}"`);
         }
         
-        // Récupérer l'annonce spécifique par ID (peut être un UUID)
+        // Recuperer l'annonce specifique par ID (peut etre un UUID)
         const foundListing = await listingService.getListingById(id);
         
         if (foundListing) {
           setListing(foundListing);
-          // Incrémenter les vues de façon asynchrone (sans bloquer)
+          // Incrementer les vues de facon asynchrone (sans bloquer)
           try { listingService.incrementViews(foundListing.id); } catch {}
           
-          // Afficher un avertissement si l'annonce n'est pas approuvée
+          // Afficher un avertissement si l'annonce n'est pas approuvee
           if (foundListing.status !== 'approved') {
             toast({
               title: "Annonce en attente",
@@ -46,7 +46,7 @@ const ListingDetailPage = () => {
             });
           }
           
-          // Récupérer des annonces similaires
+          // Recuperer des annonces similaires
           const { data: related } = await listingService.getAllListings({
             category: foundListing.category,
             status: 'approved',
@@ -86,7 +86,7 @@ const ListingDetailPage = () => {
     }
   }, [id, navigate, toast]);
 
-  // Injecter un contexte global pour le chatbot quand l'annonce est chargée
+  // Injecter un contexte global pour le chatbot quand l'annonce est chargee
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && listing) {
@@ -163,7 +163,7 @@ const ListingDetailPage = () => {
     if (listing?.images && listing.images.length > 0) {
       return listing.images[0];
     }
-    // Image par défaut selon la catégorie
+    // Image par defaut selon la categorie
     switch (listing?.category) {
       case 'real_estate':
         return 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop';
@@ -204,7 +204,7 @@ const ListingDetailPage = () => {
       return;
     }
 
-    // Empêcher l'utilisateur de se contacter lui-même
+    // Empecher l'utilisateur de se contacter lui-meme
     if (listing.user_id === user.id) {
       toast({
         title: "Action impossible",
@@ -214,7 +214,7 @@ const ListingDetailPage = () => {
       return;
     }
 
-    // Vérifier que l'annonce a un user_id valide (sauf pour les tests)
+    // Verifier que l'annonce a un user_id valide (sauf pour les tests)
     const isTestListing = !listing.user_id || listing.user_id === 'test-user-1';
     
     if (type === 'message' && isTestListing) {
@@ -228,7 +228,7 @@ const ListingDetailPage = () => {
 
     try {
       if (type === 'message') {
-        // Créer ou récupérer une conversation existante
+        // Creer ou recuperer une conversation existante
         const conversation = await messageService.createConversation(
           listing.user_id, 
           listing.id
@@ -242,19 +242,19 @@ const ListingDetailPage = () => {
           description: "Vous avez été redirigé vers la messagerie.",
         });
       } else if (type === 'phone') {
-        // Logique intelligente pour le numéro de téléphone
+        // Logique intelligente pour le numero de telephone
         const phoneNumber = listing.contact_info?.phone || listing.users?.phone_number;
         
         if (phoneNumber) {
-          // Nettoyer le numéro (enlever espaces, tirets, etc.)
+          // Nettoyer le numero (enlever espaces, tirets, etc.)
           const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
           
-          // Ajouter l'indicatif pays si nécessaire (pour le Sénégal)
+          // Ajouter l'indicatif pays si necessaire (pour le Senegal)
           const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : 
                                  cleanNumber.startsWith('221') ? `+${cleanNumber}` :
                                  `+221${cleanNumber}`;
           
-          // Ouvrir l'appel téléphonique
+          // Ouvrir l'appel telephonique
           window.open(`tel:${formattedNumber}`, '_blank');
           
           toast({
@@ -273,13 +273,13 @@ const ListingDetailPage = () => {
         const phoneNumber = listing.contact_info?.phone || listing.users?.phone_number;
         
         if (phoneNumber) {
-          // Nettoyer le numéro
+          // Nettoyer le numero
           const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
           const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : 
                                  cleanNumber.startsWith('221') ? `+${cleanNumber}` :
                                  `+221${cleanNumber}`;
           
-          // Message pré-rempli pour WhatsApp
+          // Message pre-rempli pour WhatsApp
           const message = encodeURIComponent(
             `Bonjour ! Je suis intéressé(e) par votre annonce "${listing.title}".\n\nPouvez-vous me donner plus d'informations ?`
           );

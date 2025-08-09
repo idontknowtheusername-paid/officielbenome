@@ -15,19 +15,19 @@ export const AuthProvider = ({ children }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Si Supabase n'est pas configuré (production sans variables), on éviter toute action
+    // Si Supabase n'est pas configure (production sans variables), on eviter toute action
     if (!isSupabaseConfigured) {
       setLoading(false);
       return;
     }
 
-    // Récupérer la session initiale et le profil utilisateur
+    // Recuperer la session initiale et le profil utilisateur
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
       
-      // Si l'utilisateur est connecté, récupérer son profil
+      // Si l'utilisateur est connecte, recuperer son profil
       if (session?.user) {
         try {
           const { data: profile } = await supabase
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Si l'utilisateur est connecté, récupérer son profil
+        // Si l'utilisateur est connecte, recuperer son profil
         if (session?.user) {
           try {
             const { data: profile } = await supabase
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
 
         if (event === 'SIGNED_IN') {
-          // Mettre à jour/Créer le profil dans public.users via upsert
+          // Mettre a jour/Creer le profil dans public.users via upsert
           if (session?.user) {
             const profilePayload = {
               id: session.user.id,
@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
             title: "Connexion réussie",
             description: "Bienvenue sur Officiel BenoMe !",
           });
-          // Rediriger automatiquement après confirmation/connexion
+          // Rediriger automatiquement apres confirmation/connexion
           navigate('/');
         } else if (event === 'SIGNED_OUT') {
           toast({
@@ -143,7 +143,7 @@ export const AuthProvider = ({ children }) => {
       if (!isSupabaseConfigured) {
         throw new Error('Supabase non configuré');
       }
-      // Validation bloquante du numéro (format E.164 minimal)
+      // Validation bloquante du numero (format E.164 minimal)
       const phoneRaw = (userData?.phoneNumber || '').trim();
       const e164Regex = /^\+?[1-9]\d{1,14}$/;
       if (!phoneRaw) {
@@ -179,7 +179,7 @@ export const AuthProvider = ({ children }) => {
 
       console.log('Supabase register successful:', data);
       
-       // Upsert du profil utilisateur dans la table public.users (assure la présence du téléphone)
+       // Upsert du profil utilisateur dans la table public.users (assure la presence du telephone)
        if (data.user) {
          const { error: profileError } = await supabase
            .from('users')
@@ -204,7 +204,7 @@ export const AuthProvider = ({ children }) => {
           title: "Inscription réussie",
           description: "Vérifiez votre email pour confirmer votre compte !",
         });
-        // Ne pas rediriger immédiatement, rester sur la page d'inscription
+        // Ne pas rediriger immediatement, rester sur la page d'inscription
         return { success: true, needsConfirmation: true };
       } else {
         toast({
@@ -289,21 +289,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Vérifie si l'utilisateur a un rôle spécifique
+  // Verifie si l'utilisateur a un role specifique
   const hasRole = (role) => {
     if (!user) return false;
-    // Utiliser le profil utilisateur en priorité
+    // Utiliser le profil utilisateur en priorite
     if (userProfile?.role) return userProfile.role === role;
-    // Fallback sur les métadonnées
+    // Fallback sur les metadonnees
     return user.user_metadata?.role === role || user.app_metadata?.role === role;
   };
 
-  // Vérifie si l'utilisateur a au moins un des rôles spécifiés
+  // Verifie si l'utilisateur a au moins un des roles specifies
   const hasAnyRole = (roles) => {
     if (!user) return false;
-    // Utiliser le profil utilisateur en priorité
+    // Utiliser le profil utilisateur en priorite
     if (userProfile?.role) return roles.includes(userProfile.role);
-    // Fallback sur les métadonnées
+    // Fallback sur les metadonnees
     const userRole = user.user_metadata?.role || user.app_metadata?.role;
     return roles.includes(userRole);
   };

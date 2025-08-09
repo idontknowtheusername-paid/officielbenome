@@ -54,7 +54,7 @@ import TermsConditionsPage from '@/pages/static/TermsConditionsPage';
 import BlogPage from '@/pages/BlogPage'; 
 import BlogPostPage from '@/pages/BlogPostPage';
 
-// Composant de test pour vérifier la configuration
+// Composant de test pour verifier la configuration
 const ConfigTest = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;

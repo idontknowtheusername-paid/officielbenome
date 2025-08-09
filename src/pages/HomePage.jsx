@@ -33,7 +33,7 @@ const HomePage = () => {
       }
     };
     loadPopular();
-    // Rafraîchissement périodique toutes les 30 minutes
+    // Rafraichissement periodique toutes les 30 minutes
     timerId = setInterval(loadPopular, 1800000);
     return () => clearInterval(timerId);
   }, []);

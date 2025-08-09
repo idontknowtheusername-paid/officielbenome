@@ -27,7 +27,7 @@ const ServicesPage = () => {
     maxPrice: initialMaxPrice
   });
 
-  // Utiliser le hook pour récupérer les annonces de services
+  // Utiliser le hook pour recuperer les annonces de services
   const { 
     listings, 
     loading, 

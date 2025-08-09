@@ -48,7 +48,7 @@ const ChatWidget = ({ pageContext = {} }) => {
     }
   }, [conversations]);
 
-  // Détecter mobile et gérer le resize
+  // Detecter mobile et gerer le resize
   useEffect(() => {
     const update = () => setIsMobile(window.matchMedia('(max-width: 640px)').matches);
     update();
@@ -60,7 +60,7 @@ const ChatWidget = ({ pageContext = {} }) => {
     const msg = input.trim();
     if (!msg || loading) return;
     
-    // Créer une nouvelle conversation si c'est le premier message
+    // Creer une nouvelle conversation si c'est le premier message
     if (history.length === 0) {
       const newConversationId = Date.now().toString();
       setCurrentConversationId(newConversationId);
@@ -77,12 +77,12 @@ const ChatWidget = ({ pageContext = {} }) => {
     setInput('');
     setLoading(true);
     try {
-      // Vérifier si c'est vraiment une recherche (pas juste un salut)
+      // Verifier si c'est vraiment une recherche (pas juste un salut)
       const isGreeting = /^(yo|salut|bonjour|hello|hi|hey|ciao|hola|bonsoir|bonne\s+nuit)$/i.test(msg.trim());
       const hasSearchKeywords = /\b(appartement|maison|voiture|service|immobilier|auto|plombier|electricien|terrain|studio|villa|moto|scooter|camion|menage|jardinage|coiffure|reparation|demenagement|cours|prof|informatique|evenementiel)\b/i.test(msg.toLowerCase());
       const hasPriceOrLocation = /\d+\s*(k|m|xof|frs?)|(dakar|abidjan|lome|cotonou|thiès|saint-louis|kaolack|ziguinchor|touba|mbour|rufisque|pikine|guediawaye)/i.test(msg.toLowerCase());
 
-      // Détection d'intention de recherche simple (seulement si ce n'est pas un salut)
+      // Detection d'intention de recherche simple (seulement si ce n'est pas un salut)
       let intent = null;
       let prefixedContent = '';
       let suggestions = [];
@@ -117,9 +117,9 @@ const ChatWidget = ({ pageContext = {} }) => {
         } catch {}
       }
 
-      // Streaming: on ajoute d'abord un message assistant vide préfixé
+      // Streaming: on ajoute d'abord un message assistant vide prefixe
       setHistory(h => [...h, { role: 'assistant', content: prefixedContent }]);
-      const assistantIndex = newHistory.length; // position du message assistant inséré
+      const assistantIndex = newHistory.length; // position du message assistant insere
       let streamed = '';
       abortRef.current?.abort();
       const controller = new AbortController();
@@ -181,7 +181,7 @@ const ChatWidget = ({ pageContext = {} }) => {
       setConversations(updatedConversations);
     }
     
-    // Créer une nouvelle conversation
+    // Creer une nouvelle conversation
     const newConversationId = Date.now().toString();
     setCurrentConversationId(newConversationId);
     setHistory([]);
@@ -192,11 +192,11 @@ const ChatWidget = ({ pageContext = {} }) => {
     setTimeout(() => listRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
   };
 
-  // Générer des suggestions intelligentes basées sur l'historique
+  // Generer des suggestions intelligentes basees sur l'historique
   const getSmartSuggestions = () => {
     const suggestions = [];
     
-    // Analyser l'historique pour détecter les patterns
+    // Analyser l'historique pour detecter les patterns
     const userMessages = history.filter(h => h.role === 'user').map(h => h.content.toLowerCase());
     const hasSearchedRealEstate = userMessages.some(msg => 
       msg.includes('immobilier') || msg.includes('appartement') || msg.includes('maison') || msg.includes('terrain')
@@ -208,7 +208,7 @@ const ChatWidget = ({ pageContext = {} }) => {
       msg.includes('service') || msg.includes('plomberie') || msg.includes('électricité')
     );
     
-    // Suggestions basées sur l'historique
+    // Suggestions basees sur l'historique
     if (hasSearchedRealEstate) {
       suggestions.push('Appartements 2 chambres à Dakar');
       suggestions.push('Terrains constructibles');
@@ -222,7 +222,7 @@ const ChatWidget = ({ pageContext = {} }) => {
       suggestions.push('Réparation électroménager');
     }
     
-    // Suggestions par défaut si pas d'historique
+    // Suggestions par defaut si pas d'historique
     if (suggestions.length === 0) {
       suggestions.push('Immobilier à Dakar', 'Voitures < 3 000 000 XOF');
     }
@@ -239,8 +239,8 @@ const ChatWidget = ({ pageContext = {} }) => {
         date: conv.date || new Date(conv.id).toLocaleDateString(),
         messageCount: conv.messages?.length || 0
       }))
-      .slice(-10) // Dernières 10 conversations
-      .reverse(); // Plus récent en premier
+      .slice(-10) // Dernieres 10 conversations
+      .reverse(); // Plus recent en premier
   };
 
   // Obtenir les statistiques de conversation
@@ -398,7 +398,7 @@ const ChatWidget = ({ pageContext = {} }) => {
                   onMouseLeave={(e) => e.target.style.background = 'linear-gradient(135deg,#111827,#0b0f14)'}
                 >
                   {showMenu ? (
-                    // Icône X quand le menu est ouvert
+                    // Icone X quand le menu est ouvert
                     <div style={{ 
                       position: 'relative', 
                       width: 16, 
@@ -427,7 +427,7 @@ const ChatWidget = ({ pageContext = {} }) => {
                       }}></div>
                     </div>
                   ) : (
-                    // Icône hamburger quand le menu est fermé
+                    // Icone hamburger quand le menu est ferme
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
                       <div style={{ width: 16, height: 2, background: '#e5e7eb', borderRadius: 1 }}></div>
@@ -692,7 +692,7 @@ const ChatWidget = ({ pageContext = {} }) => {
                 <div style={{ whiteSpace: 'pre-wrap', background: m.role === 'user' ? '#0e141b' : '#0b0f14', border: '1px solid #1f2937', color: '#e5e7eb', borderRadius: 12, padding: '10px 12px', maxWidth: '85%' }}>{m.content}</div>
               </div>
             ))}
-            {loading && <div style={{ color: '#9ca3af', fontSize: 14 }}>Rédaction…</div>}
+            {loading && <div style={{ color: '#9ca3af', fontSize: 14 }}>Rédaction...</div>}
           </div>
 
           <div style={{ display: 'flex', gap: 8, padding: 12, paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid #1f2937', background: '#0e141b', borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
@@ -700,7 +700,7 @@ const ChatWidget = ({ pageContext = {} }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-              placeholder="Votre message…"
+              placeholder="Votre message..."
               style={{ background: '#0b0f14', color: '#e5e7eb', borderColor: '#1f2937' }}
             />
             <Button onClick={send} disabled={loading || !input.trim()} style={{ background: '#111827', border: '1px solid #1f2937' }}>Envoyer</Button>

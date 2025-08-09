@@ -9,14 +9,14 @@ export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const APP_NAME = 'MaxiMarket';
 export const APP_DESCRIPTION = 'Plateforme de mise en relation entre particuliers';
 
-// Paramètres de pagination
+// Parametres de pagination
 export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_PER_PAGE: 10,
   PER_PAGE_OPTIONS: [5, 10, 25, 50, 100],
 };
 
-// Paramètres de tri par défaut
+// Parametres de tri par defaut
 export const SORT_OPTIONS = {
   CREATED_AT_DESC: { field: 'createdAt', order: 'desc' },
   CREATED_AT_ASC: { field: 'createdAt', order: 'asc' },
@@ -28,17 +28,17 @@ export const SORT_OPTIONS = {
   PRICE_DESC: { field: 'price', order: 'desc' },
 };
 
-// Paramètres de cache
+// Parametres de cache
 export const CACHE = {
-  // Durée de mise en cache par défaut (en millisecondes)
+  // Duree de mise en cache par defaut (en millisecondes)
   DEFAULT_TTL: 5 * 60 * 1000, // 5 minutes
-  // Préfixe pour les clés de cache
+  // Prefixe pour les cles de cache
   PREFIX: 'maximarket_cache_',
 };
 
-// Paramètres de l'éditeur de texte riche
+// Parametres de l'editeur de texte riche
 export const RICH_TEXT_EDITOR = {
-  // Configuration de base pour l'éditeur
+  // Configuration de base pour l'editeur
   SIMPLE: {
     height: 200,
     menubar: false,
@@ -51,7 +51,7 @@ export const RICH_TEXT_EDITOR = {
       alignleft aligncenter alignright alignjustify | \
       bullist numlist outdent indent | removeformat | help'
   },
-  // Configuration complète pour l'éditeur
+  // Configuration complete pour l'editeur
   FULL: {
     height: 500,
     menubar: true,
@@ -67,11 +67,11 @@ export const RICH_TEXT_EDITOR = {
   }
 };
 
-// Paramètres de téléchargement de fichiers
+// Parametres de telechargement de fichiers
 export const UPLOAD = {
   // Taille maximale des fichiers (en octets)
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
-  // Types de fichiers acceptés
+  // Types de fichiers acceptes
   ACCEPTED_FILE_TYPES: [
     'image/jpeg',
     'image/png',
@@ -93,9 +93,9 @@ export const UPLOAD = {
   }
 };
 
-// Paramètres de notification
+// Parametres de notification
 export const NOTIFICATION = {
-  // Durée d'affichage des notifications (en millisecondes)
+  // Duree d'affichage des notifications (en millisecondes)
   DURATION: 5000,
   // Position des notifications
   POSITION: 'top-right',
@@ -109,28 +109,28 @@ export const NOTIFICATION = {
   }
 };
 
-// Paramètres de l'application
+// Parametres de l'application
 export const APP_SETTINGS = {
-  // Paramètres de thème
+  // Parametres de theme
   THEME: {
     DEFAULT: 'light',
     DARK: 'dark',
     LIGHT: 'light',
     SYSTEM: 'system'
   },
-  // Paramètres de langue
+  // Parametres de langue
   LOCALE: {
     DEFAULT: 'fr-FR',
     SUPPORTED: ['fr-FR', 'en-US']
   },
-  // Paramètres de devise
+  // Parametres de devise
   CURRENCY: {
     DEFAULT: 'XOF',
     SYMBOL: 'FCFA',
     DECIMALS: 0,
     LOCALE: 'fr-FR'
   },
-  // Paramètres de date et heure
+  // Parametres de date et heure
   DATETIME: {
     DATE_FORMAT: 'dd/MM/yyyy',
     TIME_FORMAT: 'HH:mm',
@@ -139,7 +139,7 @@ export const APP_SETTINGS = {
   }
 };
 
-// Configuration des fonctionnalités
+// Configuration des fonctionnalites
 export const FEATURES = {
   ENABLE_ANALYTICS: true,
   ENABLE_NOTIFICATIONS: true,
@@ -178,7 +178,7 @@ export const MODULES = {
     GATEWAYS: ['bank_transfer', 'mobile_money', 'credit_card'],
     CURRENCIES: ['XOF', 'EUR', 'USD'],
     TAX_RATE: 0,
-    COMMISSION_RATE: 0.1 // 10% de commission par défaut
+    COMMISSION_RATE: 0.1 // 10% de commission par defaut
   }
 };
 
@@ -202,7 +202,7 @@ export const EXTERNAL_APIS = {
   }
 };
 
-// Configuration des métadonnées par défaut
+// Configuration des metadonnees par defaut
 export const DEFAULT_METADATA = {
   TITLE: 'MaxiMarket - Plateforme de mise en relation entre particuliers',
   DESCRIPTION: 'Trouvez les meilleures offres de biens et services entre particuliers sur MaxiMarket.',
@@ -300,7 +300,7 @@ export const SUPABASE_CONFIG = {
     POPULAR: '/search/popular'
   },
   
-  // Téléchargements
+  // Telechargements
   UPLOAD: {
     BASE: '/upload',
     IMAGE: '/upload/image',
@@ -308,7 +308,7 @@ export const SUPABASE_CONFIG = {
     DELETE: '/upload/delete'
   },
   
-  // Paramètres
+  // Parametres
   SETTINGS: {
     BASE: '/settings',
     EMAIL: '/settings/email',
@@ -421,7 +421,7 @@ export const ROUTES = {
   COMING_SOON: '/bientot-disponible'
 };
 
-// Configuration des métadonnées des routes
+// Configuration des metadonnees des routes
 export const ROUTE_METADATA = {
   [ROUTES.HOME]: {
     title: 'Accueil',

@@ -25,7 +25,7 @@ const ResetPasswordPage = () => {
         throw new Error('Token de réinitialisation manquant');
       }
 
-      // Ici, vous appellerez votre API pour réinitialiser le mot de passe
+      // Ici, vous appellerez votre API pour reinitialiser le mot de passe
       // await resetPassword(token, data.password);
       
       toast({

@@ -1,14 +1,14 @@
-// Résolution d'intention basique à partir d'une requête libre
+// Resolution d'intention basique a partir d'une requete libre
 
-// Principales villes (≥10 par pays): Sénégal, Bénin, Togo, Côte d'Ivoire, Nigeria
+// Principales villes (≥10 par pays): Senegal, Benin, Togo, Cote d'Ivoire, Nigeria
 const CITY_LIST = [
-  // Sénégal
+  // Senegal
   'Dakar','Thiès','Saint-Louis','Kaolack','Ziguinchor','Touba','Mbour','Rufisque','Pikine','Guédiawaye',
-  // Bénin
+  // Benin
   'Cotonou','Porto-Novo','Abomey-Calavi','Parakou','Djougou','Bohicon','Kandi','Lokossa','Ouidah','Natitingou',
   // Togo
   'Lomé','Sokodé','Kara','Kpalimé','Atakpamé','Bassar','Tsévié','Aného','Dapaong','Mango',
-  // Côte d'Ivoire
+  // Cote d'Ivoire
   'Abidjan','Bouaké','Daloa','Yamoussoukro','San-Pédro','Korhogo','Man','Abengourou','Gagnoa','Anyama',
   // Nigeria
   'Lagos','Kano','Ibadan','Abuja','Port Harcourt','Benin City','Maiduguri','Zaria','Aba','Jos'
@@ -28,11 +28,11 @@ export function resolveSearchIntent(rawQuery) {
 
   const query = rawQuery.trim();
   const q = query.toLowerCase();
-  // Normaliser (enlever accents) pour une détection plus robuste
+  // Normaliser (enlever accents) pour une detection plus robuste
   const qn = q.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const qflat = qn.replace(/[\s-]/g, '');
 
-  // Détecter la ville
+  // Detecter la ville
   const matchesCity = (name) => {
     const n = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const nflat = n.replace(/[\s-]/g, '');
@@ -40,7 +40,7 @@ export function resolveSearchIntent(rawQuery) {
   };
   const city = CITY_LIST.find(c => matchesCity(c));
 
-  // Détecter prix (k/m)
+  // Detecter prix (k/m)
   let minPrice; let maxPrice;
   const priceTokens = q.match(/(\d+[\.,]?\d*)\s*(k|m)?/gi) || [];
   const parsePrice = (t) => {
@@ -62,11 +62,11 @@ export function resolveSearchIntent(rawQuery) {
   } else if (/min|>=|>\s*/i.test(q) && priceTokens[0]) {
     minPrice = parsePrice(priceTokens[0]);
   } else if (priceTokens.length === 1) {
-    // Un seul prix -> on l'utilise comme maxPrice par défaut
+    // Un seul prix -> on l'utilise comme maxPrice par defaut
     maxPrice = parsePrice(priceTokens[0]);
   }
 
-  // Détecter catégorie
+  // Detecter categorie
   let section = 'marketplace';
   if (/\b(appartement|maison|terrain|studio|immobilier|villa|pi[eè]ces|m²|m2)\b/i.test(q)) {
     section = 'immobilier';
@@ -76,7 +76,7 @@ export function resolveSearchIntent(rawQuery) {
     section = 'services';
   }
 
-  // Détecter marque/modèle (automobile)
+  // Detecter marque/modele (automobile)
   let brand;
   const foundBrand = AUTO_BRANDS.find(b => q.includes(b));
   if (foundBrand) brand = foundBrand;

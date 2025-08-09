@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 
 class TransactionService {
-  // Récupérer toutes les transactions d'un utilisateur
+  // Recuperer toutes les transactions d'un utilisateur
   async getUserTransactions(userId, filters = {}) {
     try {
       let query = supabase
@@ -45,7 +45,7 @@ class TransactionService {
     }
   }
 
-  // Créer une nouvelle transaction
+  // Creer une nouvelle transaction
   async createTransaction(transactionData) {
     try {
       const { data, error } = await supabase
@@ -66,7 +66,7 @@ class TransactionService {
     }
   }
 
-  // Mettre à jour le statut d'une transaction
+  // Mettre a jour le statut d'une transaction
   async updateTransactionStatus(transactionId, status, metadata = {}) {
     try {
       const { data, error } = await supabase
@@ -88,7 +88,7 @@ class TransactionService {
     }
   }
 
-  // Récupérer une transaction spécifique
+  // Recuperer une transaction specifique
   async getTransaction(transactionId) {
     try {
       const { data, error } = await supabase
@@ -135,7 +135,7 @@ class TransactionService {
     }
   }
 
-  // Récupérer les statistiques de transactions
+  // Recuperer les statistiques de transactions
   async getTransactionStats(userId) {
     try {
       const { data, error } = await supabase
@@ -248,7 +248,7 @@ class TransactionService {
     }
   }
 
-  // Récupérer les transactions en attente (pour les admins)
+  // Recuperer les transactions en attente (pour les admins)
   async getPendingTransactions() {
     try {
       const { data, error } = await supabase
