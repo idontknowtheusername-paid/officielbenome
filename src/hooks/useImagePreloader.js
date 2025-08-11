@@ -62,7 +62,7 @@ export const useImagePreloader = (images, currentIndex) => {
         img.src = src;
       }
     });
-  }, [currentIndex, images, preloadedImages, loadingStates]);
+  }, [currentIndex, images]);
 
   // Vérifier si une image est préchargée
   const isImagePreloaded = useCallback((src) => {

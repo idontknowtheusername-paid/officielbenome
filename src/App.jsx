@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from '@/components/ui/toaster';
@@ -38,6 +38,7 @@ import GeneralMarketplacePage from '@/pages/marketplace/GeneralMarketplacePage';
 import CreateListingPage from '@/pages/CreateListingPage';
 import ListingDetailPage from '@/pages/ListingDetailPage';
 import FavoritesPage from '@/pages/FavoritesPage';
+
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import AdminUsersPage from '@/pages/admin/users/UsersPage';
@@ -45,7 +46,6 @@ import AdminListingsPage from '@/pages/admin/listings/ListingsPage';
 import AdminTransactionsPage from '@/pages/admin/transactions/TransactionsPage';
 import AdminAnalyticsPage from '@/pages/admin/analytics/AnalyticsPage';
 import AdminModerationPage from '@/pages/admin/moderation/ModerationPage';
-// import AdminSettingsPage from '@/pages/admin/settings/SettingsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 // Static Pages
@@ -62,7 +62,7 @@ import TermsConditionsPage from '@/pages/static/TermsConditionsPage';
 import BlogPage from '@/pages/BlogPage'; 
 import BlogPostPage from '@/pages/BlogPostPage';
 
-// Composant de test pour verifier la configuration
+// Composant de test pour vérifier la configuration
 const ConfigTest = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -123,155 +123,153 @@ function App() {
 
 // Composant séparé pour utiliser les hooks React Query
 function AppContent() {
-  // Activer le préchargement des données (maintenant à l'intérieur du QueryClientProvider)
+  // Activer le préchargement des données
   usePreload();
 
   return (
     <AppWrapper>
       <ConfigTest />
-      <Router>
-        <AuthProvider>
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<HomePage />} />
-                
-                {/* Auth Routes */}
-                <Route path="connexion" element={<LoginPage />} />
-                <Route path="inscription" element={<RegisterPage />} />
-                <Route path="auth/callback" element={<AuthCallbackPage />} />
-                <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
-                <Route path="reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                
-                {/* Messaging */}
+      <AuthProvider>
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<HomePage />} />
+              
+              {/* Auth Routes */}
+              <Route path="connexion" element={<LoginPage />} />
+              <Route path="inscription" element={<RegisterPage />} />
+              <Route path="auth/callback" element={<AuthCallbackPage />} />
+              <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
+              <Route path="reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              
+              {/* Messaging */}
+              <Route 
+                path="messages" 
+                element={
+                  <ProtectedRoute>
+                    <MessagingPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Marketplace Sections */}
+              <Route path="immobilier" element={<RealEstatePage />} />
+              <Route path="automobile" element={<AutomobilePage />} />
+              <Route path="services" element={<ServicesPage />} />
+              <Route path="marketplace" element={<GeneralMarketplacePage />} />
+              
+              {/* Création d'annonce */}
+              <Route 
+                path="creer-annonce" 
+                element={
+                  <ProtectedRoute>
+                    <CreateListingPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="creer-annonce/:category" 
+                element={
+                  <ProtectedRoute>
+                    <CreateListingPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="create-listing" 
+                element={
+                  <ProtectedRoute>
+                    <CreateListingPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Détails d'annonce */}
+              <Route path="annonce/:id" element={<ListingDetailPage />} />
+              
+              {/* Favoris */}
+              <Route 
+                path="favorites" 
+                element={
+                  <ProtectedRoute>
+                    <FavoritesPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Protected Admin Routes */}
+              <Route path="admin">
                 <Route 
-                  path="messages" 
+                  index 
                   element={
-                    <ProtectedRoute>
-                      <MessagingPage />
-                    </ProtectedRoute>
+                    <AdminRoute>
+                      <AdminDashboardPage />
+                    </AdminRoute>
                   } 
                 />
-                
-                {/* Marketplace Sections */}
-                <Route path="immobilier" element={<RealEstatePage />} />
-                <Route path="automobile" element={<AutomobilePage />} />
-                <Route path="services" element={<ServicesPage />} />
-                <Route path="marketplace" element={<GeneralMarketplacePage />} />
-                
-                {/* Création d'annonce */}
                 <Route 
-                  path="creer-annonce" 
+                  path="users" 
                   element={
-                    <ProtectedRoute>
-                      <CreateListingPage />
-                    </ProtectedRoute>
+                    <AdminRoute>
+                      <AdminUsersPage />
+                    </AdminRoute>
                   } 
                 />
                 <Route 
-                  path="creer-annonce/:category" 
+                  path="listings" 
                   element={
-                    <ProtectedRoute>
-                      <CreateListingPage />
-                    </ProtectedRoute>
+                    <AdminRoute>
+                      <AdminListingsPage />
+                    </AdminRoute>
                   } 
                 />
                 <Route 
-                  path="create-listing" 
+                  path="transactions" 
                   element={
-                    <ProtectedRoute>
-                      <CreateListingPage />
-                    </ProtectedRoute>
+                    <AdminRoute>
+                      <AdminTransactionsPage />
+                    </AdminRoute>
                   } 
                 />
-                
-                {/* Détails d'annonce */}
-                <Route path="annonce/:id" element={<ListingDetailPage />} />
-                
-                {/* Favoris */}
                 <Route 
-                  path="favorites" 
+                  path="analytics" 
                   element={
-                    <ProtectedRoute>
-                      <FavoritesPage />
-                    </ProtectedRoute>
+                    <AdminRoute>
+                      <AdminAnalyticsPage />
+                    </AdminRoute>
                   } 
                 />
-                
-                {/* Protected Admin Routes */}
-                <Route path="admin">
-                  <Route 
-                    index 
-                    element={
-                      <AdminRoute>
-                        <AdminDashboardPage />
-                      </AdminRoute>
-                    } 
-                  />
-                  <Route 
-                    path="users" 
-                    element={
-                      <AdminRoute>
-                        <AdminUsersPage />
-                      </AdminRoute>
-                    } 
-                  />
-                  <Route 
-                    path="listings" 
-                    element={
-                      <AdminRoute>
-                        <AdminListingsPage />
-                      </AdminRoute>
-                    } 
-                  />
-                  <Route 
-                    path="transactions" 
-                    element={
-                      <AdminRoute>
-                        <AdminTransactionsPage />
-                      </AdminRoute>
-                    } 
-                  />
-                  <Route 
-                    path="analytics" 
-                    element={
-                      <AdminRoute>
-                        <AdminAnalyticsPage />
-                      </AdminRoute>
-                    } 
-                  />
-                  <Route 
-                    path="moderation" 
-                    element={
-                      <AdminRoute>
-                        <AdminModerationPage />
-                      </AdminRoute>
-                    } 
-                  />
-                </Route>
-                
-                {/* Static Pages */}
-                <Route path="a-propos" element={<AboutPage />} />
-                <Route path="contact" element={<ContactPage />} />
-                <Route path="carrieres" element={<CareersPage />} />
-                <Route path="presse" element={<PressPage />} />
-                <Route path="aide" element={<HelpCenterPage />} />
-                <Route path="faq" element={<FAQPage />} />
-                <Route path="politique-confidentialite" element={<PrivacyPolicyPage />} />
-                <Route path="conditions-utilisation" element={<TermsConditionsPage />} />
-                
-                {/* Blog Routes */}
-                <Route path="blog" element={<BlogPage />} />
-                <Route path="blog/:id" element={<BlogPostPage />} />
-                
-                {/* 404 */}
-                <Route path="*" element={<NotFoundPage />} />
+                <Route 
+                  path="moderation" 
+                  element={
+                    <AdminRoute>
+                      <AdminModerationPage />
+                    </AdminRoute>
+                  } 
+                />
               </Route>
-            </Routes>
-          </AnimatePresence>
-        </AuthProvider>
-      </Router>
+              
+              {/* Static Pages */}
+              <Route path="a-propos" element={<AboutPage />} />
+              <Route path="contact" element={<ContactPage />} />
+              <Route path="carrieres" element={<CareersPage />} />
+              <Route path="presse" element={<PressPage />} />
+              <Route path="aide" element={<HelpCenterPage />} />
+              <Route path="faq" element={<FAQPage />} />
+              <Route path="politique-confidentialite" element={<PrivacyPolicyPage />} />
+              <Route path="conditions-utilisation" element={<TermsConditionsPage />} />
+              
+              {/* Blog Routes */}
+              <Route path="blog" element={<BlogPage />} />
+              <Route path="blog/:id" element={<BlogPostPage />} />
+              
+              {/* 404 */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </Routes>
+        </AnimatePresence>
+      </AuthProvider>
       <ChatWidget />
       <Toaster />
       <CacheMonitor />

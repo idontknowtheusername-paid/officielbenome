@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import OptimizedImage from '@/components/OptimizedImage';
 
-const MiniImageGallery = ({ images = [], title = "Galerie d'images", className = "" }) => {
+const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", className = "" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -51,17 +51,23 @@ const MiniImageGallery = ({ images = [], title = "Galerie d'images", className =
     >
       {/* Image principale */}
       <AnimatePresence mode="wait">
-        <motion.img
+        <motion.div
           key={currentIndex}
-          src={currentImage}
-          alt={`${title} - Image ${currentIndex + 1}`}
-          className="w-full h-full object-cover"
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.3 }}
-          loading="lazy"
-        />
+          className="w-full h-full"
+        >
+          <OptimizedImage
+            src={currentImage}
+            alt={`${title} - Image ${currentIndex + 1}`}
+            className="w-full h-full"
+            context="card"
+            quality="medium"
+            showSkeleton={true}
+          />
+        </motion.div>
       </AnimatePresence>
 
       {/* Navigation par flèches (visible au survol) */}
@@ -118,6 +124,6 @@ const MiniImageGallery = ({ images = [], title = "Galerie d'images", className =
       )}
     </div>
   );
-};
+});
 
-export default MiniImageGallery; 
+export default MiniImageGallery;

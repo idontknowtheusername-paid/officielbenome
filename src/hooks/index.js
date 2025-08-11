@@ -4,12 +4,12 @@
 // Core hooks
 export { default as useApi } from './useApi';
 export { default as useAdminDashboard } from './useAdminDashboard';
-export { default as useAuth } from './useAuth';
-export { default as useListings } from './useListings';
-export { default as useMessages } from './useMessages';
-export { default as useNotifications } from './useNotifications';
-export { default as usePreload } from './usePreload';
-export { default as useTabNavigation } from './useTabNavigation';
+export { useAuth } from '../contexts/AuthContext';
+export { useListings } from './useListings';
+export { useConversations, useConversationMessages, useSendMessage, useMarkMessagesAsRead, useCreateConversation, useDeleteConversation, useSearchConversations, useMessageStats, useRealtimeMessages } from './useMessages';
+export { useNotifications } from './useNotifications';
+export { usePreload } from './usePreload';
+export { useTabNavigation } from './useTabNavigation';
 
 // Image gallery hook
 export { useListingImages } from './useListingImages';

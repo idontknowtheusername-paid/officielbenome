@@ -328,8 +328,8 @@ export default defineConfig({
       host: 'localhost',
       protocol: 'ws',
       clientPort: 5173,
-      overlay: false,
-      timeout: 30000
+      overlay: false, // Désactiver l'overlay d'erreur HMR
+      timeout: 30000, // Timeout plus long pour la connexion WebSocket
     },
     proxy: {
       // Chatbot local (ne pas proxy /api/chat)

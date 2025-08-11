@@ -5,12 +5,15 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:no-hmr": "DISABLE_HMR=true vite",
+    "dev:optimized": "vite --config vite.config.optimized.js",
+    "dev:final": "vite --config vite.config.final.js",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint src --ext .js,.jsx",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint src --ext .js,.jsx --fix"
   },
   "dependencies": {

@@ -3,13 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // Added import
+import { Input } from '@/components/ui/input';
 import { ArrowRight, FolderHeart as HomeIcon, BadgeCent as CarIcon, Briefcase as BriefcaseIcon, ShoppingBag as ShoppingBagIcon, SearchCode as SearchIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import { personalData } from '@/lib/personalData';
 import { resolveSearchIntent } from '@/lib/search-intent';
 import { useAuth } from '@/contexts/AuthContext';
 import { listingService } from '@/services/supabase.service';
 import ListingCard from '@/components/ListingCard';
+import HeroImage from '@/components/HeroImage';
 
 
 const HomePage = () => {
@@ -73,10 +74,13 @@ const HomePage = () => {
         transition={{ duration: 1 }}
       >
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        <img  
-          className="absolute inset-0 w-full h-full object-cover -z-10 opacity-70"
+        <HeroImage
+          src="https://images.unsplash.com/photo-1542044896530-05d85be9b11a?q=80&w=2070&auto=format&fit=crop"
           alt="Skyline futuriste d'une ville africaine au crépuscule avec des néons"
-         src="https://images.unsplash.com/photo-1542044896530-05d85be9b11a?q=80&w=2070&auto=format&fit=crop" />
+          className="absolute inset-0 w-full h-full -z-10 opacity-70"
+          priority="high"
+          showSkeleton={true}
+        />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
           <motion.div 

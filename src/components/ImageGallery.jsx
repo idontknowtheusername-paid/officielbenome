@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -70,8 +70,6 @@ const ImageGallery = React.memo(({ images = [], title = "Galerie d'images" }) =>
       document.body.style.overflow = 'unset';
     };
   }, [isFullscreen, isZoomed, goToNext, goToPrevious]);
-
-
 
   // Zoom et pan
   const handleImageClick = () => {
@@ -298,6 +296,6 @@ const ImageGallery = React.memo(({ images = [], title = "Galerie d'images" }) =>
       </AnimatePresence>
     </>
   );
-};
+});
 
-export default ImageGallery; 
+export default ImageGallery;

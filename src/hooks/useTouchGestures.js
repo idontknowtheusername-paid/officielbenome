@@ -19,12 +19,12 @@ export const useTouchGestures = (options = {}) => {
     startDistance: 0,
     startTime: 0,
     isPinching: false,
-    isDoubleTap: false,
-    lastTapTime: 0
+    isDoubleTap: false
   });
 
   const touchTimeoutRef = useRef(null);
   const doubleTapTimeoutRef = useRef(null);
+  const lastTapTimeRef = useRef(0);
 
   // Calculer la distance entre deux points tactiles
   const getDistance = useCallback((touch1, touch2) => {
@@ -64,7 +64,7 @@ export const useTouchGestures = (options = {}) => {
       const touch = touches[0];
       
       // Vérifier le double tap
-      const timeSinceLastTap = now - touchState.lastTapTime;
+      const timeSinceLastTap = now - lastTapTimeRef.current;
       if (timeSinceLastTap < doubleTapDelay) {
         setTouchState(prev => ({ ...prev, isDoubleTap: true }));
         onDoubleTap?.(touch);
@@ -76,16 +76,16 @@ export const useTouchGestures = (options = {}) => {
         return;
       }
 
+      lastTapTimeRef.current = now;
       setTouchState(prev => ({
         ...prev,
         startX: touch.clientX,
         startY: touch.clientY,
         startTime: now,
-        isPinching: false,
-        lastTapTime: now
+        isPinching: false
       }));
     }
-  }, [getDistance, getAngle, onDoubleTap, doubleTapDelay, touchState.lastTapTime]);
+  }, [getDistance, getAngle, onDoubleTap, doubleTapDelay]);
 
   // Gérer le mouvement du toucher
   const handleTouchMove = useCallback((e) => {
