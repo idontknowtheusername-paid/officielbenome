@@ -187,35 +187,88 @@ const ListingDetailPage = () => {
   };
 
   const handleContact = async (type) => {
-    if (!user) {
-      navigate('/connexion');
+    // WhatsApp et téléphone : pas de compte requis
+    if (type === 'whatsapp' || type === 'phone') {
+      // Logique intelligente pour le numero de telephone
+      const phoneNumber = listing.contact_info?.phone || listing.users?.phone_number;
+      
+      if (!phoneNumber) {
+        toast({
+          title: "Pas de numéro disponible",
+          description: "Aucun numéro de téléphone n'est disponible pour cette annonce.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Nettoyer le numero (enlever espaces, tirets, etc.)
+      const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+      
+      // Ajouter l'indicatif pays si necessaire (pour le Senegal)
+      const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : 
+                             cleanNumber.startsWith('221') ? `+${cleanNumber}` :
+                             `+221${cleanNumber}`;
+
+      if (type === 'phone') {
+        // Ouvrir l'appel telephonique
+        window.open(`tel:${formattedNumber}`, '_blank');
+        
+        toast({
+          title: "Appel en cours",
+          description: `Appel vers ${formattedNumber}`,
+        });
+      } else if (type === 'whatsapp') {
+        // Message pre-rempli pour WhatsApp
+        const message = encodeURIComponent(
+          `Bonjour ! Je suis intéressé(e) par votre annonce "${listing.title}".\n\nPouvez-vous me donner plus d'informations ?`
+        );
+        
+        // Ouvrir WhatsApp
+        window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank');
+        
+        toast({
+          title: "WhatsApp ouvert",
+          description: `Conversation WhatsApp avec ${formattedNumber}`,
+        });
+      }
       return;
     }
 
-    // Empecher l'utilisateur de se contacter lui-meme
-    if (listing.user_id === user.id) {
-      toast({
-        title: "Action impossible",
-        description: "Vous ne pouvez pas vous contacter vous-même.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Message interne : compte requis
+    if (type === 'message') {
+      if (!user) {
+        toast({
+          title: "Connexion requise",
+          description: "Connectez-vous pour envoyer un message privé au vendeur.",
+          variant: "default",
+        });
+        navigate('/connexion');
+        return;
+      }
 
-    // Verifier que l'annonce a un user_id valide (sauf pour les tests)
-    const isTestListing = !listing.user_id || listing.user_id === 'test-user-1';
-    
-    if (type === 'message' && isTestListing) {
-      toast({
-        title: "Annonce de test",
-        description: "Cette annonce est en mode test. Les fonctionnalités de contact ne sont pas disponibles.",
-        variant: "default",
-      });
-      return;
-    }
+      // Empecher l'utilisateur de se contacter lui-meme
+      if (listing.user_id === user.id) {
+        toast({
+          title: "Action impossible",
+          description: "Vous ne pouvez pas vous contacter vous-même.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    try {
-      if (type === 'message') {
+      // Verifier que l'annonce a un user_id valide (sauf pour les tests)
+      const isTestListing = !listing.user_id || listing.user_id === 'test-user-1';
+      
+      if (isTestListing) {
+        toast({
+          title: "Annonce de test",
+          description: "Cette annonce est en mode test. Les fonctionnalités de contact ne sont pas disponibles.",
+          variant: "default",
+        });
+        return;
+      }
+
+      try {
         // Creer ou recuperer une conversation existante
         const conversation = await messageService.createConversation(
           listing.user_id, 
@@ -229,71 +282,14 @@ const ListingDetailPage = () => {
           title: "Conversation créée",
           description: "Vous avez été redirigé vers la messagerie.",
         });
-      } else if (type === 'phone') {
-        // Logique intelligente pour le numero de telephone
-        const phoneNumber = listing.contact_info?.phone || listing.users?.phone_number;
-        
-        if (phoneNumber) {
-          // Nettoyer le numero (enlever espaces, tirets, etc.)
-          const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
-          
-          // Ajouter l'indicatif pays si necessaire (pour le Senegal)
-          const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : 
-                                 cleanNumber.startsWith('221') ? `+${cleanNumber}` :
-                                 `+221${cleanNumber}`;
-          
-          // Ouvrir l'appel telephonique
-          window.open(`tel:${formattedNumber}`, '_blank');
-          
-          toast({
-            title: "Appel en cours",
-            description: `Appel vers ${formattedNumber}`,
-          });
-        } else {
-          toast({
-            title: "Pas de numéro disponible",
-            description: "Aucun numéro de téléphone n'est disponible pour cette annonce.",
-            variant: "destructive",
-          });
-        }
-      } else if (type === 'whatsapp') {
-        // Logique pour WhatsApp
-        const phoneNumber = listing.contact_info?.phone || listing.users?.phone_number;
-        
-        if (phoneNumber) {
-          // Nettoyer le numero
-          const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
-          const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : 
-                                 cleanNumber.startsWith('221') ? `+${cleanNumber}` :
-                                 `+221${cleanNumber}`;
-          
-          // Message pre-rempli pour WhatsApp
-          const message = encodeURIComponent(
-            `Bonjour ! Je suis intéressé(e) par votre annonce "${listing.title}".\n\nPouvez-vous me donner plus d'informations ?`
-          );
-          
-          // Ouvrir WhatsApp
-          window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank');
-          
-          toast({
-            title: "WhatsApp ouvert",
-            description: `Conversation WhatsApp avec ${formattedNumber}`,
-          });
-        } else {
-          toast({
-            title: "Pas de numéro disponible",
-            description: "Aucun numéro de téléphone n'est disponible pour cette annonce.",
-            variant: "destructive",
-          });
-        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la conversation:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer la conversation. Veuillez réessayer.",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
-      console.error('Erreur lors de la création de la conversation:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer la conversation. Veuillez réessayer.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -556,6 +552,16 @@ const ListingDetailPage = () => {
                   {isFavorite ? 'Retirer' : 'Favoris'}
                 </Button>
               </div>
+              
+              {/* Indication pour les visiteurs non connectés */}
+              {!user && (
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    💡 <strong>Conseil :</strong> Vous pouvez contacter le vendeur directement par WhatsApp ou téléphone sans créer de compte. 
+                    Connectez-vous uniquement si vous souhaitez utiliser la messagerie privée.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

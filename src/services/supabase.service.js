@@ -445,6 +445,9 @@ export const listingService = {
 
   // Recuperer le top N des annonces les plus vues (populaires)
   getTopViewedListings: async (limit = 6) => {
+    console.log('🔍 getTopViewedListings appelé avec limit:', limit);
+    console.log('🔍 isSupabaseConfigured:', isSupabaseConfigured);
+    
     if (!isSupabaseConfigured) {
       console.warn('⚠️ Supabase non configuré, retour de données de test (top vues)');
       const mock = [
@@ -456,6 +459,7 @@ export const listingService = {
     }
 
     try {
+      console.log('🔍 Tentative de connexion à Supabase...');
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -463,9 +467,11 @@ export const listingService = {
         .order('views_count', { ascending: false, nullsFirst: false })
         .limit(limit);
 
+      console.log('🔍 Réponse Supabase:', { data, error });
+
       if (error) throw error;
 
-      return (data || []).map((listing) => ({
+      const cleanedData = (data || []).map((listing) => ({
         ...listing,
         location: listing.location ? (typeof listing.location === 'string' ? JSON.parse(listing.location) : listing.location) : null,
         real_estate_details: listing.real_estate_details ? (typeof listing.real_estate_details === 'string' ? JSON.parse(listing.real_estate_details) : listing.real_estate_details) : null,
@@ -474,6 +480,9 @@ export const listingService = {
         product_details: listing.product_details ? (typeof listing.product_details === 'string' ? JSON.parse(listing.product_details) : listing.product_details) : null,
         contact_info: listing.contact_info ? (typeof listing.contact_info === 'string' ? JSON.parse(listing.contact_info) : listing.contact_info) : null,
       }));
+
+      console.log('🔍 Données nettoyées:', cleanedData);
+      return cleanedData;
     } catch (error) {
       console.error('❌ Erreur dans getTopViewedListings:', error);
       throw error;

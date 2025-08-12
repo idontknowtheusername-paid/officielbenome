@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -11,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -98,8 +96,6 @@ export const AuthProvider = ({ children }) => {
             title: "Connexion réussie",
             description: "Bienvenue sur MaxiMarket !",
           });
-          // Rediriger automatiquement apres confirmation/connexion
-          navigate('/');
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Déconnexion réussie",
@@ -125,7 +121,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
 
       console.log('Supabase login successful:', data);
-      navigate('/');
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -211,7 +206,6 @@ export const AuthProvider = ({ children }) => {
           title: "Inscription réussie",
           description: "Bienvenue sur MaxiMarket !",
         });
-        navigate('/');
         return { success: true, needsConfirmation: false };
       }
     } catch (error) {
@@ -230,7 +224,7 @@ export const AuthProvider = ({ children }) => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      navigate('/');
+      return true;
     } catch (error) {
       console.error('Logout error:', error);
       toast({
@@ -238,6 +232,7 @@ export const AuthProvider = ({ children }) => {
         description: error.message,
         variant: "destructive",
       });
+      return false;
     }
   };
 

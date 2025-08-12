@@ -4,6 +4,10 @@ import { createClient } from '@supabase/supabase-js'
 let supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+console.log('🔍 Variables d\'environnement détectées:');
+console.log('🔍 VITE_SUPABASE_URL:', supabaseUrl);
+console.log('🔍 VITE_SUPABASE_ANON_KEY length:', supabaseAnonKey?.length);
+
 // Corriger l'URL si elle commence par // au lieu de https://
 if (supabaseUrl && supabaseUrl.startsWith('//')) {
   supabaseUrl = 'https:' + supabaseUrl;
@@ -11,6 +15,8 @@ if (supabaseUrl && supabaseUrl.startsWith('//')) {
 }
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+
+console.log('🔍 isSupabaseConfigured:', isSupabaseConfigured);
 
 // Ne pas faire planter l'application en production si les variables manquent
 if (!isSupabaseConfigured) {
@@ -39,6 +45,7 @@ if (import.meta.env.DEV) {
   console.log('🔧 Mode développement activé')
   console.log('📡 Supabase URL:', supabaseUrl)
   console.log('✅ Supabase configuré:', isSupabaseConfigured)
+  console.log('🔑 Clé API longueur:', supabaseAnonKey?.length)
 }
 
 export default supabase

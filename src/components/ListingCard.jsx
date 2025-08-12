@@ -224,11 +224,11 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           
           {showActions && (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleCardClick}>
                 <Eye className="mr-1 h-4 w-4" />
                 Voir
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleCardClick}>
                 <Phone className="mr-1 h-4 w-4" />
                 Contacter
               </Button>
