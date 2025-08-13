@@ -63,6 +63,10 @@ const HomePage = () => {
     { name: "Marketplace", icon: <ShoppingBagIcon className="h-10 w-10 mb-3 text-primary" />, path: "/marketplace", description: "Produits neufs et d'occasion." }
   ];
 
+  const handleCategoryClick = (path) => {
+    navigate(path);
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
@@ -159,16 +163,15 @@ const HomePage = () => {
                 variants={categoryCardVariants}
                 initial="hidden"
                 animate="visible"
-                className="bg-card p-6 rounded-xl shadow-2xl hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center glassmorphic-card border border-transparent hover:border-primary/50"
+                onClick={() => handleCategoryClick(category.path)}
+                className="bg-card p-6 rounded-xl shadow-2xl hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center glassmorphic-card border border-transparent hover:border-primary/50 cursor-pointer group"
               >
                 {category.icon}
-                <h3 className="text-xl font-semibold mb-2">{category.name}</h3>
-                <p className="text-muted-foreground text-sm mb-5 flex-grow">{category.description}</p>
-                <Button asChild variant="outline" className="w-full border-primary/50 hover:bg-primary/10 hover:text-primary">
-                  <Link to={category.path}>
-                    Découvrir <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">{category.name}</h3>
+                <p className="text-muted-foreground text-sm mb-5 flex-grow group-hover:text-primary/80 transition-colors">{category.description}</p>
+                <div className="w-full border border-primary/50 rounded-md px-4 py-2 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                  Découvrir <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform inline" />
+                </div>
               </motion.div>
             ))}
           </div>

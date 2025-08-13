@@ -1,103 +1,69 @@
-import { useState, useEffect } from "react"
+// Version robuste du système de toast compatible Safari
+let toastCount = 0;
 
-const TOAST_LIMIT = 1
-
-let count = 0
-function generateId() {
-  count = (count + 1) % Number.MAX_VALUE
-  return count.toString()
-}
-
-const toastStore = {
-  state: {
-    toasts: [],
-  },
-  listeners: [],
+// Fonction sécurisée pour créer des toasts
+export const toast = function(options) {
+  // Vérification de sécurité pour Safari
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return { id: 'noop', dismiss: function() {} };
+  }
   
-  getState: () => toastStore.state,
+  const id = 'toast-' + (++toastCount);
+  const container = document.getElementById('toaster-container');
   
-  setState: (nextState) => {
-    if (typeof nextState === 'function') {
-      toastStore.state = nextState(toastStore.state)
-    } else {
-      toastStore.state = { ...toastStore.state, ...nextState }
+  if (!container) {
+    console.warn('Toast container not found');
+    return { id: 'noop', dismiss: function() {} };
+  }
+  
+  try {
+    // Créer l'élément toast de manière sécurisée
+    const toastElement = document.createElement('div');
+    toastElement.id = id;
+    toastElement.className = 'bg-background border rounded-md p-4 shadow-lg max-w-sm mb-2';
+    
+    // Contenu sécurisé
+    let content = '';
+    if (options.title) {
+      content += '<div class="font-semibold">' + options.title + '</div>';
+    }
+    if (options.description) {
+      content += '<div class="text-sm opacity-90 mt-1">' + options.description + '</div>';
     }
     
-    toastStore.listeners.forEach(listener => listener(toastStore.state))
-  },
-  
-  subscribe: (listener) => {
-    toastStore.listeners.push(listener)
-    return () => {
-      toastStore.listeners = toastStore.listeners.filter(l => l !== listener)
+    toastElement.innerHTML = content + 
+      '<button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-foreground/50 hover:text-foreground">✕</button>';
+    
+    // Ajouter au container
+    container.appendChild(toastElement);
+    
+    // Auto-suppression
+    if (options.duration !== Infinity) {
+      setTimeout(function() {
+        if (toastElement.parentNode) {
+          toastElement.remove();
+        }
+      }, options.duration || 5000);
     }
-  }
-}
-
-export const toast = ({ ...props }) => {
-  const id = generateId()
-
-  const update = (props) =>
-    toastStore.setState((state) => ({
-      ...state,
-      toasts: state.toasts.map((t) =>
-        t.id === id ? { ...t, ...props } : t
-      ),
-    }))
-
-  const dismiss = () => toastStore.setState((state) => ({
-    ...state,
-    toasts: state.toasts.filter((t) => t.id !== id),
-  }))
-
-  toastStore.setState((state) => ({
-    ...state,
-    toasts: [
-      { ...props, id, dismiss },
-      ...state.toasts,
-    ].slice(0, TOAST_LIMIT),
-  }))
 
   return {
-    id,
-    dismiss,
-    update,
-  }
-}
-
-export function useToast() {
-  const [state, setState] = useState(toastStore.getState())
-  
-  useEffect(() => {
-    const unsubscribe = toastStore.subscribe((state) => {
-      setState(state)
-    })
-    
-    return unsubscribe
-  }, [])
-  
-  useEffect(() => {
-    const timeouts = []
-
-    state.toasts.forEach((toast) => {
-      if (toast.duration === Infinity) {
-        return
+      id: id,
+      dismiss: function() {
+        if (toastElement.parentNode) {
+          toastElement.remove();
+        }
       }
-
-      const timeout = setTimeout(() => {
-        toast.dismiss()
-      }, toast.duration || 5000)
-
-      timeouts.push(timeout)
-    })
-
-    return () => {
-      timeouts.forEach((timeout) => clearTimeout(timeout))
-    }
-  }, [state.toasts])
-
-  return {
-    toast,
-    toasts: state.toasts,
+    };
+  } catch (error) {
+    console.error('Error creating toast:', error);
+    return { id: 'error', dismiss: function() {} };
   }
+};
+
+// Hook simplifié et robuste
+export function useToast() {
+  return {
+    toast: toast,
+    toasts: []
+  };
 }

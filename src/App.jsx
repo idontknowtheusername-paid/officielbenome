@@ -258,8 +258,8 @@ function App() {
                 </Routes>
               </AnimatePresence>
             </AuthProvider>
-            <ChatWidget />
             <Toaster />
+            <ChatWidget />
             <CacheMonitor />
             <AdvancedCacheMonitor />
           </AppWrapper>
