@@ -120,6 +120,6 @@ npm install clsx tailwind-merge
 
 Une interface "Mon Compte" moderne et complète qui rivalise avec les meilleures plateformes marketplace du monde, offrant une expérience utilisateur exceptionnelle pour gérer efficacement toutes les activités sur MaxiMarket.
 
----
+----
 
 *Dernière mise à jour : $(date)* 
