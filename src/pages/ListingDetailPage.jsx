@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { listingService, messageService } from '@/services/supabase.service';
 import ImageGallery from '@/components/ImageGallery';
 import { useListingImages } from '@/hooks';
+import ReportModal from '@/components/ReportModal';
 
 const ListingDetailPage = () => {
   const { id } = useParams();
@@ -21,6 +22,7 @@ const ListingDetailPage = () => {
   const [relatedListings, setRelatedListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const { images } = useListingImages(listing);
 
   useEffect(() => {
@@ -315,10 +317,12 @@ const ListingDetailPage = () => {
       return;
     }
     
-    toast({
-      title: "Signaler",
-      description: "Fonctionnalité de signalement en cours de développement.",
-    });
+    setIsReportModalOpen(true);
+  };
+
+  const handleReportSubmitted = () => {
+    // Optionnel : logique supplémentaire après signalement
+    console.log('Signalement soumis avec succès');
   };
 
   if (isLoading) {
@@ -616,6 +620,14 @@ const ListingDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de signalement */}
+      <ReportModal 
+        isOpen={isReportModalOpen} 
+        onClose={() => setIsReportModalOpen(false)} 
+        listing={listing}
+        onReportSubmitted={handleReportSubmitted} 
+      />
     </motion.div>
   );
 };
