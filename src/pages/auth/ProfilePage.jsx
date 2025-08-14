@@ -58,7 +58,7 @@ import {
 } from '@/components/dashboard';
 
 const ProfilePage = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -338,15 +338,20 @@ const ProfilePage = () => {
   // Fonction de deconnexion
   const handleLogout = async () => {
     try {
-      await logout();
+      const { error } = await signOut();
+      if (error) throw error;
+      
       toast({
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès.",
       });
+      
+      // Redirection vers la page d'accueil
+      navigate('/');
     } catch (error) {
       toast({
         title: "Erreur de déconnexion",
-        description: error.message,
+        description: error.message || "Une erreur est survenue lors de la déconnexion",
         variant: "destructive",
       });
     }
