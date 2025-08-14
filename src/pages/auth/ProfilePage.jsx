@@ -1,64 +1,47 @@
 
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { userService, listingService, favoriteService, messageService } from '@/services/supabase.service';
 import { useNavigate } from 'react-router-dom';
-import Pagination from '@/components/ui/Pagination';
-import { ListingCardSkeleton, MessageCardSkeleton, StatsCardSkeleton } from '@/components/ui/Skeleton';
-import { DeleteConfirmDialog, EditConfirmDialog, RefreshConfirmDialog, BoostConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useForm } from 'react-hook-form';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
+import { useTabNavigation } from '@/hooks/useTabNavigation';
+import { motion } from 'framer-motion';
 import { 
   User, 
   Mail, 
   Phone, 
-  Lock, 
   Camera, 
-  Loader2, 
+  Shield, 
+  BarChart3, 
   Home, 
   MessageSquare, 
   Heart, 
-  CreditCard, 
   Settings, 
-  Shield, 
-  BarChart3, 
-  Bell, 
-  Plus,
-  Eye,
-  Users,
-  TrendingUp,
-  Calendar,
-  MapPin,
-  Star,
+  LogOut,
+  Loader2,
   Edit,
   Trash2,
   RefreshCw,
-  MoreVertical,
-  Filter,
-  Search,
-  LogOut
+  TrendingUp
 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { useTabNavigation } from '@/hooks/useTabNavigation';
-import { Link } from 'react-router-dom';
-
-// Import des nouveaux composants dashboard
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  StatsCard, 
   ListingCard, 
   MessageCard, 
   ActivityFeed, 
   QuickActions 
 } from '@/components/dashboard';
+import { ListingCardSkeleton, MessageCardSkeleton, StatsCardSkeleton } from '@/components/ui/Skeleton';
+import { DeleteConfirmDialog, EditConfirmDialog, RefreshConfirmDialog, BoostConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { userService, listingService, favoriteService, messageService } from '@/services/supabase.service';
+import Pagination from '@/components/ui/Pagination';
 
 const ProfilePage = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -338,16 +321,18 @@ const ProfilePage = () => {
   // Fonction de deconnexion
   const handleLogout = async () => {
     try {
-      const { error } = await signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Déconnexion réussie",
-        description: "Vous avez été déconnecté avec succès.",
-      });
-      
-      // Redirection vers la page d'accueil
-      navigate('/');
+      const success = await logout();
+      if (success) {
+        toast({
+          title: "Déconnexion réussie",
+          description: "Vous avez été déconnecté avec succès.",
+        });
+        
+        // Redirection vers la page d'accueil
+        navigate('/');
+      } else {
+        throw new Error("Échec de la déconnexion");
+      }
     } catch (error) {
       toast({
         title: "Erreur de déconnexion",
