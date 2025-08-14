@@ -39,7 +39,8 @@ import {
   ListingCard, 
   MessageCard, 
   ActivityFeed, 
-  QuickActions 
+  QuickActions,
+  StatsCard
 } from '@/components/dashboard';
 import { ListingCardSkeleton, MessageCardSkeleton, StatsCardSkeleton } from '@/components/ui/Skeleton';
 import { DeleteConfirmDialog, EditConfirmDialog, RefreshConfirmDialog, BoostConfirmDialog } from '@/components/ui/ConfirmDialog';
