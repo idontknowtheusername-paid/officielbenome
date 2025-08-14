@@ -572,7 +572,7 @@ const ListingDetailPage = () => {
               <ul className="text-sm text-muted-foreground space-y-2">
                 <li>• Rencontrez le vendeur dans un lieu public</li>
                 <li>• Vérifiez l'état du bien avant l'achat</li>
-                <li>• Évitez les paiements en espèces</li>
+                <li>• Paiements en espèces recommandés - Évitez tout dépôt électronique sans avoir inspecté le bien et vérifié la fiabilité du vendeur</li>
                 <li>• Signalez tout comportement suspect</li>
               </ul>
             </div>
