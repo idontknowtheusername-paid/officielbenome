@@ -10,9 +10,14 @@ import {
   Loader2,
   Mic,
   Video,
-  Camera
+  Camera,
+  MessageSquare
 } from 'lucide-react';
 import { messageService } from '../services/supabase.service';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import MessageTemplates from './MessageTemplates';
+import AttachmentPreview from './AttachmentPreview';
 
 const MessageComposer = ({ 
   conversationId, 
@@ -23,13 +28,18 @@ const MessageComposer = ({
   initialMessage = "",
   listingInfo = null
 }) => {
+  const { user } = useAuth();
   const [message, setMessage] = useState(initialMessage);
   const [isSending, setIsSending] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const typingChannelRef = useRef(null);
 
   // Pre-remplir le message avec des informations sur l'annonce
   useEffect(() => {
@@ -39,14 +49,80 @@ const MessageComposer = ({
     }
   }, [listingInfo, message]);
 
-  // Gerer la saisie
+  // Gérer la synchronisation temps réel de frappe
+  useEffect(() => {
+    if (!conversationId || !user) return;
+
+    // Créer le canal pour la frappe
+    typingChannelRef.current = supabase.channel(`typing:${conversationId}`);
+
+    // Écouter les changements de frappe des autres utilisateurs
+    typingChannelRef.current
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (payload.payload.userId !== user.id) {
+          onTyping?.(payload.payload.isTyping);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+      }
+    };
+  }, [conversationId, user, onTyping]);
+
+  // Fonction pour envoyer l'état de frappe
+  const sendTypingStatus = (isTyping) => {
+    if (typingChannelRef.current && conversationId) {
+      typingChannelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { 
+          userId: user?.id, 
+          isTyping,
+          timestamp: new Date().toISOString()
+        }
+      });
+    }
+  };
+
+  // Gérer la saisie avec debounce pour l'indicateur de frappe
   const handleInputChange = (e) => {
     const value = e.target.value;
     setMessage(value);
     
-    // Notifier que l'utilisateur tape
-    if (onTyping && value.length > 0) {
-      onTyping(true);
+    // Gérer l'indicateur de frappe avec debounce
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    if (value.length > 0) {
+      if (!isTyping) {
+        setIsTyping(true);
+        sendTypingStatus(true);
+      }
+      
+      // Arrêter la frappe après 2 secondes d'inactivité
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+        sendTypingStatus(false);
+      }, 2000);
+    } else {
+      setIsTyping(false);
+      sendTypingStatus(false);
+    }
+  };
+
+  // Sélectionner un template
+  const handleSelectTemplate = (templateContent) => {
+    setMessage(templateContent);
+    setShowTemplates(false);
+    
+    // Focus sur le textarea
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(templateContent.length, templateContent.length);
     }
   };
 
@@ -56,6 +132,13 @@ const MessageComposer = ({
     if (!conversationId) return;
 
     setIsSending(true);
+    
+    // Arrêter l'indicateur de frappe immédiatement
+    setIsTyping(false);
+    sendTypingStatus(false);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
     
     try {
       // Envoyer le message texte
@@ -75,11 +158,6 @@ const MessageComposer = ({
       // Notifier le parent
       if (onMessageSent) {
         onMessageSent();
-      }
-
-      // Notifier que l'utilisateur ne tape plus
-      if (onTyping) {
-        onTyping(false);
       }
     } catch (error) {
       console.error('Erreur envoi message:', error);
@@ -136,21 +214,18 @@ const MessageComposer = ({
     });
   };
 
-  // Formater la taille du fichier
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // Obtenir l'icone selon le type de fichier
-  const getFileIcon = (type) => {
-    if (type.startsWith('image/')) return <Image size={16} />;
-    if (type.startsWith('video/')) return <Video size={16} />;
-    if (type.startsWith('audio/')) return <Mic size={16} />;
-    return <File size={16} />;
+  // Télécharger une pièce jointe
+  const handleDownloadAttachment = async (attachment) => {
+    try {
+      const link = document.createElement('a');
+      link.href = attachment.url;
+      link.download = attachment.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Erreur téléchargement:', error);
+    }
   };
 
   // Auto-resize du textarea
@@ -167,117 +242,73 @@ const MessageComposer = ({
       attachments.forEach(attachment => {
         URL.revokeObjectURL(attachment.url);
       });
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, []);
 
   return (
-    <motion.div 
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4"
-    >
-      {/* Pièces jointes */}
+    <div className="border-t border-gray-200 bg-white p-4">
+      {/* Templates de messages */}
+      <div className="mb-3">
+        <MessageTemplates
+          onSelectTemplate={handleSelectTemplate}
+          listingInfo={listingInfo}
+          className="inline-block"
+        />
+      </div>
+
+      {/* Pieces jointes */}
       <AnimatePresence>
         {attachments.length > 0 && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="mb-3 flex flex-wrap gap-2"
+            className="mb-3 space-y-2"
           >
             {attachments.map((attachment) => (
-              <motion.div
+              <AttachmentPreview
                 key={attachment.id}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg px-3 py-2 border border-blue-200"
-              >
-                {getFileIcon(attachment.type)}
-                <span className="text-sm text-gray-700 truncate max-w-32">
-                  {attachment.name}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {formatFileSize(attachment.size)}
-                </span>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => removeAttachment(attachment.id)}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <X size={14} />
-                </motion.button>
-              </motion.div>
+                attachment={attachment}
+                onRemove={removeAttachment}
+                onDownload={handleDownloadAttachment}
+                showActions={true}
+              />
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Zone de saisie */}
-      <div className="flex items-end space-x-2">
+      <div className="flex items-end space-x-3">
         {/* Boutons d'action */}
         <div className="flex items-center space-x-1">
-          {/* Menu des pièces jointes */}
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-              disabled={disabled || isSending}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
-              title="Joindre un fichier"
-            >
-              <Paperclip size={20} />
-            </motion.button>
-
-            <AnimatePresence>
-              {showAttachmentMenu && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                  className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-10"
-                >
-                  <div className="grid grid-cols-2 gap-2">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        fileInputRef.current?.click();
-                        setShowAttachmentMenu(false);
-                      }}
-                      className="p-3 text-center hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <File size={20} className="mx-auto mb-1 text-blue-500" />
-                      <span className="text-xs text-gray-600">Fichier</span>
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        // Ouvrir la camera
-                        setShowAttachmentMenu(false);
-                      }}
-                      className="p-3 text-center hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <Camera size={20} className="mx-auto mb-1 text-green-500" />
-                      <span className="text-xs text-gray-600">Photo</span>
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+          />
           
           <motion.button
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            title="Joindre un fichier"
+          >
+            <Paperclip size={20} />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            disabled={disabled || isSending}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
             title="Ajouter un emoji"
           >
             <Smile size={20} />
@@ -293,19 +324,20 @@ const MessageComposer = ({
             onKeyPress={handleKeyPress}
             placeholder={placeholder}
             disabled={disabled || isSending}
-            className="w-full resize-none border border-gray-300 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 bg-white/80 backdrop-blur-sm"
-            rows={1}
-            maxLength={1000}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
+            style={{ minHeight: '48px', maxHeight: '120px' }}
           />
           
-          {/* Compteur de caractères */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: message.length > 0 ? 1 : 0 }}
-            className="absolute bottom-2 right-3 text-xs text-gray-400"
-          >
-            {message.length}/1000
-          </motion.div>
+          {/* Indicateur de frappe */}
+          {isTyping && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute -top-8 left-0 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-md"
+            >
+              Vous tapez...
+            </motion.div>
+          )}
         </div>
 
         {/* Bouton d'envoi */}
@@ -313,8 +345,8 @@ const MessageComposer = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleSendMessage}
-          disabled={disabled || isSending || (!message.trim() && attachments.length === 0)}
-          className="p-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+          disabled={(!message.trim() && attachments.length === 0) || disabled || isSending}
+          className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           title="Envoyer le message"
         >
           {isSending ? (
@@ -325,76 +357,22 @@ const MessageComposer = ({
         </motion.button>
       </div>
 
-      {/* Input file caché */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      {/* Picker d'emojis amélioré */}
+      {/* Emoji picker (placeholder pour l'instant) */}
       <AnimatePresence>
         {showEmojiPicker && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="mt-3 p-4 bg-white rounded-xl border border-gray-200 shadow-lg"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-gray-900">Emojis</h4>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setShowEmojiPicker(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={16} />
-              </motion.button>
-            </div>
-            <div className="grid grid-cols-8 gap-2">
-              {[
-                '😊', '😂', '❤️', '👍', '🎉', '🔥', '💯', '👏', 
-                '🙏', '😍', '🤔', '😭', '😱', '🤯', '💪', '👀',
-                '😎', '🥳', '🤩', '😇', '🤗', '😴', '🤤', '😵',
-                '🥺', '😤', '😡', '🤬', '😈', '👻', '🤖', '👽'
-              ].map((emoji, index) => (
-                <motion.button
-                  key={emoji}
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    setMessage(prev => prev + emoji);
-                    setShowEmojiPicker(false);
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-lg text-lg transition-colors"
-                >
-                  {emoji}
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Indicateur de frappe */}
-      <AnimatePresence>
-        {isSending && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="mt-2 text-xs text-gray-500 flex items-center space-x-2"
+            className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
           >
-            <Loader2 size={12} className="animate-spin" />
-            <span>Envoi en cours...</span>
+            <p className="text-sm text-gray-500 text-center">
+              Sélecteur d'emojis à implémenter
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
 

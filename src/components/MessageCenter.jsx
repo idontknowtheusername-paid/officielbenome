@@ -19,13 +19,15 @@ import {
   Smile,
   Settings,
   Filter,
-  MessageSquare
+  MessageSquare,
+  Circle
 } from 'lucide-react';
 import { messageService } from '../services/supabase.service';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import ConversationList from './ConversationList';
 import MessageComposer from './MessageComposer';
+import EnhancedMessageCard from './EnhancedMessageCard';
 
 const MessageCenter = () => {
   const { user } = useAuth();
@@ -38,7 +40,11 @@ const MessageCenter = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [typingUsers, setTypingUsers] = useState(new Set());
   const messagesEndRef = useRef(null);
+  const presenceChannelRef = useRef(null);
+  const typingChannelRef = useRef(null);
 
   // Charger les conversations
   const loadConversations = async () => {
@@ -98,11 +104,92 @@ const MessageCenter = () => {
     }
   };
 
+  // Gérer la présence des utilisateurs (en ligne/hors ligne)
+  useEffect(() => {
+    if (!selectedConversation || !user) return;
+
+    const channelId = `presence:${selectedConversation.id}`;
+    presenceChannelRef.current = supabase.channel(channelId);
+
+    presenceChannelRef.current
+      .on('presence', { event: 'sync' }, () => {
+        const presenceState = presenceChannelRef.current.presenceState();
+        const onlineUserIds = Object.keys(presenceState);
+        setOnlineUsers(new Set(onlineUserIds));
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        newPresences.forEach(presence => {
+          setOnlineUsers(prev => new Set([...prev, presence.user_id]));
+        });
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        leftPresences.forEach(presence => {
+          setOnlineUsers(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(presence.user_id);
+            return newSet;
+          });
+        });
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Se connecter au canal de présence
+          await presenceChannelRef.current.track({ 
+            user_id: user.id, 
+            online_at: new Date().toISOString(),
+            user_name: `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim()
+          });
+        }
+      });
+
+    return () => {
+      if (presenceChannelRef.current) {
+        supabase.removeChannel(presenceChannelRef.current);
+      }
+    };
+  }, [selectedConversation, user]);
+
+  // Gérer l'indicateur de frappe temps réel
+  useEffect(() => {
+    if (!selectedConversation || !user) return;
+
+    const channelId = `typing:${selectedConversation.id}`;
+    typingChannelRef.current = supabase.channel(channelId);
+
+    typingChannelRef.current
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        const { userId, isTyping } = payload.payload;
+        
+        if (userId !== user.id) {
+          setTypingUsers(prev => {
+            const newSet = new Set(prev);
+            if (isTyping) {
+              newSet.add(userId);
+            } else {
+              newSet.delete(userId);
+            }
+            return newSet;
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+      }
+    };
+  }, [selectedConversation, user]);
+
   // Selectionner une conversation
   const handleSelectConversation = (conversation) => {
     setSelectedConversation(conversation);
     loadMessages(conversation.id);
     setShowMobileMenu(false); // Fermer le menu mobile
+    
+    // Réinitialiser les états
+    setIsTyping(false);
+    setTypingUsers(new Set());
   };
 
   // Message envoye
@@ -113,6 +200,11 @@ const MessageCenter = () => {
     }
     // Recharger les conversations pour mettre a jour le dernier message
     loadConversations();
+  };
+
+  // Gérer l'indicateur de frappe
+  const handleTyping = (isTyping) => {
+    setIsTyping(isTyping);
   };
 
   // Supprimer une conversation
@@ -211,6 +303,29 @@ const MessageCenter = () => {
     }
   };
 
+  // Obtenir l'ID du participant (l'autre utilisateur)
+  const getParticipantId = (conversation) => {
+    if (!conversation) return null;
+    
+    if (conversation.participant1_id === user?.id) {
+      return conversation.participant2_id;
+    } else {
+      return conversation.participant1_id;
+    }
+  };
+
+  // Vérifier si le participant est en ligne
+  const isParticipantOnline = (conversation) => {
+    const participantId = getParticipantId(conversation);
+    return participantId ? onlineUsers.has(participantId) : false;
+  };
+
+  // Vérifier si le participant est en train de taper
+  const isParticipantTyping = (conversation) => {
+    const participantId = getParticipantId(conversation);
+    return participantId ? typingUsers.has(participantId) : false;
+  };
+
   // Formater la date
   const formatMessageTime = (dateString) => {
     const date = new Date(dateString);
@@ -235,25 +350,40 @@ const MessageCenter = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Nettoyer les canaux au démontage
+  useEffect(() => {
+    return () => {
+      if (presenceChannelRef.current) {
+        supabase.removeChannel(presenceChannelRef.current);
+      }
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+      }
+    };
+  }, []);
+
   if (!user) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex items-center justify-center h-96"
-      >
+      <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <User className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500">Connectez-vous pour accéder aux messages</p>
+          <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Connexion requise
+          </h3>
+          <p className="text-gray-500">
+            Veuillez vous connecter pour accéder à la messagerie.
+          </p>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Liste des conversations - Desktop */}
-      <div className="hidden md:block">
+    <div className="flex h-full bg-gray-50">
+      {/* Liste des conversations */}
+      <div className={`w-full md:w-80 bg-white border-r border-gray-200 flex flex-col ${
+        showMobileMenu ? 'block' : 'hidden md:flex'
+      }`}>
         <ConversationList
           conversations={conversations}
           selectedConversation={selectedConversation}
@@ -262,34 +392,14 @@ const MessageCenter = () => {
           onArchiveConversation={handleArchiveConversation}
           onStarConversation={handleStarConversation}
           isLoading={isLoading}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onSearch={handleSearchConversations}
         />
       </div>
 
-      {/* Liste des conversations - Mobile */}
-      <AnimatePresence>
-        {showMobileMenu && (
-          <motion.div
-            initial={{ x: -320, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -320, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="md:hidden fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl"
-          >
-            <ConversationList
-              conversations={conversations}
-              selectedConversation={selectedConversation}
-              onSelectConversation={handleSelectConversation}
-              onDeleteConversation={handleDeleteConversation}
-              onArchiveConversation={handleArchiveConversation}
-              onStarConversation={handleStarConversation}
-              isLoading={isLoading}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Zone de chat */}
-      <div className="flex-1 flex flex-col bg-white shadow-lg">
+      <div className="flex-1 flex flex-col">
         {selectedConversation ? (
           <>
             {/* Header de la conversation */}
@@ -307,7 +417,7 @@ const MessageCenter = () => {
                   <ArrowLeft size={20} />
                 </button>
 
-                {/* Avatar avec animation */}
+                {/* Avatar avec animation et statut en ligne */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="relative"
@@ -317,18 +427,59 @@ const MessageCenter = () => {
                     alt={getParticipantName(selectedConversation)}
                     className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-200"
                   />
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                  {/* Statut en ligne/hors ligne */}
+                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full ${
+                    isParticipantOnline(selectedConversation) 
+                      ? 'bg-green-500' 
+                      : 'bg-gray-400'
+                  }`}>
+                    {isParticipantOnline(selectedConversation) && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-full h-full bg-green-500 rounded-full"
+                      />
+                    )}
+                  </div>
                 </motion.div>
 
                 <div>
                   <h3 className="font-semibold text-gray-900">
                     {getParticipantName(selectedConversation) || 'Utilisateur'}
                   </h3>
-                  {selectedConversation.listing && (
-                    <p className="text-sm text-gray-500">
-                      {selectedConversation.listing.title}
-                    </p>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {selectedConversation.listing && (
+                      <p className="text-sm text-gray-500">
+                        {selectedConversation.listing.title}
+                      </p>
+                    )}
+                    {/* Indicateur de frappe */}
+                    {isParticipantTyping(selectedConversation) && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center space-x-1 text-sm text-blue-600"
+                      >
+                        <div className="flex space-x-1">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce"></div>
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                        <span className="text-xs">tape...</span>
+                      </motion.div>
+                    )}
+                    {/* Statut en ligne */}
+                    {isParticipantOnline(selectedConversation) && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center space-x-1 text-sm text-green-600"
+                      >
+                        <Circle size={8} className="fill-current" />
+                        <span className="text-xs">en ligne</span>
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -383,48 +534,15 @@ const MessageCenter = () => {
                 <AnimatePresence>
                   {messages.map((message, index) => {
                     const isOwnMessage = message.sender_id === user?.id;
-                    const isRead = isMessageRead(message);
 
                     return (
-                      <motion.div
+                      <EnhancedMessageCard
                         key={message.id}
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ 
-                          delay: index * 0.1,
-                          type: "spring",
-                          damping: 25,
-                          stiffness: 200
-                        }}
-                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <motion.div 
-                          whileHover={{ scale: 1.02 }}
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl shadow-sm ${
-                            isOwnMessage 
-                              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white' 
-                              : 'bg-white text-gray-900 border border-gray-200'
-                          }`}
-                        >
-                          <p className="text-sm leading-relaxed">{message.content}</p>
-                          <div className={`flex items-center justify-end space-x-1 mt-1 ${
-                            isOwnMessage ? 'text-blue-200' : 'text-gray-500'
-                          }`}>
-                            <span className="text-xs">
-                              {formatMessageTime(message.created_at)}
-                            </span>
-                            {isOwnMessage && (
-                              <motion.span 
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="text-xs"
-                              >
-                                {isRead ? <CheckCheck size={12} /> : <Check size={12} />}
-                              </motion.span>
-                            )}
-                          </div>
-                        </motion.div>
-                      </motion.div>
+                        message={message}
+                        isOwnMessage={isOwnMessage}
+                        showTimestamp={true}
+                        showStatus={true}
+                      />
                     );
                   })}
                 </AnimatePresence>
@@ -432,22 +550,24 @@ const MessageCenter = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Indicateur de frappe */}
+            {/* Indicateur de frappe amélioré */}
             <AnimatePresence>
-              {isTyping && (
+              {isParticipantTyping(selectedConversation) && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
-                  className="px-4 py-2 text-sm text-gray-500 italic bg-gray-50"
+                  className="px-4 py-2 text-sm text-gray-500 italic bg-gray-50 border-t border-gray-100"
                 >
                   <div className="flex items-center space-x-2">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
-                    <span>{getParticipantName(selectedConversation)} tape...</span>
+                    <span className="text-blue-600 font-medium">
+                      {getParticipantName(selectedConversation)} est en train d'écrire...
+                    </span>
                   </div>
                 </motion.div>
               )}
@@ -457,70 +577,25 @@ const MessageCenter = () => {
             <MessageComposer
               conversationId={selectedConversation.id}
               onMessageSent={handleMessageSent}
-              onTyping={setIsTyping}
+              onTyping={handleTyping}
               listingInfo={selectedConversation.listing}
             />
           </>
         ) : (
-          /* Écran d'accueil */
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50"
-          >
-            <div className="text-center max-w-md mx-auto px-6">
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", damping: 15 }}
-                className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6"
-              >
-                <MessageSquare size={32} className="text-white" />
-              </motion.div>
-              <motion.h3 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-xl font-semibold text-gray-900 mb-3"
-              >
-                Sélectionnez une conversation
-              </motion.h3>
-              <motion.p 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="text-gray-600 leading-relaxed"
-              >
-                Choisissez une conversation dans la liste pour commencer à discuter avec d'autres utilisateurs
-              </motion.p>
-              
-              {/* Bouton pour ouvrir la liste sur mobile */}
-              <motion.button
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                onClick={() => setShowMobileMenu(true)}
-                className="md:hidden mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Voir les conversations
-              </motion.button>
+          /* Écran de bienvenue */
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <MessageSquare className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
+                Bienvenue dans la messagerie
+              </h3>
+              <p className="text-gray-500 max-w-md">
+                Sélectionnez une conversation pour commencer à discuter ou créez-en une nouvelle.
+              </p>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
-
-      {/* Overlay mobile */}
-      <AnimatePresence>
-        {showMobileMenu && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowMobileMenu(false)}
-            className="md:hidden fixed inset-0 bg-black/50 z-40"
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 };

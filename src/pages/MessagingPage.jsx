@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MessageCenter from '../components/MessageCenter';
+import RealtimeNotification from '../components/RealtimeNotification';
+import NotificationPermission from '../components/NotificationPermission';
 import { useConversations, useMessageStats } from '../hooks/useMessages';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -11,7 +13,9 @@ import {
   Star, 
   Archive,
   Plus,
-  Search
+  Search,
+  Bell,
+  Settings
 } from 'lucide-react';
 
 // Configuration du client React Query
@@ -98,6 +102,7 @@ const MessageStats = () => {
 const MessagingPageContent = () => {
   const { data: conversations, isLoading, error } = useConversations();
   const [showStats, setShowStats] = useState(true);
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
 
   // Debug logs
   console.log('MessagingPage - isLoading:', isLoading);
@@ -191,7 +196,15 @@ Besoin d'aide ? Je suis là pour vous accompagner !
               </div>
             </CardContent>
           </Card>
+
+          {/* Paramètres de notifications */}
+          <div className="mt-6">
+            <NotificationPermission />
+          </div>
         </div>
+
+        {/* Notifications en temps réel */}
+        <RealtimeNotification />
       </div>
     );
   }
@@ -249,7 +262,15 @@ Besoin d'aide ? Je suis là pour vous accompagner !
               </div>
             </CardContent>
           </Card>
+
+          {/* Paramètres de notifications */}
+          <div className="mt-6">
+            <NotificationPermission />
+          </div>
         </div>
+
+        {/* Notifications en temps réel */}
+        <RealtimeNotification />
       </div>
     );
   }
@@ -268,6 +289,14 @@ Besoin d'aide ? Je suis là pour vous accompagner !
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
+              onClick={() => setShowNotificationSettings(!showNotificationSettings)}
+              className="flex items-center space-x-2"
+            >
+              <Bell className="h-4 w-4" />
+              <span>Notifications</span>
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setShowStats(!showStats)}
             >
               {showStats ? 'Masquer' : 'Afficher'} les statistiques
@@ -280,6 +309,13 @@ Besoin d'aide ? Je suis là pour vous accompagner !
         </div>
       </div>
 
+      {/* Paramètres de notifications */}
+      {showNotificationSettings && (
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <NotificationPermission />
+        </div>
+      )}
+
       {/* Statistiques */}
       {showStats && <MessageStats />}
 
@@ -287,6 +323,9 @@ Besoin d'aide ? Je suis là pour vous accompagner !
       <div className="h-[calc(100vh-200px)]">
         <MessageCenter />
       </div>
+
+      {/* Notifications en temps réel */}
+      <RealtimeNotification />
     </div>
   );
 };
