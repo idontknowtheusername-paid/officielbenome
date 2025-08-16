@@ -433,7 +433,7 @@ const ListingDetailPage = () => {
                 {getCategoryIcon(listing.category)} {getCategoryName(listing.category)}
               </Badge>
               {listing.status === 'approved' && (
-                <Badge variant="default" className="bg-green-500">Approuvé</Badge>
+                <Badge variant="default" className="badge-approved">Approuvé</Badge>
               )}
             </div>
           </div>

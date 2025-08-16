@@ -475,7 +475,7 @@ function AnalyticsPage() {
                   <span className="text-xs text-muted-foreground">Nouveaux</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="mr-2 h-3 w-3 rounded-full bg-green-500"></div>
+                  <div className="mr-2 h-3 w-3 rounded-full bg-green-600"></div>
                   <span className="text-xs text-muted-foreground">Actifs</span>
                 </div>
               </div>

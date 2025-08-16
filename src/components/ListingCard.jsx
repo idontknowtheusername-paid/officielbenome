@@ -48,7 +48,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'approved':
-        return <Badge variant="default" className="bg-green-500">Approuvé</Badge>;
+        return <Badge variant="default" className="badge-approved">Approuvé</Badge>;
       case 'pending':
         return <Badge variant="secondary">En attente</Badge>;
       case 'rejected':

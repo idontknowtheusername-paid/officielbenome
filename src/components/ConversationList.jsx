@@ -388,7 +388,7 @@ const ConversationList = ({
                         <motion.div 
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-600 border-2 border-white rounded-full"
                         />
                       )}
                       {/* Indicateur de frappe - coin inférieur gauche */}

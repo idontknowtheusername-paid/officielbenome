@@ -430,14 +430,14 @@ const MessageCenter = () => {
                   {/* Statut en ligne/hors ligne */}
                   <div className={`absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full ${
                     isParticipantOnline(selectedConversation) 
-                      ? 'bg-green-500' 
+                      ? 'bg-green-600' 
                       : 'bg-gray-400'
                   }`}>
                     {isParticipantOnline(selectedConversation) && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-full h-full bg-green-500 rounded-full"
+                        className="w-full h-full bg-green-600 rounded-full"
                       />
                     )}
                   </div>
