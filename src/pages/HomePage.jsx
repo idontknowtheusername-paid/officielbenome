@@ -8,7 +8,7 @@ import { ArrowRight, FolderHeart as HomeIcon, BadgeCent as CarIcon, Briefcase as
 import { personalData } from '@/lib/personalData';
 import { resolveSearchIntent } from '@/lib/search-intent';
 import { useAuth } from '@/contexts/AuthContext';
-import { listingService } from '@/services/supabase.service';
+import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
 import HeroImage from '@/components/HeroImage';
 

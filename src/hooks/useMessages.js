@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { messageService } from '../services/supabase.service';
+import { messageService } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';

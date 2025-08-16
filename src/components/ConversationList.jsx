@@ -14,7 +14,7 @@ import {
   X,
   Circle
 } from 'lucide-react';
-import { messageService } from '../services/supabase.service';
+import { messageService } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import ConversationSearch from './ConversationSearch';

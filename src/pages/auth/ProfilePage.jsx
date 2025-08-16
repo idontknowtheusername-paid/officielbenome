@@ -44,7 +44,7 @@ import {
 } from '@/components/dashboard';
 import { ListingCardSkeleton, MessageCardSkeleton, StatsCardSkeleton } from '@/components/ui/Skeleton';
 import { DeleteConfirmDialog, EditConfirmDialog, RefreshConfirmDialog, BoostConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { userService, listingService, favoriteService, messageService } from '@/services/supabase.service';
+import { userService, listingService, favoriteService, messageService } from '@/services';
 import Pagination from '@/components/ui/Pagination';
 
 const ProfilePage = () => {

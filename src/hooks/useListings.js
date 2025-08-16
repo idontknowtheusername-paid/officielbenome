@@ -1,5 +1,5 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listingService, favoriteService } from '@/services/supabase.service';
+import { listingService, favoriteService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { queryConfigs } from '@/lib/queryClient';
 

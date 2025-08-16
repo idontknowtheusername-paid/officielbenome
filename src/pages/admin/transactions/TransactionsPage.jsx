@@ -18,7 +18,7 @@ import {
   ExternalLink,
   DollarSign
 } from 'lucide-react';
-import { transactionService } from '@/services/supabase.service';
+import { transactionService } from '@/services';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 

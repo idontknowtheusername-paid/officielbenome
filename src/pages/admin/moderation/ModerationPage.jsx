@@ -28,7 +28,7 @@ import {
 import { 
   listingService,
   userService
-} from '@/services/supabase.service';
+} from '@/services';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 

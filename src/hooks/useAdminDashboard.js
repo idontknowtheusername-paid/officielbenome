@@ -5,7 +5,7 @@ import {
   userService, 
   notificationService,
   messageService 
-} from '@/services/supabase.service';
+} from '@/services';
 import { toast } from 'sonner';
 
 /**

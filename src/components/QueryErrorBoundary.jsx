@@ -4,41 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 
-export const QueryErrorBoundary = ({ children }) => {
-  const { reset } = useQueryErrorResetBoundary();
-
-  return (
-    <ErrorBoundary
-      onReset={reset}
-      fallbackRender={({ error, resetErrorBoundary }) => (
-        <div className="flex items-center justify-center min-h-screen p-4">
-          <Alert className="max-w-md">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Erreur de chargement</AlertTitle>
-            <AlertDescription className="mt-2">
-              Une erreur est survenue lors du chargement des données.
-              <div className="mt-2 text-sm text-muted-foreground">
-                {error.message}
-              </div>
-            </AlertDescription>
-            <Button
-              onClick={resetErrorBoundary}
-              className="mt-4"
-              variant="outline"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Réessayer
-            </Button>
-          </Alert>
-        </div>
-      )}
-    >
-      {children}
-    </ErrorBoundary>
-  );
-};
-
-// Composant ErrorBoundary simple
+// Composant ErrorBoundary simple (classe)
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -93,4 +59,39 @@ class ErrorBoundary extends React.Component {
 
     return this.props.children;
   }
-} 
+}
+
+// Composant QueryErrorBoundary qui utilise le hook et retourne l'ErrorBoundary
+export const QueryErrorBoundary = ({ children }) => {
+  const { reset } = useQueryErrorResetBoundary();
+
+  return (
+    <ErrorBoundary
+      onReset={reset}
+      fallbackRender={({ error, resetErrorBoundary }) => (
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <Alert className="max-w-md">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Erreur de chargement</AlertTitle>
+            <AlertDescription className="mt-2">
+              Une erreur est survenue lors du chargement des données.
+              <div className="mt-2 text-sm text-muted-foreground">
+                {error.message}
+              </div>
+            </AlertDescription>
+            <Button
+              onClick={resetErrorBoundary}
+              className="mt-4"
+              variant="outline"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Réessayer
+            </Button>
+          </Alert>
+        </div>
+      )}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}; 

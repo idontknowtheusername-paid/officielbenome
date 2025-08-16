@@ -22,7 +22,7 @@ import {
   MessageSquare,
   Circle
 } from 'lucide-react';
-import { messageService } from '../services/supabase.service';
+import { messageService } from '../services';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import ConversationList from './ConversationList';

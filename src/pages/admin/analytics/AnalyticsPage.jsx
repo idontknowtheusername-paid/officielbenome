@@ -18,7 +18,7 @@ import {
 import { 
   listingService,
   userService
-} from '@/services/supabase.service';
+} from '@/services';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

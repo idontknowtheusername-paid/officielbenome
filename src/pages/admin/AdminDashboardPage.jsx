@@ -9,7 +9,7 @@ import {
   listingService,
   userService,
   notificationService
-} from '@/services/supabase.service';
+} from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';

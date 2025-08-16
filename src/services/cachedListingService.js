@@ -1,4 +1,4 @@
-import { listingService } from './supabase.service';
+import { listingService } from './index.js';
 import { localCache } from '@/lib/localCache';
 
 // Configuration des TTL par type de données

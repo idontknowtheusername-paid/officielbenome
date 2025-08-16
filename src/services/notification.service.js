@@ -1,185 +1,128 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
-class NotificationService {
-  constructor() {
-    this.subscription = null;
-  }
+// ============================================================================
+// SERVICE NOTIFICATIONS
+// ============================================================================
 
+export const notificationService = {
   // Recuperer les notifications d'un utilisateur
-  async getUserNotifications(userId, filters = {}) {
-    try {
-      let query = supabase
+  getUserNotifications: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', userId)
+      .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (filters.type) query = query.eq('type', filters.type);
-      if (filters.read !== undefined) query = query.eq('is_read', filters.read);
-      if (filters.limit) query = query.limit(filters.limit);
-
-      const { data, error } = await query;
       if (error) throw error;
       return data;
-    } catch (error) {
-      console.error('Erreur récupération notifications:', error);
-      throw error;
-    }
-  }
+  },
+
+  // Marquer une notification comme lue
+  markAsRead: async (notificationId) => {
+      const { data, error } = await supabase
+        .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+  },
 
   // Creer une notification
-  async createNotification(notificationData) {
-    try {
+  createNotification: async (notificationData) => {
       const { data, error } = await supabase
         .from('notifications')
-        .insert([{
-          ...notificationData,
-          is_read: false,
-          created_at: new Date().toISOString()
-        }])
+      .insert([notificationData])
         .select()
         .single();
 
       if (error) throw error;
       return data;
-    } catch (error) {
-      console.error('Erreur création notification:', error);
-      throw error;
-    }
-  }
+  },
 
-  // Marquer comme lue
-  async markAsRead(notificationId) {
-    try {
-      const { data, error } = await supabase
+  // Marquer toutes les notifications comme lues
+  markAllAsRead: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', user.id)
+      .eq('read', false);
+
+    if (error) throw error;
+    return true;
+  },
+
+  // Supprimer une notification
+  deleteNotification: async (notificationId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { error } = await supabase
         .from('notifications')
-        .update({
-          is_read: true,
-          read_at: new Date().toISOString()
-        })
-        .eq('id', notificationId)
-        .select()
-        .single();
+      .delete()
+      .eq('id', notificationId)
+      .eq('user_id', user.id);
 
       if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erreur marquage lu:', error);
-      throw error;
-    }
-  }
+    return true;
+  },
 
-  // Marquer toutes comme lues
-  async markAllAsRead(userId) {
-    try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .update({
-          is_read: true,
-          read_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-        .eq('is_read', false)
-        .select();
+  // Recuperer le nombre de notifications non lues
+  getUnreadCount: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erreur marquage toutes lues:', error);
-      throw error;
-    }
-  }
-
-  // Compter les non lues
-  async getUnreadCount(userId) {
-    try {
       const { count, error } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('is_read', false);
+      .eq('user_id', user.id)
+      .eq('read', false);
 
       if (error) throw error;
       return count || 0;
-    } catch (error) {
-      console.error('Erreur comptage non lues:', error);
-      throw error;
-    }
-  }
+  },
 
-  // Notifications par type
-  async createListingNotification(userId, listingId, type, metadata = {}) {
-    const types = {
-      'listing_approved': { title: 'Annonce approuvée', message: 'Votre annonce est maintenant visible', icon: 'check-circle', color: 'green' },
-      'listing_rejected': { title: 'Annonce rejetée', message: 'Votre annonce a été rejetée', icon: 'x-circle', color: 'red' },
-      'new_message': { title: 'Nouveau message', message: 'Message reçu sur votre annonce', icon: 'message-circle', color: 'blue' },
-      'new_offer': { title: 'Nouvelle offre', message: 'Offre reçue pour votre annonce', icon: 'dollar-sign', color: 'green' }
-    };
-
-    const notificationData = types[type] || { title: 'Notification', message: 'Nouvelle notification', icon: 'bell', color: 'blue' };
-
-    return this.createNotification({
-      user_id: userId,
-      type,
-      title: notificationData.title,
-      message: notificationData.message,
-      icon: notificationData.icon,
-      color: notificationData.color,
-      metadata: { listing_id: listingId, ...metadata }
-    });
-  }
-
-  // Temps reel
-  subscribeToNotifications(userId, callback) {
-    if (this.subscription) this.subscription.unsubscribe();
-
-    this.subscription = supabase
-      .channel('notifications')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${userId}`
-      }, (payload) => callback(payload.new))
-      .subscribe();
-  }
-
-  unsubscribeFromNotifications() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      this.subscription = null;
-    }
-  }
-
-  // Statistiques
-  async getNotificationStats(userId) {
+  // Envoyer une notification push
+  sendPushNotification: async (userId, title, body, data = {}) => {
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('type, is_read, created_at')
-        .eq('user_id', userId);
+      // Récupérer le token push de l'utilisateur
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('push_token')
+        .eq('id', userId)
+        .single();
 
-      if (error) throw error;
+      if (userError || !userData?.push_token) {
+        console.warn('Aucun token push trouvé pour l\'utilisateur:', userId);
+        return false;
+      }
 
-      const stats = {
-        total: data.length,
-        unread: data.filter(n => !n.is_read).length,
-        byType: {},
-        byMonth: {}
-      };
-
-      data.forEach(n => {
-        stats.byType[n.type] = (stats.byType[n.type] || 0) + 1;
-        const month = new Date(n.created_at).toISOString().slice(0, 7);
-        stats.byMonth[month] = (stats.byMonth[month] || 0) + 1;
+      // Créer la notification dans la base
+      const notification = await notificationService.createNotification({
+        user_id: userId,
+        title,
+        body,
+        type: 'push',
+        data: JSON.stringify(data),
+        read: false
       });
 
-      return stats;
+      // Ici vous pourriez intégrer un service de push (Firebase, OneSignal, etc.)
+      // Pour l'instant, on retourne juste la notification créée
+      return notification;
     } catch (error) {
-      console.error('Erreur statistiques:', error);
+      console.error('Erreur envoi notification push:', error);
       throw error;
     }
   }
-}
+};
 
-export const notificationService = new NotificationService(); 
+export default notificationService; 

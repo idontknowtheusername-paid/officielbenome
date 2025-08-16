@@ -25,7 +25,7 @@ import {
 import { 
   listingService,
   categoryService
-} from '@/services/supabase.service';
+} from '@/services';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

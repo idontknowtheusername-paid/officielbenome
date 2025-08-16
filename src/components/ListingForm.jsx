@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { listingService, storageService } from '@/services/supabase.service';
+import { listingService, storageService } from '@/services';
 import { Camera } from 'lucide-react';
 
 const CATEGORY_OPTIONS = [

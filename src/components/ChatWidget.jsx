@@ -3,7 +3,7 @@ import { chatWithMistral, chatWithMistralStream } from '@/lib/mistralClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { resolveSearchIntent } from '@/lib/search-intent';
-import { listingService } from '@/services/supabase.service';
+import { listingService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ChatWidget = ({ pageContext = {} }) => {

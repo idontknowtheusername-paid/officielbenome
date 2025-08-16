@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Flag, AlertTriangle, X, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { reportService } from '@/services/supabase.service';
+import { reportService } from '@/services';
 
 const ReportModal = ({ isOpen, onClose, listing, onReportSubmitted }) => {
   const [reason, setReason] = useState('');

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { listingService, messageService } from '@/services/supabase.service';
+import { listingService, messageService } from '@/services';
 import ImageGallery from '@/components/ImageGallery';
 import { useListingImages } from '@/hooks';
 import ReportModal from '@/components/ReportModal';
