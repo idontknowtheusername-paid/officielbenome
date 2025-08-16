@@ -189,7 +189,7 @@ const Navbar = () => {
                   <NavLink 
                     to="/connexion" 
                     onClick={() => setIsOpen(false)} 
-                    className="text-base w-full justify-start px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
+                    className="text-base w-full justify-start px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 via-blue-500 to-emerald-500 hover:from-blue-700 hover:via-blue-600 hover:to-emerald-600 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
                     aria-label="Se connecter"
                   >
                       <UserCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Connexion
@@ -197,7 +197,7 @@ const Navbar = () => {
                   <NavLink 
                     to="/inscription" 
                     onClick={() => setIsOpen(false)} 
-                    className="text-base w-full justify-start px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
+                    className="text-base w-full justify-start px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 via-blue-500 to-emerald-500 hover:from-blue-700 hover:via-blue-600 hover:to-emerald-600 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
                     aria-label="S'inscrire"
                   >
                       <UserCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Inscription
