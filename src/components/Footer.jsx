@@ -55,7 +55,7 @@ const Footer = () => {
           {/* Logo & Newsletter */}
           <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 pr-4">
             <Link to="/" className="flex items-center space-x-2 mb-6">
-              <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
+              <span className="text-2xl font-bold text-primary">{personalData.siteName}</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6">
               La plateforme N°1 en Afrique de l'Ouest pour l'immobilier, l'automobile, les services et bien plus.
