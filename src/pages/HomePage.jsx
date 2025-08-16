@@ -101,7 +101,7 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            Bienvenue sur <span className="text-primary">{personalData.siteName}</span>
+            Bienvenue sur <span className="gradient-text">{personalData.siteName}</span>
           </motion.h1>
           <motion.p 
             className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto"
