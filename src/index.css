@@ -177,6 +177,24 @@ html:not(.dark) .glassmorphic-card {
   @apply bg-red-600 text-white; /* High contrast red */
 }
 
+/* Gradient buttons for authentication */
+.btn-gradient-primary {
+  @apply bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105;
+}
+
+.btn-gradient-secondary {
+  @apply bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105;
+}
+
+/* Alternative gradient styles */
+.btn-gradient-blue {
+  @apply bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl;
+}
+
+.btn-gradient-green {
+  @apply bg-gradient-to-r from-emerald-500 via-green-600 to-emerald-700 hover:from-emerald-600 hover:via-green-700 hover:to-emerald-800 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl;
+}
+
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
