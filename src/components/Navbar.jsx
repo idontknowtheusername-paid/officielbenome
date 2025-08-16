@@ -130,12 +130,12 @@ const Navbar = () => {
                 </Button>
               ) : user && (
                 <>
-                  <Button asChild className="hidden md:inline-flex btn-primary">
+                  <Button asChild className="hidden md:inline-flex btn-gradient-primary">
                     <Link to="/messages" aria-label="Accéder aux messages">
                       <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" /> Messages
                     </Link>
                   </Button>
-                  <Button asChild className="hidden md:inline-flex btn-primary">
+                  <Button asChild className="hidden md:inline-flex btn-gradient-primary">
                     <Link to="/profile" aria-label="Accéder à mon compte">
                       <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Mon Compte
                     </Link>
@@ -218,7 +218,7 @@ const Navbar = () => {
                   <NavLink 
                     to="/messages" 
                     onClick={() => setIsOpen(false)} 
-                    className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}
+                    className="text-base w-full justify-start px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 via-blue-500 to-emerald-500 hover:from-blue-700 hover:via-blue-600 hover:to-emerald-600 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
                     aria-label="Accéder aux messages"
                   >
                     <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" /> Messages
@@ -226,7 +226,7 @@ const Navbar = () => {
                   <NavLink 
                     to="/profile" 
                     onClick={() => setIsOpen(false)} 
-                    className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}
+                    className="text-base w-full justify-start px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 via-blue-500 to-emerald-500 hover:from-blue-700 hover:via-blue-600 hover:to-emerald-600 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
                     aria-label="Accéder à mon compte"
                   >
                     <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Mon Compte
