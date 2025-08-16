@@ -55,7 +55,7 @@ const Footer = () => {
           {/* Logo & Newsletter */}
           <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 pr-4">
             <Link to="/" className="flex items-center space-x-2 mb-6">
-              <span className="text-2xl font-bold text-primary">{personalData.siteName}</span>
+              <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6">
               La plateforme N°1 en Afrique de l'Ouest pour l'immobilier, l'automobile, les services et bien plus.
@@ -92,7 +92,7 @@ const Footer = () => {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-xs text-muted-foreground mb-4 md:mb-0">
-            &copy; {currentYear} {personalData.siteName}. Tous droits réservés. Conçu avec ❤️ en Afrique.
+            &copy; {currentYear} {personalData.siteName}. Tous droits réservés.
           </p>
           <div className="flex space-x-4">
             {socialLinks.map((social) => (

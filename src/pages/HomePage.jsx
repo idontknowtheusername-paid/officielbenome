@@ -153,7 +153,7 @@ const HomePage = () => {
             animate={{ opacity: 1, y:0 }}
             transition={{ duration:0.5 }}
           >
-            Explorez nos <span className="text-primary font-semibold">Univers</span>
+                         Explorez nos <span className="gradient-text">Univers</span>
           </motion.h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category, index) => (
@@ -182,7 +182,7 @@ const HomePage = () => {
       <section className="py-16 md:py-24 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            Annonces <span className="text-primary font-semibold">Populaires</span>
+                         Annonces <span className="gradient-text">Populaires</span>
           </h2>
           {errorPopular && (
             <p className="text-center text-destructive mb-8">{errorPopular}</p>
@@ -233,7 +233,7 @@ const HomePage = () => {
             animate={{ opacity: 1, y:0 }}
             transition={{ duration:0.5 }}
           >
-            Prêt à <span className="text-primary font-semibold">Rejoindre MaxiMarket</span> ?
+                         Prêt à <span className="gradient-text">Rejoindre MaxiMarket</span> ?
           </motion.h2>
           <motion.p 
             className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto"

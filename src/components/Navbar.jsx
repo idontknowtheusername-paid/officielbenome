@@ -53,7 +53,7 @@ const Navbar = () => {
   // Optimisation : Mémoriser le logo pour éviter les re-renders
   const Logo = useMemo(() => (
     <Link to="/" className="flex items-center space-x-2" aria-label="Accueil MaxiMarket">
-      <span className="text-2xl font-bold text-primary">{personalData.siteName}</span>
+      <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
     </Link>
   ), []);
 
