@@ -174,7 +174,16 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           <Badge variant="secondary" className="bg-black/70 text-white text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-1.5">
             {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
           </Badge>
-          {getStatusBadge(listing.status)}
+          {/*
+            Masquer le badge "Approuvé" sur mobile uniquement pour les annonces premium.
+            Sur mobile (taille < sm) : si l'annonce est premium et le status est 'approved', ne pas afficher le badge.
+            Sur >= sm : afficher normalement.
+          */}
+          {listing.status === 'approved' && isPremium ? (
+            <span className="hidden sm:inline-flex">{getStatusBadge(listing.status)}</span>
+          ) : (
+            getStatusBadge(listing.status)
+          )}
         </div>
 
         {/* Badges Premium - Positionnés en haut à droite */}
