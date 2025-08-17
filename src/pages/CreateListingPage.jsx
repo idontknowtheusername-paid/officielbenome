@@ -111,28 +111,37 @@ const CreateListingPage = () => {
     return 'Aperçu disponible (certaines données peuvent être manquantes)';
   };
 
-  // Fonction pour contacter le support
+  // Fonction pour contacter le support - MISE À JOUR
   const handleContactSupport = () => {
-    // Ouvrir une nouvelle fenêtre avec les informations de contact
-    const supportInfo = `
-      📧 Email: support@maximarket.com
-      📱 Téléphone: +221 77 123 4567
-      💬 WhatsApp: +221 77 123 4567
-      🌐 Site web: https://maximarket.com/support
-      
-      Heures d'ouverture: Lundi-Vendredi 8h-18h (GMT)
-      
-      Nous répondons généralement sous 24h.
-    `;
+    // Construire le message pré-rempli
+    const subject = encodeURIComponent('Support création annonce - MaxiMarket');
+    const body = encodeURIComponent(`Bonjour l'équipe MaxiMarket,
+
+Je rencontre des difficultés lors de la création de mon annonce et j'aurais besoin de votre aide.
+
+📋 Détails de ma demande :
+• Catégorie d'annonce : ${category ? getCategoryDisplayName(category) : 'Non spécifiée'}
+• Étape actuelle : Étape ${currentStep} sur ${steps.length}
+• Problème rencontré : [Veuillez décrire votre problème ici]
+
+📧 Mon email de contact : [Votre email]
+📱 Mon téléphone : [Votre téléphone]
+
+Merci de votre aide !
+
+Cordialement,
+[Votre nom]
+
+---
+Ce message a été généré automatiquement depuis le formulaire de création d'annonce MaxiMarket.
+Support : support@maximarket.com
+Site : https://maximarket.com`);
+
+    // Construire l'URL mailto avec tous les paramètres
+    const mailtoUrl = `mailto:support@maximarket.com?subject=${subject}&body=${body}`;
     
-    // Option 1: Afficher dans une alerte (simple)
-    alert(supportInfo);
-    
-    // Option 2: Ouvrir une nouvelle fenêtre (plus professionnel)
-    window.open('mailto:support@maximarket.com?subject=Support création annonce', '_blank');
-    
-    // Option 3: Rediriger vers une page de support
-    // navigate('/support');
+    // Ouvrir le client mail par défaut
+    window.open(mailtoUrl, '_blank');
   };
 
   return (
