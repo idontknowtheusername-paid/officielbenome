@@ -531,7 +531,7 @@ export const listingService = {
     return stats;
   },
 
-  // Recuperer les annonces premium (featured et/ou boosted)
+  // Recuperer les annonces premium (is_featured et/ou is_boosted)
   getPremiumListings: async (limit = 6) => {
     // Verifier la configuration Supabase
     if (!isSupabaseConfigured) {
@@ -545,8 +545,8 @@ export const listingService = {
             price: 15000000,
             category: 'real_estate',
             status: 'approved',
-            featured: true,
-            boosted: true,
+            is_featured: true,
+            is_boosted: true,
             user_id: 'premium-user-1',
             created_at: new Date().toISOString(),
             location: { city: 'Saly', country: 'Sénégal' },
@@ -569,8 +569,8 @@ export const listingService = {
             price: 45000000,
             category: 'automobile',
             status: 'approved',
-            featured: true,
-            boosted: true,
+            is_featured: true,
+            is_boosted: true,
             user_id: 'premium-user-2',
             created_at: new Date().toISOString(),
             location: { city: 'Dakar', country: 'Sénégal' },
@@ -593,8 +593,8 @@ export const listingService = {
             price: 250000,
             category: 'services',
             status: 'approved',
-            featured: true,
-            boosted: false,
+            is_featured: true,
+            is_boosted: false,
             user_id: 'premium-user-3',
             created_at: new Date().toISOString(),
             location: { city: 'Dakar', country: 'Sénégal' },
@@ -622,7 +622,7 @@ export const listingService = {
     }
 
     try {
-      // Récupérer les annonces premium (featured = true ET/OU boosted = true)
+      // Récupérer les annonces premium (is_featured = true ET/OU is_boosted = true)
       const { data, error } = await supabase
         .from('listings')
         .select(`
@@ -635,7 +635,7 @@ export const listingService = {
             email
           )
         `)
-        .or('featured.eq.true,boosted.eq.true')
+        .or('is_featured.eq.true,is_boosted.eq.true')
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(limit);
