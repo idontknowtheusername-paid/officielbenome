@@ -520,8 +520,8 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Informations de base</h3>
-              <p className="text-gray-600 mb-6">Commencez par les informations essentielles de votre annonce.</p>
+                              <h3 className="text-xl font-semibold text-foreground mb-4">Informations de base</h3>
+                <p className="text-muted-foreground mb-6">Commencez par les informations essentielles de votre annonce.</p>
             </div>
             
             <div className="space-y-4">
@@ -546,8 +546,18 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   value={form.description}
                   onChange={handleChange}
                   placeholder="Décrivez votre offre en détail..."
-                  rows={6}
+                  rows={4}
                   required
+                  className="max-w-2xl resize-none transition-all duration-200"
+                  style={{
+                    minHeight: '120px',
+                    height: 'auto',
+                    overflow: 'hidden'
+                  }}
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px';
+                  }}
                 />
               </div>
               
@@ -571,7 +581,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
             
             {/* Prix et localisation intégrés dans l'étape 1 */}
             <div className="space-y-4 pt-6 border-t">
-              <h4 className="text-lg font-medium text-gray-900">Prix et localisation</h4>
+                                <h4 className="text-lg font-medium text-foreground">Prix et localisation</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -648,13 +658,13 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Médias et détails</h3>
-              <p className="text-gray-600 mb-6">Ajoutez des photos et des informations spécifiques à votre catégorie.</p>
+                              <h3 className="text-xl font-semibold text-foreground mb-4">Médias et détails</h3>
+                <p className="text-muted-foreground mb-6">Ajoutez des photos et des informations spécifiques à votre catégorie.</p>
             </div>
             
             {/* Section Médias */}
             <div className="space-y-4">
-              <h4 className="text-lg font-medium text-gray-900">Images</h4>
+                              <h4 className="text-lg font-medium text-foreground">Images</h4>
               <div className="space-y-2">
                 <Label>Images</Label>
                 <div className={`border-2 border-dashed border-gray-400 rounded-lg p-6 text-center transition-colors ${

@@ -111,6 +111,30 @@ const CreateListingPage = () => {
     return 'Aperçu disponible (certaines données peuvent être manquantes)';
   };
 
+  // Fonction pour contacter le support
+  const handleContactSupport = () => {
+    // Ouvrir une nouvelle fenêtre avec les informations de contact
+    const supportInfo = `
+      📧 Email: support@maximarket.com
+      📱 Téléphone: +221 77 123 4567
+      💬 WhatsApp: +221 77 123 4567
+      🌐 Site web: https://maximarket.com/support
+      
+      Heures d'ouverture: Lundi-Vendredi 8h-18h (GMT)
+      
+      Nous répondons généralement sous 24h.
+    `;
+    
+    // Option 1: Afficher dans une alerte (simple)
+    alert(supportInfo);
+    
+    // Option 2: Ouvrir une nouvelle fenêtre (plus professionnel)
+    // window.open('mailto:support@maximarket.com?subject=Support création annonce', '_blank');
+    
+    // Option 3: Rediriger vers une page de support
+    // navigate('/support');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header avec navigation */}
@@ -302,7 +326,7 @@ const CreateListingPage = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Notre équipe est là pour vous accompagner dans la création de votre annonce.
                     </p>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={handleContactSupport}>
                       Contacter le support
                     </Button>
                   </CardContent>
