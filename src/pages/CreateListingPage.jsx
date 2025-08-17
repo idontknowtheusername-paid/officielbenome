@@ -96,6 +96,22 @@ const CreateListingPage = () => {
     setFormData(prev => ({ ...prev, ...data }));
   };
 
+  // Validation des données pour le preview
+  const canShowPreview = () => {
+    const hasRequiredData = formData.title && formData.description && formData.price;
+    const hasImages = formData.images && formData.images.length > 0;
+    return hasRequiredData && hasImages;
+  };
+
+  // Fonction pour afficher un message d'aide
+  const showPreviewHelp = () => {
+    if (!formData.title) return 'Ajoutez un titre à votre annonce';
+    if (!formData.description) return 'Ajoutez une description à votre annonce';
+    if (!formData.price) return 'Définissez un prix pour votre annonce';
+    if (!formData.images || formData.images.length === 0) return 'Ajoutez au moins une image';
+    return '';
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header avec navigation */}
@@ -131,6 +147,9 @@ const CreateListingPage = () => {
                 variant="outline" 
                 size="sm"
                 onClick={() => setShowPreview(!showPreview)}
+                disabled={!canShowPreview()}
+                className={!canShowPreview() ? 'opacity-50 cursor-not-allowed' : ''}
+                title={!canShowPreview() ? showPreviewHelp() : 'Voir l\'aperçu de votre annonce'}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 {showPreview ? 'Masquer' : 'Aperçu'}
@@ -138,6 +157,14 @@ const CreateListingPage = () => {
               <Button variant="outline" size="sm">
                 Sauvegarder
               </Button>
+              
+              {/* Indicateur de validation */}
+              {!canShowPreview() && (
+                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <span>{showPreviewHelp()}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
