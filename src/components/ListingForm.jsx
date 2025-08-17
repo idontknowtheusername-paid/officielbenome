@@ -332,7 +332,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   };
 
   const nextStep = () => {
-    if (activeStep < 3) {
+    if (activeStep < 2) {
       setActiveStep(activeStep + 1);
       if (onStepChange) {
         onStepChange(activeStep + 1);
@@ -940,54 +940,6 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
           </div>
         );
         
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Aperçu et publication</h3>
-              <p className="text-gray-600 mb-6">Vérifiez les informations avant de publier votre annonce.</p>
-            </div>
-            
-            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-              <div>
-                <h4 className="font-semibold text-lg">{form.title}</h4>
-                <p className="text-gray-600">{form.description}</p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Prix:</span> {form.price} {form.currency}
-                </div>
-                <div>
-                  <span className="font-medium">Catégorie:</span> {form.category}
-                </div>
-                <div>
-                  <span className="font-medium">Localisation:</span> {form.location.city}, {form.location.country}
-                </div>
-                <div>
-                  <span className="font-medium">Images:</span> {form.images.length}
-                </div>
-              </div>
-              
-              {form.images.length > 0 && (
-                <div>
-                  <span className="font-medium text-sm">Aperçu des images:</span>
-                  <div className="flex gap-2 mt-2">
-                    {form.images.slice(0, 3).map((img, idx) => (
-                      <img key={idx} src={img.url} alt="" className="w-16 h-16 object-cover rounded" />
-                    ))}
-                    {form.images.length > 3 && (
-                      <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center text-xs text-gray-600 font-medium">
-                        +{form.images.length - 3}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-        
       default:
         return null;
     }
@@ -1009,7 +961,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         </Button>
         
         <div className="flex items-center space-x-2">
-          {activeStep < 3 ? (
+          {activeStep < 2 ? (
             <Button
               type="button"
               onClick={nextStep}

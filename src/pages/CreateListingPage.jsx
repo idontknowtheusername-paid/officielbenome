@@ -63,16 +63,9 @@ const CreateListingPage = () => {
     },
     {
       id: 2,
-      title: 'Médias et détails',
-      description: 'Photos, vidéos et caractéristiques spécifiques',
+      title: 'Médias et publication',
+      description: 'Photos, vidéos, caractéristiques spécifiques et publication',
       icon: Camera,
-      completed: false
-    },
-    {
-      id: 3,
-      title: 'Aperçu et publication',
-      description: 'Vérification finale et publication',
-      icon: Eye,
       completed: false
     }
   ];
