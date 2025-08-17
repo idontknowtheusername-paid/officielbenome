@@ -153,17 +153,9 @@ const CreateListingPage = () => {
                 <Eye className="h-4 w-4 mr-2" />
                 {showPreview ? 'Masquer' : 'Aperçu'}
               </Button>
-              <Button variant="outline" size="sm">
-                Sauvegarder
-              </Button>
+
               
-              {/* Indicateur de validation */}
-              {!canShowPreview() && (
-                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <span>{showPreviewHelp()}</span>
-                </div>
-              )}
+
             </div>
           </div>
         </div>

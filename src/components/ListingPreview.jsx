@@ -4,14 +4,9 @@ import {
   ChevronLeft, 
   ChevronRight, 
   MapPin, 
-  Calendar, 
   Eye, 
   Heart,
   Share2,
-  Phone,
-  MessageSquare,
-  Star,
-  Clock,
   Tag,
   Building,
   Car,
@@ -326,66 +321,13 @@ const ListingPreview = ({ formData, onClose }) => {
 
             {/* Sidebar */}
             <div className="space-y-4">
-              {/* Actions */}
-              <div className="bg-muted rounded-lg p-4">
-                <div className="space-y-3">
-                  <Button className="w-full bg-primary hover:bg-primary/90">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Contacter
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Envoyer un message
-                  </Button>
-                </div>
-              </div>
 
-              {/* Informations vendeur */}
-              <div className="bg-muted rounded-lg p-4">
-                                  <h4 className="font-semibold text-foreground mb-3">Vendeur</h4>
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-                    {formData.user?.firstName?.charAt(0) || 'U'}
-                  </div>
-                  <div>
-                    <div className="font-medium text-foreground">
-                      {formData.user?.firstName ? `${formData.user.firstName} ${formData.user.lastName || ''}` : 'Utilisateur'}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Membre depuis 2024</div>
-                  </div>
-                </div>
-                <div className="flex items-center mt-3 text-sm text-muted-foreground">
-                  <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                  <span>4.8 (12 avis)</span>
-                </div>
-              </div>
 
-              {/* Statistiques */}
-              <div className="bg-muted rounded-lg p-4">
-                                  <h4 className="font-semibold text-foreground mb-3">Statistiques</h4>
-                <div className="space-y-2 text-sm">
-                                      <div className="flex justify-between">
-                      <span className="text-muted-foreground">Vues:</span>
-                      <span className="font-medium text-foreground">0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Favoris:</span>
-                      <span className="font-medium text-foreground">0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Partages:</span>
-                      <span className="font-medium text-foreground">0</span>
-                    </div>
-                </div>
-              </div>
+              
 
-              {/* Date de publication */}
-              <div className="bg-muted rounded-lg p-4">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Publié aujourd'hui
-                </div>
-              </div>
+              
+
+
             </div>
           </div>
         </div>
