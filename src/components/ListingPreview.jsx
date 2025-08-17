@@ -245,7 +245,7 @@ const ListingPreview = ({ formData, onClose }) => {
                 </h1>
                 <div className="flex items-center text-muted-foreground text-sm">
                   <MapPin className="h-4 w-4 mr-1" />
-                  {formData.location?.city && formData.location?.country 
+                  {formData.location && typeof formData.location === 'object' && formData.location.city && formData.location.country 
                     ? `${formData.location.city}, ${formData.location.country}`
                     : 'Localisation non définie'
                   }

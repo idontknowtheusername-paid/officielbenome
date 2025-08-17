@@ -105,7 +105,10 @@ const ListingCard = ({
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span className="flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
-              {listing.location || 'Abidjan'}
+              {listing.location && typeof listing.location === 'object' && listing.location.city && listing.location.country
+                ? `${listing.location.city}, ${listing.location.country}`
+                : listing.location?.city || listing.location?.country || 'Localisation non spécifiée'
+              }
             </span>
             <span className="flex items-center">
               <Calendar className="h-3 w-3 mr-1" />
