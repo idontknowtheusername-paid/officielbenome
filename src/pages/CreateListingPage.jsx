@@ -97,9 +97,9 @@ const CreateListingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* Header avec navigation */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-background/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -107,7 +107,7 @@ const CreateListingPage = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(-1)}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Retour
@@ -121,7 +121,7 @@ const CreateListingPage = () => {
                     </span>
                   </div>
                 )}
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-green-600 text-white">
                   Nouvelle annonce
                 </Badge>
               </div>
@@ -151,10 +151,10 @@ const CreateListingPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            <h1 className="text-4xl font-bold text-foreground mb-3">
               {category ? `Créer une annonce ${getCategoryDisplayName(category)}` : 'Créer une annonce'}
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Partagez votre offre avec notre communauté. Remplissez les informations ci-dessous pour publier votre annonce.
             </p>
           </motion.div>
@@ -172,7 +172,7 @@ const CreateListingPage = () => {
                   <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                     currentStep >= step.id 
                       ? 'bg-primary border-primary text-white' 
-                      : 'bg-white border-gray-300 text-gray-400'
+                      : 'bg-card border-border text-muted-foreground'
                   }`}>
                     {currentStep > step.id ? (
                       <CheckCircle className="h-5 w-5" />
@@ -182,14 +182,14 @@ const CreateListingPage = () => {
                   </div>
                   {index < steps.length - 1 && (
                     <div className={`w-16 h-0.5 mx-2 ${
-                      currentStep > step.id ? 'bg-primary' : 'bg-gray-300'
+                      currentStep > step.id ? 'bg-primary' : 'bg-border'
                     }`} />
                   )}
                 </div>
               ))}
             </div>
             <div className="text-center mt-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Étape {currentStep} sur {steps.length} : {steps[currentStep - 1]?.title}
               </p>
             </div>
@@ -236,32 +236,32 @@ const CreateListingPage = () => {
               >
                 <Card className="shadow-lg border-0">
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                       <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
                       Conseils pour une annonce réussie
                     </h3>
                     <div className="space-y-3">
                       <div className="flex items-start space-x-3">
                         <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           Utilisez un titre clair et descriptif
                         </p>
                       </div>
                       <div className="flex items-start space-x-3">
                         <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           Ajoutez des photos de qualité
                         </p>
                       </div>
                       <div className="flex items-start space-x-3">
                         <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           Décrivez précisément votre offre
                         </p>
                       </div>
                       <div className="flex items-start space-x-3">
                         <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           Fixez un prix compétitif
                         </p>
                       </div>
@@ -280,8 +280,8 @@ const CreateListingPage = () => {
               >
                 <Card className="shadow-lg border-0">
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Besoin d'aide ?</h3>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Besoin d'aide ?</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
                       Notre équipe est là pour vous accompagner dans la création de votre annonce.
                     </p>
                     <Button variant="outline" className="w-full">
