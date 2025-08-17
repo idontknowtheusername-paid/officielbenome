@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { quickExport } from '@/utils/exportUtils';
 
 // ============================================================================
 // SERVICE UTILISATEURS
@@ -141,6 +142,26 @@ export const userService = {
     });
 
     return stats;
+  },
+
+  // Exporter les utilisateurs
+  exportUsers: async (format = 'csv') => {
+    const users = await userService.getAllUsers();
+    
+    const headers = [
+      { key: 'id', label: 'ID', type: 'string' },
+      { key: 'first_name', label: 'Prénom', type: 'string' },
+      { key: 'last_name', label: 'Nom', type: 'string' },
+      { key: 'email', label: 'Email', type: 'string' },
+      { key: 'phone_number', label: 'Téléphone', type: 'string' },
+      { key: 'role', label: 'Rôle', type: 'string' },
+      { key: 'status', label: 'Statut', type: 'string' },
+      { key: 'is_verified', label: 'Vérifié', type: 'boolean' },
+      { key: 'created_at', label: 'Date de création', type: 'date' },
+      { key: 'updated_at', label: 'Dernière modification', type: 'date' }
+    ];
+
+    return quickExport(users, headers, `utilisateurs-${new Date().toISOString().split('T')[0]}`, format);
   }
 };
 

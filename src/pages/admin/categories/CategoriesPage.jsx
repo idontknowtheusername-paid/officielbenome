@@ -24,6 +24,9 @@ import {
   categoryService
 } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
+import { quickExport } from '@/utils/exportUtils';
+import { categorySchema, validateWithCustomErrors } from '@/utils/validationSchemas';
+import { FieldValidationError, useValidationErrors } from '@/components/ui/ValidationError';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -98,6 +101,10 @@ export default function CategoriesPage() {
     icon: '',
     sort_order: 0
   });
+  
+  // State pour les erreurs de validation
+  const [validationErrors, setValidationErrors] = useState({});
+  const { getFieldError, hasFieldError, clearFieldError } = useValidationErrors(validationErrors);
 
   // Récupérer les catégories avec filtres et pagination
   const { data: categories, isLoading, isError } = useQuery({
@@ -207,12 +214,14 @@ export default function CategoriesPage() {
       icon: category.icon || '',
       sort_order: category.sort_order || 0
     });
+    setValidationErrors({});
     setIsEditDialogOpen(true);
   };
 
   // Ouvrir le dialogue de création
   const handleCreate = () => {
     resetForm();
+    setValidationErrors({});
     setIsCreateDialogOpen(true);
   };
 
@@ -232,19 +241,60 @@ export default function CategoriesPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Valider les données avec Zod
+    const validation = validateWithCustomErrors(categorySchema, formData);
+    
+    if (!validation.success) {
+      // Afficher les erreurs de validation
+      Object.values(validation.errors).forEach(error => {
+        toast({
+          title: 'Erreur de validation',
+          description: error,
+          variant: 'destructive',
+        });
+      });
+      return;
+    }
+    
     if (editingCategory) {
       updateCategoryMutation.mutate({
         id: editingCategory.id,
-        data: formData
+        data: validation.data
       });
     } else {
-      createCategoryMutation.mutate(formData);
+      createCategoryMutation.mutate(validation.data);
     }
   };
 
   // Gérer la suppression
   const handleDelete = (categoryId) => {
     deleteCategoryMutation.mutate(categoryId);
+  };
+
+  // Fonction d'export des catégories
+  const handleExport = () => {
+    try {
+      if (!categories || categories.length === 0) {
+        toast({
+          title: 'Aucune donnée',
+          description: 'Aucune catégorie à exporter',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      quickExport.categories(categories, 'categories-maximarket');
+      toast({
+        title: 'Export réussi',
+        description: 'Liste des catégories exportée en CSV',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur d\'export',
+        description: error.message || 'Impossible d\'exporter les données',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Filtrer et trier les catégories
@@ -296,6 +346,32 @@ export default function CategoriesPage() {
       name,
       slug: generateSlug(name)
     }));
+    
+    // Valider le champ en temps réel
+    const validation = validateWithCustomErrors(categorySchema, { ...formData, name });
+    if (!validation.success) {
+      setValidationErrors(prev => ({
+        ...prev,
+        name: validation.errors.name
+      }));
+    } else {
+      clearFieldError('name', setValidationErrors);
+    }
+  };
+
+  // Valider un champ en temps réel
+  const validateField = (fieldName, value) => {
+    const fieldData = { ...formData, [fieldName]: value };
+    const validation = validateWithCustomErrors(categorySchema, fieldData);
+    
+    if (!validation.success && validation.errors[fieldName]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [fieldName]: validation.errors[fieldName]
+      }));
+    } else {
+      clearFieldError(fieldName, setValidationErrors);
+    }
   };
 
   if (isLoading) {
@@ -325,10 +401,21 @@ export default function CategoriesPage() {
           </p>
         </div>
         
-        <Button onClick={handleCreate} className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Nouvelle Catégorie
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => handleExport()}
+            variant="outline"
+            className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Exporter CSV
+          </Button>
+          
+          <Button onClick={handleCreate} className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700">
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle Catégorie
+          </Button>
+        </div>
       </div>
 
       {/* Filtres et recherche */}
@@ -557,27 +644,33 @@ export default function CategoriesPage() {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Nom *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Nom de la catégorie"
-                  required
-                />
-              </div>
+                              <div>
+                  <Label htmlFor="name">Nom *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    onBlur={(e) => validateField('name', e.target.value)}
+                    placeholder="Nom de la catégorie"
+                    required
+                    className={hasFieldError('name') ? 'border-red-500 focus:border-red-500' : ''}
+                  />
+                  <FieldValidationError error={getFieldError('name')} />
+                </div>
               
-              <div>
-                <Label htmlFor="slug">Slug *</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  placeholder="slug-categorie"
-                  required
-                />
-              </div>
+                              <div>
+                  <Label htmlFor="slug">Slug *</Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                    onBlur={(e) => validateField('slug', e.target.value)}
+                    placeholder="slug-categorie"
+                    required
+                    className={hasFieldError('slug') ? 'border-red-500 focus:border-red-500' : ''}
+                  />
+                  <FieldValidationError error={getFieldError('slug')} />
+                </div>
             </div>
             
             <div>
@@ -604,9 +697,12 @@ export default function CategoriesPage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onBlur={(e) => validateField('description', e.target.value)}
                 placeholder="Description de la catégorie"
                 rows={3}
+                className={hasFieldError('description') ? 'border-red-500 focus:border-red-500' : ''}
               />
+              <FieldValidationError error={getFieldError('description')} />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -627,8 +723,11 @@ export default function CategoriesPage() {
                   type="number"
                   value={formData.sort_order}
                   onChange={(e) => setFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
+                  onBlur={(e) => validateField('sort_order', parseInt(e.target.value) || 0)}
                   placeholder="0"
+                  className={hasFieldError('sort_order') ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                <FieldValidationError error={getFieldError('sort_order')} />
               </div>
             </div>
             

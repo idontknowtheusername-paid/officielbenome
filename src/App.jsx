@@ -46,6 +46,8 @@ import AdminListingsPage from '@/pages/admin/listings/ListingsPage';
 import AdminTransactionsPage from '@/pages/admin/transactions/TransactionsPage';
 import AdminAnalyticsPage from '@/pages/admin/analytics/AnalyticsPage';
 import AdminModerationPage from '@/pages/admin/moderation/ModerationPage';
+import AdminCategoriesPage from '@/pages/admin/categories/CategoriesPage';
+import AdminSettingsPage from '@/pages/admin/settings/SettingsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 // Static Pages
@@ -232,6 +234,22 @@ function App() {
                       element={
                         <AdminRoute>
                           <AdminModerationPage />
+                        </AdminRoute>
+                      } 
+                    />
+                    <Route 
+                      path="categories" 
+                      element={
+                        <AdminRoute>
+                          <AdminCategoriesPage />
+                        </AdminRoute>
+                      } 
+                    />
+                    <Route 
+                      path="settings" 
+                      element={
+                        <AdminRoute>
+                          <AdminSettingsPage />
                         </AdminRoute>
                       } 
                     />

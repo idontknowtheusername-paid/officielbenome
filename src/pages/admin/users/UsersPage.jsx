@@ -23,6 +23,7 @@ import {
   userService
 } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
+import { quickExport } from '@/utils/exportUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -152,6 +153,41 @@ function UsersPage() {
     }
   };
 
+  // Fonction d'export des utilisateurs
+  const handleExport = () => {
+    try {
+      if (!users || users.length === 0) {
+        toast({
+          title: 'Aucune donnée',
+          description: 'Aucun utilisateur à exporter',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      quickExport.users(users, 'utilisateurs-maximarket');
+      toast({
+        title: 'Export réussi',
+        description: 'Liste des utilisateurs exportée en CSV',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur d\'export',
+        description: error.message || 'Impossible d\'exporter les données',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Fonction de création d'utilisateur
+  const handleCreate = () => {
+    // TODO: Implémenter la création d'utilisateur
+    toast({
+      title: 'Fonctionnalité à venir',
+      description: 'La création d\'utilisateur sera bientôt disponible',
+    });
+  };
+
   // Handle search
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -167,8 +203,17 @@ function UsersPage() {
             Gérez les utilisateurs de la plateforme
           </p>
         </div>
-        <div className="mt-4 md:mt-0">
-          <Button>
+        <div className="mt-4 md:mt-0 flex gap-2">
+          <Button 
+            onClick={() => handleExport()}
+            variant="outline"
+            className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Exporter CSV
+          </Button>
+          
+          <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
             Nouvel Utilisateur
           </Button>

@@ -27,6 +27,7 @@ import {
   categoryService
 } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
+import { quickExport } from '@/utils/exportUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -188,6 +189,32 @@ export default function ListingsPage() {
     setPage(1);
   };
 
+  // Fonction d'export des annonces
+  const handleExport = () => {
+    try {
+      if (!listings || listings.length === 0) {
+        toast({
+          title: 'Aucune donnée',
+          description: 'Aucune annonce à exporter',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      quickExport.listings(listings, 'annonces-maximarket');
+      toast({
+        title: 'Export réussi',
+        description: 'Liste des annonces exportée en CSV',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur d\'export',
+        description: error.message || 'Impossible d\'exporter les données',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -197,7 +224,16 @@ export default function ListingsPage() {
             Gérez et modérez les annonces de la plateforme
           </p>
         </div>
-        <div className="mt-4 md:mt-0">
+        <div className="mt-4 md:mt-0 flex gap-2">
+          <Button 
+            onClick={() => handleExport()}
+            variant="outline"
+            className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Exporter CSV
+          </Button>
+          
           <Button asChild>
             <Link to="/creer-annonce">
               <Plus className="mr-2 h-4 w-4" />
@@ -293,7 +329,7 @@ export default function ListingsPage() {
               <Filter className="mr-2 h-4 w-4" />
               Appliquer les filtres
             </Button>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={() => handleExport()}>
               <Download className="mr-2 h-4 w-4" />
               Exporter
             </Button>

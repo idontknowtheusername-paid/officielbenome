@@ -31,6 +31,7 @@ export { analyticsService } from './analytics.service.js';
 export { cachedListingService } from './cachedListingService.js';
 export { preferencesService } from './preferences.service.js';
 export { activityService } from './activity.service.js';
+export { settingsService } from './settings.service.js';
 
 // ============================================================================
 // EXPORT PAR DÉFAUT
