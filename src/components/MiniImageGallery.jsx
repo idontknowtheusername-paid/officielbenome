@@ -64,9 +64,9 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
   // Si pas d'images, afficher un placeholder
   if (!validImages || validImages.length === 0) {
     return (
-      <div className={`relative aspect-video bg-muted flex items-center justify-center ${className}`}>
+      <div className={`relative bg-muted flex items-center justify-center ${className}`}>
         <div className="text-center text-muted-foreground">
-          <p className="text-sm">Aucune image</p>
+          <p className="text-xs sm:text-sm">Aucune image</p>
         </div>
       </div>
     );
@@ -76,7 +76,7 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
 
   return (
     <div 
-      className={`relative aspect-video bg-muted overflow-hidden group ${className}`}
+      className={`relative bg-muted overflow-hidden group ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -93,7 +93,7 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
           <OptimizedImage
             src={currentImage}
             alt={`${title} - Image ${currentIndex + 1}`}
-            className="w-full h-full"
+            className="w-full h-full object-cover"
             context="card"
             quality="medium"
             showSkeleton={true}
@@ -101,34 +101,38 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation par flèches (visible au survol) */}
+      {/* Navigation arrows - Plus petits sur mobile */}
       {validImages.length > 1 && (
         <>
+          {/* Previous Button */}
           <button
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             onClick={(e) => {
               e.stopPropagation();
               goToPrevious();
             }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 sm:p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
+            aria-label="Image précédente"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
           </button>
-          
+
+          {/* Next Button */}
           <button
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             onClick={(e) => {
               e.stopPropagation();
               goToNext();
             }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 sm:p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
+            aria-label="Image suivante"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </button>
         </>
       )}
 
-      {/* Indicateurs d'images (visible au survol) */}
+      {/* Image indicators - Plus compacts sur mobile */}
       {validImages.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-1.5">
           {validImages.map((_, index) => (
             <button
               key={index}
@@ -136,21 +140,14 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
                 e.stopPropagation();
                 goToImage(index);
               }}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+              className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 ${
                 index === currentIndex 
-                  ? 'bg-white scale-125' 
+                  ? 'bg-white' 
                   : 'bg-white/50 hover:bg-white/75'
               }`}
               aria-label={`Aller à l'image ${index + 1}`}
             />
           ))}
-        </div>
-      )}
-
-      {/* Compteur d'images */}
-      {validImages.length > 1 && (
-        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-          {currentIndex + 1} / {validImages.length}
         </div>
       )}
     </div>
