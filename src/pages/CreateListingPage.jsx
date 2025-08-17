@@ -129,7 +129,7 @@ const CreateListingPage = () => {
     alert(supportInfo);
     
     // Option 2: Ouvrir une nouvelle fenêtre (plus professionnel)
-    // window.open('mailto:support@maximarket.com?subject=Support création annonce', '_blank');
+    window.open('mailto:support@maximarket.com?subject=Support création annonce', '_blank');
     
     // Option 3: Rediriger vers une page de support
     // navigate('/support');
