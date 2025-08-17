@@ -19,7 +19,7 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   
   // Récupérer les paramètres depuis le service
-  const { data: initialSettings, isLoading } = useQuery({
+  const { data: initialSettings, isLoading, error } = useQuery({
     queryKey: ['systemSettings'],
     queryFn: () => settingsService.getSystemSettings(),
     staleTime: 5 * 60 * 1000, // 5 minutes

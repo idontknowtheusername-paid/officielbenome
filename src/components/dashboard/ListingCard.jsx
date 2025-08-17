@@ -55,7 +55,18 @@ const ListingCard = ({
   };
 
   const getCategoryIcon = (category) => {
-    switch (category.toLowerCase()) {
+    // Gérer le cas où category peut être undefined, null, ou un objet
+    let categoryName = '';
+    
+    if (typeof category === 'string') {
+      categoryName = category;
+    } else if (category && typeof category === 'object' && category.name) {
+      categoryName = category.name;
+    } else {
+      return '📦'; // Icône par défaut
+    }
+    
+    switch (categoryName.toLowerCase()) {
       case 'immobilier':
         return '🏠';
       case 'automobile':
@@ -67,6 +78,15 @@ const ListingCard = ({
       default:
         return '📦';
     }
+  };
+
+  const getCategoryName = (category) => {
+    if (typeof category === 'string') {
+      return category;
+    } else if (category && typeof category === 'object' && category.name) {
+      return category.name;
+    }
+    return 'Catégorie non spécifiée';
   };
 
   return (
@@ -112,7 +132,10 @@ const ListingCard = ({
             </span>
             <span className="flex items-center">
               <Calendar className="h-3 w-3 mr-1" />
-              {listing.createdAt}
+              {listing.createdAt || listing.created_at ? 
+                new Date(listing.createdAt || listing.created_at).toLocaleDateString('fr-FR') : 
+                'Date inconnue'
+              }
             </span>
           </div>
 
@@ -120,11 +143,11 @@ const ListingCard = ({
             <div className="flex items-center space-x-4">
               <span className="flex items-center">
                 <Eye className="h-4 w-4 mr-1" />
-                {listing.views} vues
+                {listing.views || listing.views_count || 0} vues
               </span>
               <span className="flex items-center">
                 <Users className="h-4 w-4 mr-1" />
-                {listing.contacts} contacts
+                {listing.contacts || listing.contacts_count || 0} contacts
               </span>
             </div>
             {listing.boosted && (

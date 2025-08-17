@@ -7,6 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import MiniImageGallery from '@/components/MiniImageGallery';
 import { useListingImages } from '@/hooks';
+import PremiumBadge from '@/components/PremiumBadge';
+import BoostStatus from '@/components/BoostStatus';
 
 const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const { user } = useAuth();
@@ -60,6 +62,47 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
     }
   };
 
+  // Fonction pour afficher les badges premium
+  const getPremiumBadges = () => {
+    const badges = [];
+    
+    if (listing.featured) {
+      badges.push(
+        <PremiumBadge 
+          key="featured" 
+          type="featured" 
+          size="small" 
+          className="mr-1"
+        />
+      );
+    }
+    
+    if (listing.boosted) {
+      badges.push(
+        <PremiumBadge 
+          key="boosted" 
+          type="boosted" 
+          size="small" 
+          className="mr-1"
+        />
+      );
+    }
+    
+    // Si c'est premium mais pas explicitement featured/boosted
+    if (!listing.featured && !listing.boosted && (listing.is_premium || listing.premium)) {
+      badges.push(
+        <PremiumBadge 
+          key="premium" 
+          type="premium" 
+          size="small" 
+          className="mr-1"
+        />
+      );
+    }
+    
+    return badges;
+  };
+
   const handleFavoriteClick = async (e) => {
     e.stopPropagation();
     
@@ -103,10 +146,18 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
     setIsFavorite(listing.is_favorite || false);
   }, [listing.is_favorite]);
 
+  // Vérifier si l'annonce est premium
+  const isPremium = listing.featured || listing.boosted || listing.is_premium || listing.premium;
+  
   return (
     <motion.div
       whileHover={{ y: -4 }}
-      className="group bg-card rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-border/50 overflow-hidden"
+      className={cn(
+        "group rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden",
+        isPremium 
+          ? "bg-gradient-to-br from-amber-50/50 to-yellow-100/50 border-2 border-amber-300/50 shadow-amber-200/50" 
+          : "bg-card border border-border/50"
+      )}
       onClick={handleCardClick}
     >
       {/* Image - Hauteur responsive */}
@@ -123,6 +174,11 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
             {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
           </Badge>
           {getStatusBadge(listing.status)}
+        </div>
+
+        {/* Badges Premium - Positionnés en haut à droite */}
+        <div className="absolute top-2 right-16 sm:right-20 flex flex-col gap-1">
+          {getPremiumBadges()}
         </div>
         
         {/* Favorite Button - Taille adaptée */}
@@ -198,6 +254,15 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
             )}
           </div>
         </div>
+        
+        {/* Boost Status - Affiché seulement pour le propriétaire de l'annonce */}
+        <BoostStatus 
+          listingId={listing.id}
+          listing={listing}
+          size="small"
+          showActions={showActions}
+          className="mt-3 pt-3 border-t border-border/20"
+        />
       </div>
     </motion.div>
   );

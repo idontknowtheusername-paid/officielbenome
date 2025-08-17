@@ -25,6 +25,14 @@ export { favoriteService } from './favorite.service.js';
 export { searchService } from './search.service.js';
 export { storageService } from './storage.service.js';
 export { reportService } from './report.service.js';
+
+// 🚀 SERVICES PREMIUM ET BOOSTING (Phase 2-3)
+export { boostService } from './boost.service.js';
+
+// 💳 SERVICES DE PAIEMENT (Phase 4)
+export { paymentService } from './payment.service.js';
+
+// 📊 SERVICES D'ANALYTICS (Phase 5)
 export { analyticsService } from './analytics.service.js';
 
 // 🛠️ SERVICES UTILITAIRES

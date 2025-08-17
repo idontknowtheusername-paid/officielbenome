@@ -19,9 +19,15 @@ const HomePage = () => {
   const [popularListings, setPopularListings] = useState([]);
   const [loadingPopular, setLoadingPopular] = useState(true);
   const [errorPopular, setErrorPopular] = useState(null);
+  
+  // État pour les annonces premium
+  const [premiumListings, setPremiumListings] = useState([]);
+  const [loadingPremium, setLoadingPremium] = useState(true);
+  const [errorPremium, setErrorPremium] = useState(null);
 
   useEffect(() => {
     let timerId;
+    
     const loadPopular = async () => {
       try {
         setLoadingPopular(true);
@@ -33,9 +39,29 @@ const HomePage = () => {
         setLoadingPopular(false);
       }
     };
+
+    const loadPremium = async () => {
+      try {
+        setLoadingPremium(true);
+        const data = await listingService.getPremiumListings(6);
+        setPremiumListings(data?.data || []);
+      } catch (e) {
+        setErrorPremium(e?.message || 'Erreur lors du chargement des annonces premium');
+      } finally {
+        setLoadingPremium(false);
+      }
+    };
+
+    // Charger les deux types d'annonces
     loadPopular();
+    loadPremium();
+    
     // Rafraichissement periodique toutes les 30 minutes
-    timerId = setInterval(loadPopular, 1800000);
+    timerId = setInterval(() => {
+      loadPopular();
+      loadPremium();
+    }, 1800000);
+    
     return () => clearInterval(timerId);
   }, []);
   
@@ -174,6 +200,71 @@ const HomePage = () => {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Premium Listings */}
+      <section className="py-16 md:py-24 bg-gradient-to-br from-amber-50/50 via-yellow-100/30 to-orange-50/50">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.h2 
+            className="text-3xl md:text-4xl font-bold text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            ⭐ Annonces <span className="gradient-text">Premium</span>
+          </motion.h2>
+          
+          {errorPremium && (
+            <p className="text-center text-destructive mb-8">{errorPremium}</p>
+          )}
+          
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+            {loadingPremium && !premiumListings.length && (
+              Array.from({ length: 6 }).map((_, idx) => (
+                <div key={idx} className="bg-gradient-to-br from-amber-50/80 to-yellow-100/80 rounded-lg shadow-xl overflow-hidden glassmorphic-card border-2 border-amber-300/50">
+                  <div className="h-40 sm:h-48 md:h-56 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 animate-pulse" />
+                  <div className="p-3 sm:p-4 md:p-6">
+                    <div className="h-6 w-3/4 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 rounded mb-3 animate-pulse" />
+                    <div className="h-4 w-1/2 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 rounded mb-4 animate-pulse" />
+                    <div className="h-10 w-1/3 bg-gradient-to-r from-amber-300/50 to-yellow-300/50 rounded animate-pulse" />
+                  </div>
+                </div>
+              ))
+            )}
+
+            {!loadingPremium && premiumListings.length === 0 && (
+              <div className="col-span-full text-center py-16">
+                <div className="text-6xl mb-4">⭐</div>
+                <h3 className="text-2xl font-semibold mb-2">Aucune annonce premium pour le moment</h3>
+                <p className="text-muted-foreground mb-6">
+                  Soyez le premier à passer premium et boostez votre visibilité !
+                </p>
+                <Button 
+                  onClick={() => navigate('/creer-annonce')}
+                  variant="outline"
+                  className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                >
+                  Créer une Annonce Premium
+                </Button>
+              </div>
+            )}
+
+            {premiumListings.slice(0, 6).map((listing) => (
+              <ListingCard key={listing.id} listing={listing} showActions={false} />
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <Button
+              size="lg"
+              variant="default"
+              className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-lg"
+              onClick={() => navigate('/marketplace?sort=premium&per=24')}
+            >
+              Voir Toutes les Annonces Premium <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </div>
       </section>

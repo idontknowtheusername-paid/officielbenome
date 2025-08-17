@@ -19,6 +19,7 @@ import ChatWidget from '@/components/ChatWidget';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
+import { AdminLayout } from '@/layouts/AdminLayout';
 
 // Auth Pages
 import LoginPage from '@/pages/auth/LoginPage';
@@ -64,49 +65,6 @@ import TermsConditionsPage from '@/pages/static/TermsConditionsPage';
 import BlogPage from '@/pages/BlogPage'; 
 import BlogPostPage from '@/pages/BlogPostPage';
 
-// Composant de test pour vérifier la configuration
-const ConfigTest = () => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'https://your-project-id.supabase.co') {
-    return (
-      <div style={{ 
-        padding: '20px', 
-        textAlign: 'center', 
-        fontFamily: 'Arial, sans-serif',
-        backgroundColor: '#f0f0f0',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        <h1 style={{ color: '#e74c3c' }}>⚠️ Configuration Supabase manquante</h1>
-        <p>Veuillez configurer vos variables d'environnement sur Vercel :</p>
-        <div style={{ 
-          backgroundColor: '#fff', 
-          padding: '15px', 
-          borderRadius: '5px',
-          margin: '10px 0',
-          textAlign: 'left',
-          fontFamily: 'monospace'
-        }}>
-          <div>VITE_SUPABASE_URL=votre-url-supabase</div>
-          <div>VITE_SUPABASE_ANON_KEY=votre-clé-anon</div>
-        </div>
-        <p>1. Allez dans votre dashboard Vercel</p>
-        <p>2. Sélectionnez votre projet</p>
-        <p>3. Allez dans Settings → Environment Variables</p>
-        <p>4. Ajoutez les variables Supabase</p>
-        <p>5. Redéployez l'application</p>
-      </div>
-    );
-  }
-  
-  return null;
-};
-
 function App() {
   // Enregistrer le Service Worker
   React.useEffect(() => {
@@ -117,7 +75,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <QueryErrorBoundary>
         <AppWrapper>
-          <ConfigTest />
           <AuthProvider>
             <AnimatePresence mode="wait">
               <Routes>
@@ -198,7 +155,7 @@ function App() {
                   />
                   
                   {/* Protected Admin Routes */}
-                  <Route path="admin">
+                  <Route path="admin" element={<AdminLayout />}>
                     <Route 
                       index 
                       element={

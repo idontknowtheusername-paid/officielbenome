@@ -529,6 +529,127 @@ export const listingService = {
     stats.averagePrice = data.length > 0 ? totalValue / data.length : 0;
 
     return stats;
+  },
+
+  // Recuperer les annonces premium (featured et/ou boosted)
+  getPremiumListings: async (limit = 6) => {
+    // Verifier la configuration Supabase
+    if (!isSupabaseConfigured) {
+      console.warn('⚠️ Supabase non configuré, retour de données de test premium');
+      return {
+        data: [
+          {
+            id: 'premium-1',
+            title: 'Villa de luxe avec vue mer - Premium',
+            description: 'Magnifique villa 5 pièces avec vue panoramique sur l\'océan. Piscine privée, jardin paysager, garage 2 voitures.',
+            price: 15000000,
+            category: 'real_estate',
+            status: 'approved',
+            featured: true,
+            boosted: true,
+            user_id: 'premium-user-1',
+            created_at: new Date().toISOString(),
+            location: { city: 'Saly', country: 'Sénégal' },
+            real_estate_details: { type: 'Villa', rooms: '5 pièces', surface: '200m²', amenities: ['Piscine', 'Jardin', 'Garage'] },
+            contact_info: { phone: '+221 77 999 8888', email: 'villa-premium@test.com' },
+            views_count: 1250,
+            favorites_count: 89,
+            users: {
+              id: 'premium-user-1',
+              first_name: 'Omar',
+              last_name: 'Diop',
+              phone_number: '+221 77 999 8888',
+              email: 'omar.diop@test.com'
+            }
+          },
+          {
+            id: 'premium-2',
+            title: 'Mercedes Classe S 2023 - Premium',
+            description: 'Berline de luxe Mercedes Classe S en parfait état, toutes options, entretien constructeur, garantie étendue.',
+            price: 45000000,
+            category: 'automobile',
+            status: 'approved',
+            featured: true,
+            boosted: true,
+            user_id: 'premium-user-2',
+            created_at: new Date().toISOString(),
+            location: { city: 'Dakar', country: 'Sénégal' },
+            automobile_details: { brand: 'Mercedes', model: 'Classe S', year: '2023', condition: 'Parfait' },
+            contact_info: { phone: '+221 76 777 6666', email: 'mercedes-premium@test.com' },
+            views_count: 890,
+            favorites_count: 67,
+            users: {
+              id: 'premium-user-2',
+              first_name: 'Aissatou',
+              last_name: 'Fall',
+              phone_number: '+221 76 777 6666',
+              email: 'aissatou.fall@test.com'
+            }
+          },
+          {
+            id: 'premium-3',
+            title: 'Service de Design d\'Intérieur Premium',
+            description: 'Designer d\'intérieur certifié avec 15 ans d\'expérience. Projets résidentiels et commerciaux, suivi complet.',
+            price: 250000,
+            category: 'services',
+            status: 'approved',
+            featured: true,
+            boosted: false,
+            user_id: 'premium-user-3',
+            created_at: new Date().toISOString(),
+            location: { city: 'Dakar', country: 'Sénégal' },
+            service_details: { 
+              expertise: 'Design d\'Intérieur', 
+              experience: '15 ans', 
+              availability: 'Sur rendez-vous',
+              verified: true,
+              certifications: ['Certification internationale', 'Membre de l\'ordre des designers']
+            },
+            contact_info: { phone: '+221 78 444 3333', email: 'design-premium@test.com', website: 'www.design-interieur-premium.com' },
+            views_count: 567,
+            favorites_count: 34,
+            users: {
+              id: 'premium-user-3',
+              first_name: 'Mariama',
+              last_name: 'Ba',
+              phone_number: '+221 78 444 3333',
+              email: 'mariama.ba@test.com'
+            }
+          }
+        ],
+        hasMore: false
+      };
+    }
+
+    try {
+      // Récupérer les annonces premium (featured = true ET/OU boosted = true)
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          users (
+            id,
+            first_name,
+            last_name,
+            phone_number,
+            email
+          )
+        `)
+        .or('featured.eq.true,boosted.eq.true')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      return {
+        data: data || [],
+        hasMore: false // Pour l'instant, pas de pagination sur les premium
+      };
+    } catch (error) {
+      console.error('Erreur lors de la récupération des annonces premium:', error);
+      throw error;
+    }
   }
 };
 
