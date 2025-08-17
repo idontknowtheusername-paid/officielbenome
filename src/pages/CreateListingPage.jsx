@@ -24,10 +24,20 @@ import {
 
 const CreateListingPage = () => {
   const navigate = useNavigate();
-  const { category } = useParams();
+  const { category, id } = useParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
   const [showPreview, setShowPreview] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Déterminer si on est en mode édition ou création
+  React.useEffect(() => {
+    if (id) {
+      setIsEditing(true);
+      // TODO: Charger les données de l'annonce existante
+      // loadExistingListing(id);
+    }
+  }, [id]);
 
   // Fonction pour convertir les categories en noms d'affichage
   const getCategoryDisplayName = (cat) => {
@@ -193,10 +203,18 @@ Site : https://maximarket.com`);
             className="text-center mb-8"
           >
             <h1 className="text-4xl font-bold text-foreground mb-3">
-              {category ? `Créer une annonce ${getCategoryDisplayName(category)}` : 'Créer une annonce'}
+              {isEditing 
+                ? 'Modifier l\'annonce' 
+                : category 
+                  ? `Créer une annonce ${getCategoryDisplayName(category)}` 
+                  : 'Créer une annonce'
+              }
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Partagez votre offre avec notre communauté. Remplissez les informations ci-dessous pour publier votre annonce.
+              {isEditing 
+                ? 'Modifiez les informations de votre annonce existante.'
+                : 'Partagez votre offre avec notre communauté. Remplissez les informations ci-dessous pour publier votre annonce.'
+              }
             </p>
           </motion.div>
 

@@ -177,6 +177,16 @@ function App() {
                   {/* Détails d'annonce */}
                   <Route path="annonce/:id" element={<ListingDetailPage />} />
                   
+                  {/* Modifier une annonce */}
+                  <Route 
+                    path="annonce/:id/modifier" 
+                    element={
+                      <ProtectedRoute>
+                        <CreateListingPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
                   {/* Favoris */}
                   <Route 
                     path="favorites" 
