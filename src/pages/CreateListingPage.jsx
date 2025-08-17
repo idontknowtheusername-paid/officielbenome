@@ -169,9 +169,6 @@ Site : https://maximarket.com`);
                     </span>
                   </div>
                 )}
-                <Badge variant="secondary" className="bg-green-600 text-white">
-                  Nouvelle annonce
-                </Badge>
               </div>
             </div>
             <div className="flex items-center space-x-2">
