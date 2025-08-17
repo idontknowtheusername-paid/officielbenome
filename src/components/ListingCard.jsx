@@ -9,6 +9,7 @@ import MiniImageGallery from '@/components/MiniImageGallery';
 import { useListingImages } from '@/hooks';
 import PremiumBadge from '@/components/PremiumBadge';
 import BoostStatus from '@/components/BoostStatus';
+import { cn } from '@/lib/utils';
 
 const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const { user } = useAuth();
