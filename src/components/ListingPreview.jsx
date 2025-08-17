@@ -104,7 +104,14 @@ const ListingPreview = ({ formData, onClose }) => {
       >
         {/* Header avec bouton fermer */}
         <div className="sticky top-0 bg-background border-b border-border px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="text-xl font-semibold text-foreground">Aperçu de l'annonce</h2>
+          <div className="flex items-center space-x-3">
+            <h2 className="text-xl font-semibold text-foreground">Aperçu de l'annonce</h2>
+            {(!formData.title || !formData.description || !formData.price) && (
+              <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">
+                Preview partiel
+              </Badge>
+            )}
+          </div>
           <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             ✕
           </Button>
@@ -220,7 +227,7 @@ const ListingPreview = ({ formData, onClose }) => {
                   </Badge>
                 </div>
                 <h1 className="text-2xl font-bold text-foreground mb-2">
-                  {formData.title || 'Titre de l\'annonce'}
+                  {formData.title || 'Titre de l\'annonce (à définir)'}
                 </h1>
                 <div className="flex items-center text-muted-foreground text-sm">
                   <MapPin className="h-4 w-4 mr-1" />
@@ -234,7 +241,7 @@ const ListingPreview = ({ formData, onClose }) => {
               {/* Prix */}
               <div className="mb-6">
                 <div className="text-3xl font-bold text-foreground">
-                  {formData.price ? `${formData.price} ${formData.currency || 'XOF'}` : 'Prix non défini'}
+                  {formData.price ? `${formData.price} ${formData.currency || 'XOF'}` : 'Prix à définir'}
                 </div>
                 {formData.category === 'real_estate' && formData.specificData?.areaSqMeters && (
                   <div className="text-sm text-muted-foreground mt-1">
@@ -247,7 +254,7 @@ const ListingPreview = ({ formData, onClose }) => {
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">Description</h3>
                 <p className="text-foreground leading-relaxed">
-                  {formData.description || 'Aucune description fournie.'}
+                  {formData.description || 'Description à ajouter pour votre annonce.'}
                 </p>
               </div>
 

@@ -98,18 +98,17 @@ const CreateListingPage = () => {
 
   // Validation des données pour le preview
   const canShowPreview = () => {
-    const hasRequiredData = formData.title && formData.description && formData.price;
-    const hasImages = formData.images && formData.images.length > 0;
-    return hasRequiredData && hasImages;
+    // Permettre le preview même avec des données partielles
+    const hasBasicData = formData.title || formData.description || formData.price;
+    return hasBasicData; // Plus permissif
   };
 
   // Fonction pour afficher un message d'aide
   const showPreviewHelp = () => {
-    if (!formData.title) return 'Ajoutez un titre à votre annonce';
-    if (!formData.description) return 'Ajoutez une description à votre annonce';
-    if (!formData.price) return 'Définissez un prix pour votre annonce';
-    if (!formData.images || formData.images.length === 0) return 'Ajoutez au moins une image';
-    return '';
+    if (!formData.title && !formData.description && !formData.price) {
+      return 'Commencez à remplir le formulaire pour voir l\'aperçu';
+    }
+    return 'Aperçu disponible (certaines données peuvent être manquantes)';
   };
 
   return (
