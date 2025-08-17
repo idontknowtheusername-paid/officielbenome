@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Heart, Eye, Phone, Mail, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,8 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { images } = useListingImages(listing);
+  const [isFavorite, setIsFavorite] = useState(listing.is_favorite || false);
+  const [isToggling, setIsToggling] = useState(false);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -60,12 +62,32 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
 
   const handleFavoriteClick = async (e) => {
     e.stopPropagation();
+    
     if (!user) {
       navigate('/connexion');
       return;
     }
-    if (onToggleFavorite) {
-      await onToggleFavorite(listing.id);
+
+    if (isToggling) return; // Éviter les clics multiples
+
+    try {
+      setIsToggling(true);
+      
+      // Mise à jour optimiste de l'interface
+      const newFavoriteState = !isFavorite;
+      setIsFavorite(newFavoriteState);
+      
+      if (onToggleFavorite) {
+        await onToggleFavorite(listing.id);
+      }
+      
+      // L'état sera mis à jour par le hook parent
+    } catch (error) {
+      // En cas d'erreur, remettre l'état précédent
+      setIsFavorite(!isFavorite);
+      console.error('Erreur lors du basculement des favoris:', error);
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -73,61 +95,18 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
     if (!listing.id) {
       return;
     }
-    
     navigate(`/annonce/${listing.id}`);
   };
 
-
-
-  const getListingDetails = () => {
-    const category = listing.category;
-    
-    switch (category) {
-      case 'real_estate':
-        const realEstate = listing.real_estate_details || {};
-        return {
-          type: realEstate.type || 'Propriété',
-          rooms: realEstate.rooms ? `${realEstate.rooms} pièces` : null,
-          surface: realEstate.surface ? `${realEstate.surface}m²` : null,
-          bedrooms: realEstate.bedrooms ? `${realEstate.bedrooms} chambres` : null,
-          bathrooms: realEstate.bathrooms ? `${realEstate.bathrooms} salles de bain` : null
-        };
-      
-      case 'automobile':
-        const auto = listing.automobile_details || {};
-        return {
-          type: auto.type || 'Véhicule',
-          brand: auto.brand,
-          model: auto.model,
-          year: auto.year,
-          mileage: auto.mileage ? `${auto.mileage}km` : null,
-          fuel: auto.fuel
-        };
-      
-      case 'services':
-        const service = listing.service_details || {};
-        return {
-          type: service.type || 'Service',
-          duration: service.duration,
-          availability: service.availability
-        };
-      
-      default:
-        return {
-          type: 'Produit',
-          condition: listing.product_details?.condition
-        };
-    }
-  };
-
-  const details = getListingDetails();
+  // Mettre à jour l'état local quand la prop change
+  React.useEffect(() => {
+    setIsFavorite(listing.is_favorite || false);
+  }, [listing.is_favorite]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-      className="bg-card rounded-lg shadow-lg overflow-hidden hover:shadow-primary/20 transition-all duration-300 glassmorphic-card cursor-pointer group"
+      whileHover={{ y: -4 }}
+      className="group bg-card rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-border/50 overflow-hidden"
       onClick={handleCardClick}
     >
       {/* Image */}
@@ -140,22 +119,29 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         
         {/* Badges */}
         <div className="absolute top-2 left-2 flex gap-2">
-                  <Badge variant="secondary" className="bg-black/70 text-white">
-          {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
-        </Badge>
+          <Badge variant="secondary" className="bg-black/70 text-white">
+            {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
+          </Badge>
           {getStatusBadge(listing.status)}
         </div>
         
-        {/* Favorite Button */}
+        {/* Favorite Button - AMÉLIORÉ */}
         {showActions && (
-          <button
+          <motion.button
             onClick={handleFavoriteClick}
-            className="absolute top-2 right-2 p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors duration-200"
+            disabled={isToggling}
+            className={`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 ${
+              isFavorite 
+                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                : 'bg-black/20 hover:bg-black/40 text-white'
+            } ${isToggling ? 'opacity-50 cursor-not-allowed' : ''}`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             <Heart 
-              className={`h-5 w-5 ${listing.is_favorite ? 'fill-red-500 text-red-500' : 'text-white'}`} 
+              className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} 
             />
-          </button>
+          </motion.button>
         )}
       </div>
 
@@ -170,94 +156,46 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         <div className="flex items-center text-muted-foreground mb-3">
           <MapPin className="h-4 w-4 mr-2" />
           <span className="truncate">
-            {listing.location && typeof listing.location === 'object' && listing.location.city 
-              ? `${listing.location.city}, ${listing.location.country || ''}` 
-              : 'Localisation non spécifiée'
+            {listing.location?.city && listing.location?.country 
+              ? `${listing.location.city}, ${listing.location.country}`
+              : listing.location?.city || listing.location?.country || 'Localisation non spécifiée'
             }
           </span>
         </div>
         
+        {/* Price */}
+        <div className="text-2xl font-bold text-primary mb-3">
+          {listing.price ? formatPrice(listing.price) : 'Prix sur demande'}
+        </div>
+        
         {/* Description */}
-        <p className="text-sm text-muted-foreground mb-4 h-12 overflow-hidden line-clamp-2">
-          {listing.description}
+        <p className="text-muted-foreground mb-4 line-clamp-2">
+          {listing.description || 'Aucune description disponible'}
         </p>
         
-        {/* Details spécifiques à la catégorie */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {details.type && (
-            <Badge variant="outline" className="text-xs">
-              {details.type}
-            </Badge>
-          )}
-          {details.rooms && (
-            <Badge variant="outline" className="text-xs">
-              {details.rooms}
-            </Badge>
-          )}
-          {details.surface && (
-            <Badge variant="outline" className="text-xs">
-              {details.surface}
-            </Badge>
-          )}
-          {details.brand && (
-            <Badge variant="outline" className="text-xs">
-              {details.brand}
-            </Badge>
-          )}
-          {details.year && (
-            <Badge variant="outline" className="text-xs">
-              {details.year}
-            </Badge>
-          )}
-        </div>
-        
-        {/* Price and Actions */}
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-2xl font-bold text-primary">
-              {formatPrice(listing.price)}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Publié le {formatDate(listing.created_at)}
-            </p>
+        {/* Footer */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center">
+            <Calendar className="h-4 w-4 mr-1" />
+            {listing.created_at ? formatDate(listing.created_at) : 'Date inconnue'}
           </div>
           
-          {showActions && (
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCardClick}>
-                <Eye className="mr-1 h-4 w-4" />
-                Voir
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleCardClick}>
-                <Phone className="mr-1 h-4 w-4" />
-                Contacter
-              </Button>
-            </div>
-          )}
-        </div>
-        
-        {/* User Info */}
-        {listing.users && (
-          <div className="mt-4 pt-4 border-t border-border">
-            <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            {listing.views_count > 0 && (
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-semibold text-primary">
-                    {listing.users.first_name?.[0]}{listing.users.last_name?.[0]}
-                  </span>
-                </div>
-                <div className="ml-2">
-                  <p className="text-sm font-medium">
-                    {listing.users.first_name} {listing.users.last_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Membre depuis {formatDate(listing.users.created_at)}
-                  </p>
-                </div>
+                <Eye className="h-4 w-4 mr-1" />
+                {listing.views_count}
               </div>
-            </div>
+            )}
+            
+            {listing.favorites_count > 0 && (
+              <div className="flex items-center">
+                <Heart className="h-4 w-4 mr-1" />
+                {listing.favorites_count}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </motion.div>
   );

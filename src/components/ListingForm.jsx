@@ -373,81 +373,252 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
       case 'real_estate':
         return (
           <>
-            <Label>Type de bien</Label>
-            <Input name="propertyType" placeholder="Appartement, Maison..." value={form.specificData.propertyType || ''} onChange={handleSpecificChange} />
-            <Label>Transaction</Label>
-            <Input name="transactionType" placeholder="sale/rent" value={form.specificData.transactionType || ''} onChange={handleSpecificChange} />
-            <Label>Chambres</Label>
-            <Input name="bedrooms" type="number" value={form.specificData.bedrooms || ''} onChange={handleSpecificChange} />
-            <Label>Salles de bain</Label>
-            <Input name="bathrooms" type="number" value={form.specificData.bathrooms || ''} onChange={handleSpecificChange} />
-            <Label>Surface (m²)</Label>
-            <Input name="areaSqMeters" type="number" value={form.specificData.areaSqMeters || ''} onChange={handleSpecificChange} />
-            <Label>Commodités (amenities)</Label>
-            {(form.specificData.amenities || []).map((a, i) => (
-              <div key={i} className="flex gap-2 mb-1">
-                <Input
-                  value={a}
-                  onChange={e => handleAmenityChange(i, e.target.value)}
-                  placeholder="Ex: Piscine, Parking..."
-                />
-                <Button type="button" size="icon" variant="destructive" onClick={() => removeAmenity(i)} title="Supprimer" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                  ×
-                </Button>
-              </div>
-            ))}
-            <Button type="button" size="sm" variant="outline" onClick={addAmenity} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">+ Ajouter une commodité</Button>
+            <div className="space-y-2">
+              <Label htmlFor="propertyType">Type de bien immobilier</Label>
+              <Input 
+                id="propertyType"
+                name="propertyType" 
+                placeholder="Ex: Appartement, Maison, Terrain, Local commercial..." 
+                value={form.specificData.propertyType || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="transactionType">Type de transaction</Label>
+              <Input 
+                id="transactionType"
+                name="transactionType" 
+                placeholder="Ex: Vente, Location, Location-vente..." 
+                value={form.specificData.transactionType || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="bedrooms">Nombre de chambres</Label>
+              <Input 
+                id="bedrooms"
+                name="bedrooms" 
+                type="number" 
+                placeholder="Ex: 3"
+                min="0"
+                value={form.specificData.bedrooms || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="bathrooms">Nombre de salles de bain</Label>
+              <Input 
+                id="bathrooms"
+                name="bathrooms" 
+                type="number" 
+                placeholder="Ex: 2"
+                min="0"
+                value={form.specificData.bathrooms || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="areaSqMeters">Surface en mètres carrés</Label>
+              <Input 
+                id="areaSqMeters"
+                name="areaSqMeters" 
+                type="number" 
+                placeholder="Ex: 120"
+                min="1"
+                value={form.specificData.areaSqMeters || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Commodités et équipements</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Ajoutez les commodités disponibles (piscine, parking, climatisation, etc.)
+              </p>
+              {(form.specificData.amenities || []).map((a, i) => (
+                <div key={i} className="flex gap-2 mb-1">
+                  <Input
+                    value={a}
+                    onChange={e => handleAmenityChange(i, e.target.value)}
+                    placeholder="Ex: Piscine, Parking, Climatisation..."
+                  />
+                  <Button type="button" size="icon" variant="destructive" onClick={() => removeAmenity(i)} title="Supprimer" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                    ×
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" size="sm" variant="outline" onClick={addAmenity} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">
+                + Ajouter une commodité
+              </Button>
+            </div>
           </>
         );
       case 'automobile':
         return (
           <>
-            <Label>Type de véhicule</Label>
-            <Input name="vehicleType" placeholder="Voiture, Moto..." value={form.specificData.vehicleType || ''} onChange={handleSpecificChange} />
-            <Label>Marque</Label>
-            <Input name="make" value={form.specificData.make || ''} onChange={handleSpecificChange} />
-            <Label>Modèle</Label>
-            <Input name="model" value={form.specificData.model || ''} onChange={handleSpecificChange} />
-            <Label>Année</Label>
-            <Input name="year" type="number" value={form.specificData.year || ''} onChange={handleSpecificChange} />
-            <Label>Kilométrage</Label>
-            <Input name="mileage" type="number" value={form.specificData.mileage || ''} onChange={handleSpecificChange} />
+            <div className="space-y-2">
+              <Label htmlFor="vehicleType">Type de véhicule</Label>
+              <Input 
+                id="vehicleType"
+                name="vehicleType" 
+                placeholder="Ex: Voiture, Moto, Camion, Bus..." 
+                value={form.specificData.vehicleType || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="make">Marque du véhicule</Label>
+              <Input 
+                id="make"
+                name="make" 
+                placeholder="Ex: Toyota, Honda, BMW..." 
+                value={form.specificData.make || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="model">Modèle du véhicule</Label>
+              <Input 
+                id="model"
+                name="model" 
+                placeholder="Ex: Corolla, Civic, X5..." 
+                value={form.specificData.model || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="year">Année de fabrication</Label>
+              <Input 
+                id="year"
+                name="year" 
+                type="number" 
+                placeholder="Ex: 2020"
+                min="1900"
+                max={new Date().getFullYear() + 1}
+                value={form.specificData.year || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="mileage">Kilométrage en km</Label>
+              <Input 
+                id="mileage"
+                name="mileage" 
+                type="number" 
+                placeholder="Ex: 50000"
+                min="0"
+                value={form.specificData.mileage || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
           </>
         );
       case 'services':
         return (
           <>
-            <Label>Catégorie de service</Label>
-            <Input name="serviceCategory" value={form.specificData.serviceCategory || ''} onChange={handleSpecificChange} />
-            <Label>Disponibilité</Label>
-            <Input name="availability" value={form.specificData.availability || ''} onChange={handleSpecificChange} />
-            <Label>Années d'expérience</Label>
-            <Input name="experienceYears" type="number" value={form.specificData.experienceYears || ''} onChange={handleSpecificChange} />
-            <Label>Liens de portfolio</Label>
-            {(form.specificData.portfolioLinks || []).map((l, i) => (
-              <div key={i} className="flex gap-2 mb-1">
-                <Input
-                  value={l}
-                  onChange={e => handlePortfolioChange(i, e.target.value)}
-                  placeholder="https://..."
-                />
-                <Button type="button" size="icon" variant="destructive" onClick={() => removePortfolioLink(i)} title="Supprimer" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                  ×
-                </Button>
-              </div>
-            ))}
-            <Button type="button" size="sm" variant="outline" onClick={addPortfolioLink} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">+ Ajouter un lien</Button>
+            <div className="space-y-2">
+              <Label htmlFor="serviceCategory">Catégorie de service</Label>
+              <Input 
+                id="serviceCategory"
+                name="serviceCategory" 
+                placeholder="Ex: Plomberie, Électricité, Design, Formation..." 
+                value={form.specificData.serviceCategory || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="availability">Disponibilité</Label>
+              <Input 
+                id="availability"
+                name="availability" 
+                placeholder="Ex: Lundi-Vendredi 9h-18h, Weekends..." 
+                value={form.specificData.availability || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="experienceYears">Années d'expérience</Label>
+              <Input 
+                id="experienceYears"
+                name="experienceYears" 
+                type="number" 
+                placeholder="Ex: 5"
+                min="0"
+                value={form.specificData.experienceYears || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Liens de portfolio et références</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Ajoutez des liens vers vos réalisations, portfolio ou références
+              </p>
+              {(form.specificData.portfolioLinks || []).map((l, i) => (
+                <div key={i} className="flex gap-2 mb-1">
+                  <Input
+                    value={l}
+                    onChange={e => handlePortfolioChange(i, e.target.value)}
+                    placeholder="https://votre-portfolio.com ou lien vers vos réalisations..."
+                  />
+                  <Button type="button" size="icon" variant="destructive" onClick={() => removePortfolioLink(i)} title="Supprimer" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                    ×
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" size="sm" variant="outline" onClick={addPortfolioLink} className="mb-2 border-gray-400 text-gray-700 hover:bg-gray-50">
+                + Ajouter un lien de portfolio
+              </Button>
+            </div>
           </>
         );
       case 'marketplace':
         return (
           <>
-            <Label>Catégorie de produit</Label>
-            <Input name="productCategory" value={form.specificData.productCategory || ''} onChange={handleSpecificChange} />
-            <Label>Marque</Label>
-            <Input name="brand" value={form.specificData.brand || ''} onChange={handleSpecificChange} />
-            <Label>Quantité en stock</Label>
-            <Input name="stockQuantity" type="number" value={form.specificData.stockQuantity || ''} onChange={handleSpecificChange} />
+            <div className="space-y-2">
+              <Label htmlFor="productCategory">Catégorie de produit</Label>
+              <Input 
+                id="productCategory"
+                name="productCategory" 
+                placeholder="Ex: Électronique, Vêtements, Livres, Sport..." 
+                value={form.specificData.productCategory || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="brand">Marque du produit</Label>
+              <Input 
+                id="brand"
+                name="brand" 
+                placeholder="Ex: Apple, Nike, Samsung..." 
+                value={form.specificData.brand || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="stockQuantity">Quantité disponible en stock</Label>
+              <Input 
+                id="stockQuantity"
+                name="stockQuantity" 
+                type="number" 
+                placeholder="Ex: 10"
+                min="0"
+                value={form.specificData.stockQuantity || ''} 
+                onChange={handleSpecificChange} 
+              />
+            </div>
           </>
         );
       default:
@@ -658,15 +829,15 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         return (
           <div className="space-y-6">
             <div>
-                              <h3 className="text-xl font-semibold text-foreground mb-4">Médias et détails</h3>
-                <p className="text-muted-foreground mb-6">Ajoutez des photos et des informations spécifiques à votre catégorie.</p>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Médias et détails</h3>
+              <p className="text-muted-foreground mb-6">Ajoutez des photos et des informations spécifiques à votre catégorie.</p>
             </div>
             
             {/* Section Médias */}
             <div className="space-y-4">
-                              <h4 className="text-lg font-medium text-foreground">Images</h4>
+              <h4 className="text-lg font-medium text-foreground">Images et médias</h4>
               <div className="space-y-2">
-                <Label>Images</Label>
+                <Label htmlFor="image-upload">Sélectionner des images</Label>
                 <div className={`border-2 border-dashed border-gray-400 rounded-lg p-6 text-center transition-colors ${
                   isUploadingImages ? 'border-blue-400 bg-blue-50' : 'hover:border-primary'
                 }`}>
@@ -745,14 +916,14 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
             
             {/* Section Détails spécifiques */}
             <div className="space-y-4 pt-6 border-t">
-              <h4 className="text-lg font-medium text-gray-900">Détails spécifiques</h4>
+              <h4 className="text-lg font-medium text-foreground">Détails spécifiques à la catégorie</h4>
               {form.category ? (
                 <div className="space-y-4">
                   {renderSpecificFields()}
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-gray-500">Veuillez d'abord sélectionner une catégorie à l'étape 1.</p>
+                  <p className="text-muted-foreground">Veuillez d'abord sélectionner une catégorie à l'étape 1.</p>
                 </div>
               )}
             </div>

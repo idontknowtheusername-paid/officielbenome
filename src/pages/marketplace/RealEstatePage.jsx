@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Filter, Search, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useListings } from '@/hooks/useListings';
+import { useListings, useFavorites } from '@/hooks';
 import ListingCard from '@/components/ListingCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -32,9 +32,11 @@ const RealEstatePage = () => {
     loading, 
     error, 
     hasMore, 
-    loadMore, 
-    toggleFavorite 
+    loadMore
   } = useListings('real_estate', filters);
+
+  // Utiliser le hook dédié pour les favoris
+  const { toggleFavorite, isToggling } = useFavorites();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -98,11 +100,11 @@ const RealEstatePage = () => {
                   id="search" 
                   type="text" 
                   placeholder="Entrez une ville, quartier, mots-clés..." 
-                  className="pl-10 h-12 text-base"
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
+                  className="pl-10"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               </div>
             </div>
             
@@ -111,89 +113,70 @@ const RealEstatePage = () => {
               <Input 
                 id="location" 
                 type="text" 
-                placeholder="Ville, quartier..." 
-                className="h-12 text-base"
+                placeholder="Ville, région..." 
                 value={filters.location}
                 onChange={(e) => handleFilterChange('location', e.target.value)}
               />
             </div>
             
             <div>
-              <label htmlFor="property-type" className="block text-sm font-medium mb-1">Type de bien</label>
-              <select 
-                id="property-type" 
-                className="w-full h-12 rounded-md border border-input bg-transparent px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                value={filters.type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
-              >
-                <option value="">Tous types</option>
-                <option value="appartement">Appartement</option>
-                <option value="maison">Maison</option>
-                <option value="terrain">Terrain</option>
-                <option value="commercial">Commercial</option>
-              </select>
+              <label htmlFor="minPrice" className="block text-sm font-medium mb-1">Prix min</label>
+              <Input 
+                id="minPrice" 
+                type="number" 
+                placeholder="0" 
+                value={filters.minPrice}
+                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+              />
             </div>
             
             <div>
-              <label htmlFor="price-range" className="block text-sm font-medium mb-1">Prix (FCFA)</label>
-              <div className="flex gap-2">
-                <Input 
-                  type="number" 
-                  placeholder="Min" 
-                  className="h-12 text-base"
-                  value={filters.minPrice}
-                  onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                />
-                <Input 
-                  type="number" 
-                  placeholder="Max" 
-                  className="h-12 text-base"
-                  value={filters.maxPrice}
-                  onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                />
-              </div>
+              <label htmlFor="maxPrice" className="block text-sm font-medium mb-1">Prix max</label>
+              <Input 
+                id="maxPrice" 
+                type="number" 
+                placeholder="∞" 
+                value={filters.maxPrice}
+                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+              />
             </div>
             
             <div className="flex gap-2">
-              <Button type="submit" className="h-12 text-base flex-1 bg-primary hover:bg-primary/90">
-                <Filter className="mr-2 h-5 w-5" /> Rechercher
+              <Button type="submit" className="flex-1">
+                <Search className="mr-2 h-4 w-4" />
+                Rechercher
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="h-12 px-3"
-                onClick={clearFilters}
-              >
-                Effacer
+              <Button type="button" variant="outline" onClick={clearFilters}>
+                <Filter className="h-4 w-4" />
               </Button>
             </div>
           </form>
         </motion.div>
 
         {/* Create Listing Button */}
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mb-8 text-center"
+          className="text-center mb-12"
         >
           <Button 
             onClick={handleCreateListing}
             size="lg" 
-            className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            🏠 Publier une annonce immobilière
+            Publier une annonce immobilière
           </Button>
         </motion.div>
 
         {/* Loading State */}
-        {loading && listings.length === 0 && (
+        {loading && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20"
+            className="text-center py-20"
           >
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
             <p className="text-lg text-muted-foreground">Chargement des annonces...</p>
           </motion.div>
         )}
@@ -203,7 +186,7 @@ const RealEstatePage = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20"
+            className="text-center py-20"
           >
             <AlertCircle className="h-12 w-12 text-destructive mb-4" />
             <p className="text-lg text-destructive mb-2">Erreur lors du chargement</p>
@@ -212,7 +195,7 @@ const RealEstatePage = () => {
               <Button onClick={() => window.location.reload()} className="mt-4">
                 Recharger la page
               </Button>
-              <Button onClick={() => refresh()} variant="outline" className="mt-4">
+              <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
                 Réessayer
               </Button>
             </div>

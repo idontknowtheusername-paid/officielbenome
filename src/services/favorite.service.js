@@ -76,5 +76,53 @@ export const favoriteService = {
 
     if (error && error.code !== 'PGRST116') throw error;
     return !!data;
+  },
+
+  // NOUVELLE FONCTION : Basculer les favoris (ajouter/retirer)
+  toggleFavorite: async (listingId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    try {
+      // Vérifier si c'est déjà en favori
+      const isCurrentlyFavorite = await favoriteService.isFavorite(listingId);
+      
+      if (isCurrentlyFavorite) {
+        // Retirer des favoris
+        await favoriteService.removeFromFavorites(listingId);
+        return { is_favorite: false, action: 'removed' };
+      } else {
+        // Ajouter aux favoris
+        await favoriteService.addToFavorites(listingId);
+        return { is_favorite: true, action: 'added' };
+      }
+    } catch (error) {
+      console.error('Erreur lors du basculement des favoris:', error);
+      throw new Error('Impossible de modifier les favoris');
+    }
+  },
+
+  // NOUVELLE FONCTION : Récupérer tous les favoris d'un utilisateur avec statut
+  getUserFavoritesWithStatus: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    try {
+      // Récupérer tous les favoris de l'utilisateur
+      const { data: favorites, error } = await supabase
+        .from('favorites')
+        .select('listing_id')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Créer un Set pour une recherche rapide
+      const favoriteIds = new Set(favorites.map(fav => fav.listing_id));
+      
+      return favoriteIds;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des favoris:', error);
+      return new Set();
+    }
   }
 };

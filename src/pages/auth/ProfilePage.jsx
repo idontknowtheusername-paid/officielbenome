@@ -29,7 +29,8 @@ import {
   Bell,
   Plus,
   Filter,
-  Search
+  Search,
+  Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
