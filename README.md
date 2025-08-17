@@ -1,4 +1,6 @@
-# MaxiMarket - Frontend
+# MaxiMarket Frontend
+
+> **📝 Note de mise à jour :** Application revenue à l'état stable - Commit c9f58bb
 
 MaxiMarket est une plateforme marketplace moderne et innovante conçue pour l'Afrique de l'Ouest, facilitant l'achat et la vente de biens immobiliers, véhicules, services professionnels et divers autres produits.
 
