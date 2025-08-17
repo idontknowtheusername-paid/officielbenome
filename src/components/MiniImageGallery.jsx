@@ -7,31 +7,62 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
+  // Fonction pour extraire l'URL de l'image - CORRIGÉE
+  const extractImageUrl = (image) => {
+    if (!image) return null;
+    
+    // Si c'est une chaîne (URL directe)
+    if (typeof image === 'string') return image;
+    
+    // Si c'est un objet avec une URL
+    if (image?.url) return image.url;
+    
+    // Si c'est un objet avec un fichier (preview)
+    if (image?.file) return URL.createObjectURL(image.file);
+    
+    // Si c'est un objet avec une source
+    if (image?.src) return image.src;
+    
+    // Si c'est un objet avec displayUrl
+    if (image?.displayUrl) return image.displayUrl;
+    
+    return null;
+  };
+
+  // Filtrer les images valides
+  const validImages = images.filter(img => extractImageUrl(img) !== null);
+
   // Auto-play au survol
   useEffect(() => {
-    if (!isHovered || images.length <= 1) return;
+    if (!isHovered || validImages.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+      setCurrentIndex((prev) => (prev + 1) % validImages.length);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isHovered, images.length]);
+  }, [isHovered, validImages.length]);
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    if (validImages.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % validImages.length);
+    }
   };
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    if (validImages.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+    }
   };
 
   const goToImage = (index) => {
-    setCurrentIndex(index);
+    if (index >= 0 && index < validImages.length) {
+      setCurrentIndex(index);
+    }
   };
 
   // Si pas d'images, afficher un placeholder
-  if (!images || images.length === 0) {
+  if (!validImages || validImages.length === 0) {
     return (
       <div className={`relative aspect-video bg-muted flex items-center justify-center ${className}`}>
         <div className="text-center text-muted-foreground">
@@ -41,7 +72,7 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
     );
   }
 
-  const currentImage = images[currentIndex];
+  const currentImage = validImages[currentIndex];
 
   return (
     <div 
@@ -49,7 +80,7 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image principale */}
+      {/* Image principale - CORRIGÉE */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
@@ -71,7 +102,7 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
       </AnimatePresence>
 
       {/* Navigation par flèches (visible au survol) */}
-      {images.length > 1 && (
+      {validImages.length > 1 && (
         <>
           <button
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -96,9 +127,9 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
       )}
 
       {/* Indicateurs d'images (visible au survol) */}
-      {images.length > 1 && (
+      {validImages.length > 1 && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          {images.map((_, index) => (
+          {validImages.map((_, index) => (
             <button
               key={index}
               onClick={(e) => {
@@ -117,9 +148,9 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
       )}
 
       {/* Compteur d'images */}
-      {images.length > 1 && (
+      {validImages.length > 1 && (
         <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-          {currentIndex + 1} / {images.length}
+          {currentIndex + 1} / {validImages.length}
         </div>
       )}
     </div>

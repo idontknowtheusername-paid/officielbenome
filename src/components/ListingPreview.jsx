@@ -31,18 +31,36 @@ const ListingPreview = ({ formData, onClose }) => {
     return iconMap[category] || Building;
   };
 
-  // Fonction pour obtenir l'URL d'une image
+  // Fonction pour obtenir l'URL d'une image - CORRIGÉE
   const getImageUrl = (image) => {
+    if (!image) return null;
+    
+    // Si c'est une chaîne (URL directe)
     if (typeof image === 'string') return image;
+    
+    // Si c'est un objet avec une URL
     if (image?.url) return image.url;
+    
+    // Si c'est un objet avec un fichier (preview)
     if (image?.file) return URL.createObjectURL(image.file);
+    
+    // Si c'est un objet avec une source
+    if (image?.src) return image.src;
+    
     return null;
   };
 
-  // Fonction pour obtenir les images valides
+  // Fonction pour obtenir les images valides - CORRIGÉE
   const getValidImages = () => {
     if (!formData.images || !Array.isArray(formData.images)) return [];
-    return formData.images.filter(img => getImageUrl(img));
+    
+    // Filtrer et valider les images
+    return formData.images
+      .map(img => {
+        const url = getImageUrl(img);
+        return url ? { ...img, displayUrl: url } : null;
+      })
+      .filter(Boolean);
   };
 
   // Fonction pour obtenir le nom d'affichage de la categorie
@@ -113,23 +131,23 @@ const ListingPreview = ({ formData, onClose }) => {
         </div>
 
         <div className="p-6">
-          {/* Section Images */}
+          {/* Section Images - CORRIGÉE */}
           <div className="mb-6">
-                      <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-            {validImages.length > 0 ? (
-              <>
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={currentImageIndex}
-                    src={getImageUrl(validImages[currentImageIndex])}
-                    alt={`Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </AnimatePresence>
+            <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+              {validImages.length > 0 ? (
+                <>
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentImageIndex}
+                      src={validImages[currentImageIndex]?.displayUrl}
+                      alt={`Image ${currentImageIndex + 1}`}
+                      className="w-full h-full object-cover"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </AnimatePresence>
 
                   {/* Navigation arrows */}
                   {validImages.length > 1 && (
@@ -178,12 +196,13 @@ const ListingPreview = ({ formData, onClose }) => {
                       <Tag className="h-8 w-8" />
                     </div>
                     <p>Aucune image</p>
+                    <p className="text-xs mt-1">Ajoutez des images à l'étape 2</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Thumbnails */}
+            {/* Thumbnails - CORRIGÉS */}
             {validImages.length > 1 && (
               <div className="flex space-x-2 mt-4 overflow-x-auto">
                 {validImages.map((image, index) => (
@@ -197,7 +216,7 @@ const ListingPreview = ({ formData, onClose }) => {
                     }`}
                   >
                     <img
-                      src={getImageUrl(image)}
+                      src={image.displayUrl}
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -321,13 +340,18 @@ const ListingPreview = ({ formData, onClose }) => {
 
             {/* Sidebar */}
             <div className="space-y-4">
-
-
-              
-
-              
-
-
+              {/* Informations sur les images */}
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h4 className="font-semibold text-foreground mb-2">Images</h4>
+                <div className="text-sm text-muted-foreground">
+                  <p>• {validImages.length} image(s) ajoutée(s)</p>
+                  {validImages.length === 0 && (
+                    <p className="text-yellow-600 mt-1">
+                      ⚠️ Aucune image - Ajoutez des images à l'étape 2
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

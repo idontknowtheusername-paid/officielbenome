@@ -18,10 +18,33 @@ const OptimizedImage = ({
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Optimiser l'URL de l'image
+  // Fonction pour extraire l'URL de l'image - CORRIGÉE
+  const extractImageUrl = (imageSrc) => {
+    if (!imageSrc) return null;
+    
+    // Si c'est une chaîne (URL directe)
+    if (typeof imageSrc === 'string') return imageSrc;
+    
+    // Si c'est un objet avec une URL
+    if (imageSrc?.url) return imageSrc.url;
+    
+    // Si c'est un objet avec un fichier (preview)
+    if (imageSrc?.file) return URL.createObjectURL(imageSrc.file);
+    
+    // Si c'est un objet avec une source
+    if (imageSrc?.src) return imageSrc.src;
+    
+    // Si c'est un objet avec displayUrl (depuis ListingPreview)
+    if (imageSrc?.displayUrl) return imageSrc.displayUrl;
+    
+    return null;
+  };
+
+  // Optimiser l'URL de l'image - CORRIGÉE
   const optimizedSrc = useMemo(() => {
-    if (!src) return null;
-    return optimizeImageUrl(src, context, quality);
+    const imageUrl = extractImageUrl(src);
+    if (!imageUrl) return null;
+    return optimizeImageUrl(imageUrl, context, quality);
   }, [src, context, quality]);
 
   // Lazy loading avec Intersection Observer
@@ -80,10 +103,13 @@ const OptimizedImage = ({
     );
   }
 
+  // Vérifier si on a une URL valide
+  const hasValidUrl = extractImageUrl(src) !== null;
+
   return (
     <div ref={elementRef} className={`relative overflow-hidden ${className}`}>
       {/* Skeleton de chargement */}
-      {showSkeleton && !isLoaded && !hasError && (
+      {showSkeleton && !isLoaded && !hasError && hasValidUrl && (
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 1 }}
@@ -97,7 +123,7 @@ const OptimizedImage = ({
       )}
 
       {/* Placeholder personnalisé */}
-      {placeholder && !isLoaded && !hasError && (
+      {placeholder && !isLoaded && !hasError && hasValidUrl && (
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 1 }}
@@ -114,24 +140,24 @@ const OptimizedImage = ({
         </AnimatePresence>
       )}
 
-      {/* Image principale */}
+      {/* Image principale - CORRIGÉE */}
       <AnimatePresence>
-        {!hasError && (
+        {!hasError && hasValidUrl && (
           <motion.img
-            src={imageState.src || placeholder}
+            src={imageState.src || extractImageUrl(src)}
             alt={alt}
             className={`w-full h-full object-cover transition-opacity duration-300 ${
               isLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             onLoad={() => {
-              if (imageState.src) {
+              if (imageState.src || extractImageUrl(src)) {
                 setIsLoaded(true);
-                onLoad?.(imageState.src);
+                onLoad?.(imageState.src || extractImageUrl(src));
               }
             }}
             onError={() => {
               setHasError(true);
-              onError?.(imageState.src);
+              onError?.(imageState.src || extractImageUrl(src));
             }}
             onClick={handleClick}
             loading="lazy"
@@ -155,9 +181,21 @@ const OptimizedImage = ({
       )}
 
       {/* Indicateur de chargement */}
-      {imageState.isLoading && !isLoaded && !hasError && (
+      {imageState.isLoading && !isLoaded && !hasError && hasValidUrl && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/10">
           <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Message si pas d'URL valide */}
+      {!hasValidUrl && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-muted">
+          <div className="text-center text-muted-foreground">
+            <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-sm">Format d'image non supporté</p>
+          </div>
         </div>
       )}
     </div>

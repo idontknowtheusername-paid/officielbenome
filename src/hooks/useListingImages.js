@@ -3,12 +3,37 @@ import { optimizeImageList } from '@/utils/imageOptimizer';
 
 export const useListingImages = (listing) => {
   const images = useMemo(() => {
-    // Si l'annonce a des images, les utiliser
+    // Si l'annonce a des images, les utiliser en priorité
     if (listing?.images && listing.images.length > 0) {
-      return listing.images;
+      // Filtrer et valider les images
+      const validImages = listing.images
+        .map(img => {
+          // Si c'est une chaîne (URL directe)
+          if (typeof img === 'string') return img;
+          
+          // Si c'est un objet avec une URL
+          if (img?.url) return img.url;
+          
+          // Si c'est un objet avec un fichier (preview)
+          if (img?.file) return URL.createObjectURL(img.file);
+          
+          // Si c'est un objet avec une source
+          if (img?.src) return img.src;
+          
+          // Si c'est un objet avec displayUrl
+          if (img?.displayUrl) return img.displayUrl;
+          
+          return null;
+        })
+        .filter(Boolean);
+      
+      // Si on a des images valides, les retourner
+      if (validImages.length > 0) {
+        return validImages;
+      }
     }
 
-    // Images par défaut selon la catégorie
+    // Images par défaut selon la catégorie (fallback)
     const defaultImages = {
       real_estate: [
         'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop',
