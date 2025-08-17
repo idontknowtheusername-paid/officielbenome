@@ -124,6 +124,11 @@ className="h-3 w-3 sm:h-4 sm:w-4"
    - Espacement progressif entre colonnes
    - Gaps adaptatifs selon la taille d'écran
 
+4. **Page d'Accueil - Annonces Populaires**
+   - Passage à 2 colonnes sur mobile
+   - Placeholders de chargement optimisés
+   - Cohérence avec le reste de l'application
+
 ## 📱 **Breakpoints utilisés**
 
 - **Mobile** : `< 640px` (sm)
@@ -158,4 +163,4 @@ className="h-3 w-3 sm:h-4 sm:w-4"
 
 **Status** : ✅ **IMPLÉMENTÉ ET TESTÉ**  
 **Date** : $(date)  
-**Version** : 2.0 - Optimisation Mobile Complète
+**Version** : 2.1 - Optimisation Mobile Complète + Page d'Accueil
