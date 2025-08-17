@@ -644,8 +644,8 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     disabled={!form.location.country}
                   >
                     <option value="" className="text-gray-900">Sélectionner une ville</option>
-                    {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map(city => (
-                      <option key={city} value={city} className="text-gray-900">{city}</option>
+                    {COUNTRY_CITY_OPTIONS.find(c => c.name === form.location.country)?.cities.map((city, index) => (
+                      <option key={`${form.location.country}-${city}-${index}`} value={city} className="text-gray-900">{city}</option>
                     ))}
                   </select>
                 </div>
