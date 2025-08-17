@@ -821,7 +821,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                     value={form.location.city}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-3 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-foreground disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full px-3 py-3 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!form.location.country}
                   >
                     <option value="" className="text-foreground">Sélectionner une ville</option>
