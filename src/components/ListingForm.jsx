@@ -195,15 +195,22 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
       const previews = await Promise.all(files.map(createPreview));
       
       // Ajouter les previsualisations au formulaire immediatement
+      const newImages = [...form.images, ...previews.map(p => ({ 
+        url: p.url, 
+        isPreview: true, 
+        id: p.id,
+        file: p.file 
+      }))];
+      
       setForm((prev) => ({ 
         ...prev, 
-        images: [...prev.images, ...previews.map(p => ({ 
-          url: p.url, 
-          isPreview: true, 
-          id: p.id,
-          file: p.file 
-        }))]
+        images: newImages
       }));
+
+      // Notifier le parent des changements d'images - CORRIGÉ
+      if (onDataChange) {
+        onDataChange({ images: newImages });
+      }
 
       // Étape 2: Compresser les images en parallele
       const compressedFiles = await Promise.all(
@@ -240,17 +247,21 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
       const errors = results.filter(r => !r.success);
 
       if (successfulUploads.length > 0) {
-        setForm((prev) => {
-          const newImages = [...prev.images];
-          successfulUploads.forEach(({ url, index }) => {
-            // Trouver l'index de la previsualisation correspondante
-            const previewIndex = newImages.findIndex(img => img.isPreview && img.id === previews[index].id);
-            if (previewIndex !== -1) {
-              newImages[previewIndex] = { url, isPreview: false };
-            }
-          });
-          return { ...prev, images: newImages };
+        const finalImages = [...newImages];
+        successfulUploads.forEach(({ url, index }) => {
+          // Trouver l'index de la previsualisation correspondante
+          const previewIndex = finalImages.findIndex(img => img.isPreview && img.id === previews[index].id);
+          if (previewIndex !== -1) {
+            finalImages[previewIndex] = { url, isPreview: false };
+          }
         });
+        
+        setForm((prev) => ({ ...prev, images: finalImages }));
+        
+        // Notifier le parent des changements d'images finales - CORRIGÉ
+        if (onDataChange) {
+          onDataChange({ images: finalImages });
+        }
 
         toast({ 
           title: 'Images ajoutées', 
@@ -280,34 +291,33 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     }
   };
 
-  // Suppression d'une image uploadee (avant publication)
+  // Suppression d'une image uploadee (avant publication) - CORRIGÉ
   const handleRemoveImage = (idxToRemove) => {
     setForm((prev) => {
-      const imageToRemove = prev.images[idxToRemove];
+      const newImages = prev.images.filter((_, idx) => idx !== idxToRemove);
       
-      // Si c'est une previsualisation, on peut la supprimer directement
-      if (imageToRemove.isPreview) {
-        return {
-          ...prev,
-          images: prev.images.filter((_, idx) => idx !== idxToRemove)
-        };
+      // Notifier le parent des changements d'images - CORRIGÉ
+      if (onDataChange) {
+        onDataChange({ images: newImages });
       }
       
-      // Si c'est une vraie image uploadee, on peut aussi la supprimer
-      return {
-        ...prev,
-        images: prev.images.filter((_, idx) => idx !== idxToRemove)
-      };
+      return { ...prev, images: newImages };
     });
   };
 
-  // Reordonner les images (fleches)
+  // Reordonner les images (fleches) - CORRIGÉ
   const moveImage = (fromIdx, toIdx) => {
     setForm((prev) => {
       const images = [...prev.images];
       if (toIdx < 0 || toIdx >= images.length) return prev;
       const [moved] = images.splice(fromIdx, 1);
       images.splice(toIdx, 0, moved);
+      
+      // Notifier le parent des changements d'images - CORRIGÉ
+      if (onDataChange) {
+        onDataChange({ images: images });
+      }
+      
       return { ...prev, images };
     });
   };
