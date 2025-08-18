@@ -4,6 +4,47 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 // SERVICE ANNONCES
 // ============================================================================
 
+// Fonction utilitaire pour la rotation intelligente des annonces premium
+const calculatePremiumRotation = (allPremium, limit) => {
+  const totalPremium = allPremium?.length || 0;
+  
+  if (totalPremium === 0) return { data: [], hasMore: false, totalPremium: 0 };
+  
+  // Si moins d'annonces premium que la limite, retourner toutes
+  if (totalPremium <= limit) {
+    return {
+      data: allPremium || [],
+      hasMore: false,
+      totalPremium
+    };
+  }
+
+  // ROTATION : Sélectionner des annonces différentes chaque jour
+  const today = new Date();
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+  const rotationOffset = dayOfYear % totalPremium;
+  
+  // Sélectionner les annonces avec rotation
+  const rotatedData = [];
+  for (let i = 0; i < limit; i++) {
+    const index = (rotationOffset + i) % totalPremium;
+    rotatedData.push(allPremium[index]);
+  }
+
+  console.log(`🔄 Rotation premium: ${totalPremium} total, ${limit} affichées, offset: ${rotationOffset}`);
+
+  return {
+    data: rotatedData,
+    hasMore: totalPremium > limit,
+    totalPremium,
+    rotationInfo: {
+      dayOfYear,
+      rotationOffset,
+      nextRotation: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+    }
+  };
+};
+
 export const listingService = {
   // Recuperer toutes les annonces avec pagination
   getAllListings: async (filters = {}) => {
@@ -535,6 +576,7 @@ export const listingService = {
   },
 
   // Recuperer les annonces premium (is_featured et/ou is_boosted)
+  // ROTATION INTELLIGENTE : Équité entre toutes les annonces premium
   getPremiumListings: async (limit = 6) => {
     // Verifier la configuration Supabase
     if (!isSupabaseConfigured) {
@@ -625,8 +667,8 @@ export const listingService = {
     }
 
     try {
-      // Récupérer les annonces premium (is_featured = true ET/OU is_boosted = true)
-      const { data, error } = await supabase
+      // Récupérer TOUTES les annonces premium valides (sans limite)
+      const { data: allPremium, error: allError } = await supabase
         .from('listings')
         .select(`
           *,
@@ -640,15 +682,12 @@ export const listingService = {
         `)
         .or('is_featured.eq.true,is_boosted.eq.true')
         .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-        .limit(limit);
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (allError) throw allError;
 
-      return {
-        data: data || [],
-        hasMore: false // Pour l'instant, pas de pagination sur les premium
-      };
+      // Utiliser la fonction utilitaire de rotation intelligente
+      return calculatePremiumRotation(allPremium, limit);
     } catch (error) {
       console.error('Erreur lors de la récupération des annonces premium:', error);
       throw error;
