@@ -110,22 +110,77 @@ const MessagingPageContent = () => {
   console.log('MessagingPage - conversations:', conversations);
 
   if (error) {
+    // Analyser le type d'erreur pour afficher un message approprié
+    let errorTitle = 'Erreur de chargement';
+    let errorMessage = 'Impossible de charger les conversations. Veuillez réessayer.';
+    let errorAction = 'Recharger';
+    let errorIcon = MessageSquare;
+
+    if (error.message?.includes('Session expirée')) {
+      errorTitle = 'Session expirée';
+      errorMessage = 'Votre session a expiré. Veuillez vous reconnecter pour continuer.';
+      errorAction = 'Se reconnecter';
+      errorIcon = Users;
+    } else if (error.message?.includes('base de données')) {
+      errorTitle = 'Erreur de base de données';
+      errorMessage = 'Un problème technique est survenu. Nos équipes ont été notifiées.';
+      errorAction = 'Réessayer';
+      errorIcon = Settings;
+    } else if (error.message?.includes('Requête invalide')) {
+      errorTitle = 'Erreur de requête';
+      errorMessage = 'La requête envoyée est invalide. Veuillez rafraîchir la page.';
+      errorAction = 'Rafraîchir';
+      errorIcon = Search;
+    }
+
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <MessageSquare className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <errorIcon className="mx-auto h-12 w-12 text-red-500 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Erreur de chargement
+            {errorTitle}
           </h3>
-          <p className="text-gray-500">
-            Impossible de charger les conversations. Veuillez réessayer.
+          <p className="text-gray-500 max-w-md mx-auto">
+            {errorMessage}
           </p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="mt-4"
-          >
-            Recharger
-          </Button>
+          <div className="mt-4 flex justify-center space-x-3">
+            {errorAction === 'Se reconnecter' ? (
+              <Button 
+                onClick={() => window.location.href = '/connexion'} 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Se reconnecter
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {errorAction}
+              </Button>
+            )}
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/'} 
+            >
+              Retour à l'accueil
+            </Button>
+          </div>
+          
+          {/* Détails techniques pour le débogage */}
+          {process.env.NODE_ENV === 'development' && (
+            <details className="mt-4 text-left max-w-md mx-auto">
+              <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+                Détails techniques
+              </summary>
+              <div className="mt-2 p-3 bg-gray-100 rounded text-xs text-gray-700 font-mono">
+                <div><strong>Message:</strong> {error.message}</div>
+                <div><strong>Type:</strong> {error.constructor.name}</div>
+                {error.code && <div><strong>Code:</strong> {error.code}</div>}
+                {error.status && <div><strong>Status:</strong> {error.status}</div>}
+              </div>
+            </details>
+          )}
         </div>
       </div>
     );

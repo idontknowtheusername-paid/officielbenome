@@ -54,24 +54,20 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      // D'abord, recuperer les conversations existantes
+      console.log('🔍 Récupération des conversations pour l\'utilisateur:', user.id);
+
+      // D'abord, recuperer les conversations existantes avec une requête simplifiée
       const { data: conversations, error: convError } = await supabase
         .from('conversations')
         .select(`
-          *,
-          listing:listings(id, title, price, images),
-          participant1:users!conversations_participant1_id_fkey (
-            id,
-            first_name,
-            last_name,
-            avatar_url
-          ),
-          participant2:users!conversations_participant2_id_fkey (
-            id,
-            first_name,
-            last_name,
-            avatar_url
-          )
+          id,
+          listing_id,
+          participant1_id,
+          participant2_id,
+          is_active,
+          last_message_at,
+          created_at,
+          updated_at
         `)
         .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
         .order('last_message_at', { ascending: false });
@@ -80,6 +76,8 @@ export const messageService = {
         console.error('Erreur récupération conversations:', convError);
         throw convError;
       }
+
+      console.log('🔍 Conversations trouvées:', conversations?.length || 0);
 
       // Si aucune conversation, créer un message de bienvenue et retourner un message système
       if (!conversations || conversations.length === 0) {
@@ -135,32 +133,95 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
         }];
       }
 
-      // Pour chaque conversation, recuperer les messages
-      const conversationsWithMessages = await Promise.all(
+      // Pour chaque conversation, recuperer les détails des participants et du listing
+      const conversationsWithDetails = await Promise.all(
         conversations.map(async (conversation) => {
-          const { data: messages, error: msgError } = await supabase
-            .from('messages')
-            .select(`
-              id,
-              content,
-              created_at,
-              is_read,
-              sender_id,
-              conversation_id
-            `)
-            .eq('conversation_id', conversation.id)
-            .order('created_at', { ascending: true });
+          try {
+            // Récupérer les détails du listing si il existe
+            let listingDetails = null;
+            if (conversation.listing_id) {
+              const { data: listing, error: listingError } = await supabase
+                .from('listings')
+                .select('id, title, price, images')
+                .eq('id', conversation.listing_id)
+                .single();
+              
+              if (!listingError && listing) {
+                listingDetails = listing;
+              }
+            }
 
-          if (msgError) {
-            console.error('Erreur récupération messages:', msgError);
-            return { ...conversation, messages: [] };
+            // Récupérer les détails des participants
+            const participant1Id = conversation.participant1_id;
+            const participant2Id = conversation.participant2_id;
+            
+            let participant1 = null;
+            let participant2 = null;
+
+            if (participant1Id) {
+              const { data: user1, error: user1Error } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, avatar_url')
+                .eq('id', participant1Id)
+                .single();
+              
+              if (!user1Error && user1) {
+                participant1 = user1;
+              }
+            }
+
+            if (participant2Id) {
+              const { data: user2, error: user2Error } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, avatar_url')
+                .eq('id', participant2Id)
+                .single();
+              
+              if (!user2Error && user2) {
+                participant2 = user2;
+              }
+            }
+
+            // Récupérer les messages de la conversation
+            const { data: messages, error: msgError } = await supabase
+              .from('messages')
+              .select(`
+                id,
+                content,
+                created_at,
+                is_read,
+                sender_id,
+                conversation_id
+              `)
+              .eq('conversation_id', conversation.id)
+              .order('created_at', { ascending: true });
+
+            if (msgError) {
+              console.error('Erreur récupération messages:', msgError);
+              return { 
+                ...conversation, 
+                messages: [],
+                listing: listingDetails,
+                participant1,
+                participant2
+              };
+            }
+
+            return { 
+              ...conversation, 
+              messages: messages || [],
+              listing: listingDetails,
+              participant1,
+              participant2
+            };
+          } catch (error) {
+            console.error('Erreur lors de la récupération des détails de la conversation:', error);
+            return { ...conversation, messages: [], listing: null, participant1: null, participant2: null };
           }
-
-          return { ...conversation, messages: messages || [] };
         })
       );
 
-      return conversationsWithMessages;
+      return conversationsWithDetails;
     } catch (error) {
       console.error('Erreur dans getUserConversations:', error);
       throw error;
@@ -169,31 +230,80 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
 
   // Recuperer les messages d'une conversation
   getConversationMessages: async (conversationId) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
 
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        sender:users!messages_sender_id_fkey (
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        ),
-        receiver:users!messages_receiver_id_fkey (
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
+      console.log('🔍 Récupération des messages pour la conversation:', conversationId);
 
-    if (error) throw error;
-    return data;
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
+          id,
+          content,
+          created_at,
+          is_read,
+          sender_id,
+          receiver_id,
+          conversation_id,
+          message_type
+        `)
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Erreur récupération messages:', error);
+        throw error;
+      }
+
+      // Récupérer les détails des expéditeurs et destinataires
+      const messagesWithUsers = await Promise.all(
+        (data || []).map(async (message) => {
+          try {
+            let sender = null;
+            let receiver = null;
+
+            if (message.sender_id) {
+              const { data: senderData, error: senderError } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, avatar_url')
+                .eq('id', message.sender_id)
+                .single();
+              
+              if (!senderError && senderData) {
+                sender = senderData;
+              }
+            }
+
+            if (message.receiver_id) {
+              const { data: receiverData, error: receiverError } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, avatar_url')
+                .eq('id', message.receiver_id)
+                .single();
+              
+              if (!receiverError && receiverData) {
+                receiver = receiverData;
+              }
+            }
+
+            return {
+              ...message,
+              sender,
+              receiver
+            };
+          } catch (error) {
+            console.error('Erreur lors de la récupération des détails utilisateur:', error);
+            return message;
+          }
+        })
+      );
+
+      return messagesWithUsers;
+    } catch (error) {
+      console.error('Erreur dans getConversationMessages:', error);
+      throw error;
+    }
   },
 
   // Envoyer un message
@@ -323,58 +433,197 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
 
   // Rechercher des conversations
   searchConversations: async (searchTerm) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
 
-    const { data, error } = await supabase
-      .from('conversations')
-      .select(`
-        *,
-        listing:listings(id, title),
-        participant1:users!conversations_participant1_id_fkey (
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        ),
-        participant2:users!conversations_participant2_id_fkey (
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
-      .or(`listing.title.ilike.%${searchTerm}%`)
-      .order('last_message_at', { ascending: false });
+      console.log('🔍 Recherche de conversations avec le terme:', searchTerm);
 
-    if (error) throw error;
-    return data;
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          listing_id,
+          participant1_id,
+          participant2_id,
+          is_active,
+          last_message_at,
+          created_at,
+          updated_at
+        `)
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+        .order('last_message_at', { ascending: false });
+
+      if (error) {
+        console.error('Erreur recherche conversations:', error);
+        throw error;
+      }
+
+      // Filtrer et enrichir les conversations avec les détails
+      const enrichedConversations = await Promise.all(
+        (data || []).map(async (conversation) => {
+          try {
+            let listing = null;
+            let participant1 = null;
+            let participant2 = null;
+
+            // Récupérer les détails du listing si il existe
+            if (conversation.listing_id) {
+              const { data: listingData, error: listingError } = await supabase
+                .from('listings')
+                .select('id, title')
+                .eq('id', conversation.listing_id)
+                .single();
+              
+              if (!listingError && listingData) {
+                listing = listingData;
+              }
+            }
+
+            // Récupérer les détails des participants
+            if (conversation.participant1_id) {
+              const { data: user1, error: user1Error } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, avatar_url')
+                .eq('id', conversation.participant1_id)
+                .single();
+              
+              if (!user1Error && user1) {
+                participant1 = user1;
+              }
+            }
+
+            if (conversation.participant2_id) {
+              const { data: user2, error: user2Error } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, avatar_url')
+                .eq('id', conversation.participant2_id)
+                .single();
+              
+              if (!user2Error && user2) {
+                participant2 = user2;
+              }
+            }
+
+            return {
+              ...conversation,
+              listing,
+              participant1,
+              participant2
+            };
+          } catch (error) {
+            console.error('Erreur lors de l\'enrichissement de la conversation:', error);
+            return conversation;
+          }
+        })
+      );
+
+      // Filtrer par le terme de recherche
+      return enrichedConversations.filter(conv => {
+        if (!searchTerm) return true;
+        
+        const searchLower = searchTerm.toLowerCase();
+        
+        // Rechercher dans le titre du listing
+        if (conv.listing?.title?.toLowerCase().includes(searchLower)) {
+          return true;
+        }
+        
+        // Rechercher dans les noms des participants
+        if (conv.participant1?.first_name?.toLowerCase().includes(searchLower) ||
+            conv.participant1?.last_name?.toLowerCase().includes(searchLower) ||
+            conv.participant2?.first_name?.toLowerCase().includes(searchLower) ||
+            conv.participant2?.last_name?.toLowerCase().includes(searchLower)) {
+          return true;
+        }
+        
+        return false;
+      });
+    } catch (error) {
+      console.error('Erreur dans searchConversations:', error);
+      throw error;
+    }
   },
 
   // Récupérer les messages non lus d'un utilisateur
   getUnreadMessages: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Utilisateur non connecté');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
 
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        conversation:conversations(id, listing_id),
-        sender:users!messages_sender_id_fkey (
+      console.log('🔍 Récupération des messages non lus pour l\'utilisateur:', user.id);
+
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
           id,
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .eq('receiver_id', user.id)
-      .eq('is_read', false)
-      .order('created_at', { ascending: false });
+          content,
+          created_at,
+          is_read,
+          sender_id,
+          receiver_id,
+          conversation_id,
+          message_type
+        `)
+        .eq('receiver_id', user.id)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        console.error('Erreur récupération messages non lus:', error);
+        throw error;
+      }
+
+      // Enrichir les messages avec les détails de la conversation et de l'expéditeur
+      const enrichedMessages = await Promise.all(
+        (data || []).map(async (message) => {
+          try {
+            let conversation = null;
+            let sender = null;
+
+            // Récupérer les détails de la conversation si elle existe
+            if (message.conversation_id) {
+              const { data: convData, error: convError } = await supabase
+                .from('conversations')
+                .select('id, listing_id')
+                .eq('id', message.conversation_id)
+                .single();
+              
+              if (!convError && convData) {
+                conversation = convData;
+              }
+            }
+
+            // Récupérer les détails de l'expéditeur
+            if (message.sender_id) {
+              const { data: senderData, error: senderError } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, avatar_url')
+                .eq('id', message.sender_id)
+                .single();
+              
+              if (!senderError && senderData) {
+                sender = senderData;
+              }
+            }
+
+            return {
+              ...message,
+              conversation,
+              sender
+            };
+          } catch (error) {
+            console.error('Erreur lors de l\'enrichissement du message:', error);
+            return message;
+          }
+        })
+      );
+
+      return enrichedMessages;
+    } catch (error) {
+      console.error('Erreur dans getUnreadMessages:', error);
+      throw error;
+    }
   },
 
   // Compter les messages non lus

@@ -10,10 +10,40 @@ export const useConversations = (filters = {}) => {
 
   return useQuery({
     queryKey: ['conversations', user?.id, filters],
-    queryFn: () => messageService.getUserConversations(),
+    queryFn: async () => {
+      try {
+        console.log('🔍 Hook useConversations - Début de la récupération');
+        const result = await messageService.getUserConversations();
+        console.log('🔍 Hook useConversations - Récupération réussie:', result?.length || 0);
+        return result;
+      } catch (error) {
+        console.error('❌ Hook useConversations - Erreur lors de la récupération:', error);
+        
+        // Retourner un message d'erreur structuré
+        if (error.code === 'PGRST116') {
+          throw new Error('Erreur de base de données: Vérifiez la structure des tables');
+        } else if (error.message?.includes('Invalid Refresh Token')) {
+          throw new Error('Session expirée. Veuillez vous reconnecter.');
+        } else if (error.status === 400) {
+          throw new Error('Requête invalide. Vérifiez les paramètres.');
+        } else {
+          throw new Error(`Erreur de messagerie: ${error.message || 'Erreur inconnue'}`);
+        }
+      }
+    },
     enabled: !!user,
     staleTime: 30000, // 30 secondes
     gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, error) => {
+      // Ne pas réessayer pour les erreurs d'authentification
+      if (error.message?.includes('Session expirée') || 
+          error.message?.includes('Utilisateur non connecté')) {
+        return false;
+      }
+      // Réessayer jusqu'à 2 fois pour les autres erreurs
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
