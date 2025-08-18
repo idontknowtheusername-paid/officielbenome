@@ -43,7 +43,7 @@ const HomePage = () => {
     const loadPremium = async () => {
       try {
         setLoadingPremium(true);
-        const data = await listingService.getPremiumListings(6);
+        const data = await listingService.getPremiumListings(10);
         setPremiumListings(data?.data || []);
       } catch (e) {
         setErrorPremium(e?.message || 'Erreur lors du chargement des annonces premium');
@@ -244,10 +244,10 @@ const HomePage = () => {
             <p className="text-center text-destructive mb-8">{errorPremium}</p>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {loadingPremium &&
               !premiumListings.length &&
-              Array.from({ length: 6 }).map((_, idx) => (
+              Array.from({ length: 10 }).map((_, idx) => (
                 <div
                   key={idx}
                   className="bg-gradient-to-br from-amber-50/80 to-yellow-100/80 rounded-lg shadow-xl overflow-hidden glassmorphic-card border-2 border-amber-300/50"
@@ -281,7 +281,7 @@ const HomePage = () => {
               </div>
             )}
 
-            {premiumListings.slice(0, 6).map((listing) => (
+            {premiumListings.slice(0, 10).map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
