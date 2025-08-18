@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { UserAvatar } from '@/components/ui';
 import { 
   MessageSquare, 
   Clock, 
@@ -118,13 +119,10 @@ const ConversationCard = ({
         <div className="flex items-start space-x-4">
           {/* Avatar */}
           <div className="relative">
-            <img
-              src={otherParticipant?.avatar_url || '/default-avatar.png'}
-              alt={otherParticipant ? `${otherParticipant.first_name} ${otherParticipant.last_name}` : 'Utilisateur'}
-              className="w-12 h-12 rounded-full object-cover"
-              onError={(e) => {
-                e.target.src = '/default-avatar.png';
-              }}
+            <UserAvatar 
+              user={otherParticipant}
+              size="lg"
+              className="flex-shrink-0"
             />
             {hasUnreadMessages && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 border-2 border-white rounded-full"></div>

@@ -1,44 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useConversations, useMessageStats, useRealtimeMessages } from '../hooks/useMessages';
-import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useConversations, useRealtimeMessages } from '@/hooks/useMessages';
+import { messageService } from '@/services/message.service';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 import { 
   MessageSquare, 
-  Users, 
-  Star, 
-  Archive,
-  Plus,
-  Search,
-  Bell,
-  Settings,
-  Filter,
+  Search, 
+  Filter, 
+  Phone, 
+  Video, 
   MoreVertical,
-  ChevronLeft,
-  Menu,
+  User,
+  Star,
+  Archive,
+  Trash2,
   Send,
   Paperclip,
   Smile,
-  Phone,
-  Video,
-  User,
-  Clock,
-  Eye,
-  Trash2
+  Plus,
+  Camera,
+  Mic
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { messageService } from '../services';
-import { useToast } from '../components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { 
   MobileMessagingNav, 
   MessagingSearch, 
   MessageInput 
-} from '../components/messaging';
-import { supabase } from '../lib/supabase';
-import { useSearchParams } from 'react-router-dom';
+} from '@/components/messaging';
+import { UserAvatar } from '@/components/ui';
 
 // Configuration du client React Query
 const queryClient = new QueryClient({
@@ -382,8 +376,8 @@ const MessagingPageContent = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+    return (
+      <div className="min-h-screen bg-gray-50">
       {/* Header Mobile */}
       <MobileMessagingNav
         selectedConversation={selectedConversation}
@@ -399,21 +393,21 @@ const MessagingPageContent = () => {
 
       {/* Header Desktop */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 hidden md:block">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Centre de Messages</h1>
-            <p className="text-gray-600">
-              Gérez vos conversations et échangez avec d'autres utilisateurs
-            </p>
-          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Centre de Messages</h1>
+              <p className="text-gray-600">
+                Gérez vos conversations et échangez avec d'autres utilisateurs
+              </p>
+            </div>
           <div className="flex items-center space-x-3">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Nouvelle Conversation
-            </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle Conversation
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Contenu Principal */}
       <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-140px)]">
@@ -448,11 +442,11 @@ const MessagingPageContent = () => {
                       <div className="flex-1">
                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                         <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      </div>
-                    </div>
+                </div>
+                  </div>
                   </div>
                 ))}
-              </div>
+                  </div>
             ) : searchedConversations.length === 0 ? (
               <div className="p-8 text-center">
                 <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -462,7 +456,7 @@ const MessagingPageContent = () => {
                 <p className="text-gray-500">
                   {searchTerm ? 'Aucune conversation trouvée pour votre recherche' : 'Commencez une nouvelle conversation'}
                 </p>
-              </div>
+                </div>
             ) : (
               <div className="space-y-1">
                 {searchedConversations.map((conversation) => (
@@ -489,12 +483,23 @@ const MessagingPageContent = () => {
             <div className="border-b border-gray-200 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-gray-600" />
-                  </div>
+                  <UserAvatar 
+                    user={selectedConversation.participant1_id === user?.id 
+                      ? selectedConversation.participant2 
+                      : selectedConversation.participant1
+                    } 
+                    size="default"
+                  />
                   <div>
                     <h3 className="font-medium">
-                      {selectedConversation.participant1?.first_name || 'Utilisateur'}
+                      {(() => {
+                        const otherParticipant = selectedConversation.participant1_id === user?.id 
+                          ? selectedConversation.participant2 
+                          : selectedConversation.participant1;
+                        return otherParticipant 
+                          ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || 'Utilisateur'
+                          : 'Utilisateur';
+                      })()}
                     </h3>
                     <p className="text-sm text-gray-500">
                       {selectedConversation.listing?.title || 'Conversation'}
@@ -533,10 +538,11 @@ const MessagingPageContent = () => {
                     isOwn={message.sender_id === user?.id}
                     participant1={selectedConversation.participant1}
                     participant2={selectedConversation.participant2}
+                    currentUserId={user?.id}
                   />
                 ))
               )}
-            </div>
+              </div>
 
             {/* Zone de saisie optimisée */}
             <MessageInput
@@ -562,12 +568,12 @@ const MessagingPageContent = () => {
               <p className="text-gray-500">
                 Choisissez une conversation dans la liste pour commencer à échanger
               </p>
-            </div>
           </div>
+        </div>
         )}
       </div>
-    </div>
-  );
+      </div>
+    );
 };
 
 // Composant pour afficher un élément de conversation
@@ -621,9 +627,11 @@ const ConversationItem = ({
     >
       <div className="flex items-start space-x-3">
         <div className="relative">
-          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-            <User className="h-5 w-5 text-gray-600" />
-          </div>
+          <UserAvatar 
+            user={otherParticipant} 
+            size="default"
+            className="flex-shrink-0"
+          />
           {hasUnreadMessages && (
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full"></div>
           )}
@@ -632,7 +640,7 @@ const ConversationItem = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <h4 className="font-medium text-sm truncate">
-              {otherParticipant ? `${otherParticipant.first_name} ${otherParticipant.last_name}` : 'Utilisateur'}
+              {otherParticipant ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur'}
             </h4>
             <div className="flex items-center space-x-2">
               {conversation.starred && (
@@ -667,7 +675,7 @@ const ConversationItem = ({
 };
 
 // Composant pour afficher une bulle de message
-const MessageBubble = ({ message, isOwn, participant1, participant2 }) => {
+const MessageBubble = ({ message, isOwn, participant1, participant2, currentUserId }) => {
   const formatTime = (dateString) => {
     if (!dateString) return 'À l\'instant';
     
@@ -682,8 +690,20 @@ const MessageBubble = ({ message, isOwn, participant1, participant2 }) => {
     }
   };
 
+  // Déterminer l'expéditeur du message
+  const messageSender = message.sender_id === participant1?.id ? participant1 : participant2;
+
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} space-x-2`}>
+      {/* Avatar de l'expéditeur (seulement pour les messages des autres) */}
+      {!isOwn && (
+        <UserAvatar 
+          user={messageSender} 
+          size="sm"
+          className="flex-shrink-0 mt-1"
+        />
+      )}
+      
       <div className={`
         max-w-xs lg:max-w-md px-4 py-2 rounded-lg
         ${isOwn 
@@ -694,7 +714,7 @@ const MessageBubble = ({ message, isOwn, participant1, participant2 }) => {
         <div className="flex items-center space-x-2 mb-1">
           {!isOwn && (
             <span className="text-xs font-medium">
-              {participant1?.first_name || 'Utilisateur'}
+              {messageSender ? `${messageSender.first_name || ''} ${messageSender.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur'}
             </span>
           )}
           <span className="text-xs opacity-75">
@@ -703,6 +723,15 @@ const MessageBubble = ({ message, isOwn, participant1, participant2 }) => {
         </div>
         <p className="text-sm">{message.content}</p>
       </div>
+      
+      {/* Avatar de l'utilisateur actuel (seulement pour ses propres messages) */}
+      {isOwn && (
+        <UserAvatar 
+          user={{ first_name: 'Moi', last_name: '' }} 
+          size="sm"
+          className="flex-shrink-0 mt-1"
+        />
+      )}
     </div>
   );
 };
