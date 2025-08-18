@@ -62,10 +62,10 @@ const MessageInput = ({
   ];
 
   return (
-    <div className="bg-white border-t border-gray-200 p-3">
+    <div className="bg-card border-t border-border p-3">
       {/* Actions rapides */}
       {showQuickActions && (
-        <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+        <div className="mb-3 p-3 bg-muted/50 rounded-lg">
           <div className="grid grid-cols-4 gap-2">
             {quickActions.map((action, index) => (
               <Button
@@ -75,8 +75,8 @@ const MessageInput = ({
                 onClick={action.action}
                 className="flex flex-col items-center space-y-1 p-2 h-auto"
               >
-                <action.icon className="h-5 w-5 text-gray-600" />
-                <span className="text-xs text-gray-600">{action.label}</span>
+                <action.icon className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">{action.label}</span>
               </Button>
             ))}
           </div>
@@ -134,7 +134,7 @@ const MessageInput = ({
         <Button
           onClick={handleSend}
           disabled={!value.trim() || disabled}
-          className="bg-blue-600 hover:bg-blue-700 flex-shrink-0 px-4"
+          className="bg-primary hover:bg-primary/90 flex-shrink-0 px-4"
         >
           <Send className="h-4 w-4" />
         </Button>
@@ -152,7 +152,7 @@ const MessageInput = ({
 
       {/* Indicateur de saisie */}
       {value && (
-        <div className="mt-2 text-xs text-gray-500 text-center">
+        <div className="mt-2 text-xs text-muted-foreground text-center">
           Appuyez sur Entrée pour envoyer, Shift+Entrée pour une nouvelle ligne
         </div>
       )}
