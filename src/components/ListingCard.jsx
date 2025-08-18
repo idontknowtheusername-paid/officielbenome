@@ -269,52 +269,12 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           {listing.description || 'Aucune description disponible'}
         </p>
         
-        {/* Score Premium - Affiché seulement si disponible */}
+        {/* Badge Premium Simple - Affiché seulement si disponible */}
         {listing.premium_metadata && (
-          <div className="mb-3 p-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-amber-800">🏆 Score Premium</span>
-              <span className="text-amber-700">
-                {(() => {
-                  // Calculer le score si pas déjà calculé
-                  if (listing.premium_score !== undefined) {
-                    return listing.premium_score;
-                  }
-                  
-                  // Calculer le score en temps réel
-                  let score = 0;
-                  
-                  // Priorité du package
-                  const priorityWeights = { 'highest': 1000, 'high': 800, 'medium': 600, 'low': 400 };
-                  score += priorityWeights[listing.premium_metadata.priority] || 500;
-                  
-                  // Type de premium
-                  if (listing.featured && listing.boosted) score += 900;
-                  else if (listing.featured) score += 700;
-                  else if (listing.boosted) score += 600;
-                  
-                  // Temps restant
-                  if (listing.boost_expires_at) {
-                    const daysUntilExpiry = Math.ceil((new Date(listing.boost_expires_at) - new Date()) / (1000 * 60 * 60 * 24));
-                    score += Math.max(0, daysUntilExpiry * 10);
-                  }
-                  
-                  // Fraîcheur
-                  const daysSinceUpdate = Math.ceil((Date.now() - new Date(listing.updated_at)) / (1000 * 60 * 60 * 24));
-                  score += Math.max(0, 30 - daysSinceUpdate);
-                  
-                  return score;
-                })()}
-              </span>
-            </div>
-            <div className="mt-1 text-xs text-amber-600">
-              {listing.premium_metadata.priority && (
-                <span className="mr-2">🎯 {listing.premium_metadata.priority}</span>
-              )}
-              {listing.boost_expires_at && (
-                <span className="mr-2">⏰ {Math.ceil((new Date(listing.boost_expires_at) - new Date()) / (1000 * 60 * 60 * 24))}j restant</span>
-              )}
-            </div>
+          <div className="mb-3">
+            <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium">
+              ⭐ Premium
+            </Badge>
           </div>
         )}
         
