@@ -204,8 +204,8 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           {listing.description || 'Aucune description disponible'}
         </p>
         
-        {/* Badge Premium Simple - Affiché seulement si disponible */}
-        {listing.premium_metadata && (
+        {/* Badge Premium Simple - Affiché seulement si l'annonce est premium */}
+        {isPremium && (
           <div className="mb-3">
             <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium">
               ⭐ Premium
