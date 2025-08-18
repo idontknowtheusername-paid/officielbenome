@@ -7,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import MiniImageGallery from '@/components/MiniImageGallery';
 import { useListingImages } from '@/hooks';
-import PremiumBadge from '@/components/PremiumBadge';
 import BoostStatus from '@/components/BoostStatus';
 import { cn } from '@/lib/utils';
 
@@ -61,68 +60,6 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
-  };
-
-  // Fonction pour afficher les badges premium
-  const getPremiumBadges = () => {
-    const badges = [];
-    
-    if (listing.featured) {
-      badges.push(
-        <PremiumBadge 
-          key="featured" 
-          type="featured" 
-          size="small" 
-          className="mr-1"
-        />
-      );
-    }
-    
-    if (listing.boosted) {
-      badges.push(
-        <PremiumBadge 
-          key="boosted" 
-          type="boosted" 
-          size="small" 
-          className="mr-1"
-        />
-      );
-    }
-    
-    // Si c'est premium mais pas explicitement featured/boosted
-    if (!listing.featured && !listing.boosted && (listing.is_premium || listing.premium)) {
-      badges.push(
-        <PremiumBadge 
-          key="premium" 
-          type="premium" 
-          size="small" 
-          className="mr-1"
-        />
-      );
-    }
-
-    // Afficher le score premium si disponible (pour la page premium)
-    if (listing.premium_metadata && listing.premium_metadata.priority) {
-      const priorityLabels = {
-        'highest': 'Priorité Max',
-        'high': 'Priorité Haute',
-        'medium': 'Priorité Moyenne',
-        'low': 'Priorité Basse'
-      };
-      
-      badges.push(
-        <Badge 
-          key="priority" 
-          variant="outline" 
-          size="sm"
-          className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-300 text-xs font-medium"
-        >
-          🎯 {priorityLabels[listing.premium_metadata.priority]}
-        </Badge>
-      );
-    }
-    
-    return badges;
   };
 
   const handleFavoriteClick = async (e) => {
@@ -209,9 +146,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           </div>
 
           {/* Premium badges - placés ici pour éviter tout chevauchement */}
-          <div className="mt-2 sm:mt-0 sm:ml-2 flex sm:flex-row flex-col gap-1">
-            {getPremiumBadges()}
-          </div>
+          {/* Supprimé : Plus de badges premium en haut à gauche, seulement le type d'annonce */}
         </div>
 
   {/* Premium badges moved to the left container to avoid overlap on mobile */}
