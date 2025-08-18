@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useConversations, useMessageStats } from '../hooks/useMessages';
+import { useConversations, useMessageStats, useRealtimeMessages } from '../hooks/useMessages';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
@@ -37,6 +37,7 @@ import {
   MessagingSearch, 
   MessageInput 
 } from '../components/messaging';
+import { supabase } from '../lib/supabase';
 
 // Configuration du client React Query
 const queryClient = new QueryClient({
@@ -61,6 +62,79 @@ const MessagingPageContent = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState('');
+
+  // Utiliser le hook de chat en temps réel
+  useRealtimeMessages(selectedConversation?.id);
+
+  // Subscription en temps réel pour les nouvelles conversations
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('conversations')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+        filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
+      }, (payload) => {
+        console.log('🆕 Nouvelle conversation reçue:', payload);
+        // Rafraîchir les conversations
+        refetch();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'conversations',
+        filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
+      }, (payload) => {
+        console.log('🔄 Conversation mise à jour:', payload);
+        // Rafraîchir les conversations
+        refetch();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, refetch]);
+
+  // Subscription en temps réel pour les nouveaux messages
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('messages')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, (payload) => {
+        console.log('💬 Nouveau message reçu:', payload);
+        
+        // Si c'est dans la conversation active, l'ajouter
+        if (selectedConversation && payload.new.conversation_id === selectedConversation.id) {
+          setMessages(prev => [...prev, payload.new]);
+        }
+        
+        // Rafraîchir les conversations pour mettre à jour last_message_at
+        refetch();
+        
+        // Notification toast pour les nouveaux messages
+        if (payload.new.sender_id !== user.id) {
+          toast({
+            title: "Nouveau message",
+            description: "Vous avez reçu un nouveau message",
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, selectedConversation, refetch, toast]);
 
   // Charger les messages d'une conversation
   const loadMessages = async (conversationId) => {
@@ -100,11 +174,14 @@ const MessagingPageContent = () => {
     if (!messageContent.trim() || !selectedConversation) return;
 
     try {
-      await messageService.sendMessage(selectedConversation.id, messageContent.trim());
+      const newMessage = await messageService.sendMessage(selectedConversation.id, messageContent.trim());
       setNewMessage('');
       
-      // Recharger les messages
-      loadMessages(selectedConversation.id);
+      // Ajouter le message localement pour une mise à jour immédiate
+      setMessages(prev => [...prev, newMessage]);
+      
+      // Rafraîchir les conversations pour mettre à jour last_message_at
+      refetch();
       
       toast({
         title: "Message envoyé",
