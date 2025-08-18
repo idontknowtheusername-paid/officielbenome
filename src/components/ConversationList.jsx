@@ -118,6 +118,10 @@ const ConversationList = ({
   }, [user]);
 
   // Filtrer et trier les conversations
+  // DEBUG: Log des conversations reçues
+  console.log('🔍 ConversationList - Conversations reçues:', conversations);
+  console.log('🔍 ConversationList - Nombre de conversations:', conversations?.length || 0);
+  
   const filteredAndSortedConversations = conversations
     .filter(conversation => {
       // Filtre par recherche
@@ -151,19 +155,34 @@ const ConversationList = ({
              matchesDateRange && matchesStarred && matchesUnread;
     })
     .sort((a, b) => {
+      // DEBUG: Log du tri
+      console.log('🔍 ConversationList - Tri de:', a.id, 'vs', b.id);
+      console.log('🔍 ConversationList - a.last_message_at:', a.last_message_at);
+      console.log('🔍 ConversationList - b.last_message_at:', b.last_message_at);
+      console.log('🔍 ConversationList - a.created_at:', a.created_at);
+      console.log('🔍 ConversationList - b.created_at:', b.created_at);
+      
       // Tri principal par last_message_at (plus récent en premier)
       if (a.last_message_at && b.last_message_at) {
-        return new Date(b.last_message_at) - new Date(a.last_message_at);
+        const result = new Date(b.last_message_at) - new Date(a.last_message_at);
+        console.log('🔍 ConversationList - Tri par last_message_at, résultat:', result);
+        return result;
       }
       
       // Si pas de last_message_at, utiliser created_at
       if (a.created_at && b.created_at) {
-        return new Date(b.created_at) - new Date(a.created_at);
+        const result = new Date(b.created_at) - new Date(a.created_at);
+        console.log('🔍 ConversationList - Tri par created_at, résultat:', result);
+        return result;
       }
       
       // Fallback : garder l'ordre original
+      console.log('🔍 ConversationList - Fallback, ordre original');
       return 0;
     });
+  
+  // DEBUG: Log du résultat final
+  console.log('🔍 ConversationList - Conversations après tri:', filteredAndSortedConversations);
 
   // Alias pour la compatibilité
   const filteredConversations = filteredAndSortedConversations;

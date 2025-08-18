@@ -347,19 +347,24 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
     console.log('✅ Message envoyé avec succès, mise à jour de la conversation...');
 
     // Mettre a jour la conversation avec le timestamp exact du message
-    const { error: updateError } = await supabase
+    console.log('🔍 message.service - Mise à jour de la conversation:', conversationId);
+    console.log('🔍 message.service - currentTime:', currentTime);
+    
+    const { data: updateResult, error: updateError } = await supabase
       .from('conversations')
       .update({ 
         last_message_at: currentTime,
         updated_at: currentTime
       })
-      .eq('id', conversationId);
+      .eq('id', conversationId)
+      .select();
 
     if (updateError) {
       console.error('❌ Erreur mise à jour conversation:', updateError);
       // Ne pas faire échouer l'envoi du message pour cette erreur
     } else {
-      console.log('✅ Conversation mise à jour avec last_message_at:', currentTime);
+      console.log('✅ Conversation mise à jour avec succès:', updateResult);
+      console.log('✅ last_message_at mis à jour:', currentTime);
     }
 
     return message;

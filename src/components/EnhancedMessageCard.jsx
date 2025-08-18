@@ -31,6 +31,11 @@ const EnhancedMessageCard = ({
 
   // Formater la date
   const formatMessageTime = (dateString) => {
+    // DEBUG: Log des données reçues
+    console.log('🔍 EnhancedMessageCard - Message complet:', message);
+    console.log('🔍 EnhancedMessageCard - dateString reçu:', dateString);
+    console.log('🔍 EnhancedMessageCard - Type de dateString:', typeof dateString);
+    
     if (!dateString) {
       console.warn('EnhancedMessageCard: dateString manquant pour le message:', message.id);
       return 'À l\'instant';
@@ -47,6 +52,9 @@ const EnhancedMessageCard = ({
       
       const now = new Date();
       const diffInMinutes = (now - date) / (1000 * 60);
+      
+      console.log('🔍 EnhancedMessageCard - Date parsée:', date);
+      console.log('🔍 EnhancedMessageCard - Différence en minutes:', diffInMinutes);
       
       if (diffInMinutes < 1) {
         return 'À l\'instant';
