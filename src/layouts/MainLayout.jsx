@@ -21,6 +21,11 @@ const MainLayout = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // Remettre le scroll en haut à chaque changement de route
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Optimisation : Mémoriser les classes CSS pour éviter les recalculs
   const headerClasses = useMemo(() => cn(
     "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
