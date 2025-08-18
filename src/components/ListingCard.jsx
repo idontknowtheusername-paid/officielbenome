@@ -255,7 +255,12 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         </div>
         
         {/* Price - Taille responsive */}
-        <div className="text-xl sm:text-2xl font-bold text-primary mb-2 sm:mb-3">
+        <div className={cn(
+          "text-xl sm:text-2xl font-bold mb-2 sm:mb-3",
+          isPremium 
+            ? "text-slate-800" // Prix premium en couleur sombre pour un meilleur contraste
+            : "text-primary" // Prix normal en bleu
+        )}>
           {listing.price ? formatPrice(listing.price) : 'Prix sur demande'}
         </div>
         
