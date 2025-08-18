@@ -74,7 +74,7 @@ const ConversationSearch = ({
     <div className={`space-y-3 ${className}`}>
       {/* Barre de recherche */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
         <Input
           value={localSearchTerm}
           onChange={(e) => setLocalSearchTerm(e.target.value)}
@@ -88,7 +88,7 @@ const ConversationSearch = ({
               setLocalSearchTerm('');
               onSearchChange('');
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X size={16} />
           </button>
@@ -118,7 +118,7 @@ const ConversationSearch = ({
             variant="ghost"
             size="sm"
             onClick={resetFilters}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-muted-foreground hover:text-foreground"
           >
             Réinitialiser
           </Button>
@@ -132,11 +132,11 @@ const ConversationSearch = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-gray-50 rounded-lg p-4 space-y-4 border border-gray-200"
+            className="bg-muted/50 rounded-lg p-4 space-y-4 border border-border"
           >
             {/* Statut de la conversation */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Statut
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -151,8 +151,8 @@ const ConversationSearch = ({
                     onClick={() => onFiltersChange({ ...filters, status: option.value })}
                     className={`flex items-center space-x-2 p-2 rounded-md text-sm transition-colors ${
                       filters.status === option.value
-                        ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                        ? 'bg-primary/20 text-primary border border-primary/30'
+                        : 'bg-card text-foreground border border-border hover:bg-accent'
                     }`}
                   >
                     <option.icon size={16} />
@@ -164,7 +164,7 @@ const ConversationSearch = ({
 
             {/* Type de conversation */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Type
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -179,8 +179,8 @@ const ConversationSearch = ({
                     onClick={() => onFiltersChange({ ...filters, type: option.value })}
                     className={`flex items-center space-x-2 p-2 rounded-md text-sm transition-colors ${
                       filters.type === option.value
-                        ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                        ? 'bg-primary/20 text-primary border border-primary/30'
+                        : 'bg-card text-foreground border border-border hover:bg-accent'
                     }`}
                   >
                     <option.icon size={16} />
@@ -192,7 +192,7 @@ const ConversationSearch = ({
 
             {/* Plage de dates */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Dernière activité
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -207,8 +207,8 @@ const ConversationSearch = ({
                     onClick={() => onFiltersChange({ ...filters, dateRange: option.value })}
                     className={`flex items-center space-x-2 p-2 rounded-md text-sm transition-colors ${
                       filters.dateRange === option.value
-                        ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                        ? 'bg-primary/20 text-primary border border-primary/30'
+                        : 'bg-card text-foreground border border-border hover:bg-accent'
                     }`}
                   >
                     <option.icon size={16} />
@@ -225,11 +225,11 @@ const ConversationSearch = ({
                   type="checkbox"
                   checked={filters.starred || false}
                   onChange={(e) => onFiltersChange({ ...filters, starred: e.target.checked })}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-border text-primary focus:ring-primary"
                 />
                 <div className="flex items-center space-x-2">
                   <Star size={16} className="text-yellow-500" />
-                  <span className="text-sm text-gray-700">Favoris uniquement</span>
+                  <span className="text-sm text-foreground">Favoris uniquement</span>
                 </div>
               </label>
 
@@ -238,11 +238,11 @@ const ConversationSearch = ({
                   type="checkbox"
                   checked={filters.unread || false}
                   onChange={(e) => onFiltersChange({ ...filters, unread: e.target.checked })}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-border text-primary focus:ring-primary"
                 />
                 <div className="flex items-center space-x-2">
                   <MessageSquare size={16} className="text-blue-500" />
-                  <span className="text-sm text-gray-700">Non lues uniquement</span>
+                  <span className="text-sm text-foreground">Non lues uniquement</span>
                 </div>
               </label>
             </div>

@@ -362,11 +362,11 @@ const MessagingPageContent = () => {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <MessageSquare className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <MessageSquare className="mx-auto h-12 w-12 text-destructive mb-4" />
+          <h3 className="text-lg font-medium text-card-foreground mb-2">
             Erreur de chargement
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             {error.message || "Impossible de charger les conversations"}
           </p>
           <Button onClick={() => refetch()} className="bg-blue-600 hover:bg-blue-700">
@@ -439,10 +439,10 @@ const MessagingPageContent = () => {
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                    <div className="w-10 h-10 bg-muted rounded-full"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
                 </div>
                   </div>
                   </div>
@@ -450,11 +450,11 @@ const MessagingPageContent = () => {
                   </div>
             ) : searchedConversations.length === 0 ? (
               <div className="p-8 text-center">
-                <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium text-card-foreground mb-2">
                   Aucune conversation
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-muted-foreground">
                   {searchTerm ? 'Aucune conversation trouvée pour votre recherche' : 'Commencez une nouvelle conversation'}
                 </p>
                 </div>
@@ -502,7 +502,7 @@ const MessagingPageContent = () => {
                           : 'Utilisateur';
                       })()}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       {selectedConversation.listing?.title || 'Conversation'}
                     </p>
                   </div>
@@ -528,7 +528,7 @@ const MessagingPageContent = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="text-center text-gray-500">
+                <div className="text-center text-muted-foreground">
                   <p>Aucun message dans cette conversation</p>
                 </div>
               ) : (
@@ -647,18 +647,18 @@ const ConversationItem = ({
               {conversation.starred && (
                 <Star className="h-3 w-3 text-yellow-500 fill-current" />
               )}
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {lastMessage?.created_at ? formatTime(lastMessage.created_at) : 'À l\'instant'}
               </span>
             </div>
           </div>
           
-          <p className="text-sm text-gray-600 truncate mb-1">
+          <p className="text-sm text-muted-foreground truncate mb-1">
             {lastMessage?.content || 'Aucun message'}
           </p>
           
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               {conversation.listing?.title || 'Conversation'}
             </span>
             <div className="flex items-center space-x-1">
@@ -708,8 +708,8 @@ const MessageBubble = ({ message, isOwn, participant1, participant2, currentUser
       <div className={`
         max-w-xs lg:max-w-md px-4 py-2 rounded-lg
         ${isOwn 
-          ? 'bg-blue-600 text-white' 
-          : 'bg-gray-200 text-gray-900'
+          ? 'bg-primary text-primary-foreground' 
+          : 'bg-muted text-muted-foreground'
         }
       `}>
         <div className="flex items-center space-x-2 mb-1">
