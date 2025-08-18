@@ -170,26 +170,30 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         />
         
         {/* Badges - Plus compacts sur mobile */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1 sm:flex-row sm:gap-2">
-          <Badge variant="secondary" className="bg-black/70 text-white text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-1.5">
-            {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
-          </Badge>
-          {/*
-            Masquer le badge "Approuvé" sur mobile uniquement pour les annonces premium.
-            Sur mobile (taille < sm) : si l'annonce est premium et le status est 'approved', ne pas afficher le badge.
-            Sur >= sm : afficher normalement.
-          */}
-          {listing.status === 'approved' && isPremium ? (
-            <span className="hidden sm:inline-flex">{getStatusBadge(listing.status)}</span>
-          ) : (
-            getStatusBadge(listing.status)
-          )}
+        <div className="absolute top-2 left-2 flex flex-col gap-1 sm:flex-row sm:gap-2 items-start">
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className="bg-black/70 text-white text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-1.5">
+              {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
+            </Badge>
+            {/*
+              Masquer le badge "Approuvé" sur mobile uniquement pour les annonces premium.
+              Sur mobile (taille < sm) : si l'annonce est premium et le status est 'approved', ne pas afficher le badge.
+              Sur >= sm : afficher normalement.
+            */}
+            {listing.status === 'approved' && isPremium ? (
+              <span className="hidden sm:inline-flex">{getStatusBadge(listing.status)}</span>
+            ) : (
+              getStatusBadge(listing.status)
+            )}
+          </div>
+
+          {/* Premium badges - placés ici pour éviter tout chevauchement */}
+          <div className="mt-2 sm:mt-0 sm:ml-2 flex sm:flex-row flex-col gap-1">
+            {getPremiumBadges()}
+          </div>
         </div>
 
-        {/* Badges Premium - Positionnés en haut à droite */}
-        <div className="absolute top-2 right-16 sm:right-20 flex flex-col gap-1">
-          {getPremiumBadges()}
-        </div>
+  {/* Premium badges moved to the left container to avoid overlap on mobile */}
         
         {/* Favorite Button - Taille adaptée */}
         {showActions && (
