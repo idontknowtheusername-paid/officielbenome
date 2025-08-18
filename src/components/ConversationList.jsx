@@ -117,38 +117,56 @@ const ConversationList = ({
     };
   }, [user]);
 
-  // Filtrer les conversations
-  const filteredConversations = conversations.filter(conversation => {
-    // Filtre par recherche
-    const matchesSearch = searchTerm === '' || 
-      conversation.listing?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getParticipantName(conversation).toLowerCase().includes(searchTerm.toLowerCase());
+  // Filtrer et trier les conversations
+  const filteredAndSortedConversations = conversations
+    .filter(conversation => {
+      // Filtre par recherche
+      const matchesSearch = searchTerm === '' || 
+        conversation.listing?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getParticipantName(conversation).toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Filtre par type
-    const matchesFilter = filter === 'all' || 
-      (filter === 'unread' && hasUnreadMessages(conversation)) ||
-      (filter === 'starred' && conversation.starred) ||
-      (filter === 'archived' && !conversation.is_active);
+      // Filtre par type
+      const matchesFilter = filter === 'all' || 
+        (filter === 'unread' && hasUnreadMessages(conversation)) ||
+        (filter === 'starred' && conversation.starred) ||
+        (filter === 'archived' && !conversation.is_active);
 
-    // Filtres avancés
-    const matchesStatus = filters.status === 'all' || 
-      (filters.status === 'active' && conversation.is_active) ||
-      (filters.status === 'archived' && !conversation.is_active);
+      // Filtres avancés
+      const matchesStatus = filters.status === 'all' || 
+        (filters.status === 'active' && conversation.is_active) ||
+        (filters.status === 'archived' && !conversation.is_active);
 
-    const matchesType = filters.type === 'all' ||
-      (filters.type === 'listing' && conversation.listing_id) ||
-      (filters.type === 'support' && conversation.type === 'support') ||
-      (filters.type === 'general' && !conversation.listing_id);
+      const matchesType = filters.type === 'all' ||
+        (filters.type === 'listing' && conversation.listing_id) ||
+        (filters.type === 'support' && conversation.type === 'support') ||
+        (filters.type === 'general' && !conversation.listing_id);
 
-    const matchesDateRange = filters.dateRange === 'all' ||
-      matchesDateRangeFilter(conversation, filters.dateRange);
+      const matchesDateRange = filters.dateRange === 'all' ||
+        matchesDateRangeFilter(conversation, filters.dateRange);
 
-    const matchesStarred = !filters.starred || conversation.starred;
-    const matchesUnread = !filters.unread || hasUnreadMessages(conversation);
+      const matchesStarred = !filters.starred || conversation.starred;
+      const matchesUnread = !filters.unread || hasUnreadMessages(conversation);
 
-    return matchesSearch && matchesFilter && matchesStatus && matchesType && 
-           matchesDateRange && matchesStarred && matchesUnread;
-  });
+      return matchesSearch && matchesFilter && matchesStatus && matchesType && 
+             matchesDateRange && matchesStarred && matchesUnread;
+    })
+    .sort((a, b) => {
+      // Tri principal par last_message_at (plus récent en premier)
+      if (a.last_message_at && b.last_message_at) {
+        return new Date(b.last_message_at) - new Date(a.last_message_at);
+      }
+      
+      // Si pas de last_message_at, utiliser created_at
+      if (a.created_at && b.created_at) {
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+      
+      // Fallback : garder l'ordre original
+      return 0;
+    });
+
+  // Alias pour la compatibilité
+  const filteredConversations = filteredAndSortedConversations;
 
   // Vérifier si une conversation correspond à la plage de dates
   const matchesDateRangeFilter = (conversation, dateRange) => {

@@ -147,8 +147,28 @@ export const useSendMessage = () => {
 
     // Succes - invalider et refetch
     onSettled: (data, error, variables) => {
+      console.log('🔄 Invalidation du cache après envoi de message...');
+      
+      // Invalider les messages de la conversation
       queryClient.invalidateQueries({ queryKey: ['conversation-messages', variables.conversationId] });
+      
+      // Invalider la liste des conversations pour mettre à jour l'ordre
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      
+      // Mettre à jour immédiatement le cache des conversations
+      queryClient.setQueryData(['conversations'], (old) => {
+        if (!old) return old;
+        
+        return old.map(conv => 
+          conv.id === variables.conversationId 
+            ? {
+                ...conv,
+                last_message_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            : conv
+        );
+      });
     },
   });
 };

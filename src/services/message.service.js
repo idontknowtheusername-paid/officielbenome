@@ -311,6 +311,8 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
+    console.log('📤 Envoi de message dans la conversation:', conversationId);
+
     // Recuperer la conversation pour determiner le destinataire
     const { data: conversation, error: convError } = await supabase
       .from('conversations')
@@ -324,6 +326,8 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
       ? conversation.participant2_id 
       : conversation.participant1_id;
 
+    const currentTime = new Date().toISOString();
+
     // Inserer le message
     const { data: message, error: msgError } = await supabase
       .from('messages')
@@ -332,21 +336,31 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
         receiver_id: receiverId,
         conversation_id: conversationId,
         content,
-        message_type: messageType
+        message_type: messageType,
+        created_at: currentTime
       }])
       .select()
       .single();
 
     if (msgError) throw msgError;
 
-    // Mettre a jour la conversation
-    await supabase
+    console.log('✅ Message envoyé avec succès, mise à jour de la conversation...');
+
+    // Mettre a jour la conversation avec le timestamp exact du message
+    const { error: updateError } = await supabase
       .from('conversations')
       .update({ 
-        last_message_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        last_message_at: currentTime,
+        updated_at: currentTime
       })
       .eq('id', conversationId);
+
+    if (updateError) {
+      console.error('❌ Erreur mise à jour conversation:', updateError);
+      // Ne pas faire échouer l'envoi du message pour cette erreur
+    } else {
+      console.log('✅ Conversation mise à jour avec last_message_at:', currentTime);
+    }
 
     return message;
   },

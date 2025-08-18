@@ -31,26 +31,46 @@ const EnhancedMessageCard = ({
 
   // Formater la date
   const formatMessageTime = (dateString) => {
-    if (!dateString) return '';
-    
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = (now - date) / (1000 * 60);
-    
-    if (diffInMinutes < 1) {
+    if (!dateString) {
+      console.warn('EnhancedMessageCard: dateString manquant pour le message:', message.id);
       return 'À l\'instant';
-    } else if (diffInMinutes < 60) {
-      return `Il y a ${Math.floor(diffInMinutes)} min`;
-    } else if (diffInMinutes < 1440) { // 24h
-      const diffInHours = Math.floor(diffInMinutes / 60);
-      return `Il y a ${diffInHours}h`;
-    } else {
-      return date.toLocaleDateString('fr-FR', { 
-        day: '2-digit', 
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+    }
+    
+    try {
+      const date = new Date(dateString);
+      
+      // Vérifier que la date est valide
+      if (isNaN(date.getTime())) {
+        console.warn('EnhancedMessageCard: date invalide:', dateString);
+        return 'À l\'instant';
+      }
+      
+      const now = new Date();
+      const diffInMinutes = (now - date) / (1000 * 60);
+      
+      if (diffInMinutes < 1) {
+        return 'À l\'instant';
+      } else if (diffInMinutes < 60) {
+        return `Il y a ${Math.floor(diffInMinutes)} min`;
+      } else if (diffInMinutes < 1440) { // 24h
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        return `Il y a ${diffInHours}h`;
+      } else if (diffInMinutes < 10080) { // 7 jours
+        return date.toLocaleDateString('fr-FR', { 
+          weekday: 'short',
+          day: '2-digit',
+          month: '2-digit'
+        });
+      } else {
+        return date.toLocaleDateString('fr-FR', { 
+          day: '2-digit', 
+          month: '2-digit',
+          year: '2-digit'
+        });
+      }
+    } catch (error) {
+      console.error('EnhancedMessageCard: Erreur formatage date:', error, dateString);
+      return 'À l\'instant';
     }
   };
 

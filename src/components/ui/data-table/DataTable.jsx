@@ -32,9 +32,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DataTablePagination } from '@/components/ui/pagination/DataTablePagination';
-import { AdvancedFilters } from '@/components/ui/filters/AdvancedFilters';
-import { LoadingSpinner } from '@/components/ui/loading/LoadingSpinner';
+import DataTablePagination from '@/components/ui/pagination/DataTablePagination';
+import AdvancedFilters from '@/components/ui/filters/AdvancedFilters';
+import LoadingSpinner from '@/components/ui/loading/LoadingSpinner';
 import { cn } from '@/lib/utils';
 
 /**
