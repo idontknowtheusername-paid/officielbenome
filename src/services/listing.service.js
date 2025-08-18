@@ -682,7 +682,7 @@ export const listingService = {
         `)
         .or('is_featured.eq.true,is_boosted.eq.true')
         .eq('status', 'approved')
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
 
       if (allError) throw allError;
 

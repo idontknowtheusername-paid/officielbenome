@@ -295,7 +295,7 @@ const HomePage = () => {
               size="lg"
               variant="default"
               className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-lg"
-              onClick={() => navigate("/marketplace?sort=premium&per=24")}
+              onClick={() => navigate("/premium")}
             >
               Voir Toutes les Annonces Premium{" "}
               <ArrowRight className="ml-2 h-5 w-5" />

@@ -36,6 +36,7 @@ import RealEstatePage from '@/pages/marketplace/RealEstatePage';
 import AutomobilePage from '@/pages/marketplace/AutomobilePage';
 import ServicesPage from '@/pages/marketplace/ServicesPage';
 import GeneralMarketplacePage from '@/pages/marketplace/GeneralMarketplacePage';
+import PremiumPage from '@/pages/PremiumPage';
 import CreateListingPage from '@/pages/CreateListingPage';
 import ListingDetailPage from '@/pages/ListingDetailPage';
 import FavoritesPage from '@/pages/FavoritesPage';
@@ -104,6 +105,7 @@ function App() {
                   <Route path="automobile" element={<AutomobilePage />} />
                   <Route path="services" element={<ServicesPage />} />
                   <Route path="marketplace" element={<GeneralMarketplacePage />} />
+                  <Route path="premium" element={<PremiumPage />} />
                   
                   {/* Création d'annonce */}
                   <Route 
