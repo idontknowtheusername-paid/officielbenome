@@ -378,7 +378,7 @@ const MessagingPageContent = () => {
   }
 
     return (
-      <div className="min-h-screen bg-gray-50">
+              <div className="min-h-screen bg-background">
       {/* Header Mobile */}
       <MobileMessagingNav
         selectedConversation={selectedConversation}
@@ -393,16 +393,16 @@ const MessagingPageContent = () => {
       />
 
       {/* Header Desktop */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 hidden md:block">
+      <div className="bg-card border-b border-border px-6 py-4 hidden md:block">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Centre de Messages</h1>
-              <p className="text-gray-600">
+              <h1 className="text-2xl font-bold text-card-foreground">Centre de Messages</h1>
+              <p className="text-muted-foreground">
                 Gérez vos conversations et échangez avec d'autres utilisateurs
               </p>
             </div>
           <div className="flex items-center space-x-3">
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-primary hover:bg-primary/90">
                 <Plus className="h-4 w-4 mr-2" />
                 Nouvelle Conversation
               </Button>
@@ -416,7 +416,7 @@ const MessagingPageContent = () => {
         <div className={`
           ${selectedConversation ? 'hidden md:block' : 'block'} 
           w-full md:w-80 lg:w-96 
-          bg-white border-r border-gray-200 
+          bg-card border-r border-border 
           flex flex-col
         `}>
           {/* Barre de recherche et filtres */}
@@ -479,9 +479,9 @@ const MessagingPageContent = () => {
 
         {/* Zone de conversation active */}
         {selectedConversation ? (
-          <div className="flex-1 flex flex-col bg-white">
+          <div className="flex-1 flex flex-col bg-card">
             {/* Header de la conversation */}
-            <div className="border-b border-gray-200 p-4">
+            <div className="border-b border-border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <UserAvatar 
@@ -560,13 +560,13 @@ const MessagingPageContent = () => {
           </div>
         ) : (
           /* Écran d'accueil quand aucune conversation n'est sélectionnée */
-          <div className="hidden md:flex flex-1 items-center justify-center bg-gray-50">
+          <div className="hidden md:flex flex-1 items-center justify-center bg-muted/50">
             <div className="text-center">
-              <MessageSquare className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
-                Sélectionnez une conversation
-              </h3>
-              <p className="text-gray-500">
+                              <MessageSquare className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-medium text-card-foreground mb-2">
+                  Sélectionnez une conversation
+                </h3>
+                <p className="text-muted-foreground">
                 Choisissez une conversation dans la liste pour commencer à échanger
               </p>
           </div>

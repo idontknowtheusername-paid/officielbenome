@@ -34,26 +34,26 @@ const MessageCard = ({
   // Si c'est un message système, afficher un style spécial
   if (isSystemMessage) {
     return (
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-sm">
+      <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30 shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-start space-x-4">
             {/* Avatar Assistant */}
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg">🤖</span>
+              <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground text-lg">🤖</span>
               </div>
             </div>
 
             {/* Message Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-2">
-                <h3 className="font-semibold text-blue-800">Assistant MaxiMarket</h3>
-                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                <h3 className="font-semibold text-primary">Assistant MaxiMarket</h3>
+                <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">
                   Système
                 </Badge>
               </div>
               
-              <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
+              <p className="text-card-foreground whitespace-pre-line text-sm leading-relaxed">
                 {message.content}
               </p>
               
@@ -117,8 +117,8 @@ const MessageCard = ({
   return (
     <Card className={cn(
       "transition-all duration-200 hover:shadow-md",
-      message.unread && "bg-blue-50 border-blue-200",
-      message.starred && "bg-yellow-50 border-yellow-200"
+      message.unread && "bg-primary/10 border-primary/30",
+              message.starred && "bg-yellow-500/10 border-yellow-500/30 dark:bg-yellow-400/10 dark:border-yellow-400/30"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start space-x-4">

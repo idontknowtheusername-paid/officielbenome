@@ -83,7 +83,7 @@ const EnhancedMessageCard = ({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="flex items-center space-x-1 text-blue-600"
+          className="flex items-center space-x-1 text-primary"
         >
           <CheckCheck size={14} />
           <span className="text-xs">Lu</span>
@@ -94,7 +94,7 @@ const EnhancedMessageCard = ({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="flex items-center space-x-1 text-gray-500"
+          className="flex items-center space-x-1 text-muted-foreground"
         >
           <CheckCheck size={14} />
           <span className="text-xs">Livré</span>
@@ -105,7 +105,7 @@ const EnhancedMessageCard = ({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="flex items-center space-x-1 text-gray-400"
+          className="flex items-center space-x-1 text-muted-foreground"
         >
           <Check size={14} />
           <span className="text-xs">Envoyé</span>
@@ -292,8 +292,8 @@ const EnhancedMessageCard = ({
           whileHover={{ scale: 1.02 }}
           className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
             isOwnMessage 
-              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white' 
-              : 'bg-white text-gray-900 border border-gray-200'
+                      ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground'
+        : 'bg-card text-card-foreground border border-border'
           }`}
         >
           {/* Contenu du message */}
@@ -303,7 +303,7 @@ const EnhancedMessageCard = ({
 
           {/* Footer du message */}
           <div className={`flex items-center justify-between mt-2 ${
-            isOwnMessage ? 'text-blue-200' : 'text-gray-500'
+            isOwnMessage ? 'text-primary-foreground/80' : 'text-muted-foreground'
           }`}>
             <div className="flex items-center space-x-2">
               {showTimestamp && (
@@ -324,8 +324,8 @@ const EnhancedMessageCard = ({
                     onClick={() => setShowFullImage(true)}
                     className={`h-6 w-6 p-0 ${
                       isOwnMessage 
-                        ? 'text-blue-200 hover:bg-blue-500' 
-                        : 'text-gray-500 hover:bg-gray-100'
+                        ? 'text-primary-foreground/80 hover:bg-primary/20' 
+                        : 'text-muted-foreground hover:bg-accent'
                     }`}
                     title="Voir en grand"
                   >
@@ -340,8 +340,8 @@ const EnhancedMessageCard = ({
                     onClick={() => setShowFullVideo(true)}
                     className={`h-6 w-6 p-0 ${
                       isOwnMessage 
-                        ? 'text-blue-200 hover:bg-blue-500' 
-                        : 'text-gray-500 hover:bg-gray-100'
+                        ? 'text-primary-foreground/80 hover:bg-primary/20' 
+                        : 'text-muted-foreground hover:bg-accent'
                     }`}
                     title="Lire la vidéo"
                   >

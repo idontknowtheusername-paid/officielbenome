@@ -312,10 +312,10 @@ const ConversationList = ({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+              <div className="p-4 border-b border-border bg-card">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-card-foreground">Messages</h2>
+            <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors">
             <Plus size={20} />
           </button>
         </div>
@@ -331,7 +331,7 @@ const ConversationList = ({
       </div>
 
       {/* Filtres rapides */}
-      <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+              <div className="px-4 py-2 bg-muted/50 border-b border-border">
         <div className="flex space-x-2">
           {[
             { key: 'all', label: 'Toutes', icon: MessageSquare },
@@ -344,8 +344,8 @@ const ConversationList = ({
               onClick={() => setFilter(filterOption.key)}
               className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
                 filter === filterOption.key
-                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                  : 'text-gray-600 hover:bg-gray-200'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'text-muted-foreground hover:bg-accent'
               }`}
             >
               <filterOption.icon size={14} />
@@ -358,12 +358,12 @@ const ConversationList = ({
       {/* Liste des conversations */}
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.length === 0 ? (
-          <div className="p-8 text-center">
-            <MessageSquare className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Aucune conversation trouvée
-            </h3>
-            <p className="text-gray-500">
+                  <div className="p-8 text-center">
+          <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium text-card-foreground mb-2">
+            Aucune conversation trouvée
+          </h3>
+          <p className="text-muted-foreground">
               {searchTerm || Object.values(filters).some(f => f !== 'all' && f !== false)
                 ? 'Essayez de modifier vos critères de recherche ou vos filtres.'
                 : 'Commencez une nouvelle conversation !'
@@ -386,7 +386,7 @@ const ConversationList = ({
                   key={conversation.id}
                   whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
                   className={`p-4 cursor-pointer transition-colors ${
-                    isSelected ? 'bg-blue-50 border-r-2 border-blue-500' : 'hover:bg-gray-50'
+                    isSelected ? 'bg-primary/10 border-r-2 border-primary' : 'hover:bg-accent/50'
                   }`}
                   onClick={() => onSelectConversation(conversation)}
                 >
@@ -436,7 +436,7 @@ const ConversationList = ({
                               className="flex items-center space-x-1"
                             >
                               <Circle size={8} className="text-green-500 fill-current" />
-                              <span className="text-xs text-green-600 font-medium">en ligne</span>
+                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">en ligne</span>
                             </motion.div>
                           )}
                           {/* Badge en train de taper */}
@@ -451,7 +451,7 @@ const ConversationList = ({
                                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                               </div>
-                              <span className="text-xs text-blue-600 font-medium">tape...</span>
+                              <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">tape...</span>
                             </motion.div>
                           )}
                         </div>
@@ -495,7 +495,7 @@ const ConversationList = ({
                           animate={{ scale: 1 }}
                           className="flex items-center justify-between mt-2"
                         >
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary">
                             {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
                           </span>
                         </motion.div>
