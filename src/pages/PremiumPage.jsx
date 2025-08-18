@@ -281,35 +281,6 @@ const PremiumPage = () => {
           )}
 
           {/* Grille des annonces */}
-          <div className="mb-8">
-            {/* Indicateur de tri par score premium */}
-            <motion.div
-              className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg p-4 mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Crown className="h-6 w-6 text-amber-600" />
-                  <div>
-                    <h3 className="font-semibold text-amber-800">
-                      🏆 Tri par Score Premium
-                    </h3>
-                    <p className="text-sm text-amber-700">
-                      Les annonces sont classées selon leur score premium calculé à partir de la priorité du package, 
-                      du type de premium, du temps restant et de la fraîcheur
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-300">
-                  <Star className="h-4 w-4 mr-1" />
-                  Score Premium
-                </Badge>
-              </div>
-            </motion.div>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {loading ? (
               // Skeleton loading
