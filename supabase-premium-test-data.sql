@@ -267,5 +267,5 @@ WHERE is_featured = true OR is_boosted = true OR is_premium = true
 ORDER BY created_at DESC;
 
 -- ============================================================================
--- SCRIPT TERMINÉ - SUPPRIMER APRÈS TESTS
+-- SCRIPT TERMINÉ - SUPPRIMER APRÈS TESTSs
 -- ============================================================================

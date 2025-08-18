@@ -1,2 +1,3 @@
 Ceci est un fichier de test pour vérifier le déploiement Vercel.
 Date de création : {{DATE}} 
+test2
