@@ -97,7 +97,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
       {/* Hero Section */}
-      <motion.section 
+      <motion.section
         className="relative py-24 md:py-40 bg-cover bg-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -113,23 +113,29 @@ const HomePage = () => {
         />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
-          <motion.div 
+          <motion.div
             className="inline-block p-2 bg-primary/20 rounded-full mb-6"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1, type: "spring", stiffness: 200 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.1,
+              type: "spring",
+              stiffness: 200,
+            }}
           >
             <SparklesIcon className="h-10 w-10 text-primary" />
           </motion.div>
-          <motion.h1 
+          <motion.h1
             className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            Bienvenue sur <span className="gradient-text">{personalData.siteName}</span>
+            Bienvenue sur{" "}
+            <span className="gradient-text">{personalData.siteName}</span>
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -137,30 +143,43 @@ const HomePage = () => {
           >
             {personalData.tagline}. Explorez, découvrez, connectez.
           </motion.p>
-          <motion.div 
+          <motion.div
             className="max-w-2xl mx-auto"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <div className="relative">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const form = e.currentTarget;
-                const input = form.querySelector('input[name="q"]');
-                const q = input?.value || '';
-                const { section, params } = resolveSearchIntent(q);
-                const usp = new URLSearchParams(params);
-                const path = section === 'immobilier' ? '/immobilier' : section === 'automobile' ? '/automobile' : section === 'services' ? '/services' : '/marketplace';
-                navigate(`${path}?${usp.toString()}`);
-              }}>
-                <Input 
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  const input = form.querySelector('input[name="q"]');
+                  const q = input?.value || "";
+                  const { section, params } = resolveSearchIntent(q);
+                  const usp = new URLSearchParams(params);
+                  const path =
+                    section === "immobilier"
+                      ? "/immobilier"
+                      : section === "automobile"
+                      ? "/automobile"
+                      : section === "services"
+                      ? "/services"
+                      : "/marketplace";
+                  navigate(`${path}?${usp.toString()}`);
+                }}
+              >
+                <Input
                   name="q"
-                  type="search" 
-                  placeholder="Que recherchez-vous sur MaxiMarket ?" 
+                  type="search"
+                  placeholder="Que recherchez-vous sur MaxiMarket ?"
                   className="w-full py-4 px-6 pr-16 rounded-full text-lg bg-white/10 text-white placeholder-gray-400 border-2 border-transparent focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-16"
                 />
-                <Button type="submit" size="lg" className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-12 w-12 p-0">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-12 w-12 p-0"
+                >
                   <SearchIcon className="h-6 w-6 text-white" />
                 </Button>
               </form>
@@ -173,13 +192,13 @@ const HomePage = () => {
       {/* Categories Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 md:px-6">
-          <motion.h2 
+          <motion.h2
             className="text-3xl md:text-4xl font-bold text-center mb-16"
-            initial={{ opacity: 0, y:20 }}
-            animate={{ opacity: 1, y:0 }}
-            transition={{ duration:0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-                         Explorez nos <span className="gradient-text">Univers</span>
+            Explorez nos <span className="gradient-text">Univers</span>
           </motion.h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category, index) => (
@@ -193,10 +212,15 @@ const HomePage = () => {
                 className="bg-card p-6 rounded-xl shadow-2xl hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center glassmorphic-card border border-transparent hover:border-primary/50 cursor-pointer group"
               >
                 {category.icon}
-                <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">{category.name}</h3>
-                <p className="text-muted-foreground text-sm mb-5 flex-grow group-hover:text-primary/80 transition-colors">{category.description}</p>
+                <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                  {category.name}
+                </h3>
+                <p className="text-muted-foreground text-sm mb-5 flex-grow group-hover:text-primary/80 transition-colors">
+                  {category.description}
+                </p>
                 <div className="w-full border border-primary/50 rounded-md px-4 py-2 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  Découvrir <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform inline" />
+                  Découvrir{" "}
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform inline" />
                 </div>
               </motion.div>
             ))}
@@ -205,9 +229,9 @@ const HomePage = () => {
       </section>
 
       {/* Premium Listings */}
-      <section className="py-16 md:py-24 bg-gradient-to-br from-amber-50/50 via-yellow-100/30 to-orange-50/50">
+      <section className="py-16 md:py-24 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
-          <motion.h2 
+          <motion.h2
             className="text-3xl md:text-4xl font-bold text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -215,15 +239,19 @@ const HomePage = () => {
           >
             ⭐ Annonces <span className="gradient-text">Premium</span>
           </motion.h2>
-          
+
           {errorPremium && (
             <p className="text-center text-destructive mb-8">{errorPremium}</p>
           )}
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {loadingPremium && !premiumListings.length && (
+            {loadingPremium &&
+              !premiumListings.length &&
               Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="bg-gradient-to-br from-amber-50/80 to-yellow-100/80 rounded-lg shadow-xl overflow-hidden glassmorphic-card border-2 border-amber-300/50">
+                <div
+                  key={idx}
+                  className="bg-gradient-to-br from-amber-50/80 to-yellow-100/80 rounded-lg shadow-xl overflow-hidden glassmorphic-card border-2 border-amber-300/50"
+                >
                   <div className="h-40 sm:h-48 md:h-56 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 animate-pulse" />
                   <div className="p-3 sm:p-4 md:p-6">
                     <div className="h-6 w-3/4 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 rounded mb-3 animate-pulse" />
@@ -231,18 +259,20 @@ const HomePage = () => {
                     <div className="h-10 w-1/3 bg-gradient-to-r from-amber-300/50 to-yellow-300/50 rounded animate-pulse" />
                   </div>
                 </div>
-              ))
-            )}
+              ))}
 
             {!loadingPremium && premiumListings.length === 0 && (
               <div className="col-span-full text-center py-16">
                 <div className="text-6xl mb-4">⭐</div>
-                <h3 className="text-2xl font-semibold mb-2">Aucune annonce premium pour le moment</h3>
+                <h3 className="text-2xl font-semibold mb-2">
+                  Aucune annonce premium pour le moment
+                </h3>
                 <p className="text-muted-foreground mb-6">
-                  Soyez le premier à passer premium et boostez votre visibilité !
+                  Soyez le premier à passer premium et boostez votre visibilité
+                  !
                 </p>
-                <Button 
-                  onClick={() => navigate('/creer-annonce')}
+                <Button
+                  onClick={() => navigate("/creer-annonce")}
                   variant="outline"
                   className="border-amber-300 text-amber-700 hover:bg-amber-100"
                 >
@@ -252,18 +282,23 @@ const HomePage = () => {
             )}
 
             {premiumListings.slice(0, 6).map((listing) => (
-              <ListingCard key={listing.id} listing={listing} showActions={false} />
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                showActions={false}
+              />
             ))}
           </div>
-          
+
           <div className="text-center mt-12">
             <Button
               size="lg"
               variant="default"
               className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-lg"
-              onClick={() => navigate('/marketplace?sort=premium&per=24')}
+              onClick={() => navigate("/marketplace?sort=premium&per=24")}
             >
-              Voir Toutes les Annonces Premium <ArrowRight className="ml-2 h-5 w-5" />
+              Voir Toutes les Annonces Premium{" "}
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -273,15 +308,19 @@ const HomePage = () => {
       <section className="py-16 md:py-24 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-                         Annonces <span className="gradient-text">Populaires</span>
+            Annonces <span className="gradient-text">Populaires</span>
           </h2>
           {errorPopular && (
             <p className="text-center text-destructive mb-8">{errorPopular}</p>
           )}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {loadingPopular && !popularListings.length && (
+            {loadingPopular &&
+              !popularListings.length &&
               Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent">
+                <div
+                  key={idx}
+                  className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent"
+                >
                   <div className="h-40 sm:h-48 md:h-56 bg-muted animate-pulse" />
                   <div className="p-3 sm:p-4 md:p-6">
                     <div className="h-6 w-3/4 bg-muted rounded mb-3 animate-pulse" />
@@ -289,15 +328,20 @@ const HomePage = () => {
                     <div className="h-10 w-1/3 bg-muted rounded animate-pulse" />
                   </div>
                 </div>
-              ))
-            )}
+              ))}
 
             {!loadingPopular && popularListings.length === 0 && (
-              <p className="col-span-full text-center text-muted-foreground">Aucune annonce populaire pour le moment.</p>
+              <p className="col-span-full text-center text-muted-foreground">
+                Aucune annonce populaire pour le moment.
+              </p>
             )}
 
             {popularListings.slice(0, 6).map((listing) => (
-              <ListingCard key={listing.id} listing={listing} showActions={false} />
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                showActions={false}
+              />
             ))}
           </div>
           <div className="text-center mt-12">
@@ -305,67 +349,64 @@ const HomePage = () => {
               size="lg"
               variant="default"
               className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-primary-foreground"
-              onClick={() => navigate('/marketplace?sort=popular&per=24')}
+              onClick={() => navigate("/marketplace?sort=popular&per=24")}
             >
               Voir Toutes les Annonces <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>
       </section>
-      
-
 
       {/* Call to Action */}
       <section className="py-20 md:py-32">
         <div className="container mx-auto px-4 md:px-6 text-center">
-          <motion.h2 
+          <motion.h2
             className="text-3xl md:text-4xl font-bold mb-6"
-            initial={{ opacity: 0, y:20 }}
-            animate={{ opacity: 1, y:0 }}
-            transition={{ duration:0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-                         Prêt à <span className="gradient-text">Rejoindre MaxiMarket</span> ?
+            Prêt à <span className="gradient-text">Rejoindre MaxiMarket</span> ?
           </motion.h2>
-          <motion.p 
+          <motion.p
             className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto"
-            initial={{ opacity: 0, y:20 }}
-            animate={{ opacity: 1, y:0 }}
-            transition={{ duration:0.5, delay:0.2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Créez un compte, publiez votre première annonce ou trouvez l'affaire parfaite en quelques clics.
+            Créez un compte, publiez votre première annonce ou trouvez l'affaire
+            parfaite en quelques clics.
           </motion.p>
-          <motion.div 
+          <motion.div
             className="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4"
-            initial={{ opacity: 0, y:20 }}
-            animate={{ opacity: 1, y:0 }}
-            transition={{ duration:0.5, delay:0.4 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
               onClick={() => {
                 if (user) {
-                  navigate('/creer-annonce');
+                  navigate("/creer-annonce");
                 } else {
-                  navigate('/connexion', { state: { from: '/creer-annonce' } });
+                  navigate("/connexion", { state: { from: "/creer-annonce" } });
                 }
               }}
             >
               Publier une Annonce
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="w-full sm:w-auto"
-              onClick={() => navigate('/inscription')}
+              onClick={() => navigate("/inscription")}
             >
               Créer un Compte
             </Button>
           </motion.div>
         </div>
       </section>
-
-
     </div>
   );
 };
