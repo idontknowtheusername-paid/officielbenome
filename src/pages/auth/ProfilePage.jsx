@@ -40,7 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { 
   ListingCard, 
-  MessageCard, 
+  ConversationCard, 
   ActivityFeed, 
   QuickActions,
   StatsCard
@@ -299,33 +299,96 @@ const ProfilePage = () => {
     return listings.slice(startIndex, endIndex);
   };
 
-  // Handlers pour les messages
-  const handleReplyMessage = (message) => {
-    toast({
-      title: "Répondre",
-      description: `Réponse à ${message.sender}`,
-    });
+  // Handlers pour les actions des conversations
+  const handleReplyMessage = (conversation) => {
+    // Rediriger vers la page de messagerie avec la conversation sélectionnée
+    navigate(`/messages?conversation=${conversation.id}`);
   };
 
-  const handleArchiveMessage = (message) => {
-    toast({
-      title: "Archiver",
-      description: `Message archivé`,
-    });
+  const handleArchiveMessage = async (conversation) => {
+    try {
+      // Marquer la conversation comme archivée
+      await messageService.archiveConversation(conversation.id);
+      
+      // Mettre à jour l'état local
+      const updatedMessages = messages.map(m => 
+        m.id === conversation.id ? { ...m, is_archived: true } : m
+      );
+      setMessages(updatedMessages);
+      
+      toast({
+        title: "Conversation archivée",
+        description: "La conversation a été archivée",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'archiver la conversation",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleMarkAsRead = (message) => {
-    toast({
-      title: "Marquer comme lu",
-      description: `Message marqué comme lu`,
-    });
+  const handleMarkAsRead = async (conversation) => {
+    try {
+      // Marquer les messages comme lus
+      await messageService.markMessagesAsRead(conversation.id);
+      
+      // Mettre à jour l'état local
+      const updatedMessages = messages.map(m => 
+        m.id === conversation.id 
+          ? { 
+              ...m, 
+              messages: m.messages?.map(msg => ({ ...msg, is_read: true }))
+            } 
+          : m
+      );
+      setMessages(updatedMessages);
+      
+      // Mettre à jour les statistiques
+      setStats(prev => ({
+        ...prev,
+        unreadMessages: Math.max(0, prev.unreadMessages - 1)
+      }));
+      
+      toast({
+        title: "Messages marqués comme lus",
+        description: "Les messages ont été marqués comme lus",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de marquer les messages comme lus",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleStarMessage = (message) => {
-    toast({
-      title: "Favori",
-      description: `Message ajouté aux favoris`,
-    });
+  const handleStarMessage = async (conversation) => {
+    try {
+      // Basculer l'état favori
+      const newStarredState = !conversation.starred;
+      await messageService.toggleConversationStar(conversation.id, newStarredState);
+      
+      // Mettre à jour l'état local
+      const updatedMessages = messages.map(m => 
+        m.id === conversation.id ? { ...m, starred: newStarredState } : m
+      );
+      setMessages(updatedMessages);
+      
+      toast({
+        title: newStarredState ? "Conversation ajoutée aux favoris" : "Conversation retirée des favoris",
+        description: newStarredState 
+          ? "La conversation a été ajoutée à vos favoris" 
+          : "La conversation a été retirée de vos favoris",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le statut favori",
+        variant: "destructive",
+      });
+    }
   };
 
   // Fonction de deconnexion
@@ -563,9 +626,9 @@ const ProfilePage = () => {
 
             <div className="space-y-4">
               {messages.map((message) => (
-                <MessageCard
+                <ConversationCard
                   key={message.id}
-                  message={message}
+                  conversation={message}
                   onReply={handleReplyMessage}
                   onArchive={handleArchiveMessage}
                   onDelete={() => {}}

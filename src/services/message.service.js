@@ -657,6 +657,40 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
 
     if (error) throw error;
     return data;
+  },
+
+  // Archiver une conversation
+  archiveConversation: async (conversationId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { error } = await supabase
+      .from('conversations')
+      .update({ 
+        is_archived: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (error) throw error;
+    return true;
+  },
+
+  // Basculer le statut favori d'une conversation
+  toggleConversationStar: async (conversationId, starred) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    const { error } = await supabase
+      .from('conversations')
+      .update({ 
+        starred,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (error) throw error;
+    return true;
   }
 };
 

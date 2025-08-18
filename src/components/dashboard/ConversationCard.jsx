@@ -6,20 +6,19 @@ import {
   MessageSquare, 
   Clock, 
   User, 
-  Phone, 
-  Mail,
-  MapPin,
-  Eye,
+  Eye, 
   Reply,
   Archive,
   Trash2,
   Star,
-  MoreVertical
+  MoreVertical,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
-const MessageCard = ({ 
-  message, 
+const ConversationCard = ({ 
+  conversation, 
   onReply, 
   onArchive, 
   onDelete, 
@@ -27,12 +26,13 @@ const MessageCard = ({
   onStar,
   showActions = true 
 }) => {
-  // Vérifier si c'est un message système (assistant MaxiMarket)
-  const isSystemMessage = message.sender_id === '00000000-0000-0000-0000-000000000000' || 
-                         message.message_type === 'system';
+  // Vérifier si c'est une conversation système (message de bienvenue)
+  const isSystemConversation = conversation.id === 'welcome-message' || 
+                              conversation.type === 'system' ||
+                              conversation.is_system;
 
-  // Si c'est un message système, afficher un style spécial
-  if (isSystemMessage) {
+  // Si c'est une conversation système, afficher un style spécial
+  if (isSystemConversation) {
     return (
       <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-sm">
         <CardContent className="p-4">
@@ -54,13 +54,13 @@ const MessageCard = ({
               </div>
               
               <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">
-                {message.content}
+                {conversation.content || 'Bienvenue sur MaxiMarket !'}
               </p>
               
               <div className="flex items-center space-x-1 mt-2">
                 <span className="text-xs text-muted-foreground flex items-center">
                   <Clock className="h-3 w-3 mr-1" />
-                  {formatTime(message.time || 'À l\'instant')}
+                  À l'instant
                 </span>
               </div>
             </div>
@@ -69,129 +69,115 @@ const MessageCard = ({
       </Card>
     );
   }
-  const getMessageTypeIcon = (type) => {
-    switch (type) {
-      case 'inquiry':
-        return '❓';
-      case 'offer':
-        return '💰';
-      case 'question':
-        return '❔';
-      case 'complaint':
-        return '⚠️';
-      default:
-        return '💬';
-    }
-  };
 
-  const getMessageTypeColor = (type) => {
-    switch (type) {
-      case 'inquiry':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'offer':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'question':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'complaint':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const formatTime = (time) => {
-    // Vérifier que time existe et est une chaîne de caractères
-    if (!time || typeof time !== 'string') {
+  // Fonction pour formater la date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'À l\'instant';
+    
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+      const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+      
+      if (diffInHours < 1) return 'À l\'instant';
+      if (diffInHours < 24) return `Il y a ${diffInHours}h`;
+      if (diffInDays < 7) return `Il y a ${diffInDays}j`;
+      
+      return date.toLocaleDateString('fr-FR', { 
+        day: 'numeric', 
+        month: 'short' 
+      });
+    } catch (error) {
       return 'À l\'instant';
     }
-    
-    if (time.includes('h')) {
-      return time;
-    }
-    if (time.includes('j')) {
-      return time;
-    }
-    return time;
   };
+
+  // Obtenir le dernier message de la conversation
+  const lastMessage = conversation.messages && conversation.messages.length > 0 
+    ? conversation.messages[conversation.messages.length - 1] 
+    : null;
+
+  // Déterminer l'autre participant
+  const currentUserId = conversation.participant1_id || conversation.participant2_id;
+  const otherParticipant = conversation.participant1_id === currentUserId 
+    ? conversation.participant2 
+    : conversation.participant1;
+
+  // Vérifier si la conversation a des messages non lus
+  const hasUnreadMessages = conversation.messages && 
+    conversation.messages.some(msg => !msg.is_read && msg.sender_id !== currentUserId);
 
   return (
     <Card className={cn(
       "transition-all duration-200 hover:shadow-md",
-      message.unread && "bg-blue-50 border-blue-200",
-      message.starred && "bg-yellow-50 border-yellow-200"
+      hasUnreadMessages && "bg-blue-50 border-blue-200",
+      conversation.starred && "bg-yellow-50 border-yellow-200"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start space-x-4">
           {/* Avatar */}
           <div className="relative">
             <img
-              src={message.avatar || '/default-avatar.png'}
-              alt={message.sender || 'Utilisateur'}
+              src={otherParticipant?.avatar_url || '/default-avatar.png'}
+              alt={otherParticipant ? `${otherParticipant.first_name} ${otherParticipant.last_name}` : 'Utilisateur'}
               className="w-12 h-12 rounded-full object-cover"
               onError={(e) => {
                 e.target.src = '/default-avatar.png';
               }}
             />
-            {message.online && (
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-600 border-2 border-white rounded-full"></div>
+            {hasUnreadMessages && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 border-2 border-white rounded-full"></div>
             )}
           </div>
 
-          {/* Message Content */}
+          {/* Conversation Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-2">
-                <h3 className="font-semibold text-sm">{message.sender || 'Utilisateur'}</h3>
-                {message.verified && (
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                    ✓ Vérifié
-                  </Badge>
-                )}
-                {message.type && (
-                  <Badge 
-                    variant="secondary" 
-                    className={cn("text-xs", getMessageTypeColor(message.type))}
-                  >
-                    {getMessageTypeIcon(message.type)} {message.type}
+                <h3 className="font-semibold text-sm">
+                  {otherParticipant ? `${otherParticipant.first_name} ${otherParticipant.last_name}` : 'Utilisateur'}
+                </h3>
+                {hasUnreadMessages && (
+                  <Badge variant="destructive" className="text-xs">
+                    Nouveau
                   </Badge>
                 )}
               </div>
               <div className="flex items-center space-x-1">
-                {message.starred && (
+                {conversation.starred && (
                   <Star className="h-4 w-4 text-yellow-500 fill-current" />
                 )}
                 <span className="text-xs text-muted-foreground flex items-center">
                   <Clock className="h-3 w-3 mr-1" />
-                  {formatTime(message.time)}
+                  {formatDate(conversation.last_message_at)}
                 </span>
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-              {message.message || 'Aucun contenu'}
-            </p>
+            {/* Dernier message */}
+            {lastMessage && (
+              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                {lastMessage.content || 'Aucun contenu'}
+              </p>
+            )}
 
-            {/* Message Details */}
+            {/* Détails de la conversation */}
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center space-x-4">
-                {message.listing && (
+                {conversation.listing && (
                   <span className="flex items-center">
-                    <Eye className="h-3 w-3 mr-1" />
-                    {message.listing}
+                    <Home className="h-3 w-3 mr-1" />
+                    {conversation.listing.title || 'Annonce'}
                   </span>
                 )}
-                {message.location && (
+                {conversation.messages && (
                   <span className="flex items-center">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {message.location}
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    {conversation.messages.length} message{conversation.messages.length > 1 ? 's' : ''}
                   </span>
                 )}
               </div>
-              {message.unread && (
-                <Badge variant="destructive" className="text-xs">
-                  Nouveau
-                </Badge>
-              )}
             </div>
 
             {/* Actions */}
@@ -200,7 +186,7 @@ const MessageCard = ({
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => onReply?.(message)}
+                  onClick={() => onReply?.(conversation)}
                   className="flex-1"
                 >
                   <Reply className="h-3 w-3 mr-1" />
@@ -210,7 +196,7 @@ const MessageCard = ({
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => onMarkAsRead?.(message)}
+                  onClick={() => onMarkAsRead?.(conversation)}
                   className="flex-1"
                 >
                   <Eye className="h-3 w-3 mr-1" />
@@ -220,20 +206,7 @@ const MessageCard = ({
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => onStar?.(message)}
-                  className={cn(
-                    "flex-1",
-                    message.starred && "bg-yellow-100 text-yellow-800"
-                  )}
-                >
-                  <Star className="h-3 w-3 mr-1" />
-                  {message.starred ? 'Favori' : 'Favori'}
-                </Button>
-                
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => onArchive?.(message)}
+                  onClick={() => onArchive?.(conversation)}
                 >
                   <Archive className="h-3 w-3" />
                 </Button>
@@ -241,10 +214,9 @@ const MessageCard = ({
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => onDelete?.(message)}
-                  className="text-red-600 hover:text-red-700"
+                  onClick={() => onStar?.(conversation)}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Star className="h-3 w-3" />
                 </Button>
               </div>
             )}
@@ -255,4 +227,4 @@ const MessageCard = ({
   );
 };
 
-export default MessageCard; 
+export default ConversationCard;
