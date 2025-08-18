@@ -45,6 +45,35 @@ const calculatePremiumRotation = (allPremium, limit) => {
   };
 };
 
+// Nouvelle fonction pour calculer le score premium d'une annonce
+const calculatePremiumScore = (listing) => {
+  let score = 0;
+  
+  // 1. PRIORITÉ DU PACKAGE (40% du score)
+  const priorityWeights = {
+    'highest': 1000,
+    'high': 800,
+    'medium': 600,
+    'low': 400
+  };
+  score += priorityWeights[listing.premium_metadata?.priority] || 500;
+  
+  // 2. TYPE DE PREMIUM (30% du score)
+  if (listing.is_featured && listing.is_boosted) score += 900;      // Premium complet
+  else if (listing.is_featured) score += 700;                       // Featured uniquement
+  else if (listing.is_boosted) score += 600;                        // Boost uniquement
+  
+  // 3. TEMPS RESTANT (20% du score)
+  const daysUntilExpiry = Math.ceil((new Date(listing.boost_expires_at) - new Date()) / (1000 * 60 * 60 * 24));
+  score += Math.max(0, daysUntilExpiry * 10);                      // +10 points par jour restant
+  
+  // 4. FRÉQUENCE DE MISE À JOUR (10% du score)
+  const daysSinceUpdate = Math.ceil((Date.now() - new Date(listing.updated_at)) / (1000 * 60 * 60 * 24));
+  score += Math.max(0, 30 - daysSinceUpdate);                      // +30 points si très récent
+  
+  return score;
+};
+
 export const listingService = {
   // Recuperer toutes les annonces avec pagination
   getAllListings: async (filters = {}) => {
@@ -576,8 +605,9 @@ export const listingService = {
   },
 
   // Recuperer les annonces premium (is_featured et/ou is_boosted)
-  // ROTATION INTELLIGENTE : Équité entre toutes les annonces premium
-  getPremiumListings: async (limit = 6) => {
+  // ROTATION INTELLIGENTE : Équité entre toutes les annonces premium (pour la home page)
+  // TRI PAR SCORE : Ordre optimisé par score premium (pour la page premium)
+  getPremiumListings: async (limit = 6, useScoreSorting = false) => {
     // Verifier la configuration Supabase
     if (!isSupabaseConfigured) {
       console.warn('⚠️ Supabase non configuré, retour de données de test premium');
@@ -678,6 +708,12 @@ export const listingService = {
             last_name,
             phone_number,
             email
+          ),
+          listing_boosts (
+            boost_packages (
+              features
+            ),
+            end_date
           )
         `)
         .or('is_featured.eq.true,is_boosted.eq.true')
@@ -686,8 +722,53 @@ export const listingService = {
 
       if (allError) throw allError;
 
-      // Utiliser la fonction utilitaire de rotation intelligente
-      return calculatePremiumRotation(allPremium, limit);
+      // Enrichir les données avec les métadonnées premium
+      const enrichedPremium = allPremium.map(listing => {
+        const boostData = listing.listing_boosts?.[0];
+        const packageFeatures = boostData?.boost_packages?.features;
+        
+        return {
+          ...listing,
+          premium_metadata: {
+            priority: packageFeatures?.priority || 'medium',
+            badge: packageFeatures?.badge || 'boosted',
+            featured: packageFeatures?.featured || false,
+            analytics: packageFeatures?.analytics || 'basic',
+            support: packageFeatures?.support || 'standard'
+          },
+          boost_expires_at: boostData?.end_date || null
+        };
+      });
+
+      // Choisir la stratégie de tri selon le paramètre
+      if (useScoreSorting) {
+        // TRI PAR SCORE PREMIUM (pour la page premium)
+        console.log('🏆 Tri par score premium activé');
+        
+        // Trier par score premium décroissant
+        const sortedByScore = enrichedPremium.sort((a, b) => {
+          const scoreA = calculatePremiumScore(a);
+          const scoreB = calculatePremiumScore(b);
+          return scoreB - scoreA; // Décroissant
+        });
+
+        // Retourner avec pagination
+        return {
+          data: sortedByScore.slice(0, limit),
+          hasMore: sortedByScore.length > limit,
+          totalPremium: sortedByScore.length,
+          sortingMethod: 'score',
+          topScores: sortedByScore.slice(0, 3).map((listing, index) => ({
+            position: index + 1,
+            score: calculatePremiumScore(listing),
+            title: listing.title
+          }))
+        };
+      } else {
+        // ROTATION INTELLIGENTE (pour la home page)
+        console.log('🔄 Rotation intelligente activée');
+        return calculatePremiumRotation(enrichedPremium, limit);
+      }
     } catch (error) {
       console.error('Erreur lors de la récupération des annonces premium:', error);
       throw error;
