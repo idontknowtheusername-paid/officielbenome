@@ -318,6 +318,7 @@ export const listingService = {
   },
 
   // Recuperer le top N des annonces les plus vues (populaires)
+  // EXCLUT les annonces premium (is_featured et is_boosted) pour éviter le double affichage
   getTopViewedListings: async (limit = 6) => {
     console.log('🔍 getTopViewedListings appelé avec limit:', limit);
     console.log('🔍 isSupabaseConfigured:', isSupabaseConfigured);
@@ -325,9 +326,9 @@ export const listingService = {
     if (!isSupabaseConfigured) {
       console.warn('⚠️ Supabase non configuré, retour de données de test (top vues)');
       const mock = [
-        { id: 'test-2', title: 'Toyota Corolla 2020 - Excellent état', price: 2500000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Thiès', country: 'Sénégal' }, images: [], views_count: 1200 },
-        { id: 'test-1', title: 'Appartement 3 pièces au Centre-Ville', price: 500000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 980 },
-        { id: 'test-4', title: 'iPhone 13 Pro - Comme neuf', price: 450000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 800 }
+        { id: 'test-2', title: 'Toyota Corolla 2020 - Excellent état', price: 2500000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Thiès', country: 'Sénégal' }, images: [], views_count: 1200, is_featured: false, is_boosted: false },
+        { id: 'test-1', title: 'Appartement 3 pièces au Centre-Ville', price: 500000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 980, is_featured: false, is_boosted: false },
+        { id: 'test-4', title: 'iPhone 13 Pro - Comme neuf', price: 450000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 800, is_featured: false, is_boosted: false }
       ];
       return mock.slice(0, limit);
     }
@@ -338,6 +339,8 @@ export const listingService = {
         .from('listings')
         .select('*')
         .eq('status', 'approved')
+        .not('is_featured', 'eq', true)    // Exclure les annonces mises en avant
+        .not('is_boosted', 'eq', true)     // Exclure les annonces boostées
         .order('views_count', { ascending: false, nullsFirst: false })
         .limit(limit);
 
