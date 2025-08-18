@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Heart, Eye, Phone, Mail, Calendar, MessageSquare } from 'lucide-react';
+import { MapPin, Heart, Eye, Phone, Mail, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,17 +9,13 @@ import MiniImageGallery from '@/components/MiniImageGallery';
 import { useListingImages } from '@/hooks';
 import BoostStatus from '@/components/BoostStatus';
 import { cn } from '@/lib/utils';
-import { messageService } from '@/services';
-import { useToast } from '@/components/ui/use-toast';
 
 const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { images } = useListingImages(listing);
   const [isFavorite, setIsFavorite] = useState(listing.is_favorite || false);
   const [isToggling, setIsToggling] = useState(false);
-  const [isContacting, setIsContacting] = useState(false);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -97,54 +93,6 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
     }
   };
 
-  const handleContactSeller = async (e) => {
-    e.stopPropagation();
-    
-    if (!user) {
-      navigate('/connexion');
-      return;
-    }
-
-    // Empêcher de se contacter soi-même
-    if (listing.user_id === user.id) {
-      toast({
-        title: "Action impossible",
-        description: "Vous ne pouvez pas vous contacter vous-même.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (isContacting) return;
-
-    try {
-      setIsContacting(true);
-      
-      // Créer ou récupérer une conversation existante
-      const conversation = await messageService.createConversation(
-        listing.user_id,
-        listing.id
-      );
-
-      // Rediriger vers la messagerie avec la conversation
-      navigate(`/messages?conversation=${conversation.id}&listing=${listing.id}`);
-      
-      toast({
-        title: "Conversation créée",
-        description: "Vous avez été redirigé vers la messagerie.",
-      });
-    } catch (error) {
-      console.error('Erreur lors de la création de la conversation:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer la conversation. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsContacting(false);
-    }
-  };
-
   const handleCardClick = () => {
     if (!listing.id) {
       return;
@@ -152,40 +100,56 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
     navigate(`/annonce/${listing.id}`);
   };
 
-  // Vérifier si l'annonce est premium
-  const isPremium = listing.featured || listing.is_premium || listing.boost_level === 'premium';
+  // Mettre à jour l'état local quand la prop change
+  React.useEffect(() => {
+    setIsFavorite(listing.is_favorite || false);
+  }, [listing.is_favorite]);
 
+  // Vérifier si l'annonce est premium
+  const isPremium = listing.featured || listing.boosted || listing.is_premium || listing.premium;
+  
   return (
     <motion.div
-      onClick={handleCardClick}
+      whileHover={{ y: -4 }}
       className={cn(
-        "group cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-border/50",
-        isPremium && "ring-2 ring-amber-200 shadow-lg"
+        "group rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden",
+        isPremium 
+          ? "bg-gradient-to-br from-amber-50/50 to-yellow-100/50 border-2 border-amber-300/50 shadow-amber-200/50" 
+          : "bg-card border border-border/50"
       )}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
+      onClick={handleCardClick}
     >
-      {/* Image Container - Hauteur responsive */}
-      <div className="relative h-48 sm:h-56 md:h-64 lg:h-72">
-        <MiniImageGallery
-          images={images || [listing.image]}
+      {/* Image - Hauteur responsive */}
+      <div className="relative h-40 sm:h-48 md:h-56 bg-muted overflow-hidden">
+        <MiniImageGallery 
+          images={images}
           title={listing.title}
-          className="h-full w-full object-cover"
+          className="h-full"
         />
         
-        {/* Category Icon - Position absolue en haut à gauche */}
-        <div className="absolute top-2 left-2">
-          <span className="text-2xl sm:text-3xl">{getCategoryIcon(listing.category)}</span>
+        {/* Badges - Plus compacts sur mobile */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1 sm:flex-row sm:gap-2 items-start">
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className="bg-black/70 text-white text-xs px-2 py-1 sm:text-sm sm:px-3 sm:py-1.5">
+              {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
+            </Badge>
+            {/*
+              Masquer le badge "Approuvé" sur mobile uniquement pour les annonces premium.
+              Sur mobile (taille < sm) : si l'annonce est premium et le status est 'approved', ne pas afficher le badge.
+              Sur >= sm : afficher normalement.
+            */}
+            {listing.status === 'approved' && isPremium ? (
+              <span className="hidden sm:inline-flex">{getStatusBadge(listing.status)}</span>
+            ) : (
+              getStatusBadge(listing.status)
+            )}
+          </div>
+
+          {/* Premium badges - placés ici pour éviter tout chevauchement */}
+          {/* Supprimé : Plus de badges premium en haut à gauche, seulement le type d'annonce */}
         </div>
 
-        {/* Status Badge - Position absolue en haut à droite */}
-        {listing.status && (
-          <div className="absolute top-2 right-2">
-            {getStatusBadge(listing.status)}
-          </div>
-        )}
-
-        {/* Premium badges moved to the left container to avoid overlap on mobile */}
+  {/* Premium badges moved to the left container to avoid overlap on mobile */}
         
         {/* Favorite Button - Taille adaptée */}
         {showActions && (
@@ -246,31 +210,6 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
             <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium">
               ⭐ Premium
             </Badge>
-          </div>
-        )}
-
-        {/* Actions - Boutons de contact et favoris */}
-        {showActions && (
-          <div className="flex space-x-2 mb-3">
-            <Button
-              onClick={handleContactSeller}
-              disabled={isContacting || listing.user_id === user?.id}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-              size="sm"
-            >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              {isContacting ? 'Contact...' : 'Contacter'}
-            </Button>
-            
-            <Button
-              onClick={handleFavoriteClick}
-              disabled={isToggling}
-              variant="outline"
-              size="sm"
-              className="px-3"
-            >
-              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current text-red-500' : ''}`} />
-            </Button>
           </div>
         )}
         

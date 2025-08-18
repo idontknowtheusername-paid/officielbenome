@@ -38,6 +38,7 @@ import {
   MessageInput 
 } from '../components/messaging';
 import { supabase } from '../lib/supabase';
+import { useSearchParams } from 'react-router-dom';
 
 // Configuration du client React Query
 const queryClient = new QueryClient({
@@ -54,6 +55,7 @@ const queryClient = new QueryClient({
 const MessagingPageContent = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const { data: conversations, isLoading, error, refetch } = useConversations();
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -65,6 +67,32 @@ const MessagingPageContent = () => {
 
   // Utiliser le hook de chat en temps réel
   useRealtimeMessages(selectedConversation?.id);
+
+  // Vérifier les paramètres d'URL pour ouvrir automatiquement une conversation
+  useEffect(() => {
+    if (!conversations || conversations.length === 0) return;
+
+    const conversationId = searchParams.get('conversation');
+    const listingId = searchParams.get('listing');
+
+    if (conversationId && !selectedConversation) {
+      // Trouver la conversation dans la liste
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (conversation) {
+        console.log('🔍 Ouverture automatique de la conversation:', conversationId);
+        setSelectedConversation(conversation);
+        loadMessages(conversation.id);
+      }
+    } else if (listingId && !selectedConversation) {
+      // Trouver une conversation liée à cette annonce
+      const conversation = conversations.find(c => c.listing_id === listingId);
+      if (conversation) {
+        console.log('🔍 Ouverture automatique de la conversation pour l\'annonce:', listingId);
+        setSelectedConversation(conversation);
+        loadMessages(conversation.id);
+      }
+    }
+  }, [conversations, searchParams, selectedConversation]);
 
   // Subscription en temps réel pour les nouvelles conversations
   useEffect(() => {
@@ -606,7 +634,7 @@ const ConversationItem = ({
             <h4 className="font-medium text-sm truncate">
               {otherParticipant ? `${otherParticipant.first_name} ${otherParticipant.last_name}` : 'Utilisateur'}
             </h4>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               {conversation.starred && (
                 <Star className="h-3 w-3 text-yellow-500 fill-current" />
               )}
