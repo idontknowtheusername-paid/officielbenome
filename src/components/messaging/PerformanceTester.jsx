@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Play, 
-  Stop, 
+  Square, 
   Loader2, 
   Shield, 
   Zap, 
@@ -10,9 +10,9 @@ import {
   CheckCircle,
   XCircle,
   BarChart3,
-  Timer,
+  Clock,
   Cpu,
-  Network
+  Wifi
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -423,7 +423,7 @@ const PerformanceTester = ({
             </Button>
           ) : (
             <Button onClick={stopTests} variant="destructive">
-              <Stop className="w-4 h-4 mr-2" />
+              <Square className="w-4 h-4 mr-2" />
               Arrêter
             </Button>
           )}

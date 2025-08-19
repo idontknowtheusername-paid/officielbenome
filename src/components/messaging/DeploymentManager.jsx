@@ -5,16 +5,16 @@ import {
   CheckCircle, 
   XCircle, 
   AlertTriangle,
-  Loader2,
-  Shield,
-  Zap,
-  Globe,
-  Database,
-  Server,
-  Monitor,
-  Settings,
-  Play,
-  Stop,
+  Loader2, 
+  Shield, 
+  Zap, 
+  Globe, 
+  Database, 
+  Server, 
+  Monitor, 
+  Settings, 
+  Play, 
+  Square, 
   RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -361,7 +361,7 @@ const DeploymentManager = ({
           
           {deploymentStatus === 'running' && (
             <Button onClick={stopDeployment} variant="destructive">
-              <Stop className="w-4 h-4 mr-2" />
+              <Square className="w-4 h-4 mr-2" />
               Arrêter
             </Button>
           )}
