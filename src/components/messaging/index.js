@@ -14,3 +14,7 @@ export { default as PerformanceOptimizer } from './PerformanceOptimizer';
 export { default as PerformanceTester } from './PerformanceTester';
 export { default as DeploymentManager } from './DeploymentManager';
 export { default as Phase4Dashboard } from './Phase4Dashboard';
+
+// Débogage et diagnostic
+export { default as MessageDebugger } from './MessageDebugger';
+export { default as MessageTest } from './MessageTest';

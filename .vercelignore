@@ -1,0 +1,41 @@
+# Fichiers de build et développement
+dist/
+build/
+node_modules/
+.env.local
+.env.development
+
+# Fichiers de logs et cache
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.cache/
+.parcel-cache/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de développement
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Fichiers de documentation de développement
+PHASE_*.md
+PLAN_*.md
+*.tar.gz
+*.sql
+
+# Fichiers de configuration locale
+vercel.json.local
+.env.local
+.env.development.local
