@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { useConversations, useRealtimeMessages } from '@/hooks/useMessages';
+import { useConversations, useRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
 import { messageService } from '@/services/message.service';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -22,12 +22,23 @@ import {
   Smile,
   Plus,
   Camera,
-  Mic
+  Mic,
+  Edit3,
+  Copy,
+  Flag,
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   MobileMessagingNav, 
   MessagingSearch, 
@@ -59,6 +70,8 @@ const MessagingPageContent = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState(null);
 
   // Utiliser le hook de chat en temps réel
   useRealtimeMessages(selectedConversation?.id);
@@ -386,6 +399,36 @@ const MessagingPageContent = () => {
     }
   };
 
+  // Supprimer une conversation
+  const handleDeleteConversation = async (conversation) => {
+    try {
+      await messageService.deleteConversation(conversation.id);
+      
+      // Si c'était la conversation sélectionnée, la désélectionner
+      if (selectedConversation?.id === conversation.id) {
+        setSelectedConversation(null);
+        setMessages([]);
+      }
+      
+      toast({
+        title: "Conversation supprimée",
+        description: "La conversation a été supprimée définitivement",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la conversation",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Confirmer la suppression d'une conversation
+  const confirmDeleteConversation = (conversation) => {
+    setConversationToDelete(conversation);
+    setShowDeleteConfirm(true);
+  };
+
   // Gestion des erreurs
   if (error) {
     return (
@@ -498,6 +541,7 @@ const MessagingPageContent = () => {
                     onMarkAsRead={() => handleMarkAsRead(conversation)}
                     onToggleStar={() => handleToggleStar(conversation)}
                     onArchive={() => handleArchive(conversation)}
+                    onDelete={() => confirmDeleteConversation(conversation)}
                     currentUserId={user?.id}
                   />
                 ))}
@@ -543,9 +587,31 @@ const MessagingPageContent = () => {
                   <Button variant="ghost" size="sm" onClick={handleVideo}>
                     <Video className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => handleToggleStar(selectedConversation)}>
+                        <Star className="h-4 w-4 mr-2" />
+                        {selectedConversation.starred ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleArchive(selectedConversation)}>
+                        <Archive className="h-4 w-4 mr-2" />
+                        {selectedConversation.is_archived ? 'Désarchiver' : 'Archiver'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => confirmDeleteConversation(selectedConversation)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Supprimer la conversation
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </div>
@@ -602,8 +668,42 @@ const MessagingPageContent = () => {
         </div>
         )}
       </div>
-      </div>
-    );
+
+      {/* Modal de confirmation de suppression */}
+      {showDeleteConfirm && conversationToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirmer la suppression</h3>
+            <p className="text-muted-foreground mb-6">
+              Êtes-vous sûr de vouloir supprimer définitivement cette conversation ? 
+              Cette action ne peut pas être annulée.
+            </p>
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1"
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  handleDeleteConversation(conversationToDelete);
+                  setShowDeleteConfirm(false);
+                  setConversationToDelete(null);
+                }}
+                className="flex-1"
+                disabled={deleteConversationMutation.isLoading}
+              >
+                {deleteConversationMutation.isLoading ? 'Suppression...' : 'Supprimer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 // Composant pour afficher un élément de conversation
@@ -614,6 +714,7 @@ const ConversationItem = ({
   onMarkAsRead, 
   onToggleStar, 
   onArchive,
+  onDelete,
   currentUserId 
 }) => {
   const lastMessage = conversation.messages?.[conversation.messages.length - 1];
@@ -649,7 +750,7 @@ const ConversationItem = ({
   return (
     <div
       className={`
-        p-4 cursor-pointer transition-colors hover:bg-accent
+        group p-4 cursor-pointer transition-colors hover:bg-accent
         ${isSelected ? 'bg-primary/10 border-r-2 border-primary' : ''}
         ${hasUnreadMessages ? 'bg-primary/10' : ''}
       `}
@@ -698,6 +799,39 @@ const ConversationItem = ({
               )}
             </div>
           </div>
+        </div>
+
+        {/* Menu contextuel des actions */}
+        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => onMarkAsRead?.(conversation)}>
+                <Eye className="h-4 w-4 mr-2" />
+                Marquer comme lu
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onToggleStar?.(conversation)}>
+                <Star className="h-4 w-4 mr-2" />
+                {conversation.starred ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onArchive?.(conversation)}>
+                <Archive className="h-4 w-4 mr-2" />
+                {conversation.is_archived ? 'Désarchiver' : 'Archiver'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => onDelete?.(conversation)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

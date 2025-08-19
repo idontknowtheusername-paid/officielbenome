@@ -270,6 +270,44 @@ export const useDeleteConversation = () => {
   });
 };
 
+// Hook pour supprimer un message individuel
+export const useDeleteMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (messageId) => messageService.deleteMessage(messageId),
+    
+    onMutate: async (messageId) => {
+      // Annuler les requêtes en cours
+      await queryClient.cancelQueries({ queryKey: ['conversations'] });
+      
+      const previousConversations = queryClient.getQueryData(['conversations']);
+
+      // Optimistic update - supprimer le message des conversations
+      queryClient.setQueryData(['conversations'], (old) => {
+        if (!old) return old;
+        
+        return old.map(conv => ({
+          ...conv,
+          messages: conv.messages?.filter(msg => msg.id !== messageId) || []
+        }));
+      });
+
+      return { previousConversations };
+    },
+
+    onError: (err, messageId, context) => {
+      if (context?.previousConversations) {
+        queryClient.setQueryData(['conversations'], context.previousConversations);
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+};
+
 // Hook pour rechercher des conversations
 export const useSearchConversations = (searchTerm) => {
   const { user } = useAuth();

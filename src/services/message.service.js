@@ -470,6 +470,121 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
     return true;
   },
 
+  // Archiver une conversation
+  archiveConversation: async (conversationId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    console.log('🔍 Archivage de la conversation:', conversationId);
+
+    // Vérifier que l'utilisateur fait partie de la conversation
+    const { data: conversation, error: checkError } = await supabase
+      .from('conversations')
+      .select('participant1_id, participant2_id, is_archived')
+      .eq('id', conversationId)
+      .single();
+
+    if (checkError) throw checkError;
+
+    if (conversation.participant1_id !== user.id && conversation.participant2_id !== user.id) {
+      throw new Error('Non autorisé');
+    }
+
+    // Basculer le statut d'archivage
+    const newArchivedStatus = !conversation.is_archived;
+    
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ 
+        is_archived: newArchivedStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (updateError) {
+      console.error('Erreur lors de l\'archivage de la conversation:', updateError);
+      throw updateError;
+    }
+
+    console.log(`✅ Conversation ${newArchivedStatus ? 'archivée' : 'désarchivée'} avec succès`);
+    return { is_archived: newArchivedStatus };
+  },
+
+  // Basculer le statut favori d'une conversation
+  toggleConversationStar: async (conversationId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    console.log('🔍 Basculement du statut favori pour la conversation:', conversationId);
+
+    // Vérifier que l'utilisateur fait partie de la conversation
+    const { data: conversation, error: checkError } = await supabase
+      .from('conversations')
+      .select('participant1_id, participant2_id, starred')
+      .eq('id', conversationId)
+      .single();
+
+    if (checkError) throw checkError;
+
+    if (conversation.participant1_id !== user.id && conversation.participant2_id !== user.id) {
+      throw new Error('Non autorisé');
+    }
+
+    // Basculer le statut favori
+    const newStarredStatus = !conversation.starred;
+    
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ 
+        starred: newStarredStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (updateError) {
+      console.error('Erreur lors du basculement du statut favori:', updateError);
+      throw updateError;
+    }
+
+    console.log(`✅ Conversation ${newStarredStatus ? 'ajoutée aux' : 'retirée des'} favoris avec succès`);
+    return { starred: newStarredStatus };
+  },
+
+  // Supprimer un message individuel
+  deleteMessage: async (messageId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Utilisateur non connecté');
+
+    console.log('🔍 Suppression du message:', messageId);
+
+    // Vérifier que l'utilisateur est l'expéditeur du message
+    const { data: message, error: checkError } = await supabase
+      .from('messages')
+      .select('sender_id, conversation_id')
+      .eq('id', messageId)
+      .single();
+
+    if (checkError) throw checkError;
+
+    if (message.sender_id !== user.id) {
+      throw new Error('Vous ne pouvez supprimer que vos propres messages');
+    }
+
+    // Supprimer le message
+    const { error: deleteError } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId);
+
+    if (deleteError) {
+      console.error('Erreur lors de la suppression du message:', deleteError);
+      throw deleteError;
+    }
+
+    console.log('✅ Message supprimé avec succès');
+    return true;
+  },
+
   // Supprimer une conversation
   deleteConversation: async (conversationId) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -724,40 +839,6 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
 
     if (error) throw error;
     return data;
-  },
-
-  // Archiver une conversation
-  archiveConversation: async (conversationId) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Utilisateur non connecté');
-
-    const { error } = await supabase
-      .from('conversations')
-      .update({ 
-        is_archived: true,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', conversationId);
-
-    if (error) throw error;
-    return true;
-  },
-
-  // Basculer le statut favori d'une conversation
-  toggleConversationStar: async (conversationId, starred) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Utilisateur non connecté');
-
-    const { error } = await supabase
-      .from('conversations')
-      .update({ 
-        starred,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', conversationId);
-
-    if (error) throw error;
-    return true;
   }
 };
 
