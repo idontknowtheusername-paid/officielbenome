@@ -71,7 +71,8 @@ export const messageService = {
           updated_at
         `)
         .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
-        .order('last_message_at', { ascending: false });
+        .order('last_message_at', { ascending: false, nullsLast: true })
+        .order('created_at', { ascending: false });
 
       if (convError) {
         console.error('Erreur récupération conversations:', convError);
@@ -447,6 +448,9 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
+    console.log('🔍 Marquage des messages comme lus pour la conversation:', conversationId);
+
+    // Marquer tous les messages non lus de la conversation comme lus
     const { error } = await supabase
       .from('messages')
       .update({ 
@@ -454,10 +458,15 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
         read_at: new Date().toISOString()
       })
       .eq('conversation_id', conversationId)
-      .eq('receiver_id', user.id)
+      .neq('sender_id', user.id) // Ne pas marquer les messages de l'utilisateur actuel
       .eq('is_read', false);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Erreur lors du marquage des messages comme lus:', error);
+      throw error;
+    }
+
+    console.log('✅ Messages marqués comme lus avec succès');
     return true;
   },
 

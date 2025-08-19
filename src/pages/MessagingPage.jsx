@@ -186,10 +186,19 @@ const MessagingPageContent = () => {
   };
 
   // Sélectionner une conversation
-  const handleSelectConversation = (conversation) => {
+  const handleSelectConversation = async (conversation) => {
     setSelectedConversation(conversation);
     loadMessages(conversation.id);
     setShowMobileMenu(false); // Fermer le menu mobile
+    
+    // Marquer automatiquement les messages comme lus
+    try {
+      await messageService.markMessagesAsRead(conversation.id);
+      // Rafraîchir les conversations pour mettre à jour le statut
+      refetch();
+    } catch (error) {
+      console.error('Erreur lors du marquage des messages comme lus:', error);
+    }
   };
 
   // Envoyer un message
@@ -293,6 +302,26 @@ const MessagingPageContent = () => {
     
     return false;
   });
+
+  // Trier les conversations par date du dernier message (plus récent en premier)
+  const sortedConversations = [...searchedConversations].sort((a, b) => {
+    const aLastMessage = a.messages?.[a.messages.length - 1]?.created_at || a.created_at;
+    const bLastMessage = b.messages?.[b.messages.length - 1]?.created_at || b.created_at;
+    
+    if (!aLastMessage && !bLastMessage) return 0;
+    if (!aLastMessage) return 1;
+    if (!bLastMessage) return -1;
+    
+    return new Date(bLastMessage) - new Date(aLastMessage);
+  });
+
+  // Log pour déboguer l'ordre des conversations
+  console.log('🔍 Conversations triées:', sortedConversations.map(conv => ({
+    id: conv.id,
+    title: conv.listing?.title || 'Sans titre',
+    lastMessage: conv.messages?.[conv.messages.length - 1]?.created_at || conv.created_at,
+    hasUnread: conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id)
+  })));
 
   // Calculer les statistiques
   const stats = {
@@ -448,7 +477,7 @@ const MessagingPageContent = () => {
                   </div>
                 ))}
                   </div>
-            ) : searchedConversations.length === 0 ? (
+            ) : sortedConversations.length === 0 ? (
               <div className="p-8 text-center">
                 <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium text-card-foreground mb-2">
@@ -460,7 +489,7 @@ const MessagingPageContent = () => {
                 </div>
             ) : (
               <div className="space-y-1">
-                {searchedConversations.map((conversation) => (
+                {sortedConversations.map((conversation) => (
                   <ConversationItem
                     key={conversation.id}
                     conversation={conversation}
