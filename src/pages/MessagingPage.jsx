@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations, useRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { messageService } from '@/services/message.service';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -63,6 +64,7 @@ const MessagingPageContent = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { data: conversations, isLoading, error, refetch } = useConversations();
+  const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -80,6 +82,25 @@ const MessagingPageContent = () => {
 
   // Utiliser le hook de chat en temps réel
   useRealtimeMessages(selectedConversation?.id);
+
+  // Mutation pour supprimer une conversation
+  const deleteConversationMutation = useMutation({
+    mutationFn: (conversationId) => messageService.deleteConversation(conversationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['conversations']);
+      toast({
+        title: "Conversation supprimée",
+        description: "La conversation a été supprimée définitivement",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la conversation",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Vérifier les paramètres d'URL pour ouvrir automatiquement une conversation
   useEffect(() => {
@@ -400,27 +421,15 @@ const MessagingPageContent = () => {
   };
 
   // Supprimer une conversation
-  const handleDeleteConversation = async (conversation) => {
-    try {
-      await messageService.deleteConversation(conversation.id);
-      
-      // Si c'était la conversation sélectionnée, la désélectionner
-      if (selectedConversation?.id === conversation.id) {
-        setSelectedConversation(null);
-        setMessages([]);
-      }
-      
-      toast({
-        title: "Conversation supprimée",
-        description: "La conversation a été supprimée définitivement",
-      });
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer la conversation",
-        variant: "destructive",
-      });
+  const handleDeleteConversation = (conversation) => {
+    // Si c'était la conversation sélectionnée, la désélectionner
+    if (selectedConversation?.id === conversation.id) {
+      setSelectedConversation(null);
+      setMessages([]);
     }
+    
+    // Utiliser la mutation pour supprimer
+    deleteConversationMutation.mutate(conversation.id);
   };
 
   // Confirmer la suppression d'une conversation
