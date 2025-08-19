@@ -157,11 +157,16 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
             const participant1Id = conversation.participant1_id;
             const participant2Id = conversation.participant2_id;
             
+            console.log('🔍 Récupération des participants pour la conversation:', conversation.id);
+            console.log('🔍 Participant 1 ID:', participant1Id);
+            console.log('🔍 Participant 2 ID:', participant2Id);
+            
             let participant1 = null;
             let participant2 = null;
 
             if (participant1Id) {
               try {
+                console.log('🔍 Récupération des détails du participant 1:', participant1Id);
                 const { data: user1, error: user1Error } = await supabase
                   .from('users')
                   .select('id, first_name, last_name, avatar_url')
@@ -170,54 +175,65 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
                 
                 if (!user1Error && user1) {
                   participant1 = user1;
+                  console.log('✅ Participant 1 récupéré:', {
+                    id: user1.id,
+                    name: `${user1.first_name} ${user1.last_name}`,
+                    avatar: user1.profile_image
+                  });
                 } else {
-                  console.warn('Utilisateur 1 non trouvé:', participant1Id, user1Error);
+                  console.warn('❌ Utilisateur 1 non trouvé:', participant1Id, user1Error);
                   // Créer un utilisateur par défaut pour éviter les erreurs
                   participant1 = {
                     id: participant1Id,
-                    first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
-                    last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
-                    avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                    first_name: 'Utilisateur',
+                    last_name: 'Inconnu',
+                    profile_image: null
                   };
                 }
               } catch (error) {
-                console.warn('Erreur lors de la récupération de l\'utilisateur 1:', error);
+                console.error('❌ Erreur lors de la récupération de l\'utilisateur 1:', error);
                 participant1 = {
                   id: participant1Id,
-                  first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
-                  last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
-                  avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                  first_name: 'Utilisateur',
+                  last_name: 'Inconnu',
+                  profile_image: null
                 };
               }
             }
 
             if (participant2Id) {
               try {
+                console.log('🔍 Récupération des détails du participant 2:', participant2Id);
                 const { data: user2, error: user2Error } = await supabase
                   .from('users')
-                  .select('id, first_name, last_name, avatar_url')
+                  .select('id, first_name, last_name, profile_image')
                   .eq('id', participant2Id)
                   .single();
                 
                 if (!user2Error && user2) {
                   participant2 = user2;
+                  console.log('✅ Participant 2 récupéré:', {
+                    id: user2.id,
+                    name: `${user2.first_name} ${user2.last_name}`,
+                    avatar: user2.profile_image
+                  });
                 } else {
-                  console.warn('Utilisateur 2 non trouvé:', participant2Id, user2Error);
+                  console.warn('❌ Utilisateur 2 non trouvé:', participant2Id, user2Error);
                   // Créer un utilisateur par défaut pour éviter les erreurs
                   participant2 = {
                     id: participant2Id,
-                    first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
-                    last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
-                    avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                    first_name: 'Utilisateur',
+                    last_name: 'Inconnu',
+                    profile_image: null
                   };
                 }
               } catch (error) {
-                console.warn('Erreur lors de la récupération de l\'utilisateur 2:', error);
+                console.error('❌ Erreur lors de la récupération de l\'utilisateur 2:', error);
                 participant2 = {
                   id: participant2Id,
-                  first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
-                  last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
-                  avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                  first_name: 'Utilisateur',
+                  last_name: 'Inconnu',
+                  profile_image: null
                 };
               }
             }
@@ -590,6 +606,9 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
+    console.log('🔍 Suppression de la conversation:', conversationId);
+    console.log('🔍 Utilisateur actuel:', user.id);
+
     // Verifier que l'utilisateur fait partie de la conversation
     const { data: conversation, error: checkError } = await supabase
       .from('conversations')
@@ -597,19 +616,47 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
       .eq('id', conversationId)
       .single();
 
-    if (checkError) throw checkError;
+    if (checkError) {
+      console.error('❌ Erreur lors de la vérification de la conversation:', checkError);
+      throw checkError;
+    }
+
+    console.log('🔍 Conversation trouvée:', conversation);
 
     if (conversation.participant1_id !== user.id && conversation.participant2_id !== user.id) {
+      console.error('❌ Utilisateur non autorisé à supprimer cette conversation');
       throw new Error('Non autorisé');
     }
 
-    // Supprimer la conversation et tous les messages
+    console.log('✅ Autorisation vérifiée, suppression en cours...');
+
+    // Supprimer d'abord tous les messages de la conversation
+    console.log('🔍 Suppression des messages de la conversation...');
+    const { error: messagesDeleteError } = await supabase
+      .from('messages')
+      .delete()
+      .eq('conversation_id', conversationId);
+
+    if (messagesDeleteError) {
+      console.error('❌ Erreur lors de la suppression des messages:', messagesDeleteError);
+      throw messagesDeleteError;
+    }
+
+    console.log('✅ Messages supprimés avec succès');
+
+    // Supprimer la conversation
+    console.log('🔍 Suppression de la conversation...');
     const { error: deleteError } = await supabase
       .from('conversations')
       .delete()
       .eq('id', conversationId);
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error('❌ Erreur lors de la suppression de la conversation:', deleteError);
+      throw deleteError;
+    }
+
+    console.log('✅ Conversation supprimée avec succès');
     return true;
   },
 
