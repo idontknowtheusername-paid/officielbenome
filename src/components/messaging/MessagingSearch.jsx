@@ -35,10 +35,10 @@ const MessagingSearch = ({
   ];
 
   return (
-    <div className="bg-white border-b border-gray-200 p-4">
+    <div className="bg-card border-b border-border p-4">
       {/* Barre de recherche */}
       <div className="relative mb-3">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Rechercher des conversations..."
           value={searchTerm}
@@ -80,7 +80,7 @@ const MessagingSearch = ({
 
       {/* Filtres avancés (optionnels) */}
       {showFilters && (
-        <div className="pt-3 border-t border-gray-100">
+        <div className="pt-3 border-t border-border">
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="text-xs">
               <User className="h-3 w-3 mr-1" />
@@ -100,7 +100,7 @@ const MessagingSearch = ({
           variant="ghost"
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className="text-xs text-gray-500 hover:text-gray-700"
+          className="text-xs text-muted-foreground hover:text-foreground"
         >
           <Filter className="h-3 w-3 mr-1" />
           {showFilters ? 'Masquer' : 'Plus de filtres'}

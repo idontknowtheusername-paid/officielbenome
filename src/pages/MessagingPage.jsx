@@ -525,7 +525,7 @@ const MessagingPageContent = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {isLoadingMessages ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center text-muted-foreground">
@@ -620,9 +620,9 @@ const ConversationItem = ({
   return (
     <div
       className={`
-        p-4 cursor-pointer transition-colors hover:bg-gray-50
-        ${isSelected ? 'bg-blue-50 border-r-2 border-blue-600' : ''}
-        ${hasUnreadMessages ? 'bg-blue-50' : ''}
+        p-4 cursor-pointer transition-colors hover:bg-accent
+        ${isSelected ? 'bg-primary/10 border-r-2 border-primary' : ''}
+        ${hasUnreadMessages ? 'bg-primary/10' : ''}
       `}
       onClick={onSelect}
     >
@@ -634,7 +634,7 @@ const ConversationItem = ({
             className="flex-shrink-0"
           />
           {hasUnreadMessages && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full"></div>
           )}
         </div>
         
