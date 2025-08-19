@@ -278,13 +278,20 @@ const MessagingPageContent = () => {
 
   // Gérer l'appel audio
   const handleCall = () => {
-    if (!selectedConversation) return;
+    if (!selectedConversation || !user) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de déterminer la conversation ou l'utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    const otherParticipant = selectedConversation.participant1_id === user?.id 
+    const otherParticipant = selectedConversation.participant1_id === user.id 
       ? selectedConversation.participant2 
       : selectedConversation.participant1;
     
-    if (!otherParticipant) {
+    if (!otherParticipant || !otherParticipant.id) {
       toast({
         title: "Erreur",
         description: "Impossible de déterminer l'interlocuteur",
@@ -293,10 +300,19 @@ const MessagingPageContent = () => {
       return;
     }
     
+    console.log('🔍 Initialisation appel avec:', {
+      user: user.id,
+      target: otherParticipant.id,
+      targetName: otherParticipant.first_name || otherParticipant.last_name || 'Utilisateur'
+    });
+    
     setAudioCallTarget(otherParticipant);
     setShowAudioCall(true);
     
-    // Pas de notification toast pour l'initialisation des appels audio
+    toast({
+      title: "Appel audio",
+      description: `Initialisation de l'appel avec ${otherParticipant.first_name || otherParticipant.last_name || 'l\'utilisateur'}`,
+    });
   };
 
   // Fermer l'interface d'appel
