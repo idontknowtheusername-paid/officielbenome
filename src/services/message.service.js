@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { MESSAGING_CONFIG, MESSAGING_FALLBACKS, MESSAGING_ERROR_MESSAGES } from '@/config/messaging';
 
 // ============================================================================
 // SERVICE MESSAGERIE
@@ -159,26 +160,64 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
             let participant2 = null;
 
             if (participant1Id) {
-              const { data: user1, error: user1Error } = await supabase
-                .from('users')
-                .select('id, first_name, last_name, avatar_url')
-                .eq('id', participant1Id)
-                .single();
-              
-              if (!user1Error && user1) {
-                participant1 = user1;
+              try {
+                const { data: user1, error: user1Error } = await supabase
+                  .from('users')
+                  .select('id, first_name, last_name, avatar_url')
+                  .eq('id', participant1Id)
+                  .single();
+                
+                if (!user1Error && user1) {
+                  participant1 = user1;
+                } else {
+                  console.warn('Utilisateur 1 non trouvé:', participant1Id, user1Error);
+                  // Créer un utilisateur par défaut pour éviter les erreurs
+                  participant1 = {
+                    id: participant1Id,
+                    first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
+                    last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
+                    avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                  };
+                }
+              } catch (error) {
+                console.warn('Erreur lors de la récupération de l\'utilisateur 1:', error);
+                participant1 = {
+                  id: participant1Id,
+                  first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
+                  last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
+                  avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                };
               }
             }
 
             if (participant2Id) {
-              const { data: user2, error: user2Error } = await supabase
-                .from('users')
-                .select('id, first_name, last_name, avatar_url')
-                .eq('id', participant2Id)
-                .single();
-              
-              if (!user2Error && user2) {
-                participant2 = user2;
+              try {
+                const { data: user2, error: user2Error } = await supabase
+                  .from('users')
+                  .select('id, first_name, last_name, avatar_url')
+                  .eq('id', participant2Id)
+                  .single();
+                
+                if (!user2Error && user2) {
+                  participant2 = user2;
+                } else {
+                  console.warn('Utilisateur 2 non trouvé:', participant2Id, user2Error);
+                  // Créer un utilisateur par défaut pour éviter les erreurs
+                  participant2 = {
+                    id: participant2Id,
+                    first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
+                    last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
+                    avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                  };
+                }
+              } catch (error) {
+                console.warn('Erreur lors de la récupération de l\'utilisateur 2:', error);
+                participant2 = {
+                  id: participant2Id,
+                  first_name: MESSAGING_FALLBACKS.DEFAULT_USER.first_name,
+                  last_name: MESSAGING_FALLBACKS.DEFAULT_USER.last_name,
+                  avatar_url: MESSAGING_FALLBACKS.DEFAULT_USER.avatar_url
+                };
               }
             }
 

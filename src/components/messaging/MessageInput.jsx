@@ -61,6 +61,58 @@ const MessageInput = ({
     }
   };
 
+  // Gérer la capture de photo
+  const handleCameraCapture = (capturedImage) => {
+    // Convertir l'image capturée en File object
+    const file = new File([capturedImage.blob], `photo_${Date.now()}.jpg`, {
+      type: 'image/jpeg',
+      lastModified: Date.now()
+    });
+    
+    if (onAttachment) {
+      onAttachment([file]);
+    }
+  };
+
+  // Gérer la sélection de fichiers
+  const handleFileSelection = (selectedFiles) => {
+    if (onAttachment) {
+      onAttachment(selectedFiles);
+    }
+  };
+
+  // Gérer la sélection de localisation
+  const handleLocationSelect = (location) => {
+    // Créer un message avec la localisation
+    const locationMessage = `📍 Localisation partagée\nLat: ${location.latitude.toFixed(6)}\nLng: ${location.longitude.toFixed(6)}${location.name ? `\nLieu: ${location.name}` : ''}`;
+    
+    if (onAttachment) {
+      // Créer un objet de localisation pour l'attachement
+      const locationAttachment = {
+        type: 'location',
+        data: location,
+        message: locationMessage
+      };
+      onAttachment([locationAttachment]);
+    }
+  };
+
+  // Gérer la création de rendez-vous
+  const handleAppointmentCreate = (appointment) => {
+    // Créer un message avec le rendez-vous
+    const appointmentMessage = `📅 Rendez-vous planifié\nTitre: ${appointment.title}\nDate: ${new Date(appointment.date).toLocaleDateString('fr-FR')}\nHeure: ${appointment.time}${appointment.location ? `\nLieu: ${appointment.location}` : ''}${appointment.description ? `\nDescription: ${appointment.description}` : ''}`;
+    
+    if (onAttachment) {
+      // Créer un objet de rendez-vous pour l'attachement
+      const appointmentAttachment = {
+        type: 'appointment',
+        data: appointment,
+        message: appointmentMessage
+      };
+      onAttachment([appointmentAttachment]);
+    }
+  };
+
   const quickActions = [
     { icon: Image, label: 'Photo', action: () => setShowFileUpload(true) },
     { icon: Camera, label: 'Caméra', action: () => setShowCamera(true) },
@@ -201,58 +253,6 @@ const MessageInput = ({
       />
     </div>
   );
-
-  // Gérer la capture de photo
-  const handleCameraCapture = (capturedImage) => {
-    // Convertir l'image capturée en File object
-    const file = new File([capturedImage.blob], `photo_${Date.now()}.jpg`, {
-      type: 'image/jpeg',
-      lastModified: Date.now()
-    });
-    
-    if (onAttachment) {
-      onAttachment([file]);
-    }
-  };
-
-  // Gérer la sélection de fichiers
-  const handleFileSelection = (selectedFiles) => {
-    if (onAttachment) {
-      onAttachment(selectedFiles);
-    }
-  };
-
-  // Gérer la sélection de localisation
-  const handleLocationSelect = (location) => {
-    // Créer un message avec la localisation
-    const locationMessage = `📍 Localisation partagée\nLat: ${location.latitude.toFixed(6)}\nLng: ${location.longitude.toFixed(6)}${location.name ? `\nLieu: ${location.name}` : ''}`;
-    
-    if (onAttachment) {
-      // Créer un objet de localisation pour l'attachement
-      const locationAttachment = {
-        type: 'location',
-        data: location,
-        message: locationMessage
-      };
-      onAttachment([locationAttachment]);
-    }
-  };
-
-  // Gérer la création de rendez-vous
-  const handleAppointmentCreate = (appointment) => {
-    // Créer un message avec le rendez-vous
-    const appointmentMessage = `📅 Rendez-vous planifié\nTitre: ${appointment.title}\nDate: ${new Date(appointment.date).toLocaleDateString('fr-FR')}\nHeure: ${appointment.time}${appointment.location ? `\nLieu: ${appointment.location}` : ''}${appointment.description ? `\nDescription: ${appointment.description}` : ''}`;
-    
-    if (onAttachment) {
-      // Créer un objet de rendez-vous pour l'attachement
-      const appointmentAttachment = {
-        type: 'appointment',
-        data: appointment,
-        message: appointmentMessage
-      };
-      onAttachment([appointmentAttachment]);
-    }
-  };
 };
 
 export default MessageInput;

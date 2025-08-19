@@ -171,6 +171,48 @@ const MessageDebugger = ({
         }));
       }
 
+      // Test 6: Vérifier les erreurs Supabase
+      setCurrentTest('Test 6: Vérification Supabase');
+      try {
+        const { supabase } = await import('@/lib/supabase');
+        if (supabase) {
+          setDebugInfo(prev => ({
+            ...prev,
+            info: [...prev.info, '✅ Client Supabase disponible']
+          }));
+        }
+      } catch (error) {
+        setDebugInfo(prev => ({
+          ...prev,
+          errors: [...prev.errors, {
+            type: 'supabaseError',
+            message: `Erreur client Supabase: ${error.message}`,
+            timestamp: new Date().toISOString()
+          }]
+        }));
+      }
+
+      // Test 7: Vérifier les hooks de messagerie
+      setCurrentTest('Test 7: Hooks de messagerie');
+      try {
+        const { useConversations } = await import('@/hooks/useMessages');
+        if (useConversations) {
+          setDebugInfo(prev => ({
+            ...prev,
+            info: [...prev.info, '✅ Hook useConversations disponible']
+          }));
+        }
+      } catch (error) {
+        setDebugInfo(prev => ({
+          ...prev,
+          errors: [...prev.errors, {
+            type: 'hookError',
+            message: `Erreur hook useConversations: ${error.message}`,
+            timestamp: new Date().toISOString()
+          }]
+        }));
+      }
+
     } catch (error) {
       setDebugInfo(prev => ({
         ...prev,
@@ -403,6 +445,115 @@ const MessageDebugger = ({
             <div className="action-item">
               <strong>4. Redémarrer l'application :</strong>
               <p>Parfois, un redémarrage peut résoudre les problèmes de variables non définies.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Diagnostic des erreurs de messagerie */}
+      {debugInfo.errors.some(e => e.type === 'supabaseError' || e.type === 'hookError') && (
+        <div className="messaging-errors">
+          <h4 className="text-md font-medium mb-3">🔧 Diagnostic des erreurs de messagerie</h4>
+          
+          <div className="error-categories">
+            {/* Erreurs Supabase */}
+            {debugInfo.errors.filter(e => e.type === 'supabaseError').length > 0 && (
+              <div className="error-category">
+                <h5 className="text-sm font-medium text-red-600 mb-2">❌ Erreurs Supabase</h5>
+                <div className="error-solutions">
+                  <p><strong>Problème :</strong> Erreurs de connexion à la base de données</p>
+                  <ul className="list-disc list-inside ml-4 text-sm">
+                    <li>Vérifier les variables d'environnement Supabase</li>
+                    <li>S'assurer que la base de données est accessible</li>
+                    <li>Vérifier les politiques RLS (Row Level Security)</li>
+                    <li>Contrôler la structure des tables</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Erreurs de hooks */}
+            {debugInfo.errors.filter(e => e.type === 'hookError').length > 0 && (
+              <div className="error-category">
+                <h5 className="text-sm font-medium text-orange-600 mb-2">⚠️ Erreurs de hooks</h5>
+                <div className="error-solutions">
+                  <p><strong>Problème :</strong> Hooks de messagerie non disponibles</p>
+                  <ul className="list-disc list-inside ml-4 text-sm">
+                    <li>Vérifier l'import des hooks depuis @/hooks/useMessages</li>
+                    <li>S'assurer que les services sont correctement exportés</li>
+                    <li>Vérifier la configuration de React Query</li>
+                    <li>Contrôler les dépendances du projet</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Erreurs de composants */}
+            {debugInfo.errors.filter(e => e.type === 'componentError').length > 0 && (
+              <div className="error-category">
+                <h5 className="text-sm font-medium text-yellow-600 mb-2">⚠️ Erreurs de composants</h5>
+                <div className="error-solutions">
+                  <p><strong>Problème :</strong> Composants de messagerie non chargés</p>
+                  <ul className="list-disc list-inside ml-4 text-sm">
+                    <li>Vérifier les chemins d'import des composants</li>
+                    <li>S'assurer que tous les composants existent</li>
+                    <li>Vérifier les dépendances des composants</li>
+                    <li>Contrôler la syntaxe des composants</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions de résolution */}
+          <div className="resolution-actions mt-4">
+            <h5 className="text-sm font-medium text-blue-600 mb-2">🛠️ Actions de résolution</h5>
+            <div className="actions-grid grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="text-xs"
+              >
+                🔄 Recharger la page
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.reload();
+                }}
+                className="text-xs"
+              >
+                🗑️ Vider le cache et recharger
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  // Ouvrir la console du navigateur
+                  console.log('🔧 Ouvrez la console du navigateur (F12) pour plus de détails');
+                }}
+                className="text-xs"
+              >
+                📋 Ouvrir la console
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  // Exporter les informations de débogage
+                  exportDebugInfo();
+                }}
+                className="text-xs"
+              >
+                📤 Exporter le diagnostic
+              </Button>
             </div>
           </div>
         </div>
