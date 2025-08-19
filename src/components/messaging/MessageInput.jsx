@@ -15,6 +15,11 @@ import {
   Phone,
   Video
 } from 'lucide-react';
+import CameraCapture from './CameraCapture';
+import FileUpload from './FileUpload';
+import LocationPicker from './LocationPicker';
+import AppointmentScheduler from './AppointmentScheduler';
+import AudioCallInterface from './AudioCallInterface';
 
 const MessageInput = ({
   value,
@@ -29,6 +34,11 @@ const MessageInput = ({
   showActions = true
 }) => {
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showAppointmentScheduler, setShowAppointmentScheduler] = useState(false);
+  const [showAudioCall, setShowAudioCall] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleSend = () => {
@@ -52,13 +62,13 @@ const MessageInput = ({
   };
 
   const quickActions = [
-    { icon: Image, label: 'Photo', action: () => fileInputRef.current?.click() },
-    { icon: Camera, label: 'Caméra', action: onCamera },
-    { icon: File, label: 'Document', action: () => fileInputRef.current?.click() },
-    { icon: MapPin, label: 'Localisation', action: () => console.log('Localisation') },
-    { icon: Calendar, label: 'Rendez-vous', action: () => console.log('Rendez-vous') },
-    { icon: Phone, label: 'Appel', action: () => console.log('Appel') },
-    { icon: Video, label: 'Vidéo', action: () => console.log('Vidéo') }
+    { icon: Image, label: 'Photo', action: () => setShowFileUpload(true) },
+    { icon: Camera, label: 'Caméra', action: () => setShowCamera(true) },
+    { icon: File, label: 'Document', action: () => setShowFileUpload(true) },
+    { icon: MapPin, label: 'Localisation', action: () => setShowLocationPicker(true) },
+    { icon: Calendar, label: 'Rendez-vous', action: () => setShowAppointmentScheduler(true) },
+    { icon: Phone, label: 'Appel', action: () => setShowAudioCall(true) },
+    { icon: Video, label: 'Vidéo', action: () => console.log('Vidéo - Phase 3') }
   ];
 
   return (
@@ -156,8 +166,93 @@ const MessageInput = ({
           Appuyez sur Entrée pour envoyer, Shift+Entrée pour une nouvelle ligne
         </div>
       )}
+
+      {/* Composants modaux */}
+      <CameraCapture
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={handleCameraCapture}
+      />
+      
+      <FileUpload
+        isOpen={showFileUpload}
+        onClose={() => setShowFileUpload(false)}
+        onFilesSelected={handleFileSelection}
+      />
+
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onLocationSelect={handleLocationSelect}
+      />
+
+      <AppointmentScheduler
+        isOpen={showAppointmentScheduler}
+        onClose={() => setShowAppointmentScheduler(false)}
+        onAppointmentCreate={handleAppointmentCreate}
+      />
+
+      <AudioCallInterface
+        isOpen={showAudioCall}
+        onClose={() => setShowAudioCall(false)}
+        targetUser={{ id: 'user123', name: 'Utilisateur Test', email: 'test@example.com' }}
+        currentUser={{ id: 'currentUser', name: 'Moi' }}
+        roomId="room123"
+      />
     </div>
   );
+
+  // Gérer la capture de photo
+  const handleCameraCapture = (capturedImage) => {
+    // Convertir l'image capturée en File object
+    const file = new File([capturedImage.blob], `photo_${Date.now()}.jpg`, {
+      type: 'image/jpeg',
+      lastModified: Date.now()
+    });
+    
+    if (onAttachment) {
+      onAttachment([file]);
+    }
+  };
+
+  // Gérer la sélection de fichiers
+  const handleFileSelection = (selectedFiles) => {
+    if (onAttachment) {
+      onAttachment(selectedFiles);
+    }
+  };
+
+  // Gérer la sélection de localisation
+  const handleLocationSelect = (location) => {
+    // Créer un message avec la localisation
+    const locationMessage = `📍 Localisation partagée\nLat: ${location.latitude.toFixed(6)}\nLng: ${location.longitude.toFixed(6)}${location.name ? `\nLieu: ${location.name}` : ''}`;
+    
+    if (onAttachment) {
+      // Créer un objet de localisation pour l'attachement
+      const locationAttachment = {
+        type: 'location',
+        data: location,
+        message: locationMessage
+      };
+      onAttachment([locationAttachment]);
+    }
+  };
+
+  // Gérer la création de rendez-vous
+  const handleAppointmentCreate = (appointment) => {
+    // Créer un message avec le rendez-vous
+    const appointmentMessage = `📅 Rendez-vous planifié\nTitre: ${appointment.title}\nDate: ${new Date(appointment.date).toLocaleDateString('fr-FR')}\nHeure: ${appointment.time}${appointment.location ? `\nLieu: ${appointment.location}` : ''}${appointment.description ? `\nDescription: ${appointment.description}` : ''}`;
+    
+    if (onAttachment) {
+      // Créer un objet de rendez-vous pour l'attachement
+      const appointmentAttachment = {
+        type: 'appointment',
+        data: appointment,
+        message: appointmentMessage
+      };
+      onAttachment([appointmentAttachment]);
+    }
+  };
 };
 
 export default MessageInput;

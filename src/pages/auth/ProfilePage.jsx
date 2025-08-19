@@ -877,30 +877,17 @@ const ProfilePage = () => {
               </CardContent>
             </Card>
 
-            {/* Section Déconnexion */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Déconnexion</CardTitle>
-                <CardDescription>
-                  Déconnectez-vous de votre compte en toute sécurité
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Vous serez redirigé vers la page d'accueil après la déconnexion.
-                  </p>
-                  <Button
-                    onClick={handleLogout}
-                    variant="destructive"
-                    className="w-full"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Se déconnecter
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Bouton Déconnexion */}
+            <div className="mt-6">
+              <Button
+                onClick={handleLogout}
+                variant="destructive"
+                className="w-full"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Se déconnecter
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
