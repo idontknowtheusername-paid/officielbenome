@@ -72,6 +72,9 @@ const MessagingPageContent = () => {
   const [newMessage, setNewMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState(null);
+  const [selectedMessages, setSelectedMessages] = useState(new Set());
+  const [isMessageSelectionMode, setIsMessageSelectionMode] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState(null);
 
   // Utiliser le hook de chat en temps réel
   useRealtimeMessages(selectedConversation?.id);
@@ -429,6 +432,82 @@ const MessagingPageContent = () => {
     setShowDeleteConfirm(true);
   };
 
+  // Gestion de la sélection multiple de messages
+  const handleMessageLongPress = (messageId) => {
+    setIsMessageSelectionMode(true);
+    setSelectedMessages(new Set([messageId]));
+  };
+
+  const handleMessagePress = (messageId) => {
+    if (isMessageSelectionMode) {
+      setSelectedMessages(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(messageId)) {
+          newSet.delete(messageId);
+        } else {
+          newSet.add(messageId);
+        }
+        return newSet;
+      });
+    }
+  };
+
+  const handleMessageSelection = (messageId) => {
+    if (isMessageSelectionMode) {
+      handleMessagePress(messageId);
+    }
+  };
+
+  const clearMessageSelection = () => {
+    setSelectedMessages(new Set());
+    setIsMessageSelectionMode(false);
+  };
+
+  const selectAllMessages = () => {
+    const allMessageIds = messages.map(msg => msg.id);
+    setSelectedMessages(new Set(allMessageIds));
+  };
+
+  const selectOwnMessages = () => {
+    const ownMessageIds = messages.filter(msg => msg.sender_id === user?.id).map(msg => msg.id);
+    setSelectedMessages(new Set(ownMessageIds));
+  };
+
+  // Supprimer les messages sélectionnés
+  const handleDeleteSelectedMessages = async () => {
+    if (selectedMessages.size === 0) return;
+
+    try {
+      // Supprimer chaque message sélectionné
+      const deletePromises = Array.from(selectedMessages).map(messageId => 
+        messageService.deleteMessage(messageId)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      // Mettre à jour l'interface
+      setMessages(prev => prev.filter(msg => !selectedMessages.has(msg.id)));
+      clearMessageSelection();
+      
+      toast({
+        title: "Messages supprimés",
+        description: `${selectedMessages.size} message(s) supprimé(s) avec succès`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer certains messages",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Confirmer la suppression des messages sélectionnés
+  const confirmDeleteSelectedMessages = () => {
+    if (selectedMessages.size === 0) return;
+    // La modal de confirmation s'affichera automatiquement
+  };
+
   // Gestion des erreurs
   if (error) {
     return (
@@ -618,6 +697,63 @@ const MessagingPageContent = () => {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Barre d'actions pour la sélection multiple */}
+              {isMessageSelectionMode && (
+                <div className="sticky top-0 bg-card border border-border rounded-lg p-3 mb-4 shadow-sm z-10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-foreground">
+                        {selectedMessages.size} message(s) sélectionné(s)
+                      </span>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={selectAllMessages}
+                          className="text-xs"
+                        >
+                          Tout sélectionner
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={selectOwnMessages}
+                          className="text-xs"
+                        >
+                          Mes messages
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearMessageSelection}
+                        className="text-xs"
+                      >
+                        Annuler
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={confirmDeleteSelectedMessages}
+                        className="text-xs"
+                        disabled={selectedMessages.size === 0}
+                      >
+                        Supprimer ({selectedMessages.size})
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Instruction pour l'appui long */}
+              {!isMessageSelectionMode && messages.length > 0 && (
+                <div className="text-center text-xs text-muted-foreground mb-4 p-2 bg-muted/30 rounded-lg">
+                  💡 <strong>Appui long</strong> sur un message pour activer la sélection multiple
+                </div>
+              )}
+
               {isLoadingMessages ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -635,6 +771,10 @@ const MessagingPageContent = () => {
                     participant1={selectedConversation.participant1}
                     participant2={selectedConversation.participant2}
                     currentUserId={user?.id}
+                    onLongPress={() => handleMessageLongPress(message.id)}
+                    onPress={() => handleMessageSelection(message.id)}
+                    isSelected={selectedMessages.has(message.id)}
+                    isSelectionMode={isMessageSelectionMode}
                   />
                 ))
               )}
@@ -697,6 +837,35 @@ const MessagingPageContent = () => {
                 disabled={deleteConversationMutation.isLoading}
               >
                 {deleteConversationMutation.isLoading ? 'Suppression...' : 'Supprimer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmation de suppression des messages */}
+      {isMessageSelectionMode && selectedMessages.size > 0 && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirmer la suppression</h3>
+            <p className="text-muted-foreground mb-6">
+              Êtes-vous sûr de vouloir supprimer définitivement {selectedMessages.size} message(s) ? 
+              Cette action ne peut pas être annulée.
+            </p>
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={clearMessageSelection}
+                className="flex-1"
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelectedMessages}
+                className="flex-1"
+              >
+                Supprimer ({selectedMessages.size})
               </Button>
             </div>
           </div>
@@ -839,7 +1008,19 @@ const ConversationItem = ({
 };
 
 // Composant pour afficher une bulle de message
-const MessageBubble = ({ message, isOwn, participant1, participant2, currentUserId }) => {
+const MessageBubble = ({ 
+  message, 
+  isOwn, 
+  participant1, 
+  participant2, 
+  currentUserId,
+  onLongPress,
+  onPress,
+  isSelected = false,
+  isSelectionMode = false
+}) => {
+  const [longPressTimer, setLongPressTimer] = useState(null);
+
   const formatTime = (dateString) => {
     if (!dateString) return 'À l\'instant';
     
@@ -857,8 +1038,36 @@ const MessageBubble = ({ message, isOwn, participant1, participant2, currentUser
   // Déterminer l'expéditeur du message
   const messageSender = message.sender_id === participant1?.id ? participant1 : participant2;
 
+  // Gestion des événements tactiles
+  const handleTouchStart = () => {
+    if (onLongPress) {
+      const timer = setTimeout(() => {
+        onLongPress();
+      }, 500); // 500ms pour l'appui long
+      setLongPressTimer(timer);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const handleClick = () => {
+    if (onPress) {
+      onPress();
+    }
+  };
+
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} space-x-2`}>
+    <div 
+      className={`flex ${isOwn ? 'justify-end' : 'justify-start'} space-x-2`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onClick={handleClick}
+    >
       {/* Avatar de l'expéditeur (seulement pour les messages des autres) */}
       {!isOwn && (
         <UserAvatar 
@@ -869,12 +1078,22 @@ const MessageBubble = ({ message, isOwn, participant1, participant2, currentUser
       )}
       
       <div className={`
-        max-w-xs lg:max-w-md px-4 py-2 rounded-lg
+        relative max-w-xs lg:max-w-md px-4 py-2 rounded-lg cursor-pointer
+        transition-all duration-200
         ${isOwn 
           ? 'bg-primary text-primary-foreground' 
           : 'bg-muted text-muted-foreground'
         }
+        ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
+        ${isSelectionMode ? 'hover:ring-2 hover:ring-primary/50' : ''}
       `}>
+        {/* Indicateur de sélection */}
+        {isSelected && (
+          <div className="absolute -top-2 -right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+            <span className="text-primary-foreground text-xs">✓</span>
+          </div>
+        )}
+        
         <div className="flex items-center space-x-2 mb-1">
           {!isOwn && (
             <span className="text-xs font-medium">
@@ -909,4 +1128,4 @@ const MessagingPage = () => {
   );
 };
 
-export default MessagingPage; 
+export default MessagingPage;
