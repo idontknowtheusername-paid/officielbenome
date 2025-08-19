@@ -11,7 +11,6 @@ import {
   Search, 
   Filter, 
   Phone, 
-  Video, 
   MoreVertical,
   User,
   Star,
@@ -42,7 +41,8 @@ import {
 import { 
   MobileMessagingNav, 
   MessagingSearch, 
-  MessageInput 
+  MessageInput,
+  AudioCallInterface
 } from '@/components/messaging';
 import { UserAvatar } from '@/components/ui';
 
@@ -75,6 +75,8 @@ const MessagingPageContent = () => {
   const [selectedMessages, setSelectedMessages] = useState(new Set());
   const [isMessageSelectionMode, setIsMessageSelectionMode] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState(null);
+  const [showAudioCall, setShowAudioCall] = useState(false);
+  const [audioCallTarget, setAudioCallTarget] = useState(null);
 
   // Utiliser le hook de chat en temps réel
   useRealtimeMessages(selectedConversation?.id);
@@ -231,10 +233,7 @@ const MessagingPageContent = () => {
       // Rafraîchir les conversations pour mettre à jour last_message_at
       refetch();
       
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été envoyé avec succès",
-      });
+      // Pas de notification toast pour les messages envoyés par l'utilisateur
     } catch (error) {
       console.error('Erreur envoi message:', error);
       toast({
@@ -248,34 +247,41 @@ const MessagingPageContent = () => {
   // Gérer les pièces jointes
   const handleAttachment = (files) => {
     console.log('Fichiers sélectionnés:', files);
-    toast({
-      title: "Pièces jointes",
-      description: `${files.length} fichier(s) sélectionné(s)`,
-    });
+    // Pas de notification toast pour les pièces jointes sélectionnées
   };
 
   // Gérer les emojis
   const handleEmoji = () => {
-    toast({
-      title: "Emojis",
-      description: "Sélecteur d'emojis à implémenter",
-    });
+    // Pas de notification toast pour les emojis
   };
 
-  // Gérer l'appel
+  // Gérer l'appel audio
   const handleCall = () => {
-    toast({
-      title: "Appel",
-      description: "Fonctionnalité d'appel à implémenter",
-    });
+    if (!selectedConversation) return;
+    
+    const otherParticipant = selectedConversation.participant1_id === user?.id 
+      ? selectedConversation.participant2 
+      : selectedConversation.participant1;
+    
+    if (!otherParticipant) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de déterminer l'interlocuteur",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setAudioCallTarget(otherParticipant);
+    setShowAudioCall(true);
+    
+    // Pas de notification toast pour l'initialisation des appels audio
   };
 
-  // Gérer la vidéo
-  const handleVideo = () => {
-    toast({
-      title: "Vidéo",
-      description: "Fonctionnalité de vidéo à implémenter",
-    });
+  // Fermer l'interface d'appel
+  const handleCloseAudioCall = () => {
+    setShowAudioCall(false);
+    setAudioCallTarget(null);
   };
 
   // Filtrer les conversations
@@ -354,10 +360,7 @@ const MessagingPageContent = () => {
     try {
       await messageService.markMessagesAsRead(conversation.id);
       refetch();
-      toast({
-        title: "Messages marqués comme lus",
-        description: "Les messages ont été marqués comme lus",
-      });
+      // Pas de notification toast pour le marquage automatique des messages comme lus
     } catch (error) {
       toast({
         title: "Erreur",
@@ -372,10 +375,7 @@ const MessagingPageContent = () => {
       const newStarredState = !conversation.starred;
       await messageService.toggleConversationStar(conversation.id, newStarredState);
       refetch();
-      toast({
-        title: newStarredState ? "Ajouté aux favoris" : "Retiré des favoris",
-        description: newStarredState ? "Conversation ajoutée à vos favoris" : "Conversation retirée de vos favoris",
-      });
+      // Pas de notification toast pour les changements de favoris (interface mise à jour visuellement)
     } catch (error) {
       toast({
         title: "Erreur",
@@ -389,10 +389,7 @@ const MessagingPageContent = () => {
     try {
       await messageService.archiveConversation(conversation.id);
       refetch();
-      toast({
-        title: "Conversation archivée",
-        description: "La conversation a été archivée",
-      });
+      // Pas de notification toast pour l'archivage (interface mise à jour visuellement)
     } catch (error) {
       toast({
         title: "Erreur",
@@ -539,7 +536,7 @@ const MessagingPageContent = () => {
         onFilter={() => setShowMobileMenu(false)}
         onMore={() => console.log('Plus d\'options')}
         onCall={handleCall}
-        onVideo={handleVideo}
+        onVideo={() => console.log('Video')}
         unreadCount={stats.unread}
       />
 
@@ -662,9 +659,6 @@ const MessagingPageContent = () => {
                 <div className="flex items-center space-x-2">
                   <Button variant="ghost" size="sm" onClick={handleCall}>
                     <Phone className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={handleVideo}>
-                    <Video className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -870,6 +864,17 @@ const MessagingPageContent = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Interface d'appel audio */}
+      {showAudioCall && audioCallTarget && (
+        <AudioCallInterface
+          isOpen={showAudioCall}
+          onClose={handleCloseAudioCall}
+          targetUser={audioCallTarget}
+          currentUser={user}
+          roomId={`call-${user?.id}-${audioCallTarget.id}`}
+        />
       )}
     </div>
   );
