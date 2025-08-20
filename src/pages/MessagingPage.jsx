@@ -46,6 +46,7 @@ import {
   AudioCallInterface
 } from '@/components/messaging';
 import { UserAvatar } from '@/components/ui';
+import AssistantAvatar from '@/components/messaging/AssistantAvatar';
 
 // Configuration du client React Query
 const queryClient = new QueryClient({
@@ -924,6 +925,10 @@ const ConversationItem = ({
     ? conversation.participant2 
     : conversation.participant1;
 
+  // Détecter si c'est la conversation de l'assistant
+  const isAssistantConversation = conversation.participant1_id === '00000000-0000-0000-0000-000000000000' ||
+                                 conversation.participant2_id === '00000000-0000-0000-0000-000000000000';
+
   const formatTime = (dateString) => {
     if (!dateString) return 'À l\'instant';
     
@@ -949,19 +954,34 @@ const ConversationItem = ({
   return (
     <div
       className={`
-        group p-4 cursor-pointer transition-colors hover:bg-accent
+        group p-4 cursor-pointer transition-colors hover:bg-accent relative
         ${isSelected ? 'bg-primary/10 border-r-2 border-primary' : ''}
         ${hasUnreadMessages ? 'bg-primary/10' : ''}
+        ${isAssistantConversation ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500' : ''}
       `}
       onClick={onSelect}
     >
+      {/* Badge spécial pour l'assistant */}
+      {isAssistantConversation && (
+        <div className="absolute top-2 right-2">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">
+            🤖 Assistant
+          </div>
+        </div>
+      )}
+
       <div className="flex items-start space-x-3">
         <div className="relative">
-          <UserAvatar 
-            user={otherParticipant} 
-            size="default"
-            className="flex-shrink-0"
-          />
+          {/* Utiliser l'avatar spécial pour l'assistant */}
+          {isAssistantConversation ? (
+            <AssistantAvatar size="default" className="flex-shrink-0" />
+          ) : (
+            <UserAvatar 
+              user={otherParticipant} 
+              size="default"
+              className="flex-shrink-0"
+            />
+          )}
           {hasUnreadMessages && (
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full"></div>
           )}
@@ -970,7 +990,10 @@ const ConversationItem = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <h4 className="font-medium text-sm truncate">
-              {otherParticipant ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur'}
+              {isAssistantConversation 
+                ? 'Assistant MaxiMarket' 
+                : (otherParticipant ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur')
+              }
             </h4>
             <div className="flex items-center space-x-2">
               {conversation.starred && (
@@ -988,7 +1011,7 @@ const ConversationItem = ({
           
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              {conversation.listing?.title || 'Conversation'}
+              {isAssistantConversation ? 'Support et assistance' : (conversation.listing?.title || 'Conversation')}
             </span>
             <div className="flex items-center space-x-1">
               {hasUnreadMessages && (
@@ -1051,6 +1074,9 @@ const MessageBubble = ({
 }) => {
   const [longPressTimer, setLongPressTimer] = useState(null);
 
+  // Détecter si c'est un message de l'assistant
+  const isAssistantMessage = message.sender_id === '00000000-0000-0000-0000-000000000000';
+
   const formatTime = (dateString) => {
     if (!dateString) return 'À l\'instant';
     
@@ -1100,11 +1126,15 @@ const MessageBubble = ({
     >
       {/* Avatar de l'expéditeur (seulement pour les messages des autres) */}
       {!isOwn && (
-        <UserAvatar 
-          user={messageSender} 
-          size="sm"
-          className="flex-shrink-0 mt-1"
-        />
+        isAssistantMessage ? (
+          <AssistantAvatar size="sm" className="flex-shrink-0 mt-1" />
+        ) : (
+          <UserAvatar 
+            user={messageSender} 
+            size="sm"
+            className="flex-shrink-0 mt-1"
+          />
+        )
       )}
       
       <div className={`
@@ -1112,7 +1142,9 @@ const MessageBubble = ({
         transition-all duration-200
         ${isOwn 
           ? 'bg-primary text-primary-foreground' 
-          : 'bg-muted text-muted-foreground'
+          : isAssistantMessage
+            ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800 border border-blue-200'
+            : 'bg-muted text-muted-foreground'
         }
         ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
         ${isSelectionMode ? 'hover:ring-2 hover:ring-primary/50' : ''}
@@ -1126,8 +1158,11 @@ const MessageBubble = ({
         
         <div className="flex items-center space-x-2 mb-1">
           {!isOwn && (
-            <span className="text-xs font-medium">
-              {messageSender ? `${messageSender.first_name || ''} ${messageSender.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur'}
+            <span className={`text-xs font-medium ${isAssistantMessage ? 'text-blue-600' : ''}`}>
+              {isAssistantMessage 
+                ? '🤖 Assistant MaxiMarket' 
+                : (messageSender ? `${messageSender.first_name || ''} ${messageSender.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur')
+              }
             </span>
           )}
           <span className="text-xs opacity-75">

@@ -7,6 +7,7 @@ export { default as LocationPicker } from './LocationPicker';
 export { default as AppointmentScheduler } from './AppointmentScheduler';
 export { default as InteractiveMap } from './InteractiveMap';
 export { default as AudioCallInterface } from './AudioCallInterface';
+export { default as AssistantAvatar } from './AssistantAvatar';
 
 // Phase 4 : Polish, Optimisation et Déploiement
 export { default as AccessibilityEnhancer } from './AccessibilityEnhancer';

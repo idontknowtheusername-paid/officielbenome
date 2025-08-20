@@ -7,8 +7,35 @@ import { MESSAGING_CONFIG, MESSAGING_FALLBACKS, MESSAGING_ERROR_MESSAGES } from 
 
 // Fonction pour ajouter le message de bienvenue
 const addWelcomeMessage = async (userId) => {
-  const welcomeMessage = {
-    content: `🤖 Bienvenue sur MaxiMarket !
+  try {
+    console.log('🔍 Création de la conversation de bienvenue pour l\'utilisateur:', userId);
+    
+    // 1. CRÉER une vraie conversation avec l'assistant
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .insert([{
+        participant1_id: '00000000-0000-0000-0000-000000000000', // Assistant
+        participant2_id: userId, // Utilisateur
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (convError) {
+      console.error('❌ Erreur création conversation de bienvenue:', convError);
+      throw convError;
+    }
+
+    console.log('✅ Conversation de bienvenue créée:', conversation.id);
+
+    // 2. AJOUTER le message de bienvenue dans cette conversation
+    const welcomeMessage = {
+      conversation_id: conversation.id,
+      sender_id: '00000000-0000-0000-0000-000000000000',
+      receiver_id: userId,
+      content: `🤖 Bienvenue sur MaxiMarket !
 
 Votre marketplace de confiance pour l'Afrique de l'Ouest.
 
@@ -22,28 +49,26 @@ Votre marketplace de confiance pour l'Afrique de l'Ouest.
 💬 Support 24/7 disponible
 
 Besoin d'aide ? Je suis là pour vous accompagner !`,
-    message_type: 'system',
-    sender_id: '00000000-0000-0000-0000-000000000000', // ID système pour l'assistant
-    receiver_id: userId,
-    is_read: false,
-    created_at: new Date().toISOString()
-  };
+      message_type: 'system',
+      is_read: false,
+      created_at: new Date().toISOString()
+    };
 
-  try {
-    const { data, error } = await supabase
+    const { data: message, error: msgError } = await supabase
       .from('messages')
       .insert([welcomeMessage])
       .select()
       .single();
 
-    if (error) {
-      console.error('Erreur ajout message de bienvenue:', error);
-      return null;
+    if (msgError) {
+      console.error('❌ Erreur ajout message de bienvenue:', msgError);
+      throw msgError;
     }
 
-    return data;
+    console.log('✅ Message de bienvenue ajouté:', message.id);
+    return conversation;
   } catch (error) {
-    console.error('Erreur ajout message de bienvenue:', error);
+    console.error('❌ Erreur création conversation de bienvenue:', error);
     return null;
   }
 };
@@ -83,7 +108,7 @@ export const messageService = {
 
       // Si aucune conversation, créer un message de bienvenue et retourner un message système
       if (!conversations || conversations.length === 0) {
-        console.log('Aucune conversation trouvée, ajout du message de bienvenue...');
+        console.log('Aucune conversation trouvée, création de la conversation de bienvenue...');
         
         // Vérifier si l'utilisateur a déjà reçu le message de bienvenue
         const { data: existingWelcome, error: welcomeError } = await supabase
@@ -100,17 +125,16 @@ export const messageService = {
 
         // Si pas de message de bienvenue, l'ajouter
         if (!existingWelcome || existingWelcome.length === 0) {
-          console.log('Ajout du message de bienvenue pour l\'utilisateur:', user.id);
-          await addWelcomeMessage(user.id);
-        } else {
-          console.log('Message de bienvenue déjà existant pour l\'utilisateur:', user.id);
-        }
-
-        // Retourner un message système pour l'affichage
-        return [{
-          id: 'welcome-message',
-          type: 'system',
-          content: `🤖 Bienvenue sur MaxiMarket !
+          console.log('Création de la conversation de bienvenue pour l\'utilisateur:', user.id);
+          const welcomeConversation = await addWelcomeMessage(user.id);
+          
+          if (welcomeConversation) {
+            // Retourner la conversation de bienvenue formatée comme une vraie conversation
+            return [{
+              ...welcomeConversation,
+              messages: [{
+                id: 'welcome-msg',
+                content: `🤖 Bienvenue sur MaxiMarket !
 
 Votre marketplace de confiance pour l'Afrique de l'Ouest.
 
@@ -124,15 +148,77 @@ Votre marketplace de confiance pour l'Afrique de l'Ouest.
 💬 Support 24/7 disponible
 
 Besoin d'aide ? Je suis là pour vous accompagner !`,
-          sender: {
-            id: '00000000-0000-0000-0000-000000000000',
-            first_name: 'Assistant',
-            last_name: 'MaxiMarket',
-            avatar_url: null
-          },
-          created_at: new Date().toISOString(),
-          is_system: true
-        }];
+                sender_id: '00000000-0000-0000-0000-000000000000',
+                created_at: new Date().toISOString(),
+                is_read: false,
+                conversation_id: welcomeConversation.id
+              }],
+              participant1: {
+                id: '00000000-0000-0000-0000-000000000000',
+                first_name: 'Assistant',
+                last_name: 'MaxiMarket',
+                avatar_url: null
+              },
+              participant2: {
+                id: user.id,
+                first_name: user.user_metadata?.first_name || '',
+                last_name: user.user_metadata?.last_name || '',
+                avatar_url: user.user_metadata?.avatar_url || null
+              },
+              listing: null
+            }];
+          }
+        } else {
+          console.log('Message de bienvenue déjà existant pour l\'utilisateur:', user.id);
+          
+          // Récupérer la conversation de bienvenue existante
+          const { data: existingConversation, error: convError } = await supabase
+            .from('conversations')
+            .select(`
+              id,
+              participant1_id,
+              participant2_id,
+              is_active,
+              last_message_at,
+              created_at,
+              updated_at
+            `)
+            .or(`participant1_id.eq.00000000-0000-0000-0000-000000000000,participant2_id.eq.${user.id}`)
+            .or(`participant1_id.eq.${user.id},participant2_id.eq.00000000-0000-0000-0000-000000000000`)
+            .single();
+
+          if (!convError && existingConversation) {
+            console.log('Conversation de bienvenue existante trouvée:', existingConversation.id);
+            
+            // Récupérer le message de bienvenue
+            const { data: welcomeMsg, error: msgError } = await supabase
+              .from('messages')
+              .select('*')
+              .eq('conversation_id', existingConversation.id)
+              .eq('sender_id', '00000000-0000-0000-0000-000000000000')
+              .single();
+
+            if (!msgError && welcomeMsg) {
+              return [{
+                ...existingConversation,
+                messages: [welcomeMsg],
+                participant1: {
+                  id: '00000000-0000-0000-0000-000000000000',
+                  first_name: 'Assistant',
+                  last_name: 'MaxiMarket',
+                  avatar_url: null
+                },
+                participant2: {
+                  id: user.id,
+                  first_name: user.user_metadata?.first_name || '',
+                  last_name: user.user_metadata?.last_name || '',
+                  avatar_url: user.user_metadata?.avatar_url || null
+                },
+                listing: null
+              }];
+            }
+          }
+        }
       }
 
       // Pour chaque conversation, recuperer les détails des participants et du listing
