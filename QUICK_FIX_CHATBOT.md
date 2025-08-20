@@ -31,7 +31,7 @@
 Si vous avez un token Vercel :
 
 ```bash
-# Obtenir le token : https://vercel.com/account/tokens
+# Obtenir le token : https://vercel.com/account/tokenss
 # Obtenir l'ID du projet : https://vercel.com/dashboard > officielbenome > Settings > General > Project ID
 
 VERCEL_TOKEN=votre_token VERCEL_PROJECT_ID=votre_id node setup-vercel-env.js
