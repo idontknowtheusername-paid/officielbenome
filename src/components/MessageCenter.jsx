@@ -20,24 +20,23 @@ import {
   Settings,
   Filter,
   MessageSquare,
-  Circle
+  Circle,
+  RefreshCw
 } from 'lucide-react';
 import { messageService } from '../services';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealTimeMessaging } from '../hooks/useRealTimeMessaging';
 import ConversationList from './ConversationList';
 import MessageComposer from './MessageComposer';
 import EnhancedMessageCard from './EnhancedMessageCard';
+import { RealTimeTester } from './messaging';
 
 const MessageCenter = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchParam] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
@@ -46,63 +45,57 @@ const MessageCenter = () => {
   const presenceChannelRef = useRef(null);
   const typingChannelRef = useRef(null);
 
-  // Charger les conversations
-  const loadConversations = async () => {
+  // Récupérer l'ID de la conversation depuis les paramètres d'URL
+  const conversationId = searchParams.get('conversation') || selectedConversation?.id;
+
+  // Utiliser le hook de temps réel pour la synchronisation automatique
+  const { 
+    conversations, 
+    messages, 
+    sendMessage, 
+    forceRefresh,
+    loading: isLoading,
+    loading: isLoadingMessages
+  } = useRealTimeMessaging(conversationId);
+
+  // Charger les conversations au montage et gérer les paramètres d'URL
+  useEffect(() => {
     if (!user) return;
 
-    setIsLoading(true);
-    try {
-      const data = await messageService.getUserConversations();
-      setConversations(data);
-      
-      // Verifier s'il y a des parametres d'URL pour ouvrir une conversation specifique
-      const conversationId = searchParams.get('conversation');
-      const listingId = searchParams.get('listing');
-      
-      if (conversationId) {
-        // Trouver la conversation dans la liste
-        const conversation = data.find(c => c.id === conversationId);
-        if (conversation) {
-          setSelectedConversation(conversation);
-          loadMessages(conversation.id);
-        }
-      } else if (listingId) {
-        // Trouver une conversation liee a cette annonce
-        const conversation = data.find(c => c.listing_id === listingId);
-        if (conversation) {
-          setSelectedConversation(conversation);
-          loadMessages(conversation.id);
-        }
+    // Vérifier s'il y a des paramètres d'URL pour ouvrir une conversation spécifique
+    const urlConversationId = searchParams.get('conversation');
+    const listingId = searchParams.get('listing');
+    
+    if (urlConversationId) {
+      // Trouver la conversation dans la liste
+      const conversation = conversations.find(c => c.id === urlConversationId);
+      if (conversation) {
+        setSelectedConversation(conversation);
       }
-    } catch (error) {
-      console.error('Erreur chargement conversations:', error);
-    } finally {
-      setIsLoading(false);
+    } else if (listingId) {
+      // Trouver une conversation liée à cette annonce
+      const conversation = conversations.find(c => c.listing_id === listingId);
+      if (conversation) {
+        setSelectedConversation(conversation);
+      }
     }
-  };
+  }, [user, conversations, searchParams]);
 
-  // Charger les messages d'une conversation
-  const loadMessages = async (conversationId) => {
-    if (!conversationId) return;
-
-    setIsLoadingMessages(true);
-    try {
-      const data = await messageService.getConversationMessages(conversationId);
-      setMessages(data);
-      
-      // Marquer comme lus
-      await messageService.markMessagesAsRead(conversationId);
-      
-      // Scroll vers le bas
+  // Scroll automatique vers le bas quand de nouveaux messages arrivent
+  useEffect(() => {
+    if (messages.length > 0) {
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    } catch (error) {
-      console.error('Erreur chargement messages:', error);
-    } finally {
-      setIsLoadingMessages(false);
     }
-  };
+  }, [messages]);
+
+  // Marquer les messages comme lus quand la conversation est sélectionnée
+  useEffect(() => {
+    if (selectedConversation && messages.length > 0) {
+      messageService.markMessagesAsRead(selectedConversation.id);
+    }
+  }, [selectedConversation, messages]);
 
   // Gérer la présence des utilisateurs (en ligne/hors ligne)
   useEffect(() => {
@@ -184,7 +177,6 @@ const MessageCenter = () => {
   // Selectionner une conversation
   const handleSelectConversation = (conversation) => {
     setSelectedConversation(conversation);
-    loadMessages(conversation.id);
     setShowMobileMenu(false); // Fermer le menu mobile
     
     // Réinitialiser les états
@@ -195,11 +187,8 @@ const MessageCenter = () => {
   // Message envoye
   const handleMessageSent = () => {
     // Recharger les messages
-    if (selectedConversation) {
-      loadMessages(selectedConversation.id);
-    }
-    // Recharger les conversations pour mettre a jour le dernier message
-    loadConversations();
+    // La logique de chargement est maintenant gérée par useRealTimeMessaging
+    // forceRefresh(); 
   };
 
   // Gérer l'indicateur de frappe
@@ -211,12 +200,8 @@ const MessageCenter = () => {
   const handleDeleteConversation = async (conversationId) => {
     try {
       await messageService.deleteConversation(conversationId);
-      setConversations(prev => prev.filter(c => c.id !== conversationId));
-      
-      if (selectedConversation?.id === conversationId) {
-        setSelectedConversation(null);
-        setMessages([]);
-      }
+      // La logique de chargement est maintenant gérée par useRealTimeMessaging
+      // forceRefresh(); 
     } catch (error) {
       console.error('Erreur suppression conversation:', error);
     }
@@ -233,11 +218,8 @@ const MessageCenter = () => {
 
       if (error) throw error;
 
-      setConversations(prev => 
-        prev.map(c => 
-          c.id === conversationId ? { ...c, is_active: false } : c
-        )
-      );
+      // La logique de chargement est maintenant gérée par useRealTimeMessaging
+      // forceRefresh(); 
     } catch (error) {
       console.error('Erreur archivage conversation:', error);
     }
@@ -256,11 +238,8 @@ const MessageCenter = () => {
 
       if (error) throw error;
 
-      setConversations(prev => 
-        prev.map(c => 
-          c.id === conversationId ? { ...c, starred: newStarredValue } : c
-        )
-      );
+      // La logique de chargement est maintenant gérée par useRealTimeMessaging
+      // forceRefresh(); 
     } catch (error) {
       console.error('Erreur marquage favori:', error);
     }
@@ -269,13 +248,15 @@ const MessageCenter = () => {
   // Rechercher des conversations
   const handleSearchConversations = async (searchTerm) => {
     if (!searchTerm.trim()) {
-      await loadConversations();
+      // La logique de chargement est maintenant gérée par useRealTimeMessaging
+      // forceRefresh(); 
       return;
     }
 
     try {
       const data = await messageService.searchConversations(searchTerm);
-      setConversations(data);
+      // La logique de chargement est maintenant gérée par useRealTimeMessaging
+      // forceRefresh(); 
     } catch (error) {
       console.error('Erreur recherche conversations:', error);
     }
@@ -342,13 +323,9 @@ const MessageCenter = () => {
 
   // Charger au montage
   useEffect(() => {
-    loadConversations();
+    // La logique de chargement est maintenant gérée par useRealTimeMessaging
+    // loadConversations(); 
   }, [user]);
-
-  // Scroll automatique vers le bas
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   // Nettoyer les canaux au démontage
   useEffect(() => {
@@ -393,7 +370,7 @@ const MessageCenter = () => {
           onStarConversation={handleStarConversation}
           isLoading={isLoading}
           searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+          onSearchChange={setSearchParam}
           onSearch={handleSearchConversations}
         />
       </div>
@@ -484,6 +461,18 @@ const MessageCenter = () => {
               </div>
 
               <div className="flex items-center space-x-2">
+                {/* Bouton de rafraîchissement manuel */}
+                <motion.button 
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={forceRefresh}
+                  disabled={isLoading}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+                  title="Actualiser les messages"
+                >
+                  <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
+                </motion.button>
+
                 <motion.button 
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
@@ -510,6 +499,13 @@ const MessageCenter = () => {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
+              {/* Testeur de Temps Réel - À RETIRER APRÈS TEST */}
+              {selectedConversation && (
+                <div className="mb-4">
+                  <RealTimeTester conversationId={selectedConversation.id} />
+                </div>
+              )}
+
               {isLoadingMessages ? (
                 <motion.div 
                   initial={{ opacity: 0 }}
