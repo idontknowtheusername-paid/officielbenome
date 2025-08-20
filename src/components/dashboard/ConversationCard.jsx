@@ -27,6 +27,16 @@ const ConversationCard = ({
   onStar,
   showActions = true 
 }) => {
+  // DEBUG: Afficher les données reçues
+  console.log('🔍 ConversationCard - Données reçues:', {
+    id: conversation.id,
+    participant1_id: conversation.participant1_id,
+    participant2_id: conversation.participant2_id,
+    participant1: conversation.participant1,
+    participant2: conversation.participant2,
+    messages: conversation.messages?.length || 0
+  });
+
   // Vérifier si c'est une conversation système (message de bienvenue)
   const isSystemConversation = conversation.id === 'welcome-message' || 
                               conversation.type === 'system' ||
