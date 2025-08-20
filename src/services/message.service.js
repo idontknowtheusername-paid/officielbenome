@@ -106,119 +106,73 @@ export const messageService = {
 
       console.log('🔍 Conversations trouvées:', conversations?.length || 0);
 
-      // Si aucune conversation, créer un message de bienvenue et retourner un message système
-      if (!conversations || conversations.length === 0) {
-        console.log('Aucune conversation trouvée, création de la conversation de bienvenue...');
-        
-        // Vérifier si l'utilisateur a déjà reçu le message de bienvenue
-        const { data: existingWelcome, error: welcomeError } = await supabase
+      // TOUJOURS vérifier et créer/récupérer la conversation de l'assistant
+      console.log('🔍 Vérification de la conversation de l\'assistant...');
+      
+      // Vérifier si l'utilisateur a déjà une conversation avec l'assistant
+      const { data: existingAssistantConv, error: assistantConvError } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          participant1_id,
+          participant2_id,
+          is_active,
+          last_message_at,
+          created_at,
+          updated_at
+        `)
+        .or(`participant1_id.eq.00000000-0000-0000-0000-000000000000,participant2_id.eq.${user.id}`)
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.00000000-0000-0000-0000-000000000000`)
+        .single();
+
+      let assistantConversation = null;
+
+      if (assistantConvError || !existingAssistantConv) {
+        // Créer la conversation de l'assistant si elle n'existe pas
+        console.log('Création de la conversation de l\'assistant pour l\'utilisateur:', user.id);
+        assistantConversation = await addWelcomeMessage(user.id);
+      } else {
+        // Récupérer la conversation existante
+        console.log('Conversation de l\'assistant existante trouvée:', existingAssistantConv.id);
+        assistantConversation = existingAssistantConv;
+      }
+
+      // Préparer la conversation de l'assistant pour l'affichage
+      let formattedAssistantConversation = null;
+      if (assistantConversation) {
+        // Récupérer le message de bienvenue
+        const { data: welcomeMsg, error: msgError } = await supabase
           .from('messages')
-          .select('id')
-          .eq('receiver_id', user.id)
+          .select('*')
+          .eq('conversation_id', assistantConversation.id)
           .eq('sender_id', '00000000-0000-0000-0000-000000000000')
-          .eq('message_type', 'system')
-          .limit(1);
+          .single();
 
-        if (welcomeError) {
-          console.error('Erreur vérification message de bienvenue:', welcomeError);
+        if (!msgError && welcomeMsg) {
+          formattedAssistantConversation = {
+            ...assistantConversation,
+            messages: [welcomeMsg],
+            participant1: {
+              id: '00000000-0000-0000-0000-000000000000',
+              first_name: 'Assistant',
+              last_name: 'MaxiMarket',
+              avatar_url: null
+            },
+            participant2: {
+              id: user.id,
+              first_name: user.user_metadata?.first_name || '',
+              last_name: user.user_metadata?.last_name || '',
+              avatar_url: user.user_metadata?.avatar_url || null
+            },
+            listing: null
+          };
         }
+      }
 
-        // Si pas de message de bienvenue, l'ajouter
-        if (!existingWelcome || existingWelcome.length === 0) {
-          console.log('Création de la conversation de bienvenue pour l\'utilisateur:', user.id);
-          const welcomeConversation = await addWelcomeMessage(user.id);
-          
-          if (welcomeConversation) {
-            // Retourner la conversation de bienvenue formatée comme une vraie conversation
-            return [{
-              ...welcomeConversation,
-              messages: [{
-                id: 'welcome-msg',
-                content: `🤖 Bienvenue sur MaxiMarket !
-
-Votre marketplace de confiance pour l'Afrique de l'Ouest.
-
-✨ Découvrez nos fonctionnalités :
-• 🏠 Immobilier : Achetez, vendez, louez
-• 🚗 Automobile : Véhicules neufs et d'occasion
-• 🛠️ Services : Trouvez des professionnels
-• 🛍️ Marketplace : Tout ce dont vous avez besoin
-
-🔒 Sécurité garantie avec nos partenaires vérifiés
-💬 Support 24/7 disponible
-
-Besoin d'aide ? Je suis là pour vous accompagner !`,
-                sender_id: '00000000-0000-0000-0000-000000000000',
-                created_at: new Date().toISOString(),
-                is_read: false,
-                conversation_id: welcomeConversation.id
-              }],
-              participant1: {
-                id: '00000000-0000-0000-0000-000000000000',
-                first_name: 'Assistant',
-                last_name: 'MaxiMarket',
-                avatar_url: null
-              },
-              participant2: {
-                id: user.id,
-                first_name: user.user_metadata?.first_name || '',
-                last_name: user.user_metadata?.last_name || '',
-                avatar_url: user.user_metadata?.avatar_url || null
-              },
-              listing: null
-            }];
-          }
-        } else {
-          console.log('Message de bienvenue déjà existant pour l\'utilisateur:', user.id);
-          
-          // Récupérer la conversation de bienvenue existante
-          const { data: existingConversation, error: convError } = await supabase
-            .from('conversations')
-            .select(`
-              id,
-              participant1_id,
-              participant2_id,
-              is_active,
-              last_message_at,
-              created_at,
-              updated_at
-            `)
-            .or(`participant1_id.eq.00000000-0000-0000-0000-000000000000,participant2_id.eq.${user.id}`)
-            .or(`participant1_id.eq.${user.id},participant2_id.eq.00000000-0000-0000-0000-000000000000`)
-            .single();
-
-          if (!convError && existingConversation) {
-            console.log('Conversation de bienvenue existante trouvée:', existingConversation.id);
-            
-            // Récupérer le message de bienvenue
-            const { data: welcomeMsg, error: msgError } = await supabase
-              .from('messages')
-              .select('*')
-              .eq('conversation_id', existingConversation.id)
-              .eq('sender_id', '00000000-0000-0000-0000-000000000000')
-              .single();
-
-            if (!msgError && welcomeMsg) {
-              return [{
-                ...existingConversation,
-                messages: [welcomeMsg],
-                participant1: {
-                  id: '00000000-0000-0000-0000-000000000000',
-                  first_name: 'Assistant',
-                  last_name: 'MaxiMarket',
-                  avatar_url: null
-                },
-                participant2: {
-                  id: user.id,
-                  first_name: user.user_metadata?.first_name || '',
-                  last_name: user.user_metadata?.last_name || '',
-                  avatar_url: user.user_metadata?.avatar_url || null
-                },
-                listing: null
-              }];
-            }
-          }
-        }
+      // Si aucune conversation normale ET pas de conversation d'assistant, retourner seulement l'assistant
+      if ((!conversations || conversations.length === 0) && !formattedAssistantConversation) {
+        console.log('Aucune conversation trouvée, impossible de créer l\'assistant');
+        return [];
       }
 
       // Pour chaque conversation, recuperer les détails des participants et du listing
@@ -362,6 +316,11 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
           }
         })
       );
+
+      // Ajouter la conversation de l'assistant à la liste si elle existe
+      if (formattedAssistantConversation) {
+        conversationsWithDetails.unshift(formattedAssistantConversation);
+      }
 
       return conversationsWithDetails;
     } catch (error) {
