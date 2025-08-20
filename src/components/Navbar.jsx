@@ -183,57 +183,55 @@ const Navbar = () => {
                 {item.name}
               </NavLink>
             ))}
-            <div className="border-t border-border pt-3 space-y-3">
-              {!user && (
-                <>
-                  <NavLink 
-                    to="/connexion" 
-                    onClick={() => setIsOpen(false)} 
-                    className={`${navLinkClasses} text-base w-full justify-start`}
-                    aria-label="Se connecter"
-                  >
-                      <UserCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Connexion
-                  </NavLink>
-                  <NavLink 
-                    to="/inscription" 
-                    onClick={() => setIsOpen(false)} 
-                    className={`${navLinkClasses} text-base w-full justify-start`}
-                    aria-label="S'inscrire"
-                  >
-                      <UserCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Inscription
-                  </NavLink>
-                </>
-              )}
-              {user && user.role === 'admin' ? (
+            {!user && (
+              <>
                 <NavLink 
-                  to="/admin" 
+                  to="/connexion" 
+                  onClick={() => setIsOpen(false)} 
+                  className={`${navLinkClasses} text-base w-full justify-start`}
+                  aria-label="Se connecter"
+                >
+                    <UserCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Connexion
+                </NavLink>
+                <NavLink 
+                  to="/inscription" 
+                  onClick={() => setIsOpen(false)} 
+                  className={`${navLinkClasses} text-base w-full justify-start`}
+                  aria-label="S'inscrire"
+                >
+                    <UserCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Inscription
+                </NavLink>
+              </>
+            )}
+            {user && user.role === 'admin' ? (
+              <NavLink 
+                to="/admin" 
+                onClick={() => setIsOpen(false)} 
+                className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}
+                aria-label="Accéder à l'administration"
+              >
+                <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Admin
+              </NavLink>
+            ) : user && (
+              <>
+                <NavLink 
+                  to="/messages" 
                   onClick={() => setIsOpen(false)} 
                   className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}
-                  aria-label="Accéder à l'administration"
+                  aria-label="Accéder aux messages"
                 >
-                  <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Admin
+                  <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" /> Messages
                 </NavLink>
-              ) : user && (
-                <>
-                  <NavLink 
-                    to="/messages" 
-                    onClick={() => setIsOpen(false)} 
-                    className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}
-                    aria-label="Accéder aux messages"
-                  >
-                    <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" /> Messages
-                  </NavLink>
-                  <NavLink 
-                    to="/profile" 
-                    onClick={() => setIsOpen(false)} 
-                    className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}
-                    aria-label="Accéder à mon compte"
-                  >
-                    <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Mon Compte
-                  </NavLink>
-                </>
-              )}
-            </div>
+                <NavLink 
+                  to="/profile" 
+                  onClick={() => setIsOpen(false)} 
+                  className={({isActive}) => `${navLinkClasses} text-base w-full justify-start ${isActive ? activeNavLinkClasses : ''}`}
+                  aria-label="Accéder à mon compte"
+                >
+                  <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Mon Compte
+                </NavLink>
+              </>
+            )}
           </motion.nav>
         )}
       </AnimatePresence>
