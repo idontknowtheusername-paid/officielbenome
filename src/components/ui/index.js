@@ -34,6 +34,7 @@ export { Toaster } from './toaster';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 export { default as UserAvatar } from './UserAvatar';
 export { default as ValidationError } from './ValidationError';
+export { default as RefreshButton } from './RefreshButton';
 
 // Export loading components
 export * from './loading/LoadingSpinner';
