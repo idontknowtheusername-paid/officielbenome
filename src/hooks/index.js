@@ -2,7 +2,18 @@
 export { useAuth } from '@/contexts/AuthContext';
 export { useListings } from './useListings';
 export { useFavorites } from './useFavorites';
-export { useMessages } from './useMessages';
+export { 
+  useConversations, 
+  useConversationMessages, 
+  useSendMessage, 
+  useMarkMessagesAsRead, 
+  useCreateConversation, 
+  useDeleteConversation, 
+  useDeleteMessage, 
+  useSearchConversations, 
+  useMessageStats, 
+  useRealtimeMessages 
+} from './useMessages';
 export { useNotifications } from './useNotifications';
 export { useAdminDashboard } from './useAdminDashboard';
 
