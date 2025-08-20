@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePreferences } from '@/hooks/usePreferences';
+import usePreferences from '@/hooks/usePreferences';
 
 const useInactivityDetector = () => {
   const { session, logout, isRememberMe } = useAuth();

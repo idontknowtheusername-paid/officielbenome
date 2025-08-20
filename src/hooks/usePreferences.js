@@ -1,17 +1,46 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { preferencesService } from '@/services/preferences.service';
+
+// Préférences par défaut
+const DEFAULT_PREFERENCES = {
+  theme: 'light',
+  notifications: {
+    email: true,
+    push: true,
+    sms: false
+  },
+  privacy: {
+    profile_visibility: 'public',
+    show_online_status: true,
+    allow_messages: true
+  },
+  security_settings: {
+    two_factor_auth: false,
+    login_notifications: true,
+    session_timeout: 30,
+    require_password_change: false,
+    remember_me_enabled: true,
+    auto_logout: true,
+    max_session_age: 7
+  },
+  customization: {
+    primary_color: '#3B82F6',
+    accent_color: '#10B981',
+    font_size: 'medium',
+    animations_enabled: true
+  }
+};
 
 const usePreferences = () => {
   const { user } = useAuth();
-  const [preferences, setPreferences] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [preferences, setPreferences] = useState(DEFAULT_PREFERENCES);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Charger les préférences
+  // Charger les préférences depuis localStorage
   const loadPreferences = async () => {
     if (!user) {
-      setPreferences(null);
+      setPreferences(DEFAULT_PREFERENCES);
       setLoading(false);
       return;
     }
@@ -20,14 +49,18 @@ const usePreferences = () => {
       setLoading(true);
       setError(null);
       
-      const userPrefs = await preferencesService.getUserPreferences(user.id);
-      setPreferences(userPrefs);
+      // Charger depuis localStorage
+      const storedPrefs = localStorage.getItem(`maximarket-preferences-${user.id}`);
+      if (storedPrefs) {
+        const parsedPrefs = JSON.parse(storedPrefs);
+        setPreferences({ ...DEFAULT_PREFERENCES, ...parsedPrefs });
+      } else {
+        setPreferences(DEFAULT_PREFERENCES);
+      }
     } catch (err) {
       console.error('Erreur lors du chargement des préférences:', err);
       setError(err.message);
-      // Utiliser les préférences par défaut en cas d'erreur
-      const defaultPrefs = await preferencesService.getDefaultPreferences();
-      setPreferences(defaultPrefs);
+      setPreferences(DEFAULT_PREFERENCES);
     } finally {
       setLoading(false);
     }
@@ -35,7 +68,7 @@ const usePreferences = () => {
 
   // Mettre à jour une préférence
   const updatePreference = async (key, value) => {
-    if (!user || !preferences) return;
+    if (!user) return;
 
     try {
       // Mettre à jour localement d'abord
@@ -53,20 +86,17 @@ const usePreferences = () => {
       current[keys[keys.length - 1]] = value;
       setPreferences(newPreferences);
 
-      // Sauvegarder sur le serveur
-      await preferencesService.updateUserPreferences(user.id, newPreferences);
+      // Sauvegarder dans localStorage
+      localStorage.setItem(`maximarket-preferences-${user.id}`, JSON.stringify(newPreferences));
     } catch (err) {
       console.error('Erreur lors de la mise à jour des préférences:', err);
       setError(err.message);
-      
-      // Recharger les préférences en cas d'erreur
-      await loadPreferences();
     }
   };
 
   // Mettre à jour plusieurs préférences
   const updateMultiplePreferences = async (updates) => {
-    if (!user || !preferences) return;
+    if (!user) return;
 
     try {
       const newPreferences = { ...preferences };
@@ -86,11 +116,10 @@ const usePreferences = () => {
       });
 
       setPreferences(newPreferences);
-      await preferencesService.updateUserPreferences(user.id, newPreferences);
+      localStorage.setItem(`maximarket-preferences-${user.id}`, JSON.stringify(newPreferences));
     } catch (err) {
       console.error('Erreur lors de la mise à jour des préférences:', err);
       setError(err.message);
-      await loadPreferences();
     }
   };
 
@@ -99,9 +128,8 @@ const usePreferences = () => {
     if (!user) return;
 
     try {
-      const defaultPrefs = await preferencesService.getDefaultPreferences();
-      setPreferences(defaultPrefs);
-      await preferencesService.updateUserPreferences(user.id, defaultPrefs);
+      setPreferences(DEFAULT_PREFERENCES);
+      localStorage.removeItem(`maximarket-preferences-${user.id}`);
     } catch (err) {
       console.error('Erreur lors de la réinitialisation des préférences:', err);
       setError(err.message);
