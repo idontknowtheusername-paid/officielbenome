@@ -90,7 +90,10 @@ class PreferencesService {
         two_factor_auth: false,
         login_notifications: true,
         session_timeout: 30, // minutes
-        require_password_change: false
+        require_password_change: false,
+        remember_me_enabled: true, // Option "Se souvenir de moi"
+        auto_logout: true, // Déconnexion automatique après inactivité
+        max_session_age: 7 // jours maximum pour "Se souvenir"
       },
       
       // Personnalisation

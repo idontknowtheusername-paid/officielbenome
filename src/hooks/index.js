@@ -34,3 +34,6 @@ export {
   useTouchGestures, 
   useGalleryTouchGestures 
 } from './useTouchGestures';
+
+export { default as usePreferences } from './usePreferences';
+export { default as useInactivityDetector } from './useInactivityDetector';

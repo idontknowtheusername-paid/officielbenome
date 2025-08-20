@@ -13,6 +13,7 @@ import { swManager } from '@/lib/swManager';
 import { CacheMonitor } from '@/components/CacheMonitor';
 import { AdvancedCacheMonitor } from '@/components/AdvancedCacheMonitor';
 import { QueryErrorBoundary } from '@/components/QueryErrorBoundary';
+import InactivityDetector from '@/components/InactivityDetector';
 
 import AppWrapper from '@/components/AppWrapper';
 import ChatWidget from '@/components/ChatWidget';
@@ -77,6 +78,7 @@ function App() {
       <QueryErrorBoundary>
         <AppWrapper>
           <AuthProvider>
+            <InactivityDetector />
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/" element={<MainLayout />}>

@@ -23,20 +23,41 @@ if (!isSupabaseConfigured) {
   console.error('Supabase non configuré: VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY manquants')
 }
 
+// Configuration de sécurité professionnelle
+const SECURITY_CONFIG = {
+  // Session active : 30 minutes
+  sessionTimeout: 30 * 60 * 1000, // 30 minutes en millisecondes
+  // Option "Se souvenir" : 7 jours
+  rememberMeDays: 7,
+  // Renouvellement automatique des tokens
+  autoRefresh: true,
+  // Détection de session dans l'URL
+  detectSessionInUrl: true,
+  // Persistance des sessions
+  persistSession: true
+}
+
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-key',
   {
     auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
+      autoRefreshToken: SECURITY_CONFIG.autoRefresh,
+      persistSession: SECURITY_CONFIG.persistSession,
+      detectSessionInUrl: SECURITY_CONFIG.detectSessionInUrl,
+      flowType: 'pkce', // Plus sécurisé que implicit
+      debug: import.meta.env.DEV, // Debug uniquement en développement
     },
     realtime: {
       params: {
         eventsPerSecond: 10,
       },
     },
+    global: {
+      headers: {
+        'X-Client-Info': 'maximarket-web'
+      }
+    }
   }
 )
 
@@ -46,6 +67,8 @@ if (import.meta.env.DEV) {
   console.log('📡 Supabase URL:', supabaseUrl)
   console.log('✅ Supabase configuré:', isSupabaseConfigured)
   console.log('🔑 Clé API longueur:', supabaseAnonKey?.length)
+  console.log('⚙️ Configuration sécurité:', SECURITY_CONFIG)
 }
 
+export { SECURITY_CONFIG }
 export default supabase

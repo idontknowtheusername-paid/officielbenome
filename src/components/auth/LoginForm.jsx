@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,15 +7,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mail, Lock, Loader2 } from 'lucide-react';
 
 const LoginForm = () => {
   const { login } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+  const [rememberMe, setRememberMe] = useState(false);
 
   const onSubmit = async (data) => {
-    await login(data);
+    await login(data, rememberMe);
   };
 
   return (
@@ -76,6 +78,21 @@ const LoginForm = () => {
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
+            </div>
+
+            {/* Option "Se souvenir de moi" */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="rememberMe"
+                checked={rememberMe}
+                onCheckedChange={setRememberMe}
+              />
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-normal cursor-pointer"
+              >
+                Se souvenir de moi pendant 7 jours
+              </Label>
             </div>
 
             <Button

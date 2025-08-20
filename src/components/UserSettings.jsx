@@ -435,12 +435,16 @@ const UserSettings = () => {
                       {key === 'login_notifications' && 'Notifications de connexion'}
                       {key === 'session_timeout' && 'Délai d\'expiration de session'}
                       {key === 'require_password_change' && 'Changement de mot de passe obligatoire'}
+                      {key === 'remember_me_enabled' && 'Option "Se souvenir de moi"'}
+                      {key === 'auto_logout' && 'Déconnexion automatique'}
                     </label>
                     <p className="text-sm text-gray-500">
                       {key === 'two_factor_auth' && 'Ajouter une couche de sécurité supplémentaire'}
                       {key === 'login_notifications' && 'Être informé des nouvelles connexions'}
                       {key === 'session_timeout' && 'Délai avant déconnexion automatique (minutes)'}
                       {key === 'require_password_change' && 'Forcer le changement de mot de passe'}
+                      {key === 'remember_me_enabled' && 'Rester connecté pendant 7 jours'}
+                      {key === 'auto_logout' && 'Se déconnecter automatiquement après inactivité'}
                     </p>
                   </div>
                   {key === 'session_timeout' ? (

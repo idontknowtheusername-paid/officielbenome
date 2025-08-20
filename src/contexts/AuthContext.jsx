@@ -1,6 +1,6 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase, isSupabaseConfigured, SECURITY_CONFIG } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
 
 const AuthContext = createContext({});
@@ -10,7 +10,69 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
+  const [sessionExpiry, setSessionExpiry] = useState(null);
+  const [isRememberMe, setIsRememberMe] = useState(false);
   const { toast } = useToast();
+
+  // Gestion intelligente des sessions
+  const handleSessionExpiry = useCallback(() => {
+    if (session && !isRememberMe) {
+      const now = Date.now();
+      const sessionAge = now - (session.created_at ? new Date(session.created_at).getTime() : now);
+      
+      if (sessionAge > SECURITY_CONFIG.sessionTimeout) {
+        console.log('🕐 Session expirée, déconnexion automatique');
+        logout();
+        toast({
+          title: "Session expirée",
+          description: "Votre session a expiré. Veuillez vous reconnecter.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [session, isRememberMe, toast]);
+
+  // Vérifier l'expiration de session périodiquement
+  useEffect(() => {
+    if (!session) return;
+
+    const interval = setInterval(handleSessionExpiry, 60000); // Vérifier toutes les minutes
+    return () => clearInterval(interval);
+  }, [session, handleSessionExpiry]);
+
+  // Gestion de l'option "Se souvenir de moi"
+  const handleRememberMe = useCallback((remember) => {
+    setIsRememberMe(remember);
+    
+    if (remember) {
+      // Sauvegarder la préférence
+      localStorage.setItem('maximarket-remember-me', 'true');
+      localStorage.setItem('maximarket-remember-date', new Date().toISOString());
+    } else {
+      // Supprimer la préférence
+      localStorage.removeItem('maximarket-remember-me');
+      localStorage.removeItem('maximarket-remember-date');
+    }
+  }, []);
+
+  // Vérifier la préférence "Se souvenir de moi" au chargement
+  useEffect(() => {
+    const remembered = localStorage.getItem('maximarket-remember-me') === 'true';
+    const rememberDate = localStorage.getItem('maximarket-remember-date');
+    
+    if (remembered && rememberDate) {
+      const daysSinceRemember = (Date.now() - new Date(rememberDate).getTime()) / (1000 * 60 * 60 * 24);
+      
+      if (daysSinceRemember <= SECURITY_CONFIG.rememberMeDays) {
+        setIsRememberMe(true);
+      } else {
+        // Expiré, nettoyer
+        localStorage.removeItem('maximarket-remember-me');
+        localStorage.removeItem('maximarket-remember-date');
+        setIsRememberMe(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     // Si Supabase n'est pas configure (production sans variables), on eviter toute action
@@ -35,6 +97,12 @@ export const AuthProvider = ({ children }) => {
             .single();
           
           setUserProfile(profile);
+          
+          // Calculer l'expiration de session
+          if (session.created_at) {
+            const expiryTime = new Date(session.created_at).getTime() + SECURITY_CONFIG.sessionTimeout;
+            setSessionExpiry(expiryTime);
+          }
         } catch (error) {
           console.error('Erreur lors de la récupération du profil:', error);
         }
@@ -62,11 +130,18 @@ export const AuthProvider = ({ children }) => {
               .single();
             
             setUserProfile(profile);
+            
+            // Calculer l'expiration de session
+            if (session.created_at) {
+              const expiryTime = new Date(session.created_at).getTime() + SECURITY_CONFIG.sessionTimeout;
+              setSessionExpiry(expiryTime);
+            }
           } catch (error) {
             console.error('Erreur lors de la récupération du profil:', error);
           }
         } else {
           setUserProfile(null);
+          setSessionExpiry(null);
         }
         
         setLoading(false);
@@ -97,10 +172,22 @@ export const AuthProvider = ({ children }) => {
             description: "Bienvenue sur MaxiMarket !",
           });
         } else if (event === 'SIGNED_OUT') {
+          // Nettoyer les données de session
+          setSessionExpiry(null);
+          setIsRememberMe(false);
+          localStorage.removeItem('maximarket-remember-me');
+          localStorage.removeItem('maximarket-remember-date');
+          
           toast({
             title: "Déconnexion réussie",
             description: "À bientôt !",
           });
+        } else if (event === 'TOKEN_REFRESHED') {
+          // Mettre à jour l'expiration après renouvellement
+          if (session?.created_at) {
+            const expiryTime = new Date(session.created_at).getTime() + SECURITY_CONFIG.sessionTimeout;
+            setSessionExpiry(expiryTime);
+          }
         }
       }
     );
@@ -108,17 +195,21 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, [toast]);
 
-  const login = async (credentials) => {
+  const login = async (credentials, rememberMe = false) => {
     try {
       if (!isSupabaseConfigured) {
         throw new Error('Supabase non configuré');
       }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
       });
 
       if (error) throw error;
+
+      // Gérer l'option "Se souvenir de moi"
+      handleRememberMe(rememberMe);
 
       console.log('Supabase login successful:', data);
       return true;
@@ -224,6 +315,12 @@ export const AuthProvider = ({ children }) => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
+      // Nettoyer les données de session
+      setSessionExpiry(null);
+      setIsRememberMe(false);
+      localStorage.removeItem('maximarket-remember-me');
+      localStorage.removeItem('maximarket-remember-date');
+      
       return true;
     } catch (error) {
       console.error('Logout error:', error);
@@ -234,6 +331,61 @@ export const AuthProvider = ({ children }) => {
       });
       return false;
     }
+  };
+
+  // Fonction pour étendre la session (optionnel)
+  const extendSession = async () => {
+    try {
+      if (!session) return false;
+      
+      // Forcer le renouvellement du token
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) throw error;
+      
+      if (data.session) {
+        const expiryTime = new Date(data.session.created_at).getTime() + SECURITY_CONFIG.sessionTimeout;
+        setSessionExpiry(expiryTime);
+        
+        toast({
+          title: "Session étendue",
+          description: "Votre session a été prolongée avec succès.",
+        });
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Erreur lors de l\'extension de session:', error);
+      return false;
+    }
+  };
+
+  // Fonction pour vérifier le statut de la session
+  const getSessionStatus = () => {
+    if (!session) return 'disconnected';
+    
+    if (isRememberMe) return 'remembered';
+    
+    if (sessionExpiry) {
+      const now = Date.now();
+      const timeLeft = sessionExpiry - now;
+      
+      if (timeLeft <= 0) return 'expired';
+      if (timeLeft <= 5 * 60 * 1000) return 'expiring_soon'; // 5 minutes
+      return 'active';
+    }
+    
+    return 'active';
+  };
+
+  // Fonction pour obtenir le temps restant de session
+  const getSessionTimeLeft = () => {
+    if (!sessionExpiry) return 0;
+    
+    const now = Date.now();
+    const timeLeft = sessionExpiry - now;
+    
+    return Math.max(0, timeLeft);
   };
 
   const resetPassword = async (email) => {
@@ -307,10 +459,15 @@ export const AuthProvider = ({ children }) => {
     user: userProfile || user, // Utiliser le profil complet si disponible
     userProfile,
     session,
+    sessionExpiry,
+    isRememberMe,
     loading,
     login,
     register,
     logout,
+    extendSession,
+    getSessionStatus,
+    getSessionTimeLeft,
     resetPassword,
     updatePassword,
     hasRole,
