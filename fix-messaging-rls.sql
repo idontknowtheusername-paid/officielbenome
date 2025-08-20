@@ -1,94 +1,225 @@
+-- Script de correction pour le bug "utilisateur inconnu" dans la messagerie
+-- Ce script corrige les politiques RLS et vérifie la structure des données
+
 -- ============================================================================
--- CORRECTION DES POLITIQUES RLS POUR LA MESSAGERIE
+-- 1. VÉRIFICATION DE LA STRUCTURE DE LA TABLE USERS
 -- ============================================================================
--- Exécutez ce script dans l'éditeur SQL de Supabase pour corriger le problème
--- "Utilisateur Inconnu" dans la messagerie
 
--- 1. Supprimer les anciennes politiques restrictives
-DROP POLICY IF EXISTS "Users can view their own profile" ON users;
-DROP POLICY IF EXISTS "Users can update their own profile" ON users;
-DROP POLICY IF EXISTS "Users can create their own profile" ON users;
+-- Vérifier que les colonnes nécessaires existent
+DO $$
+BEGIN
+    -- Vérifier si la colonne first_name existe
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'first_name'
+    ) THEN
+        RAISE EXCEPTION 'La colonne first_name n''existe pas dans la table users';
+    END IF;
+    
+    -- Vérifier si la colonne last_name existe
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'last_name'
+    ) THEN
+        RAISE EXCEPTION 'La colonne last_name n''existe pas dans la table users';
+    END IF;
+    
+    RAISE NOTICE '✅ Structure de la table users vérifiée';
+END $$;
 
--- 2. Créer de nouvelles politiques plus permissives pour la messagerie
--- Permettre de voir les profils des autres utilisateurs (nécessaire pour la messagerie)
-CREATE POLICY "Users can view profiles for messaging" ON users
-  FOR SELECT USING (true);
+-- ============================================================================
+-- 2. SUPPRESSION DES ANCIENNES POLITIQUES RLS
+-- ============================================================================
 
--- Permettre de mettre à jour son propre profil
-CREATE POLICY "Users can update their own profile" ON users
-  FOR UPDATE USING (auth.uid() = id);
+-- Supprimer toutes les anciennes politiques sur la table users
+DROP POLICY IF EXISTS "Users can view own profile" ON users;
+DROP POLICY IF EXISTS "Users can view other users basic info" ON users;
+DROP POLICY IF EXISTS "Users can update own profile" ON users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON users;
+DROP POLICY IF EXISTS "Enable read access for all users" ON users;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON users;
+DROP POLICY IF EXISTS "Enable update for users based on email" ON users;
 
--- Permettre de créer son propre profil
-CREATE POLICY "Users can create their own profile" ON users
-  FOR INSERT WITH CHECK (auth.uid() = id);
+-- ============================================================================
+-- 3. CRÉATION DES NOUVELLES POLITIQUES RLS APPROPRIÉES
+-- ============================================================================
 
--- 3. Vérifier et corriger les politiques des conversations
--- Supprimer les anciennes politiques si elles existent
-DROP POLICY IF EXISTS "Users can view their own conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can create conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can update their conversations" ON conversations;
+-- Politique pour permettre à tous les utilisateurs authentifiés de voir les profils des autres
+-- (NÉCESSAIRE pour afficher les noms dans les conversations)
+CREATE POLICY "Enable read access for all authenticated users" ON users
+    FOR SELECT USING (auth.role() = 'authenticated');
 
--- Créer les bonnes politiques pour les conversations
-CREATE POLICY "Users can view their own conversations" ON conversations
-  FOR SELECT USING (
-    participant1_id = auth.uid() OR participant2_id = auth.uid()
-  );
+-- Politique pour permettre aux utilisateurs de créer leur propre profil
+CREATE POLICY "Enable insert for authenticated users only" ON users
+    FOR INSERT WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Users can create conversations" ON conversations
-  FOR INSERT WITH CHECK (
-    participant1_id = auth.uid() OR participant2_id = auth.uid()
-  );
+-- Politique pour permettre aux utilisateurs de mettre à jour leur propre profil
+CREATE POLICY "Enable update for users based on id" ON users
+    FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Users can update their conversations" ON conversations
-  FOR UPDATE USING (
-    participant1_id = auth.uid() OR participant2_id = auth.uid()
-  );
+-- Politique pour permettre aux utilisateurs de supprimer leur propre profil
+CREATE POLICY "Enable delete for users based on id" ON users
+    FOR DELETE USING (auth.uid() = id);
 
--- 4. Vérifier et corriger les politiques des messages
--- Supprimer les anciennes politiques si elles existent
-DROP POLICY IF EXISTS "Users can view messages in their conversations" ON messages;
-DROP POLICY IF EXISTS "Users can send messages" ON messages;
-DROP POLICY IF EXISTS "Users can update their sent messages" ON messages;
+-- ============================================================================
+-- 4. VÉRIFICATION DES POLITIQUES CRÉÉES
+-- ============================================================================
 
--- Créer les bonnes politiques pour les messages
-CREATE POLICY "Users can view messages in their conversations" ON messages
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM conversations 
-      WHERE conversations.id = messages.conversation_id 
-      AND (conversations.participant1_id = auth.uid() OR conversations.participant2_id = auth.uid())
-    )
-  );
-
-CREATE POLICY "Users can send messages" ON messages
-  FOR INSERT WITH CHECK (
-    sender_id = auth.uid()
-  );
-
-CREATE POLICY "Users can update their sent messages" ON messages
-  FOR UPDATE USING (
-    sender_id = auth.uid()
-  );
-
--- 5. Vérifier que RLS est activé sur toutes les tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-
--- 6. Test : Vérifier que les politiques sont créées
+-- Afficher toutes les politiques sur la table users
 SELECT 
-  schemaname,
-  tablename,
-  policyname,
-  permissive,
-  roles,
-  cmd,
-  qual,
-  with_check
+    schemaname,
+    tablename,
+    policyname,
+    permissive,
+    roles,
+    cmd,
+    qual
 FROM pg_policies 
-WHERE tablename IN ('users', 'conversations', 'messages')
-ORDER BY tablename, policyname;
+WHERE tablename = 'users'
+ORDER BY cmd;
 
--- 7. Test : Vérifier l'accès aux utilisateurs
--- Cette requête devrait maintenant fonctionner pour un utilisateur connecté
--- SELECT id, first_name, last_name, email FROM users LIMIT 5;
+-- ============================================================================
+-- 5. VÉRIFICATION DES DONNÉES UTILISATEURS
+-- ============================================================================
+
+-- Vérifier que les utilisateurs ont bien first_name et last_name
+SELECT 
+    id,
+    email,
+    first_name,
+    last_name,
+    CASE 
+        WHEN first_name IS NULL OR first_name = '' THEN '❌ MANQUANT'
+        ELSE '✅ OK'
+    END as first_name_status,
+    CASE 
+        WHEN last_name IS NULL OR last_name = '' THEN '❌ MANQUANT'
+        ELSE '✅ OK'
+    END as last_name_status
+FROM users 
+LIMIT 10;
+
+-- Compter les utilisateurs avec des noms manquants
+SELECT 
+    COUNT(*) as total_users,
+    COUNT(CASE WHEN first_name IS NULL OR first_name = '' THEN 1 END) as missing_first_name,
+    COUNT(CASE WHEN last_name IS NULL OR last_name = '' THEN 1 END) as missing_last_name
+FROM users;
+
+-- ============================================================================
+-- 6. VÉRIFICATION DES CONVERSATIONS ET PARTICIPANTS
+-- ============================================================================
+
+-- Vérifier les conversations et leurs participants
+SELECT 
+    c.id as conversation_id,
+    c.participant1_id,
+    c.participant2_id,
+    u1.first_name as p1_first_name,
+    u1.last_name as p1_last_name,
+    u2.first_name as p2_first_name,
+    u2.last_name as p2_last_name,
+    c.created_at,
+    CASE 
+        WHEN u1.first_name IS NULL OR u1.first_name = '' THEN '❌ MANQUANT'
+        ELSE '✅ OK'
+    END as p1_name_status,
+    CASE 
+        WHEN u2.first_name IS NULL OR u2.first_name = '' THEN '❌ MANQUANT'
+        ELSE '✅ OK'
+    END as p2_name_status
+FROM conversations c
+LEFT JOIN users u1 ON c.participant1_id = u1.id
+LEFT JOIN users u2 ON c.participant2_id = u2.id
+LIMIT 10;
+
+-- ============================================================================
+-- 7. VÉRIFICATION DES MESSAGES ET EXPÉDITEURS
+-- ============================================================================
+
+-- Vérifier les messages et leurs expéditeurs
+SELECT 
+    m.id as message_id,
+    m.content,
+    m.sender_id,
+    u.first_name as sender_first_name,
+    u.last_name as sender_last_name,
+    m.created_at,
+    CASE 
+        WHEN u.first_name IS NULL OR u.first_name = '' THEN '❌ MANQUANT'
+        ELSE '✅ OK'
+    END as sender_name_status
+FROM messages m
+LEFT JOIN users u ON m.sender_id = u.id
+LIMIT 10;
+
+-- ============================================================================
+-- 8. CORRECTION DES UTILISATEURS AVEC NOMS MANQUANTS
+-- ============================================================================
+
+-- Mettre à jour les utilisateurs avec des noms manquants (utiliser l'email comme fallback)
+UPDATE users 
+SET 
+    first_name = COALESCE(first_name, SPLIT_PART(email, '@', 1)),
+    last_name = COALESCE(last_name, 'Utilisateur')
+WHERE 
+    (first_name IS NULL OR first_name = '') 
+    OR (last_name IS NULL OR last_name = '');
+
+-- Vérifier le résultat de la correction
+SELECT 
+    COUNT(*) as total_users,
+    COUNT(CASE WHEN first_name IS NULL OR first_name = '' THEN 1 END) as missing_first_name,
+    COUNT(CASE WHEN last_name IS NULL OR last_name = '' THEN 1 END) as missing_last_name
+FROM users;
+
+-- ============================================================================
+-- 9. TEST DES REQUÊTES SIMILAIRES À CELLES DU SERVICE
+-- ============================================================================
+
+-- Simuler la requête du service messageService.getUserConversations()
+-- pour récupérer les participants d'une conversation
+WITH test_conversation AS (
+    SELECT id, participant1_id, participant2_id 
+    FROM conversations 
+    LIMIT 1
+)
+SELECT 
+    tc.id as conversation_id,
+    tc.participant1_id,
+    tc.participant2_id,
+    u1.first_name as p1_first_name,
+    u1.last_name as p1_last_name,
+    u2.first_name as p2_first_name,
+    u2.last_name as p2_last_name
+FROM test_conversation tc
+LEFT JOIN users u1 ON tc.participant1_id = u1.id
+LEFT JOIN users u2 ON tc.participant2_id = u2.id;
+
+-- ============================================================================
+-- 10. RÉSUMÉ ET RECOMMANDATIONS
+-- ============================================================================
+
+-- Afficher un résumé de l'état de la base
+SELECT 
+    'RÉSUMÉ DE LA CORRECTION' as section,
+    'Politiques RLS créées' as item,
+    COUNT(*) as count
+FROM pg_policies 
+WHERE tablename = 'users'
+UNION ALL
+SELECT 
+    'RÉSUMÉ DE LA CORRECTION' as section,
+    'Utilisateurs avec noms complets' as item,
+    COUNT(*) as count
+FROM users 
+WHERE first_name IS NOT NULL AND first_name != '' 
+  AND last_name IS NOT NULL AND last_name != '';
+
+-- Message de fin
+DO $$
+BEGIN
+    RAISE NOTICE '✅ Script de correction terminé avec succès !';
+    RAISE NOTICE '🔍 Vérifiez maintenant que les noms s''affichent correctement dans la messagerie';
+    RAISE NOTICE '📝 Si le problème persiste, vérifiez la console du navigateur pour les erreurs';
+END $$;

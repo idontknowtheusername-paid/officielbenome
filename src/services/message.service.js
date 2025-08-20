@@ -100,7 +100,7 @@ export const messageService = {
         .order('created_at', { ascending: false });
 
       if (convError) {
-        console.error('Erreur récupération conversations:', convError);
+        console.error('❌ Erreur récupération conversations:', convError);
         throw convError;
       }
 
@@ -179,6 +179,8 @@ export const messageService = {
       const conversationsWithDetails = await Promise.all(
         conversations.map(async (conversation) => {
           try {
+            console.log(`🔍 Traitement de la conversation: ${conversation.id}`);
+            
             // Récupérer les détails du listing si il existe
             let listingDetails = null;
             if (conversation.listing_id) {
@@ -190,6 +192,9 @@ export const messageService = {
               
               if (!listingError && listing) {
                 listingDetails = listing;
+                console.log(`✅ Listing récupéré pour la conversation ${conversation.id}:`, listing.title);
+              } else {
+                console.warn(`⚠️ Listing non trouvé pour la conversation ${conversation.id}:`, listingError);
               }
             }
 
@@ -197,45 +202,47 @@ export const messageService = {
             const participant1Id = conversation.participant1_id;
             const participant2Id = conversation.participant2_id;
             
-            console.log('🔍 Récupération des participants pour la conversation:', conversation.id);
-            console.log('🔍 Participant 1 ID:', participant1Id);
-            console.log('🔍 Participant 2 ID:', participant2Id);
+            console.log(`🔍 Récupération des participants pour la conversation ${conversation.id}:`);
+            console.log(`🔍 Participant 1 ID: ${participant1Id}`);
+            console.log(`🔍 Participant 2 ID: ${participant2Id}`);
             
             let participant1 = null;
             let participant2 = null;
 
             if (participant1Id) {
               try {
-                console.log('🔍 Récupération des détails du participant 1:', participant1Id);
+                console.log(`🔍 Récupération des détails du participant 1: ${participant1Id}`);
                 const { data: user1, error: user1Error } = await supabase
                   .from('users')
-                  .select('id, first_name, last_name, avatar_url')
+                  .select('id, first_name, last_name, avatar_url, profile_image')
                   .eq('id', participant1Id)
                   .single();
                 
                 if (!user1Error && user1) {
                   participant1 = user1;
-                  console.log('✅ Participant 1 récupéré:', {
+                  console.log(`✅ Participant 1 récupéré pour la conversation ${conversation.id}:`, {
                     id: user1.id,
-                    name: `${user1.first_name} ${user1.last_name}`,
-                    avatar: user1.profile_image
+                    name: `${user1.first_name || 'N/A'} ${user1.last_name || 'N/A'}`,
+                    avatar: user1.avatar_url || user1.profile_image
                   });
                 } else {
-                  console.warn('❌ Utilisateur 1 non trouvé:', participant1Id, user1Error);
+                  console.warn(`❌ Utilisateur 1 non trouvé pour la conversation ${conversation.id}:`, participant1Id, user1Error);
                   // Créer un utilisateur par défaut pour éviter les erreurs
                   participant1 = {
                     id: participant1Id,
                     first_name: 'Utilisateur',
                     last_name: 'Inconnu',
+                    avatar_url: null,
                     profile_image: null
                   };
                 }
               } catch (error) {
-                console.error('❌ Erreur lors de la récupération de l\'utilisateur 1:', error);
+                console.error(`❌ Erreur lors de la récupération de l'utilisateur 1 pour la conversation ${conversation.id}:`, error);
                 participant1 = {
                   id: participant1Id,
                   first_name: 'Utilisateur',
                   last_name: 'Inconnu',
+                  avatar_url: null,
                   profile_image: null
                 };
               }
@@ -243,36 +250,38 @@ export const messageService = {
 
             if (participant2Id) {
               try {
-                console.log('🔍 Récupération des détails du participant 2:', participant2Id);
+                console.log(`🔍 Récupération des détails du participant 2: ${participant2Id}`);
                 const { data: user2, error: user2Error } = await supabase
                   .from('users')
-                  .select('id, first_name, last_name, profile_image')
+                  .select('id, first_name, last_name, avatar_url, profile_image')
                   .eq('id', participant2Id)
                   .single();
                 
                 if (!user2Error && user2) {
                   participant2 = user2;
-                  console.log('✅ Participant 2 récupéré:', {
+                  console.log(`✅ Participant 2 récupéré pour la conversation ${conversation.id}:`, {
                     id: user2.id,
-                    name: `${user2.first_name} ${user2.last_name}`,
-                    avatar: user2.profile_image
+                    name: `${user2.first_name || 'N/A'} ${user2.last_name || 'N/A'}`,
+                    avatar: user2.avatar_url || user2.profile_image
                   });
                 } else {
-                  console.warn('❌ Utilisateur 2 non trouvé:', participant2Id, user2Error);
+                  console.warn(`❌ Utilisateur 2 non trouvé pour la conversation ${conversation.id}:`, participant2Id, user2Error);
                   // Créer un utilisateur par défaut pour éviter les erreurs
                   participant2 = {
                     id: participant2Id,
                     first_name: 'Utilisateur',
                     last_name: 'Inconnu',
+                    avatar_url: null,
                     profile_image: null
                   };
                 }
               } catch (error) {
-                console.error('❌ Erreur lors de la récupération de l\'utilisateur 2:', error);
+                console.error(`❌ Erreur lors de la récupération de l'utilisateur 2 pour la conversation ${conversation.id}:`, error);
                 participant2 = {
                   id: participant2Id,
                   first_name: 'Utilisateur',
                   last_name: 'Inconnu',
+                  avatar_url: null,
                   profile_image: null
                 };
               }
@@ -293,7 +302,7 @@ export const messageService = {
               .order('created_at', { ascending: true });
 
             if (msgError) {
-              console.error('Erreur récupération messages:', msgError);
+              console.error(`❌ Erreur récupération messages pour la conversation ${conversation.id}:`, msgError);
               return { 
                 ...conversation, 
                 messages: [],
@@ -303,6 +312,8 @@ export const messageService = {
               };
             }
 
+            console.log(`✅ Messages récupérés pour la conversation ${conversation.id}:`, messages?.length || 0);
+
             // Récupérer les détails des expéditeurs pour chaque message
             const messagesWithUsers = await Promise.all(
               (messages || []).map(async (message) => {
@@ -310,14 +321,21 @@ export const messageService = {
                   let sender = null;
 
                   if (message.sender_id) {
+                    console.log(`🔍 Récupération de l'expéditeur pour le message ${message.id}: ${message.sender_id}`);
                     const { data: senderData, error: senderError } = await supabase
                       .from('users')
-                      .select('id, first_name, last_name, avatar_url')
+                      .select('id, first_name, last_name, avatar_url, profile_image')
                       .eq('id', message.sender_id)
                       .single();
                     
                     if (!senderError && senderData) {
                       sender = senderData;
+                      console.log(`✅ Expéditeur récupéré pour le message ${message.id}:`, {
+                        id: senderData.id,
+                        name: `${senderData.first_name || 'N/A'} ${senderData.last_name || 'N/A'}`
+                      });
+                    } else {
+                      console.warn(`⚠️ Expéditeur non trouvé pour le message ${message.id}:`, message.sender_id, senderError);
                     }
                   }
 
@@ -326,11 +344,18 @@ export const messageService = {
                     sender
                   };
                 } catch (error) {
-                  console.error('Erreur lors de la récupération des détails de l\'expéditeur:', error);
+                  console.error(`❌ Erreur lors de la récupération des détails de l'expéditeur pour le message ${message.id}:`, error);
                   return message;
                 }
               })
             );
+
+            console.log(`✅ Conversation ${conversation.id} traitée avec succès:`, {
+              participant1: participant1 ? `${participant1.first_name || 'N/A'} ${participant1.last_name || 'N/A'}` : 'N/A',
+              participant2: participant2 ? `${participant2.first_name || 'N/A'} ${participant2.last_name || 'N/A'}` : 'N/A',
+              messages: messagesWithUsers?.length || 0,
+              listing: listingDetails?.title || 'N/A'
+            });
 
             return { 
               ...conversation, 
@@ -340,7 +365,7 @@ export const messageService = {
               participant2
             };
           } catch (error) {
-            console.error('Erreur lors de la récupération des détails de la conversation:', error);
+            console.error(`❌ Erreur lors du traitement de la conversation ${conversation.id}:`, error);
             return { ...conversation, messages: [], listing: null, participant1: null, participant2: null };
           }
         })
@@ -349,11 +374,24 @@ export const messageService = {
       // Ajouter la conversation de l'assistant à la liste si elle existe
       if (formattedAssistantConversation) {
         conversationsWithDetails.unshift(formattedAssistantConversation);
+        console.log('✅ Conversation de l\'assistant ajoutée à la liste');
       }
+
+      console.log(`✅ Total des conversations traitées: ${conversationsWithDetails.length}`);
+      
+      // DEBUG: Afficher un résumé des conversations
+      conversationsWithDetails.forEach((conv, index) => {
+        console.log(`🔍 Conversation ${index + 1}:`, {
+          id: conv.id,
+          p1: conv.participant1 ? `${conv.participant1.first_name || 'N/A'} ${conv.participant1.last_name || 'N/A'}` : 'N/A',
+          p2: conv.participant2 ? `${conv.participant2.first_name || 'N/A'} ${conv.participant2.last_name || 'N/A'}` : 'N/A',
+          messages: conv.messages?.length || 0
+        });
+      });
 
       return conversationsWithDetails;
     } catch (error) {
-      console.error('Erreur dans getUserConversations:', error);
+      console.error('❌ Erreur dans getUserConversations:', error);
       throw error;
     }
   },

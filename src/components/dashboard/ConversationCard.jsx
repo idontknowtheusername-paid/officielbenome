@@ -14,7 +14,8 @@ import {
   Trash2,
   Star,
   MoreVertical,
-  Home
+  Home,
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -30,7 +31,7 @@ const ConversationCard = ({
 }) => {
   const { user: currentUser } = useAuth();
 
-  // DEBUG: Afficher les données reçues
+  // DEBUG: Afficher les données reçues en détail
   console.log('🔍 ConversationCard - Données reçues:', {
     id: conversation.id,
     participant1_id: conversation.participant1_id,
@@ -38,7 +39,22 @@ const ConversationCard = ({
     participant1: conversation.participant1,
     participant2: conversation.participant2,
     messages: conversation.messages?.length || 0,
-    currentUserId: currentUser?.id
+    currentUserId: currentUser?.id,
+    // Détails des participants
+    p1_details: conversation.participant1 ? {
+      id: conversation.participant1.id,
+      first_name: conversation.participant1.first_name,
+      last_name: conversation.participant1.last_name,
+      profile_image: conversation.participant1.profile_image,
+      avatar_url: conversation.participant1.avatar_url
+    } : null,
+    p2_details: conversation.participant2 ? {
+      id: conversation.participant2.id,
+      first_name: conversation.participant2.first_name,
+      last_name: conversation.participant2.last_name,
+      profile_image: conversation.participant2.profile_image,
+      avatar_url: conversation.participant2.avatar_url
+    } : null
   });
 
   // Vérifier si c'est une conversation système (message de bienvenue)
@@ -115,40 +131,117 @@ const ConversationCard = ({
 
   // Déterminer l'autre participant (pas l'utilisateur actuel)
   let otherParticipant = null;
+  let participantSource = 'unknown';
   
   if (currentUser && conversation.participant1 && conversation.participant2) {
     // Si l'utilisateur actuel est participant1, l'autre est participant2
     if (conversation.participant1_id === currentUser.id) {
       otherParticipant = conversation.participant2;
+      participantSource = 'participant2';
     } else if (conversation.participant2_id === currentUser.id) {
       otherParticipant = conversation.participant1;
+      participantSource = 'participant1';
     } else {
       // Si l'utilisateur actuel n'est ni participant1 ni participant2, 
       // c'est peut-être une conversation de l'assistant
       if (conversation.participant1_id === '00000000-0000-0000-0000-000000000000') {
         otherParticipant = conversation.participant2;
+        participantSource = 'assistant_participant2';
       } else if (conversation.participant2_id === '00000000-0000-0000-0000-000000000000') {
         otherParticipant = conversation.participant1;
+        participantSource = 'assistant_participant1';
       } else {
         // Fallback : prendre le premier participant
         otherParticipant = conversation.participant1;
+        participantSource = 'fallback_participant1';
       }
     }
   } else if (conversation.participant1) {
     otherParticipant = conversation.participant1;
+    participantSource = 'only_participant1';
   } else if (conversation.participant2) {
     otherParticipant = conversation.participant2;
+    participantSource = 'only_participant2';
   }
+
+  // DEBUG: Afficher la logique de sélection du participant
+  console.log('🔍 ConversationCard - Logique de sélection du participant:', {
+    conversationId: conversation.id,
+    currentUserId: currentUser?.id,
+    participant1_id: conversation.participant1_id,
+    participant2_id: conversation.participant2_id,
+    participantSource,
+    otherParticipant: otherParticipant ? {
+      id: otherParticipant.id,
+      first_name: otherParticipant.first_name,
+      last_name: otherParticipant.last_name,
+      profile_image: otherParticipant.profile_image,
+      avatar_url: otherParticipant.avatar_url
+    } : null
+  });
+
+  // Fonction pour obtenir le nom d'affichage du participant
+  const getParticipantDisplayName = (participant) => {
+    if (!participant) {
+      console.warn('⚠️ ConversationCard - Participant null/undefined');
+      return 'Utilisateur inconnu';
+    }
+
+    // Vérifier si on a first_name et last_name
+    if (participant.first_name && participant.last_name) {
+      return `${participant.first_name} ${participant.last_name}`;
+    }
+    
+    // Vérifier si on a juste first_name
+    if (participant.first_name) {
+      return participant.first_name;
+    }
+    
+    // Vérifier si on a juste last_name
+    if (participant.last_name) {
+      return participant.last_name;
+    }
+    
+    // Vérifier si on a un nom dans une autre propriété
+    if (participant.name) {
+      return participant.name;
+    }
+    
+    // Vérifier si on a un email (utiliser la partie avant @)
+    if (participant.email) {
+      const emailName = participant.email.split('@')[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+    
+    // Dernier fallback
+    console.warn('⚠️ ConversationCard - Aucun nom trouvé pour le participant:', participant);
+    return 'Utilisateur';
+  };
+
+  // Obtenir le nom d'affichage
+  const displayName = getParticipantDisplayName(otherParticipant);
+  
+  // DEBUG: Afficher le nom d'affichage final
+  console.log('🔍 ConversationCard - Nom d\'affichage final:', {
+    conversationId: conversation.id,
+    displayName,
+    participant: otherParticipant
+  });
 
   // Vérifier si la conversation a des messages non lus
   const hasUnreadMessages = conversation.messages && 
     conversation.messages.some(msg => !msg.is_read && msg.sender_id !== currentUser?.id);
 
+  // Afficher un avertissement si les données semblent corrompues
+  const showDataWarning = !otherParticipant || 
+                         (!otherParticipant.first_name && !otherParticipant.last_name && !otherParticipant.name);
+
   return (
     <Card className={cn(
       "transition-all duration-200 hover:shadow-md",
       hasUnreadMessages && "bg-blue-50 border-blue-200",
-      conversation.starred && "bg-yellow-50 border-yellow-200"
+      conversation.starred && "bg-yellow-50 border-yellow-200",
+      showDataWarning && "bg-orange-50 border-orange-200"
     )}>
       <CardContent className="p-4">
         <div className="flex items-start space-x-4">
@@ -169,8 +262,14 @@ const ConversationCard = ({
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <h3 className="font-semibold text-sm">
-                  {otherParticipant ? `${otherParticipant.first_name} ${otherParticipant.last_name}` : 'Utilisateur'}
+                  {displayName}
                 </h3>
+                {showDataWarning && (
+                  <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Données manquantes
+                  </Badge>
+                )}
                 {hasUnreadMessages && (
                   <Badge variant="destructive" className="text-xs">
                     Nouveau
