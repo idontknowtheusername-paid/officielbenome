@@ -36,6 +36,10 @@ const MessageCenter = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [searchTerm, setSearchParam] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -44,51 +48,136 @@ const MessageCenter = () => {
   const messagesEndRef = useRef(null);
   const presenceChannelRef = useRef(null);
   const typingChannelRef = useRef(null);
+  const realtimeChannelRef = useRef(null);
 
   // Récupérer l'ID de la conversation depuis les paramètres d'URL
   const conversationId = searchParams.get('conversation') || selectedConversation?.id;
 
-  // Utiliser le hook de temps réel pour la synchronisation automatique
-  const { 
-    conversations, 
-    messages, 
-    sendMessage, 
-    forceRefresh,
-    loading: isLoading,
-    loading: isLoadingMessages
-  } = useRealTimeMessaging(conversationId);
-
-  // Charger les conversations au montage et gérer les paramètres d'URL
-  useEffect(() => {
+  // Fonction de chargement des conversations avec temps réel
+  const loadConversations = async () => {
     if (!user) return;
 
-    // Vérifier s'il y a des paramètres d'URL pour ouvrir une conversation spécifique
-    const urlConversationId = searchParams.get('conversation');
-    const listingId = searchParams.get('listing');
-    
-    if (urlConversationId) {
-      // Trouver la conversation dans la liste
-      const conversation = conversations.find(c => c.id === urlConversationId);
-      if (conversation) {
-        setSelectedConversation(conversation);
+    setIsLoading(true);
+    try {
+      console.log('🔄 Chargement des conversations avec temps réel...');
+      const data = await messageService.getUserConversations();
+      setConversations(data);
+      
+      // Vérifier s'il y a des paramètres d'URL pour ouvrir une conversation spécifique
+      const urlConversationId = searchParams.get('conversation');
+      const listingId = searchParams.get('listing');
+      
+      if (urlConversationId) {
+        const conversation = data.find(c => c.id === urlConversationId);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          loadMessages(conversation.id);
+        }
+      } else if (listingId) {
+        const conversation = data.find(c => c.listing_id === listingId);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          loadMessages(conversation.id);
+        }
       }
-    } else if (listingId) {
-      // Trouver une conversation liée à cette annonce
-      const conversation = conversations.find(c => c.listing_id === listingId);
-      if (conversation) {
-        setSelectedConversation(conversation);
-      }
+    } catch (error) {
+      console.error('Erreur chargement conversations:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, conversations, searchParams]);
+  };
 
-  // Scroll automatique vers le bas quand de nouveaux messages arrivent
-  useEffect(() => {
-    if (messages.length > 0) {
+  // Fonction de chargement des messages avec temps réel
+  const loadMessages = async (convId) => {
+    if (!convId) return;
+
+    setIsLoadingMessages(true);
+    try {
+      console.log('🔄 Chargement des messages avec temps réel...');
+      const data = await messageService.getConversationMessages(convId);
+      setMessages(data);
+      
+      // Marquer comme lus
+      await messageService.markMessagesAsRead(convId);
+      
+      // Scroll vers le bas
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
+    } catch (error) {
+      console.error('Erreur chargement messages:', error);
+    } finally {
+      setIsLoadingMessages(false);
     }
-  }, [messages]);
+  };
+
+  // Configuration du temps réel pour les messages
+  useEffect(() => {
+    if (!conversationId) return;
+
+    console.log('🔌 Configuration du temps réel pour la conversation:', conversationId);
+
+    // Écouter les nouveaux messages en temps réel
+    realtimeChannelRef.current = supabase
+      .channel(`realtime-messages:${conversationId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        console.log('🆕 NOUVEAU MESSAGE REÇU EN TEMPS RÉEL:', payload.new);
+        
+        // Ajouter immédiatement le nouveau message
+        setMessages(prev => [...prev, payload.new]);
+        
+        // Actualiser les conversations
+        loadConversations();
+        
+        // Scroll vers le bas
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        console.log('🔄 Message mis à jour en temps réel:', payload.new);
+        
+        // Mettre à jour le message dans la liste
+        setMessages(prev => prev.map(msg => 
+          msg.id === payload.new.id ? payload.new : msg
+        ));
+      })
+      .subscribe();
+
+    return () => {
+      if (realtimeChannelRef.current) {
+        console.log('🔌 Désabonnement du temps réel');
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
+    };
+  }, [conversationId]);
+
+  // Actualisation automatique toutes les 10 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (conversationId) {
+        console.log('⏰ Actualisation automatique des messages...');
+        loadMessages(conversationId);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [conversationId]);
+
+  // Charger au montage
+  useEffect(() => {
+    loadConversations();
+  }, [user]);
 
   // Marquer les messages comme lus quand la conversation est sélectionnée
   useEffect(() => {
@@ -186,9 +275,12 @@ const MessageCenter = () => {
 
   // Message envoye
   const handleMessageSent = () => {
-    // Recharger les messages
-    // La logique de chargement est maintenant gérée par useRealTimeMessaging
-    // forceRefresh(); 
+    // Recharger les messages immédiatement
+    if (selectedConversation) {
+      loadMessages(selectedConversation.id);
+    }
+    // Recharger les conversations pour mettre à jour le dernier message
+    loadConversations();
   };
 
   // Gérer l'indicateur de frappe
@@ -200,8 +292,12 @@ const MessageCenter = () => {
   const handleDeleteConversation = async (conversationId) => {
     try {
       await messageService.deleteConversation(conversationId);
-      // La logique de chargement est maintenant gérée par useRealTimeMessaging
-      // forceRefresh(); 
+      setConversations(prev => prev.filter(c => c.id !== conversationId));
+      
+      if (selectedConversation?.id === conversationId) {
+        setSelectedConversation(null);
+        setMessages([]);
+      }
     } catch (error) {
       console.error('Erreur suppression conversation:', error);
     }
@@ -218,8 +314,11 @@ const MessageCenter = () => {
 
       if (error) throw error;
 
-      // La logique de chargement est maintenant gérée par useRealTimeMessaging
-      // forceRefresh(); 
+      setConversations(prev => 
+        prev.map(c => 
+          c.id === conversationId ? { ...c, is_active: false } : c
+        )
+      );
     } catch (error) {
       console.error('Erreur archivage conversation:', error);
     }
@@ -238,8 +337,11 @@ const MessageCenter = () => {
 
       if (error) throw error;
 
-      // La logique de chargement est maintenant gérée par useRealTimeMessaging
-      // forceRefresh(); 
+      setConversations(prev => 
+        prev.map(c => 
+          c.id === conversationId ? { ...c, starred: newStarredValue } : c
+        )
+      );
     } catch (error) {
       console.error('Erreur marquage favori:', error);
     }
@@ -248,15 +350,13 @@ const MessageCenter = () => {
   // Rechercher des conversations
   const handleSearchConversations = async (searchTerm) => {
     if (!searchTerm.trim()) {
-      // La logique de chargement est maintenant gérée par useRealTimeMessaging
-      // forceRefresh(); 
+      await loadConversations();
       return;
     }
 
     try {
       const data = await messageService.searchConversations(searchTerm);
-      // La logique de chargement est maintenant gérée par useRealTimeMessaging
-      // forceRefresh(); 
+      setConversations(data);
     } catch (error) {
       console.error('Erreur recherche conversations:', error);
     }
@@ -321,12 +421,6 @@ const MessageCenter = () => {
     return message.is_read || message.sender_id === user?.id;
   };
 
-  // Charger au montage
-  useEffect(() => {
-    // La logique de chargement est maintenant gérée par useRealTimeMessaging
-    // loadConversations(); 
-  }, [user]);
-
   // Nettoyer les canaux au démontage
   useEffect(() => {
     return () => {
@@ -335,6 +429,9 @@ const MessageCenter = () => {
       }
       if (typingChannelRef.current) {
         supabase.removeChannel(typingChannelRef.current);
+      }
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
       }
     };
   }, []);
@@ -465,10 +562,10 @@ const MessageCenter = () => {
                 <motion.button 
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={forceRefresh}
+                  onClick={loadConversations}
                   disabled={isLoading}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
-                  title="Actualiser les messages"
+                  title="Actualiser les conversations"
                 >
                   <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
                 </motion.button>
