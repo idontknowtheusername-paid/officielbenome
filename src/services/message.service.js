@@ -156,13 +156,13 @@ export const messageService = {
               id: '00000000-0000-0000-0000-000000000000',
               first_name: 'Assistant',
               last_name: 'MaxiMarket',
-              avatar_url: null
+              profile_image: null
             },
             participant2: {
               id: user.id,
               first_name: user.user_metadata?.first_name || '',
               last_name: user.user_metadata?.last_name || '',
-              avatar_url: user.user_metadata?.avatar_url || null
+              profile_image: user.user_metadata?.profile_image || null
             },
             listing: null
           };
@@ -214,7 +214,7 @@ export const messageService = {
                 console.log(`🔍 Récupération des détails du participant 1: ${participant1Id}`);
                 const { data: user1, error: user1Error } = await supabase
                   .from('users')
-                  .select('id, first_name, last_name, avatar_url, profile_image')
+                  .select('id, first_name, last_name, profile_image')
                   .eq('id', participant1Id)
                   .single();
                 
@@ -226,7 +226,7 @@ export const messageService = {
                   console.log(`✅ Participant 1 récupéré pour la conversation ${conversation.id}:`, {
                     id: user1.id,
                     name: `${user1.first_name || 'N/A'} ${user1.last_name || 'N/A'}`,
-                    avatar: user1.avatar_url || user1.profile_image
+                    avatar: user1.profile_image || user1.profile_image
                   });
                 } else {
                   console.warn(`❌ Utilisateur 1 non trouvé pour la conversation ${conversation.id}:`, participant1Id, user1Error);
@@ -235,7 +235,7 @@ export const messageService = {
                     id: participant1Id,
                     first_name: 'Utilisateur',
                     last_name: 'Inconnu',
-                    avatar_url: null,
+                    profile_image: null,
                     profile_image: null
                   };
                 }
@@ -245,7 +245,7 @@ export const messageService = {
                   id: participant1Id,
                   first_name: 'Utilisateur',
                   last_name: 'Inconnu',
-                  avatar_url: null,
+                  profile_image: null,
                   profile_image: null
                 };
               }
@@ -256,7 +256,7 @@ export const messageService = {
                 console.log(`🔍 Récupération des détails du participant 2: ${participant2Id}`);
                 const { data: user2, error: user2Error } = await supabase
                   .from('users')
-                  .select('id, first_name, last_name, avatar_url, profile_image')
+                  .select('id, first_name, last_name, profile_image')
                   .eq('id', participant2Id)
                   .single();
                 
@@ -268,7 +268,7 @@ export const messageService = {
                   console.log(`✅ Participant 2 récupéré pour la conversation ${conversation.id}:`, {
                     id: user2.id,
                     name: `${user2.first_name || 'N/A'} ${user2.last_name || 'N/A'}`,
-                    avatar: user2.avatar_url || user2.profile_image
+                    avatar: user2.profile_image || user2.profile_image
                   });
                 } else {
                   console.warn(`❌ Utilisateur 2 non trouvé pour la conversation ${conversation.id}:`, participant2Id, user2Error);
@@ -277,7 +277,7 @@ export const messageService = {
                     id: participant2Id,
                     first_name: 'Utilisateur',
                     last_name: 'Inconnu',
-                    avatar_url: null,
+                    profile_image: null,
                     profile_image: null
                   };
                 }
@@ -287,7 +287,7 @@ export const messageService = {
                   id: participant2Id,
                   first_name: 'Utilisateur',
                   last_name: 'Inconnu',
-                  avatar_url: null,
+                  profile_image: null,
                   profile_image: null
                 };
               }
@@ -328,11 +328,11 @@ export const messageService = {
 
                   if (message.sender_id) {
                     console.log(`🔍 Récupération de l'expéditeur pour le message ${message.id}: ${message.sender_id}`);
-                    const { data: senderData, error: senderError } = await supabase
-                      .from('users')
-                      .select('id, first_name, last_name, avatar_url, profile_image')
-                      .eq('id', message.sender_id)
-                      .single();
+                                      const { data: senderData, error: senderError } = await supabase
+                    .from('users')
+                    .select('id, first_name, last_name, profile_image')
+                    .eq('id', message.sender_id)
+                    .single();
                     
                     if (!senderError && senderData) {
                       sender = senderData;
@@ -440,7 +440,7 @@ export const messageService = {
             if (message.sender_id) {
               const { data: senderData, error: senderError } = await supabase
                 .from('users')
-                .select('id, first_name, last_name, avatar_url')
+                .select('id, first_name, last_name, profile_image')
                 .eq('id', message.sender_id)
                 .single();
               
@@ -452,7 +452,7 @@ export const messageService = {
             if (message.receiver_id) {
               const { data: receiverData, error: receiverError } = await supabase
                 .from('users')
-                .select('id, first_name, last_name, avatar_url')
+                .select('id, first_name, last_name, profile_image')
                 .eq('id', message.receiver_id)
                 .single();
               
@@ -831,7 +831,7 @@ export const messageService = {
             if (conversation.participant1_id) {
               const { data: user1, error: user1Error } = await supabase
                 .from('users')
-                .select('id, first_name, last_name, avatar_url')
+                .select('id, first_name, last_name, profile_image')
                 .eq('id', conversation.participant1_id)
                 .single();
               
@@ -843,7 +843,7 @@ export const messageService = {
             if (conversation.participant2_id) {
               const { data: user2, error: user2Error } = await supabase
                 .from('users')
-                .select('id, first_name, last_name, avatar_url')
+                .select('id, first_name, last_name, profile_image')
                 .eq('id', conversation.participant2_id)
                 .single();
               
@@ -945,7 +945,7 @@ export const messageService = {
             if (message.sender_id) {
               const { data: senderData, error: senderError } = await supabase
                 .from('users')
-                .select('id, first_name, last_name, avatar_url')
+                .select('id, first_name, last_name, profile_image')
                 .eq('id', message.sender_id)
                 .single();
               
