@@ -125,8 +125,8 @@ const MessageCard = ({
           {/* Avatar */}
           <div className="relative">
             <img
-              src={message.avatar || '/default-avatar.png'}
-              alt={message.sender || 'Utilisateur'}
+              src={message.sender?.avatar_url || message.avatar || '/default-avatar.png'}
+              alt={getSenderName(message)}
               className="w-12 h-12 rounded-full object-cover"
               onError={(e) => {
                 e.target.src = '/default-avatar.png';
@@ -141,7 +141,7 @@ const MessageCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-2">
-                <h3 className="font-semibold text-sm">{message.sender || 'Utilisateur'}</h3>
+                <h3 className="font-semibold text-sm">{getSenderName(message)}</h3>
                 {message.verified && (
                   <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                     ✓ Vérifié
@@ -168,7 +168,7 @@ const MessageCard = ({
             </div>
 
             <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-              {message.message || 'Aucun contenu'}
+              {message.content || message.message || 'Aucun contenu'}
             </p>
 
             {/* Message Details */}
@@ -177,7 +177,7 @@ const MessageCard = ({
                 {message.listing && (
                   <span className="flex items-center">
                     <Eye className="h-3 w-3 mr-1" />
-                    {message.listing}
+                    {message.listing.title || message.listing}
                   </span>
                 )}
                 {message.location && (
@@ -221,30 +221,30 @@ const MessageCard = ({
                   size="sm" 
                   variant="outline"
                   onClick={() => onStar?.(message)}
-                  className={cn(
-                    "flex-1",
-                    message.starred && "bg-yellow-100 text-yellow-800"
-                  )}
+                  className="flex-1"
                 >
                   <Star className="h-3 w-3 mr-1" />
-                  {message.starred ? 'Favori' : 'Favori'}
+                  Étoiler
                 </Button>
                 
                 <Button 
                   size="sm" 
                   variant="outline"
                   onClick={() => onArchive?.(message)}
+                  className="flex-1"
                 >
-                  <Archive className="h-3 w-3" />
+                  <Archive className="h-3 w-3 mr-1" />
+                  Archiver
                 </Button>
                 
                 <Button 
                   size="sm" 
                   variant="outline"
                   onClick={() => onDelete?.(message)}
-                  className="text-red-600 hover:text-red-700"
+                  className="flex-1"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Supprimer
                 </Button>
               </div>
             )}
@@ -253,6 +253,33 @@ const MessageCard = ({
       </CardContent>
     </Card>
   );
+};
+
+// Fonction helper pour obtenir le nom de l'expéditeur
+const getSenderName = (message) => {
+  // Si c'est un message système (assistant)
+  if (message.sender_id === '00000000-0000-0000-0000-000000000000' || 
+      message.message_type === 'system') {
+    return 'Assistant MaxiMarket';
+  }
+  
+  // Si on a les données de l'expéditeur avec first_name et last_name
+  if (message.sender?.first_name && message.sender?.last_name) {
+    return `${message.sender.first_name} ${message.sender.last_name}`;
+  }
+  
+  // Si on a juste first_name
+  if (message.sender?.first_name) {
+    return message.sender.first_name;
+  }
+  
+  // Fallback sur l'ancienne structure
+  if (message.sender) {
+    return message.sender;
+  }
+  
+  // Dernier fallback
+  return 'Utilisateur';
 };
 
 export default MessageCard; 
