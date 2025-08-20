@@ -218,6 +218,9 @@ export const messageService = {
                   .eq('id', participant1Id)
                   .single();
                 
+                console.log(`🔍 Résultat participant 1 - data:`, user1);
+                console.log(`🔍 Résultat participant 1 - error:`, user1Error);
+                
                 if (!user1Error && user1) {
                   participant1 = user1;
                   console.log(`✅ Participant 1 récupéré pour la conversation ${conversation.id}:`, {
@@ -256,6 +259,9 @@ export const messageService = {
                   .select('id, first_name, last_name, avatar_url, profile_image')
                   .eq('id', participant2Id)
                   .single();
+                
+                console.log(`🔍 Résultat participant 2 - data:`, user2);
+                console.log(`🔍 Résultat participant 2 - error:`, user2Error);
                 
                 if (!user2Error && user2) {
                   participant2 = user2;
