@@ -51,7 +51,7 @@ CREATE POLICY "Enable read access for all authenticated users" ON users
 
 -- Politique pour permettre aux utilisateurs de créer leur propre profil
 CREATE POLICY "Enable insert for authenticated users only" ON users
-    FOR INSERT WITH CHECK (auth.uid() = id);
+  FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Politique pour permettre aux utilisateurs de mettre à jour leur propre profil
 CREATE POLICY "Enable update for users based on id" ON users
@@ -67,12 +67,12 @@ CREATE POLICY "Enable delete for users based on id" ON users
 
 -- Afficher toutes les politiques sur la table users
 SELECT 
-    schemaname,
-    tablename,
-    policyname,
-    permissive,
-    roles,
-    cmd,
+  schemaname,
+  tablename,
+  policyname,
+  permissive,
+  roles,
+  cmd,
     qual
 FROM pg_policies 
 WHERE tablename = 'users'
