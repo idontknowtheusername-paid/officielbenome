@@ -40,7 +40,6 @@ SELECT
     first_name,
     last_name,
     email,
-    avatar_url,
     profile_image
 FROM users 
 WHERE id = '1b49077e-e6d1-409d-beae-3f1137b1cf84';
@@ -52,9 +51,8 @@ SELECT
     first_name,
     last_name,
     email,
-    avatar_url,
     profile_image
-FROM users 
+FROM users
 WHERE id = '61050e2d-327a-471b-83fc-4316e80aadcc';
 
 -- ============================================================================
@@ -67,7 +65,6 @@ SELECT
     u.id,
     u.first_name,
     u.last_name,
-    u.avatar_url,
     u.profile_image
 FROM users u
 WHERE u.id IN ('1b49077e-e6d1-409d-beae-3f1137b1cf84', '61050e2d-327a-471b-83fc-4316e80aadcc');
