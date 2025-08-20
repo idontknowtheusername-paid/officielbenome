@@ -281,10 +281,10 @@ const PremiumPage = () => {
           )}
 
           {/* Grille des annonces */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading ? (
               // Skeleton loading
-              Array.from({ length: 12 }).map((_, idx) => (
+              Array.from({ length: 9 }).map((_, idx) => (
                 <motion.div
                   key={idx}
                   className="bg-card rounded-lg shadow-lg overflow-hidden border border-border"
