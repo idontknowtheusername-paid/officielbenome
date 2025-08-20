@@ -303,9 +303,38 @@ export const messageService = {
               };
             }
 
+            // Récupérer les détails des expéditeurs pour chaque message
+            const messagesWithUsers = await Promise.all(
+              (messages || []).map(async (message) => {
+                try {
+                  let sender = null;
+
+                  if (message.sender_id) {
+                    const { data: senderData, error: senderError } = await supabase
+                      .from('users')
+                      .select('id, first_name, last_name, avatar_url')
+                      .eq('id', message.sender_id)
+                      .single();
+                    
+                    if (!senderError && senderData) {
+                      sender = senderData;
+                    }
+                  }
+
+                  return {
+                    ...message,
+                    sender
+                  };
+                } catch (error) {
+                  console.error('Erreur lors de la récupération des détails de l\'expéditeur:', error);
+                  return message;
+                }
+              })
+            );
+
             return { 
               ...conversation, 
-              messages: messages || [],
+              messages: messagesWithUsers || [],
               listing: listingDetails,
               participant1,
               participant2
