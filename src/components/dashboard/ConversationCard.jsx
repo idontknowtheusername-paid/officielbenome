@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   MessageSquare, 
   Clock, 
@@ -27,6 +28,8 @@ const ConversationCard = ({
   onStar,
   showActions = true 
 }) => {
+  const { user: currentUser } = useAuth();
+
   // DEBUG: Afficher les données reçues
   console.log('🔍 ConversationCard - Données reçues:', {
     id: conversation.id,
@@ -34,7 +37,8 @@ const ConversationCard = ({
     participant2_id: conversation.participant2_id,
     participant1: conversation.participant1,
     participant2: conversation.participant2,
-    messages: conversation.messages?.length || 0
+    messages: conversation.messages?.length || 0,
+    currentUserId: currentUser?.id
   });
 
   // Vérifier si c'est une conversation système (message de bienvenue)
@@ -109,24 +113,26 @@ const ConversationCard = ({
     ? conversation.messages[conversation.messages.length - 1] 
     : null;
 
-  // Déterminer l'autre participant
-  // L'utilisateur actuel est soit participant1 soit participant2
-  // On veut afficher le nom de l'AUTRE personne
-  const currentUserId = conversation.participant1_id || conversation.participant2_id;
-  
-  // Déterminer qui est l'autre participant (pas l'utilisateur actuel)
+  // Déterminer l'autre participant (pas l'utilisateur actuel)
   let otherParticipant = null;
   
-  if (conversation.participant1 && conversation.participant2) {
-    // Si on a les deux participants, on détermine lequel n'est pas l'utilisateur actuel
-    // Pour l'instant, on prend le premier qui n'est pas l'assistant
-    if (conversation.participant1_id === '00000000-0000-0000-0000-000000000000') {
+  if (currentUser && conversation.participant1 && conversation.participant2) {
+    // Si l'utilisateur actuel est participant1, l'autre est participant2
+    if (conversation.participant1_id === currentUser.id) {
       otherParticipant = conversation.participant2;
-    } else if (conversation.participant2_id === '00000000-0000-0000-0000-000000000000') {
+    } else if (conversation.participant2_id === currentUser.id) {
       otherParticipant = conversation.participant1;
     } else {
-      // Si aucun n'est l'assistant, on prend le premier participant
-      otherParticipant = conversation.participant1;
+      // Si l'utilisateur actuel n'est ni participant1 ni participant2, 
+      // c'est peut-être une conversation de l'assistant
+      if (conversation.participant1_id === '00000000-0000-0000-0000-000000000000') {
+        otherParticipant = conversation.participant2;
+      } else if (conversation.participant2_id === '00000000-0000-0000-0000-000000000000') {
+        otherParticipant = conversation.participant1;
+      } else {
+        // Fallback : prendre le premier participant
+        otherParticipant = conversation.participant1;
+      }
     }
   } else if (conversation.participant1) {
     otherParticipant = conversation.participant1;
@@ -136,7 +142,7 @@ const ConversationCard = ({
 
   // Vérifier si la conversation a des messages non lus
   const hasUnreadMessages = conversation.messages && 
-    conversation.messages.some(msg => !msg.is_read && msg.sender_id !== currentUserId);
+    conversation.messages.some(msg => !msg.is_read && msg.sender_id !== currentUser?.id);
 
   return (
     <Card className={cn(
