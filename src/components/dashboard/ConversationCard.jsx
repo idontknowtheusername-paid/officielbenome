@@ -100,10 +100,29 @@ const ConversationCard = ({
     : null;
 
   // Déterminer l'autre participant
+  // L'utilisateur actuel est soit participant1 soit participant2
+  // On veut afficher le nom de l'AUTRE personne
   const currentUserId = conversation.participant1_id || conversation.participant2_id;
-  const otherParticipant = conversation.participant1_id === currentUserId 
-    ? conversation.participant2 
-    : conversation.participant1;
+  
+  // Déterminer qui est l'autre participant (pas l'utilisateur actuel)
+  let otherParticipant = null;
+  
+  if (conversation.participant1 && conversation.participant2) {
+    // Si on a les deux participants, on détermine lequel n'est pas l'utilisateur actuel
+    // Pour l'instant, on prend le premier qui n'est pas l'assistant
+    if (conversation.participant1_id === '00000000-0000-0000-0000-000000000000') {
+      otherParticipant = conversation.participant2;
+    } else if (conversation.participant2_id === '00000000-0000-0000-0000-000000000000') {
+      otherParticipant = conversation.participant1;
+    } else {
+      // Si aucun n'est l'assistant, on prend le premier participant
+      otherParticipant = conversation.participant1;
+    }
+  } else if (conversation.participant1) {
+    otherParticipant = conversation.participant1;
+  } else if (conversation.participant2) {
+    otherParticipant = conversation.participant2;
+  }
 
   // Vérifier si la conversation a des messages non lus
   const hasUnreadMessages = conversation.messages && 
