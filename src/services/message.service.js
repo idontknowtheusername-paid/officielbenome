@@ -544,6 +544,77 @@ export const messageService = {
     return message;
   },
 
+  // Actualiser automatiquement les conversations
+  refreshConversations: async () => {
+    try {
+      console.log('🔄 Actualisation automatique des conversations...');
+      return await messageService.getUserConversations();
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'actualisation des conversations:', error);
+      throw error;
+    }
+  },
+
+  // Synchroniser une conversation spécifique
+  syncConversation: async (conversationId) => {
+    try {
+      console.log('🔄 Synchronisation de la conversation:', conversationId);
+      
+      // Récupérer les messages récents
+      const { data: messages, error: msgError } = await supabase
+        .from('messages')
+        .select(`
+          id,
+          content,
+          created_at,
+          is_read,
+          sender_id,
+          receiver_id,
+          conversation_id,
+          message_type
+        `)
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+
+      if (msgError) throw msgError;
+
+      // Enrichir les messages avec les détails des expéditeurs
+      const messagesWithUsers = await Promise.all(
+        (messages || []).map(async (message) => {
+          try {
+            let sender = null;
+
+            if (message.sender_id) {
+              const { data: senderData, error: senderError } = await supabase
+                .from('users')
+                .select('id, first_name, last_name, profile_image')
+                .eq('id', message.sender_id)
+                .single();
+              
+              if (!senderError && senderData) {
+                sender = senderData;
+              }
+            }
+
+            return {
+              ...message,
+              sender
+            };
+          } catch (error) {
+            console.error('Erreur lors de la récupération des détails de l\'expéditeur:', error);
+            return message;
+          }
+        })
+      );
+
+      console.log('✅ Conversation synchronisée:', messagesWithUsers?.length || 0, 'messages');
+      return messagesWithUsers;
+    } catch (error) {
+      console.error('❌ Erreur lors de la synchronisation de la conversation:', error);
+      throw error;
+    }
+  },
+
   // Creer une nouvelle conversation
   createConversation: async (participantId, listingId = null) => {
     const { data: { user } } = await supabase.auth.getUser();

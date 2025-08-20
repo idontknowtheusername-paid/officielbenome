@@ -19,3 +19,4 @@ export { default as Phase4Dashboard } from './Phase4Dashboard';
 // Débogage et diagnostic
 export { default as MessageDebugger } from './MessageDebugger';
 export { default as MessageTest } from './MessageTest';
+export { default as RealTimeTester } from './RealTimeTester';
