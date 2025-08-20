@@ -178,10 +178,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('maximarket-remember-me');
           localStorage.removeItem('maximarket-remember-date');
           
-          toast({
-            title: "Déconnexion réussie",
-            description: "À bientôt !",
-          });
+          // Notification de déconnexion supprimée - plus de toast inutile
         } else if (event === 'TOKEN_REFRESHED') {
           // Mettre à jour l'expiration après renouvellement
           if (session?.created_at) {
