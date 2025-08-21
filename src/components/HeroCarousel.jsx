@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Clock, MapPin, Eye, Heart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
@@ -50,15 +50,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
     }
   }, [navigate, onListingClick]);
 
-  // Formatage du prix
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
-  };
+
 
   // Icône de catégorie
   const getCategoryIcon = (category) => {
@@ -129,93 +121,74 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
       {/* Overlay sombre */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-      {/* Contenu principal */}
+      {/* Contenu principal - Simplifié pour ne montrer que l'image en arrière-plan */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
-          {/* Badge de catégorie et heure */}
+          {/* Badge de catégorie et heure - Discret en haut */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex justify-center items-center gap-4 mb-6"
+            className="flex justify-center items-center gap-4 mb-8"
           >
-            <Badge className={cn("text-white border-0", getCategoryColor(category))}>
-              <span className="mr-2">{getCategoryIcon(category)}</span>
+            <Badge className={cn("text-white/80 border-0 text-sm", getCategoryColor(category))}>
+              <span className="mr-1">{getCategoryIcon(category)}</span>
               {category === 'real_estate' && 'Immobilier'}
               {category === 'automobile' && 'Automobile'}
               {category === 'services' && 'Services'}
               {category === 'marketplace' && 'Marketplace'}
             </Badge>
-            <Badge variant="outline" className="text-white border-white/30">
+            <Badge variant="outline" className="text-white/80 border-white/20 text-sm">
               <Clock className="h-3 w-3 mr-1" />
               {timeSlot} • {hour}h
             </Badge>
           </motion.div>
 
-          {/* Titre de l'annonce */}
+          {/* Titre principal du site - Plus visible */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight max-w-4xl mx-auto"
+            className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
           >
-            {currentListing.title}
+            Bienvenue sur{" "}
+            <span className="gradient-text">MaxiMarket</span>
           </motion.h1>
 
-          {/* Prix et localisation */}
-          <motion.div
+          {/* Sous-titre */}
+          <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="flex flex-col md:flex-row justify-center items-center gap-4 mb-8"
+            className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto"
           >
-            <div className="text-2xl md:text-3xl font-bold text-primary">
-              {formatPrice(currentListing.price)}
-            </div>
-            <div className="flex items-center text-gray-300">
-              <MapPin className="h-5 w-5 mr-2" />
-              {currentListing.location?.city}, {currentListing.location?.country}
-            </div>
-          </motion.div>
+            Explorez, découvrez, connectez. Votre marketplace de confiance.
+          </motion.p>
 
-          {/* Statistiques */}
+          {/* Indicateur discret de l'annonce en cours */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.8 }}
-            className="flex justify-center items-center gap-6 mb-10 text-gray-300"
+            className="text-white/60 text-sm mb-8"
           >
-            <div className="flex items-center">
-              <Eye className="h-4 w-4 mr-2" />
-              {currentListing.views_count || 0} vues
-            </div>
-            <div className="flex items-center">
-              <Heart className="h-4 w-4 mr-2" />
-              {currentListing.favorites_count || 0} favoris
-            </div>
+            Découvrez : {currentListing.title}
           </motion.div>
 
-          {/* Boutons d'action */}
+          {/* Bouton discret pour voir l'annonce */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1 }}
-            className="flex flex-col sm:flex-row justify-center items-center gap-4"
+            className="flex justify-center"
           >
             <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-white shadow-lg transform hover:scale-105 transition-transform duration-300"
+              variant="ghost"
+              size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10 border border-white/20"
               onClick={() => handleListingClick(currentListing)}
             >
-              Voir l'annonce
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-white text-white hover:bg-white/10 shadow-lg transform hover:scale-105 transition-transform duration-300"
-              onClick={() => navigate(`/${category}`)}
-            >
-              Voir plus d'annonces
+              Voir cette annonce
             </Button>
           </motion.div>
         </div>
