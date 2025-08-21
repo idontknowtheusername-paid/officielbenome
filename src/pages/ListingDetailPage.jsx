@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Heart, Phone, Mail, Calendar, Eye, Share2, Flag, MessageSquare } from 'lucide-react';
+import { ArrowLeft, MapPin, Heart, Phone, Mail, Calendar, Eye, Flag, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { listingService, messageService } from '@/services';
 import ImageGallery from '@/components/ImageGallery';
+import ShareListing from '@/components/ShareListing';
 import { useListingImages } from '@/hooks';
 import ReportModal from '@/components/ReportModal';
 
@@ -295,22 +296,6 @@ const ListingDetailPage = () => {
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: listing?.title,
-        text: listing?.description,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Lien copié",
-        description: "Le lien de l'annonce a été copié dans le presse-papiers.",
-      });
-    }
-  };
-
   const handleReport = () => {
     if (!user) {
       navigate('/connexion');
@@ -403,14 +388,7 @@ const ListingDetailPage = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-4 w-4 mr-1" />
-                  Partager
-                </Button>
+                <ShareListing listing={listing} />
                 <Button
                   variant="outline"
                   size="sm"

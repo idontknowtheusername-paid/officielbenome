@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import MiniImageGallery from '@/components/MiniImageGallery';
 import { useListingImages } from '@/hooks';
 import BoostStatus from '@/components/BoostStatus';
+import ShareListing from '@/components/ShareListing';
 import { cn } from '@/lib/utils';
 
 const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
@@ -241,6 +242,11 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
               </div>
             )}
           </div>
+        </div>
+        
+        {/* Share Button - Version compacte */}
+        <div className="mt-3 pt-3 border-t border-border/20">
+          <ShareListing listing={listing} variant="compact" />
         </div>
         
         {/* Boost Status - Affiché seulement pour le propriétaire de l'annonce */}

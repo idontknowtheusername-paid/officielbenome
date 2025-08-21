@@ -98,16 +98,17 @@ const HomePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
       {/* Hero Section */}
       <motion.section
-        className="relative py-24 md:py-40 bg-cover bg-center overflow-hidden"
+        className="relative h-screen py-24 md:py-40 bg-cover bg-center overflow-hidden flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
       >
         {/* Image de fond - Test simple */}
         <img
-          src="https://images.unsplash.com/photo-1508896080210-93c377eb4135?w=1920&h=1080&fit=crop&q=80"
+          src="https://images.unsplash.com/photo-1508896080210-93c377eb4135"
           alt="Skyline futuriste d'une ville africaine au crépuscule avec des néons"
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ minHeight: '100vh' }}
         />
         
         {/* Overlay sombre */}
