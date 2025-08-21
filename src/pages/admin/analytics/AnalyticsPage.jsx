@@ -49,33 +49,59 @@ import { fr } from 'date-fns/locale';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 function AnalyticsPage() {
+  console.log('🚀 AnalyticsPage - Composant initialisé');
+  
   // State for date range
   const [dateRange, setDateRange] = useState('7days');
   const [startDate, endDate] = useMemo(() => {
     const now = new Date();
+    console.log('🔍 Calcul des dates - dateRange:', dateRange);
+    
+    let start, end;
     switch (dateRange) {
       case 'today':
-        return [format(now, 'yyyy-MM-dd'), format(now, 'yyyy-MM-dd')];
+        start = format(now, 'yyyy-MM-dd');
+        end = format(now, 'yyyy-MM-dd');
+        break;
       case 'yesterday':
         const yesterday = subDays(now, 1);
-        return [format(yesterday, 'yyyy-MM-dd'), format(yesterday, 'yyyy-MM-dd')];
+        start = format(yesterday, 'yyyy-MM-dd');
+        end = format(yesterday, 'yyyy-MM-dd');
+        break;
       case '7days':
-        return [format(subDays(now, 7), 'yyyy-MM-dd'), format(now, 'yyyy-MM-dd')];
+        start = format(subDays(now, 7), 'yyyy-MM-dd');
+        end = format(now, 'yyyy-MM-dd');
+        break;
       case '30days':
-        return [format(subDays(now, 30), 'yyyy-MM-dd'), format(now, 'yyyy-MM-dd')];
+        start = format(subDays(now, 30), 'yyyy-MM-dd');
+        end = format(now, 'yyyy-MM-dd');
+        break;
       case '90days':
-        return [format(subDays(now, 90), 'yyyy-MM-dd'), format(now, 'yyyy-MM-dd')];
+        start = format(subDays(now, 90), 'yyyy-MM-dd');
+        end = format(now, 'yyyy-MM-dd');
+        break;
       case 'thisMonth':
-        return [format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd'), format(now, 'yyyy-MM-dd')];
+        start = format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd');
+        end = format(now, 'yyyy-MM-dd');
+        break;
       case 'lastMonth':
         const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-        return [format(firstDayLastMonth, 'yyyy-MM-dd'), format(lastDayLastMonth, 'yyyy-MM-dd')];
+        start = format(firstDayLastMonth, 'yyyy-MM-dd');
+        end = format(lastDayLastMonth, 'yyyy-MM-dd');
+        break;
       case 'thisYear':
-        return [format(new Date(now.getFullYear(), 0, 1), 'yyyy-MM-dd'), format(now, 'yyyy-MM-dd')];
+        start = format(new Date(now.getFullYear(), 0, 1), 'yyyy-MM-dd');
+        end = format(now, 'yyyy-MM-dd');
+        break;
       default:
-        return [format(subDays(now, 7), 'yyyy-MM-dd'), format(now, 'yyyy-MM-dd')];
+        start = format(subDays(now, 7), 'yyyy-MM-dd');
+        end = format(now, 'yyyy-MM-dd');
+        break;
     }
+    
+    console.log('🔍 Dates calculées:', { start, end });
+    return [start, end];
   }, [dateRange]);
 
   // Fetch analytics data
@@ -383,6 +409,7 @@ function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
+      {console.log('🔍 Rendu principal - début')}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Tableau de Bord Analytique</h2>
@@ -415,8 +442,10 @@ function AnalyticsPage() {
       </div>
 
       {/* Stats Grid */}
+      {console.log('🔍 Rendu - Stats Grid')}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
+          {console.log('🔍 Rendu - Carte Total Annonces')}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Annonces
@@ -438,6 +467,7 @@ function AnalyticsPage() {
         </Card>
         
         <Card>
+          {console.log('🔍 Rendu - Carte Utilisateurs')}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Utilisateurs
@@ -455,6 +485,7 @@ function AnalyticsPage() {
         </Card>
         
         <Card>
+          {console.log('🔍 Rendu - Carte Chiffre d\'affaires')}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Chiffre d'affaires
@@ -476,6 +507,7 @@ function AnalyticsPage() {
         </Card>
         
         <Card>
+          {console.log('🔍 Rendu - Carte Taux d\'approbation')}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Taux d'approbation
@@ -495,8 +527,10 @@ function AnalyticsPage() {
       </div>
 
       {/* Main Charts */}
+      {console.log('🔍 Rendu - Main Charts')}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
+          {console.log('🔍 Rendu - Graphique Évolution des Revenus')}
           <CardHeader>
             <CardTitle>Évolution des Revenus</CardTitle>
             <CardDescription>
@@ -546,6 +580,7 @@ function AnalyticsPage() {
         </Card>
         
         <Card className="col-span-3">
+          {console.log('🔍 Rendu - Graphique Sources de trafic')}
           <CardHeader>
             <CardTitle>Sources de trafic</CardTitle>
             <CardDescription>
