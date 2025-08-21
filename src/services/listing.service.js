@@ -147,7 +147,7 @@ const getHeroListingsByHour = async (limit = 6) => {
           id,
           first_name,
           last_name,
-          avatar_url
+          profile_image
         ),
         listing_boosts (
           boost_packages (
@@ -177,7 +177,7 @@ const getHeroListingsByHour = async (limit = 6) => {
             id,
             first_name,
             last_name,
-            avatar_url
+            profile_image
           )
         `)
         .eq('category', currentCategory)
