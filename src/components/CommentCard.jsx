@@ -3,22 +3,22 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
 import RatingStars from '@/components/ui/RatingStars';
 import CommentForm from '@/components/CommentForm';
-import { 
-  MoreHorizontal, 
-  Reply, 
-  Edit, 
-  Trash2, 
-  Flag, 
-  CheckCircle, 
+import {
+  MoreHorizontal,
+  Reply,
+  Edit,
+  Trash2,
+  Flag,
+  CheckCircle,
   Clock,
   User,
   MessageSquare
@@ -26,11 +26,11 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { cn, formatDate } from '@/lib/utils';
 
-const CommentCard = ({ 
-  comment, 
-  onUpdate, 
-  onDelete, 
-  onReply, 
+const CommentCard = ({
+  comment,
+  onUpdate,
+  onDelete,
+  onReply,
   onReport,
   showReplies = true,
   className = ''
@@ -189,23 +189,23 @@ const CommentCard = ({
           <Avatar className="h-10 w-10">
             <AvatarImage src={comment.user?.avatar_url} alt={comment.user?.full_name} />
             <AvatarFallback className="bg-primary/10 text-primary">
-              {getUserInitials(comment.user?.full_name)}
+              {getUserInitials(comment.user?.full_name || comment.user?.email)}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h4 className="font-medium text-sm">
-                {comment.user?.full_name || 'Utilisateur anonyme'}
+                {comment.user?.full_name || comment.user?.email || 'Utilisateur anonyme'}
               </h4>
-              
+
               {comment.user?.verified && (
                 <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-300">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Vérifié
                 </Badge>
               )}
-              
+
               {comment.is_verified_purchase && (
                 <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
                   <CheckCircle className="h-3 w-3 mr-1" />
@@ -213,7 +213,7 @@ const CommentCard = ({
                 </Badge>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-2 text-xs text-muted-foreground">
               <span>{formatDate(comment.created_at)}</span>
               {comment.updated_at !== comment.created_at && (
@@ -235,7 +235,7 @@ const CommentCard = ({
               <Reply className="h-4 w-4 mr-2" />
               Répondre
             </DropdownMenuItem>
-            
+
             {canModify && (
               <>
                 <DropdownMenuItem onClick={handleEdit}>
@@ -248,7 +248,7 @@ const CommentCard = ({
                 </DropdownMenuItem>
               </>
             )}
-            
+
             {!isOwner && (
               <DropdownMenuItem onClick={handleReport}>
                 <Flag className="h-4 w-4 mr-2" />
@@ -284,7 +284,7 @@ const CommentCard = ({
           {comment.likes_count > 0 && (
             <span>{comment.likes_count} j'aime</span>
           )}
-          
+
           {comment.replies_count > 0 && (
             <button
               onClick={() => setShowRepliesList(!showRepliesList)}
@@ -334,7 +334,7 @@ const CommentCard = ({
           <h5 className="text-sm font-medium text-muted-foreground">
             Réponses ({comment.replies_count})
           </h5>
-          
+
           {replies.map((reply) => (
             <CommentCard
               key={reply.id}

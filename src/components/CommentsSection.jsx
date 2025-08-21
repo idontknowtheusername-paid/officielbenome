@@ -10,23 +10,24 @@ import { useToast } from '@/components/ui/use-toast';
 import CommentCard from '@/components/CommentCard';
 import CommentForm from '@/components/CommentForm';
 import RatingStars from '@/components/ui/RatingStars';
-import { 
-  MessageSquare, 
-  Star, 
-  Filter, 
-  SortAsc, 
+import {
+  MessageSquare,
+  Star,
+  Filter,
+  SortAsc,
   SortDesc,
   Plus,
   X,
   CheckCircle,
   Users,
-  TrendingUp
+  TrendingUp,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const CommentsSection = ({ 
-  listingId, 
-  listing, 
+const CommentsSection = ({
+  listingId,
+  listing,
   className = '',
   showStats = true,
   showFilters = true
@@ -132,7 +133,7 @@ const CommentsSection = ({
 
   const getRatingDistribution = () => {
     if (!stats?.rating_distribution) return null;
-    
+
     const total = stats.total_comments;
     if (total === 0) return null;
 
@@ -152,14 +153,11 @@ const CommentsSection = ({
       <Card className={cn('mt-8', className)}>
         <CardContent className="p-6">
           <div className="text-center text-muted-foreground">
-            <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Impossible de charger les commentaires</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={refresh}
-              className="mt-2"
-            >
+            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <h3 className="text-lg font-semibold mb-2">Impossible de charger les commentaires</h3>
+            <p className="mb-4">Une erreur est survenue lors du chargement des commentaires.</p>
+            <Button onClick={refresh} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
               Réessayer
             </Button>
           </div>
@@ -170,34 +168,22 @@ const CommentsSection = ({
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
+      {/* En-tête */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Commentaires et avis</h2>
-          {stats?.total_comments > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {stats.total_comments} commentaire{stats.total_comments > 1 ? 's' : ''}
+        <div className="flex items-center space-x-3">
+          <MessageSquare className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold">Commentaires et Avis</h2>
+          {stats && (
+            <Badge variant="secondary" className="text-sm">
+              {stats.total_comments} commentaire{stats.total_comments !== 1 ? 's' : ''}
             </Badge>
           )}
         </div>
 
-        {user && (
-          <Button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center space-x-2"
-          >
-            {showForm ? (
-              <>
-                <X className="h-4 w-4" />
-                <span>Annuler</span>
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4" />
-                <span>Ajouter un commentaire</span>
-              </>
-            )}
+        {user && !showForm && (
+          <Button onClick={() => setShowForm(true)} className="flex items-center space-x-2">
+            <Plus className="h-4 w-4" />
+            <span>Ajouter un commentaire</span>
           </Button>
         )}
       </div>
@@ -205,62 +191,66 @@ const CommentsSection = ({
       {/* Statistiques */}
       {showStats && stats && (
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center space-x-2">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
               <TrendingUp className="h-5 w-5" />
               <span>Statistiques</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Note moyenne */}
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-3xl font-bold text-primary mb-2">
                   {getAverageRating()}
                 </div>
-                <div className="text-sm text-muted-foreground">Note moyenne</div>
-                <RatingStars rating={Math.round(getAverageRating())} readonly size="sm" />
+                <RatingStars rating={getAverageRating()} readonly size="lg" />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Note moyenne
+                </p>
               </div>
-              
+
+              {/* Total commentaires */}
               <div className="text-center">
-                <div className="text-2xl font-bold">
+                <div className="text-3xl font-bold text-primary mb-2">
                   {stats.total_comments}
                 </div>
-                <div className="text-sm text-muted-foreground">Total commentaires</div>
+                <MessageSquare className="h-6 w-6 mx-auto text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Commentaires
+                </p>
               </div>
-              
+
+              {/* Achats vérifiés */}
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-primary mb-2">
                   {stats.verified_purchases}
                 </div>
-                <div className="text-sm text-muted-foreground">Achats vérifiés</div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {stats.rating_distribution?.[5] || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">5 étoiles</div>
+                <CheckCircle className="h-6 w-6 mx-auto text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Achats vérifiés
+                </p>
               </div>
             </div>
 
             {/* Distribution des notes */}
             {getRatingDistribution() && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Répartition des notes</h4>
-                <div className="space-y-1">
+              <div className="mt-6">
+                <h4 className="text-sm font-medium mb-3">Distribution des notes</h4>
+                <div className="space-y-2">
                   {getRatingDistribution().reverse().map(({ rating, count, percentage }) => (
-                    <div key={rating} className="flex items-center space-x-2">
+                    <div key={rating} className="flex items-center space-x-3">
                       <div className="flex items-center space-x-1 w-16">
-                        <span className="text-xs">{rating}</span>
-                        <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                        <span className="text-sm">{rating}</span>
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
                       </div>
                       <div className="flex-1 bg-muted rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <span className="text-xs text-muted-foreground w-12 text-right">
+                      <span className="text-sm text-muted-foreground w-12 text-right">
                         {count}
                       </span>
                     </div>
@@ -282,7 +272,19 @@ const CommentsSection = ({
             transition={{ duration: 0.3 }}
           >
             <Card>
-              <CardContent className="p-6">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Ajouter un commentaire</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowForm(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
                 <CommentForm
                   listingId={listingId}
                   onSubmit={handleAddComment}
@@ -306,12 +308,10 @@ const CommentsSection = ({
 
               {/* Filtre par note */}
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground">Note :</span>
+                <span className="text-sm">Note :</span>
                 <select
                   value={filters.rating || ''}
-                  onChange={(e) => handleFilterChange({ 
-                    rating: e.target.value ? parseInt(e.target.value) : null 
-                  })}
+                  onChange={(e) => handleFilterChange({ rating: e.target.value || null })}
                   className="text-sm border rounded px-2 py-1"
                 >
                   <option value="">Toutes</option>
@@ -323,7 +323,7 @@ const CommentsSection = ({
                 </select>
               </div>
 
-              {/* Toggle achats vérifiés */}
+              {/* Filtre achats vérifiés */}
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -332,14 +332,14 @@ const CommentsSection = ({
                   onChange={(e) => handleFilterChange({ verifiedOnly: e.target.checked })}
                   className="rounded"
                 />
-                <label htmlFor="verifiedOnly" className="text-sm text-muted-foreground">
+                <label htmlFor="verifiedOnly" className="text-sm">
                   Achats vérifiés uniquement
                 </label>
               </div>
 
               {/* Tri */}
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground">Tri :</span>
+                <span className="text-sm">Tri :</span>
                 <select
                   value={`${filters.sort}-${filters.order}`}
                   onChange={(e) => {
@@ -363,14 +363,14 @@ const CommentsSection = ({
       <div className="space-y-4">
         {loading ? (
           <div className="text-center py-8">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-            <p className="mt-2 text-muted-foreground">Chargement des commentaires...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Chargement des commentaires...</p>
           </div>
         ) : comments.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">Aucun commentaire</h3>
+              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="text-lg font-semibold mb-2">Aucun commentaire</h3>
               <p className="text-muted-foreground mb-4">
                 Soyez le premier à laisser un commentaire sur cette annonce !
               </p>
@@ -396,8 +396,8 @@ const CommentsSection = ({
             ))}
 
             {/* Pagination */}
-            {pagination.pages > 1 && (
-              <div className="flex items-center justify-center space-x-2 pt-4">
+            {pagination && pagination.pages > 1 && (
+              <div className="flex items-center justify-center space-x-2 mt-6">
                 <Button
                   variant="outline"
                   size="sm"
@@ -406,11 +406,11 @@ const CommentsSection = ({
                 >
                   Précédent
                 </Button>
-                
+
                 <span className="text-sm text-muted-foreground">
                   Page {pagination.page} sur {pagination.pages}
                 </span>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -424,17 +424,6 @@ const CommentsSection = ({
           </>
         )}
       </div>
-
-      {/* Message de connexion */}
-      {!user && (
-        <Card className="bg-muted/50">
-          <CardContent className="p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Connectez-vous pour ajouter un commentaire et noter cette annonce.
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

@@ -21,11 +21,11 @@ const commentSchema = z.object({
   parent_id: z.string().uuid().optional()
 });
 
-const CommentForm = ({ 
-  listingId, 
-  onSubmit, 
-  onCancel, 
-  initialData = null, 
+const CommentForm = ({
+  listingId,
+  onSubmit,
+  onCancel,
+  initialData = null,
   parentId = null,
   className = ''
 }) => {
@@ -64,7 +64,7 @@ const CommentForm = ({
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const commentData = {
         ...data,
@@ -74,14 +74,14 @@ const CommentForm = ({
       };
 
       const result = await onSubmit(commentData);
-      
+
       if (result.error) {
         throw new Error(result.error);
       }
 
       toast({
         title: isEditing ? "Commentaire modifié" : "Commentaire ajouté",
-        description: isEditing 
+        description: isEditing
           ? "Votre commentaire a été modifié avec succès."
           : "Votre commentaire a été ajouté avec succès.",
       });
@@ -91,7 +91,7 @@ const CommentForm = ({
         reset();
         setRating(0);
       }
-      
+
       if (onCancel) {
         onCancel();
       }
@@ -127,7 +127,7 @@ const CommentForm = ({
         <h3 className="text-lg font-semibold">
           {isEditing ? 'Modifier le commentaire' : 'Ajouter un commentaire'}
         </h3>
-        
+
         {parentId && (
           <Badge variant="secondary" className="text-xs">
             Réponse
@@ -163,8 +163,8 @@ const CommentForm = ({
           <Textarea
             id="content"
             {...register('content')}
-            placeholder={isEditing 
-              ? "Modifiez votre commentaire..." 
+            placeholder={isEditing
+              ? "Modifiez votre commentaire..."
               : "Partagez votre expérience avec cette annonce..."
             }
             className={cn(
@@ -173,13 +173,13 @@ const CommentForm = ({
             )}
             maxLength={1000}
           />
-          
+
           {/* Compteur de caractères */}
           <div className="flex items-center justify-between text-xs">
             <span className={getCharacterCountColor()}>
               {getCharacterCount()}/1000 caractères
             </span>
-            
+
             <div className="flex items-center space-x-2">
               <Button
                 type="button"
@@ -192,7 +192,7 @@ const CommentForm = ({
               </Button>
             </div>
           </div>
-          
+
           {errors.content && (
             <p className="text-sm text-red-500 flex items-center">
               <AlertCircle className="h-4 w-4 mr-1" />
@@ -226,7 +226,7 @@ const CommentForm = ({
               </Button>
             )}
           </div>
-          
+
           <Button
             type="submit"
             disabled={isSubmitting || !isValid || rating === 0}

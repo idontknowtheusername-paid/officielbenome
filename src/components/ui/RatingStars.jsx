@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const RatingStars = ({ 
-  rating = 0, 
-  onRatingChange, 
-  readonly = false, 
+const RatingStars = ({
+  rating = 0,
+  onRatingChange,
+  readonly = false,
   size = 'md',
   showLabel = false,
   className = ''
 }) => {
   const [hoverRating, setHoverRating] = useState(0);
-  
+
   const sizes = {
     sm: 'h-3 w-3',
     md: 'h-4 w-4',
@@ -77,13 +77,13 @@ const RatingStars = ({
           </button>
         ))}
       </div>
-      
+
       {showLabel && (
         <span className="text-sm text-muted-foreground ml-2">
           {getLabel(rating)}
         </span>
       )}
-      
+
       {!readonly && (
         <span className="text-xs text-muted-foreground ml-2">
           {rating > 0 ? `${rating}/5` : 'Cliquez pour noter'}
