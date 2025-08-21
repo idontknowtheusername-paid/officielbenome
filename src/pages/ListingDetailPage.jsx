@@ -387,17 +387,17 @@ const ListingDetailPage = () => {
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
-                <ShareListing listing={listing} />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReport}
-                >
-                  <Flag className="h-4 w-4 mr-1" />
-                  Signaler
-                </Button>
-              </div>
+                              <div className="flex items-center gap-2">
+                  <ShareListing listing={listing} variant="compact" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReport}
+                  >
+                    <Flag className="h-4 w-4 mr-1" />
+                    Signaler
+                  </Button>
+                </div>
             </div>
 
             {/* Prix */}

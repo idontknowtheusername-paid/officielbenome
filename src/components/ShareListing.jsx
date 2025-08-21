@@ -283,16 +283,7 @@ const ShareListing = ({ listing, variant = "default" }) => {
         </Button>
       </div>
       
-      {/* Informations sur le partage */}
-      <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
-        <p className="font-medium mb-1">💡 Conseils de partage :</p>
-        <ul className="space-y-1">
-          <li>• <strong>Facebook</strong> : Partage direct avec texte et lien</li>
-          <li>• <strong>Instagram</strong> : Copiez le lien et collez-le dans votre story/post</li>
-          <li>• <strong>TikTok</strong> : Ajoutez le lien dans la description de votre vidéo</li>
-          <li>• <strong>WhatsApp</strong> : Partage direct avec texte et lien</li>
-        </ul>
-      </div>
+
     </div>
   );
 };
