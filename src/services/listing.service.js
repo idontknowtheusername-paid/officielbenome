@@ -87,11 +87,11 @@ const getCategoryByHour = () => {
   // 12h-18h : Automobile (après-midi, achats/ventes de véhicules)
   if (hour >= 12 && hour < 18) return 'automobile';
   
-  // 18h-22h : Services (soirée, services professionnels)
-  if (hour >= 18 && hour < 22) return 'services';
+  // 18h-22h : Marketplace (soirée, achats en ligne)
+  if (hour >= 18 && hour < 22) return 'marketplace';
   
-  // 22h-6h : Marketplace (nuit, achats en ligne)
-  return 'marketplace';
+  // 22h-6h : Services (nuit, services professionnels)
+  return 'services';
 };
 
 // Fonction pour obtenir des annonces hero selon l'heure
