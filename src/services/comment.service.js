@@ -20,15 +20,15 @@ class CommentService {
 
     try {
       console.log('🔍 [CommentService] Construction de la requête...');
+      
+      // Requête simplifiée pour éviter les problèmes de syntaxe
       let query = supabase
         .from('comments')
-        .select(`
-          *,
-          user:auth.users(id, email),
-          replies:comments(count)
-        `)
+        .select('*')
         .eq('listing_id', listingId)
         .eq('status', 'approved');
+
+      console.log('🔍 [CommentService] Requête de base construite');
 
       // Filtres
       if (rating) query = query.eq('rating', rating);
@@ -44,10 +44,21 @@ class CommentService {
       const to = from + limit - 1;
       query = query.range(from, to);
 
+      console.log('🔍 [CommentService] Exécution de la requête...');
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      console.log('🔍 [CommentService] Résultat:', { 
+        dataLength: data?.length, 
+        error: error?.message, 
+        count 
+      });
 
+      if (error) {
+        console.error('❌ [CommentService] Erreur:', error);
+        throw error;
+      }
+
+      console.log('✅ [CommentService] Requête réussie, retour des données');
       return {
         comments: data || [],
         pagination: {
@@ -59,7 +70,7 @@ class CommentService {
         error: null
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération des commentaires:', error);
+      console.error('❌ [CommentService] Erreur finale:', error);
       return {
         comments: [],
         pagination: { page, limit, total: 0, pages: 0 },
