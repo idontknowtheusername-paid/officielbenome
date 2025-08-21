@@ -29,7 +29,7 @@ export const useComments = (listingId, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [listingId, options]);
+  }, [listingId, JSON.stringify(options)]);
 
   // Fonction pour récupérer les statistiques
   const fetchStats = useCallback(async () => {
@@ -153,13 +153,13 @@ export const useComments = (listingId, options = {}) => {
     fetchStats();
   }, [fetchComments, fetchStats]);
 
-  // Chargement initial
+  // Chargement initial - CORRIGÉ : pas de dépendances qui causent des re-renders
   useEffect(() => {
     if (listingId) {
       fetchComments();
       fetchStats();
     }
-  }, [listingId, fetchComments, fetchStats]);
+  }, [listingId]); // Seulement listingId comme dépendance
 
   return {
     // État
@@ -209,7 +209,7 @@ export const useUserComments = (userId, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [userId, options]);
+  }, [userId, JSON.stringify(options)]);
 
   const changePage = useCallback((newPage) => {
     fetchUserComments({ page: newPage });
@@ -219,7 +219,7 @@ export const useUserComments = (userId, options = {}) => {
     if (userId) {
       fetchUserComments();
     }
-  }, [userId, fetchUserComments]);
+  }, [userId]); // Seulement userId comme dépendance
 
   return {
     comments,
@@ -256,7 +256,7 @@ export const useCommentsModeration = (options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [options]);
+  }, [JSON.stringify(options)]);
 
   const moderateComment = useCallback(async (commentId, action, reason = null) => {
     try {
@@ -283,7 +283,7 @@ export const useCommentsModeration = (options = {}) => {
 
   useEffect(() => {
     fetchPendingComments();
-  }, [fetchPendingComments]);
+  }, []); // Pas de dépendances pour éviter les re-renders
 
   return {
     comments,
