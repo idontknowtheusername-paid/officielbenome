@@ -30,12 +30,14 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
 
   // Navigation manuelle
   const goToNext = useCallback(() => {
+    console.log('🔄 goToNext appelé, currentIndex:', currentIndex, 'listings.length:', listings.length);
     setCurrentIndex((prev) => (prev + 1) % listings.length);
-  }, [listings.length]);
+  }, [listings.length, currentIndex]);
 
   const goToPrevious = useCallback(() => {
+    console.log('🔄 goToPrevious appelé, currentIndex:', currentIndex, 'listings.length:', listings.length);
     setCurrentIndex((prev) => (prev - 1 + listings.length) % listings.length);
-  }, [listings.length]);
+  }, [listings.length, currentIndex]);
 
   const goToSlide = useCallback((index) => {
     setCurrentIndex(index);
@@ -202,22 +204,24 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white border-0"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white border-0 z-50 cursor-pointer"
             onClick={goToPrevious}
+            style={{ zIndex: 50 }}
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white border-0"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white border-0 z-50 cursor-pointer"
             onClick={goToNext}
+            style={{ zIndex: 50 }}
           >
             <ChevronRight className="h-6 w-6" />
           </Button>
 
           {/* Indicateurs */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-50" style={{ zIndex: 50 }}>
             {listings.map((_, index) => (
               <button
                 key={index}
@@ -233,7 +237,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
           </div>
 
           {/* Compteur */}
-          <div className="absolute top-8 right-8 text-white/70 text-sm">
+          <div className="absolute top-8 right-8 text-white/70 text-sm z-50" style={{ zIndex: 50 }}>
             {currentIndex + 1} / {listings.length}
           </div>
         </>
