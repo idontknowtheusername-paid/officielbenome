@@ -49,7 +49,7 @@ export const useComments = (listingId, options = {}) => {
       console.log('🔍 [useComments] Fin du chargement, loading = false');
       setLoading(false);
     }
-  }, [listingId, JSON.stringify(options)]);
+  }, [listingId]); // Supprimer options pour éviter les re-renders
 
   // Fonction pour récupérer les statistiques
   const fetchStats = useCallback(async () => {

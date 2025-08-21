@@ -8,72 +8,44 @@ class CommentService {
   async getComments(listingId, options = {}) {
     console.log('🔍 [CommentService] getComments appelé avec:', { listingId, options });
     
-    const {
-      page = 1,
-      limit = 10,
-      sort = 'created_at',
-      order = 'desc',
-      rating = null,
-      verifiedOnly = false,
-      parentId = null
-    } = options;
-
+    // Test ultra-simple d'abord
     try {
-      console.log('🔍 [CommentService] Construction de la requête...');
-      
-      // Requête simplifiée pour éviter les problèmes de syntaxe
-      let query = supabase
+      console.log('🔍 [CommentService] Test de connexion...');
+      const { data: testData, error: testError } = await supabase
         .from('comments')
-        .select('*')
-        .eq('listing_id', listingId)
-        .eq('status', 'approved');
-
-      console.log('🔍 [CommentService] Requête de base construite');
-
-      // Filtres
-      if (rating) query = query.eq('rating', rating);
-      if (verifiedOnly) query = query.eq('is_verified_purchase', true);
-      if (parentId) query = query.eq('parent_id', parentId);
-      else query = query.is('parent_id', null);
-
-      // Tri
-      query = query.order(sort, { ascending: order === 'asc' });
-
-      // Pagination
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-      query = query.range(from, to);
-
-      console.log('🔍 [CommentService] Exécution de la requête...');
-      const { data, error, count } = await query;
-
-      console.log('🔍 [CommentService] Résultat:', { 
-        dataLength: data?.length, 
-        error: error?.message, 
-        count 
-      });
-
-      if (error) {
-        console.error('❌ [CommentService] Erreur:', error);
-        throw error;
+        .select('id')
+        .limit(1);
+      
+      console.log('🔍 [CommentService] Test résultat:', { testData, testError });
+      
+      if (testError) {
+        console.error('❌ [CommentService] Erreur test:', testError);
+        return {
+          comments: [],
+          pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+          error: testError.message
+        };
       }
-
-      console.log('✅ [CommentService] Requête réussie, retour des données');
+      
+      console.log('✅ [CommentService] Connexion OK');
+      
+      // Retour de données de test pour commencer
       return {
-        comments: data || [],
+        comments: [],
         pagination: {
-          page,
-          limit,
-          total: count,
-          pages: Math.ceil(count / limit)
+          page: 1,
+          limit: 10,
+          total: 0,
+          pages: 0
         },
         error: null
       };
+      
     } catch (error) {
       console.error('❌ [CommentService] Erreur finale:', error);
       return {
         comments: [],
-        pagination: { page, limit, total: 0, pages: 0 },
+        pagination: { page: 1, limit: 10, total: 0, pages: 0 },
         error: error.message
       };
     }
