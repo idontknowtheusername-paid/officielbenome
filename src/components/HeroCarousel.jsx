@@ -160,7 +160,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="text-xl md:text-2xl text-gray-300 mb-16 max-w-3xl mx-auto"
+            className="text-xl md:text-2xl text-gray-300 mb-32 max-w-3xl mx-auto"
           >
             Explorez, découvrez, connectez. Votre marketplace de confiance.
           </motion.p>
