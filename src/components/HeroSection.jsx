@@ -6,7 +6,6 @@ import { ArrowRight, Download, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { personalData } from '@/lib/personalData';
 import OptimizedImage from "@/components/OptimizedImage";
-import HeroImage from "@/components/HeroImage";
 
 const HeroSection = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -19,14 +18,17 @@ const HeroSection = () => {
           className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 opacity-70"
           aria-hidden="true"
         />
-        {/* Decorative background image - use HeroImage helper for optimization; marked presentation */}
-        <HeroImage
+        {/* Decorative background image - optimized and decorative */}
+        <OptimizedImage
           src="https://images.unsplash.com/photo-1508896080210-93c377eb4135"
           alt=""
           role="presentation"
           aria-hidden="true"
-          priority="high"
           className="absolute inset-0 w-full h-full object-cover opacity-40"
+          context="hero"
+          quality="high"
+          loading="eager"
+          showSkeleton={false}
         />
       </div>
 

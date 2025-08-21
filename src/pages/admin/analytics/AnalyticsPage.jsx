@@ -86,18 +86,33 @@ function AnalyticsPage() {
         console.log('🔍 Début du chargement des données analytics...');
         console.log('🔍 Période:', { startDate, endDate });
         
-        // Recuperer les donnees de base pour les analytics
-        const [listings, users] = await Promise.all([
-          listingService.getAllListings(),
-          userService.getAllUsers()
-        ]);
+        // Recuperer les donnees de base pour les analytics avec gestion d'erreur individuelle
+        let listings = [];
+        let users = [];
+        
+        try {
+          const listingsResponse = await listingService.getAllListings();
+          listings = listingsResponse?.data || [];
+          console.log('🔍 Annonces récupérées:', listings.length);
+        } catch (error) {
+          console.error('❌ Erreur lors du chargement des annonces:', error);
+          listings = [];
+        }
+        
+        try {
+          users = await userService.getAllUsers();
+          console.log('🔍 Utilisateurs récupérés:', users.length);
+        } catch (error) {
+          console.error('❌ Erreur lors du chargement des utilisateurs:', error);
+          users = [];
+        }
         
         console.log('🔍 Données récupérées:', { 
           listingsCount: listings?.length, 
           usersCount: users?.length 
         });
         
-        // Calculer les statistiques de base
+        // Calculer les statistiques de base avec gestion des cas d'erreur
         const totalListings = listings?.length || 0;
         const approvedListings = listings?.filter(l => l.status === 'approved')?.length || 0;
         const pendingListings = listings?.filter(l => l.status === 'pending')?.length || 0;
@@ -137,7 +152,19 @@ function AnalyticsPage() {
         return result;
       } catch (error) {
         console.error('❌ Erreur lors du chargement des données analytics:', error);
-        throw error;
+        // Retourner des données par défaut au lieu de throw error
+        return {
+          totalListings: 0,
+          approvedListings: 0,
+          pendingListings: 0,
+          totalUsers: 0,
+          activeUsers: 0,
+          revenue: { current: 0, change: 0 },
+          orders: { current: 0, change: 0 },
+          averageOrderValue: { current: 0, change: 0 },
+          activeUsers: { current: 0, change: 0 },
+          growth: { listings: 0, users: 0, revenue: 0 }
+        };
       }
     }
   });
@@ -171,7 +198,15 @@ function AnalyticsPage() {
     queryKey: ['analytics', 'users', startDate, endDate],
     queryFn: async () => {
       try {
+        console.log('🔍 Début du chargement des données utilisateurs...');
+        
         const users = await userService.getAllUsers();
+        console.log('🔍 Utilisateurs récupérés pour analytics:', users?.length);
+        
+        if (!users || users.length === 0) {
+          console.log('⚠️ Aucun utilisateur trouvé, retour de données par défaut');
+          return [];
+        }
         
         // Grouper les utilisateurs par date de creation
         const userGroups = users.reduce((acc, user) => {
@@ -182,12 +217,15 @@ function AnalyticsPage() {
           return acc;
         }, {});
         
-        return Object.entries(userGroups).map(([date, count]) => ({
+        const result = Object.entries(userGroups).map(([date, count]) => ({
           date,
           users: count
         }));
+        
+        console.log('🔍 Données utilisateurs formatées:', result);
+        return result;
       } catch (error) {
-        console.error('Erreur lors du chargement des données utilisateurs:', error);
+        console.error('❌ Erreur lors du chargement des données utilisateurs:', error);
         return [];
       }
     }
@@ -207,9 +245,14 @@ function AnalyticsPage() {
     queryKey: ['analytics', 'growth', startDate, endDate],
     queryFn: async () => {
       try {
-        return await analyticsService.getGrowthTrends(startDate, endDate);
+        console.log('🔍 Début du chargement des tendances de croissance...');
+        console.log('🔍 Période:', { startDate, endDate });
+        
+        const result = await analyticsService.getGrowthTrends(startDate, endDate);
+        console.log('🔍 Tendances de croissance récupérées:', result);
+        return result;
       } catch (error) {
-        console.error('Erreur lors du chargement des tendances de croissance:', error);
+        console.error('❌ Erreur lors du chargement des tendances de croissance:', error);
         return {
           users: { daily: [], weekly: [], monthly: [] },
           listings: { daily: [], weekly: [], monthly: [] },
@@ -285,12 +328,23 @@ function AnalyticsPage() {
     };
   };
 
-  // Loading state
+    // Loading state
   const isLoading = isLoadingAnalytics || isLoadingRevenue || isLoadingUsers || 
                    isLoadingTopProducts || isLoadingTraffic || isLoadingSalesByCategory || isLoadingGrowth;
 
+  // Vérification des données avant le rendu
+  console.log('🔍 État des données avant rendu:', {
+    analyticsData,
+    revenueData,
+    userData,
+    growthTrends,
+    isLoading,
+    analyticsError
+  });
+
   // Gestion globale des erreurs
   if (analyticsError) {
+    console.error('❌ Erreur analytics détectée:', analyticsError);
     return (
       <div className="space-y-6">
         <div className="flex flex-col items-center justify-center py-12">
@@ -299,12 +353,29 @@ function AnalyticsPage() {
           <p className="text-muted-foreground mb-4">
             Une erreur est survenue lors du chargement des données.
           </p>
-          <Button 
-            onClick={() => window.location.reload()} 
+          <Button
+            onClick={() => window.location.reload()}
             variant="outline"
           >
             Réessayer
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Vérification que les données essentielles sont disponibles
+  if (!analyticsData || !revenueData) {
+    console.log('⚠️ Données manquantes, affichage du chargement...');
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col items-center justify-center py-12">
+          <BarChart3 className="h-16 w-16 text-muted-foreground mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Chargement des données...</h2>
+          <p className="text-muted-foreground mb-4">
+            Veuillez patienter pendant le chargement des données.
+          </p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       </div>
     );
@@ -354,7 +425,11 @@ function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : analyticsData?.totalListings?.toLocaleString() || 0}
+              {(() => {
+                const value = analyticsData?.totalListings;
+                console.log('🔍 Affichage Total Annonces:', { value, type: typeof value });
+                return isLoading ? '...' : (value?.toLocaleString() || 0);
+              })()}
             </div>
             <p className="text-xs text-muted-foreground">
               {analyticsData?.approvedListings || 0} approuvées, {analyticsData?.pendingListings || 0} en attente
