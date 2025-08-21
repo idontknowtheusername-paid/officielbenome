@@ -15,7 +15,7 @@ const HeroSection = () => {
       {/* Background Elements */}
       <div className="absolute inset-0 -z-20">
         <div
-          className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 opacity-70"
+          className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 opacity-30"
           aria-hidden="true"
         />
         {/* Decorative background image - optimized and decorative */}
@@ -24,7 +24,7 @@ const HeroSection = () => {
           alt=""
           role="presentation"
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          className="absolute inset-0 w-full h-full object-cover opacity-100"
           context="hero"
           quality="high"
           loading="eager"
