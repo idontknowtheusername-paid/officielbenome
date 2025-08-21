@@ -130,8 +130,10 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         {/* Badges - Plus compacts sur mobile */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 sm:flex-row sm:gap-2 items-start">
           <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="bg-black/70 text-white text-xs px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5">
-              {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
+            <Badge variant="secondary" className="bg-black/70 text-white text-xs px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 inline-flex items-center whitespace-nowrap">
+              <span className="inline-flex items-center">
+                {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
+              </span>
             </Badge>
             {/*
               Masquer le badge "Approuvé" sur mobile uniquement pour les annonces premium.
