@@ -10,7 +10,7 @@ import { resolveSearchIntent } from '@/lib/search-intent';
 import { useAuth } from '@/contexts/AuthContext';
 import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
-import OptimizedImage from '@/components/OptimizedImage';
+import HeroCarousel from '@/components/HeroCarousel';
 
 
 const HomePage = () => {
@@ -24,6 +24,12 @@ const HomePage = () => {
   const [premiumListings, setPremiumListings] = useState([]);
   const [loadingPremium, setLoadingPremium] = useState(true);
   const [errorPremium, setErrorPremium] = useState(null);
+  
+  // État pour les annonces hero
+  const [heroListings, setHeroListings] = useState([]);
+  const [loadingHero, setLoadingHero] = useState(true);
+  const [errorHero, setErrorHero] = useState(null);
+  const [heroInfo, setHeroInfo] = useState({ category: '', hour: 0, timeSlot: '' });
 
   useEffect(() => {
     let timerId;
@@ -52,14 +58,33 @@ const HomePage = () => {
       }
     };
 
-    // Charger les deux types d'annonces
+    const loadHero = async () => {
+      try {
+        setLoadingHero(true);
+        const data = await listingService.getHeroListings(6);
+        setHeroListings(data?.data || []);
+        setHeroInfo({
+          category: data?.category || '',
+          hour: data?.hour || 0,
+          timeSlot: data?.rotationInfo?.timeSlot || ''
+        });
+      } catch (e) {
+        setErrorHero(e?.message || 'Erreur lors du chargement des annonces hero');
+      } finally {
+        setLoadingHero(false);
+      }
+    };
+
+    // Charger les trois types d'annonces
     loadPopular();
     loadPremium();
+    loadHero();
     
     // Rafraichissement periodique toutes les 30 minutes
     timerId = setInterval(() => {
       loadPopular();
       loadPremium();
+      loadHero();
     }, 1800000);
     
     return () => clearInterval(timerId);
@@ -96,62 +121,41 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
-      {/* Hero Section */}
-      <motion.section
-        className="relative h-screen py-24 md:py-40 bg-cover bg-center overflow-hidden flex items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        {/* Image de fond - Test simple */}
-        <img
-          src="https://images.unsplash.com/photo-1508896080210-93c377eb4135"
-          alt="Skyline futuriste d'une ville africaine au crépuscule avec des néons"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ minHeight: '100vh' }}
-        />
-        
-        {/* Overlay sombre */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-
-        <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
-          <motion.div
-            className="inline-block p-2 bg-primary/20 rounded-full mb-6"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              duration: 0.5,
-              delay: 0.1,
-              type: "spring",
-              stiffness: 200,
-            }}
-          >
-            <SparklesIcon className="h-10 w-10 text-primary" />
-          </motion.div>
-          <motion.h1
-            className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-          >
-            Bienvenue sur{" "}
-            <span className="gradient-text">{personalData.siteName}</span>
-          </motion.h1>
-          <motion.p
-            className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-          >
-            {personalData.tagline}. Explorez, découvrez, connectez.
-          </motion.p>
-          <motion.div
-            className="max-w-2xl mx-auto"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <div className="relative">
+      {/* Hero Carousel Section */}
+      {loadingHero ? (
+        <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
+          <div className="text-center text-white">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h2 className="text-2xl font-bold mb-2">Chargement des annonces...</h2>
+            <p className="text-gray-300">Préparation de votre expérience personnalisée</p>
+          </div>
+        </div>
+      ) : errorHero ? (
+        <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
+          <div className="text-center text-white">
+            <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Erreur de chargement</h2>
+            <p className="text-gray-300">{errorHero}</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <HeroCarousel
+            listings={heroListings}
+            category={heroInfo.category}
+            hour={heroInfo.hour}
+            timeSlot={heroInfo.timeSlot}
+          />
+          
+          {/* Barre de recherche flottante */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-2xl px-4" style={{ bottom: '120px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
+            >
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -170,6 +174,7 @@ const HomePage = () => {
                       : "/marketplace";
                   navigate(`${path}?${usp.toString()}`);
                 }}
+                className="relative"
               >
                 <Input
                   name="q"
@@ -185,11 +190,10 @@ const HomePage = () => {
                   <SearchIcon className="h-6 w-6 text-white" />
                 </Button>
               </form>
-            </div>
-          </motion.div>
-        </div>
-        <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background to-transparent"></div>
-      </motion.section>
+            </motion.div>
+          </div>
+        </>
+      )}
 
       {/* Categories Section */}
       <section className="py-16 md:py-24">
