@@ -98,23 +98,20 @@ const HomePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
       {/* Hero Section */}
       <motion.section
-        className="relative py-24 md:py-40 bg-cover bg-center"
+        className="relative py-24 md:py-40 bg-cover bg-center overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
       >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        <OptimizedImage
-          src="https://images.unsplash.com/photo-1542044896530-05d85be9b11a?q=80&w=2070&auto=format&fit=crop"
+        {/* Image de fond - Test simple */}
+        <img
+          src="https://images.unsplash.com/photo-1508896080210-93c377eb4135?w=1920&h=1080&fit=crop&q=80"
           alt="Skyline futuriste d'une ville africaine au crépuscule avec des néons"
-          className="absolute inset-0 w-full h-full -z-10 opacity-70"
-          context="hero"
-          quality="high"
-          priority="high"
-          showSkeleton={true}
-          enableHeroAnimations={true}
-          showOverlay={true}
+          className="absolute inset-0 w-full h-full object-cover"
         />
+        
+        {/* Overlay sombre */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
         <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
           <motion.div
