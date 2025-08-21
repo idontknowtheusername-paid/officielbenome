@@ -56,7 +56,10 @@ const calculatePremiumScore = (listing) => {
     'medium': 600,
     'low': 400
   };
-  score += priorityWeights[listing.premium_metadata?.priority] || 500;
+  
+  // Extraire la priorité depuis les features du package
+  const packagePriority = listing.listing_boosts?.[0]?.boost_packages?.features?.priority;
+  score += priorityWeights[packagePriority] || 500;
   
   // 2. TYPE DE PREMIUM (30% du score)
   if (listing.is_featured && listing.is_boosted) score += 900;      // Premium complet
@@ -152,7 +155,7 @@ const getHeroListingsByHour = async (limit = 6) => {
         listing_boosts (
           boost_packages (
             name,
-            priority
+            features
           ),
           end_date
         )
