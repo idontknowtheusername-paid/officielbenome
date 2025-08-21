@@ -7,6 +7,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { listingService } from '@/services';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   ArrowLeft, 
   CheckCircle, 
@@ -25,17 +27,59 @@ import {
 const CreateListingPage = () => {
   const navigate = useNavigate();
   const { category, id } = useParams();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
   const [showPreview, setShowPreview] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Charger les données de l'annonce existante
+  const loadExistingListing = async (listingId) => {
+    try {
+      setIsLoading(true);
+      const listing = await listingService.getListingById(listingId);
+      
+      if (listing) {
+        // Préparer les données pour le formulaire
+        const preparedData = {
+          title: listing.title || '',
+          description: listing.description || '',
+          price: listing.price || '',
+          category: listing.category || category,
+          location: listing.location || {},
+          images: listing.images || [],
+          contact_info: listing.contact_info || {},
+          // Détails spécifiques par catégorie
+          real_estate_details: listing.real_estate_details || {},
+          automobile_details: listing.automobile_details || {},
+          service_details: listing.service_details || {},
+          product_details: listing.product_details || {},
+        };
+        
+        setFormData(preparedData);
+        toast({
+          title: "Annonce chargée",
+          description: "Les données de l'annonce ont été chargées avec succès.",
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'annonce:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les données de l'annonce. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Déterminer si on est en mode édition ou création
   React.useEffect(() => {
     if (id) {
       setIsEditing(true);
-      // TODO: Charger les données de l'annonce existante
-      // loadExistingListing(id);
+      loadExistingListing(id);
     }
   }, [id]);
 
@@ -83,10 +127,13 @@ const CreateListingPage = () => {
   const handleSuccess = (res) => {
     // Redirige vers le profil avec un message de succes
     if (res?.id) {
-      // Pour l'instant, rediriger vers le profil car la page de detail n'existe pas encore
+      const message = isEditing 
+        ? 'Annonce modifiée avec succès ! Les changements sont maintenant visibles sur le site.'
+        : 'Annonce créée avec succès ! Elle est maintenant visible sur le site.';
+      
       navigate('/profile', { 
         state: { 
-          message: 'Annonce créée avec succès ! Elle est maintenant visible sur le site.',
+          message,
           type: 'success'
         }
       });
@@ -212,7 +259,9 @@ Site : https://maximarket.com`);
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               {isEditing 
-                ? 'Modifiez les informations de votre annonce existante.'
+                ? isLoading 
+                  ? 'Chargement des données de l\'annonce...'
+                  : 'Modifiez les informations de votre annonce existante.'
                 : 'Partagez votre offre avec notre communauté. Remplissez les informations ci-dessous pour publier votre annonce.'
               }
             </p>
