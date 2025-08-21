@@ -393,15 +393,63 @@ function AnalyticsPage() {
   // Vérification que les données essentielles sont disponibles
   if (!analyticsData || !revenueData) {
     console.log('⚠️ Données manquantes, affichage du chargement...');
+    console.log('🔍 analyticsData:', analyticsData);
+    console.log('🔍 revenueData:', revenueData);
+    console.log('🔍 isLoading:', isLoading);
+    
+    // Si on est en train de charger, afficher le chargement
+    if (isLoading) {
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <BarChart3 className="h-16 w-16 text-muted-foreground mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Chargement des données...</h2>
+            <p className="text-muted-foreground mb-4">
+              Veuillez patienter pendant le chargement des données.
+            </p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Si on a une erreur, afficher l'erreur
+    if (analyticsError) {
+      console.error('❌ Erreur analytics détectée:', analyticsError);
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <BarChart3 className="h-16 w-16 text-muted-foreground mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Erreur de chargement</h2>
+            <p className="text-muted-foreground mb-4">
+              Une erreur est survenue lors du chargement des données.
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+            >
+              Réessayer
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    // Si on n'a pas de données mais qu'on n'est pas en train de charger, afficher un message
     return (
       <div className="space-y-6">
         <div className="flex flex-col items-center justify-center py-12">
           <BarChart3 className="h-16 w-16 text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Chargement des données...</h2>
+          <h2 className="text-2xl font-bold mb-2">Aucune donnée disponible</h2>
           <p className="text-muted-foreground mb-4">
-            Veuillez patienter pendant le chargement des données.
+            Aucune donnée n'est disponible pour la période sélectionnée.
           </p>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+          >
+            Actualiser
+          </Button>
         </div>
       </div>
     );
