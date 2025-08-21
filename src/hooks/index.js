@@ -16,6 +16,11 @@ export {
 } from './useMessages';
 export { useNotifications } from './useNotifications';
 export { useAdminDashboard } from './useAdminDashboard';
+export { 
+  useComments, 
+  useUserComments, 
+  useCommentsModeration 
+} from './useComments';
 
 // Hooks utilitaires
 export { useApi } from './useApi';

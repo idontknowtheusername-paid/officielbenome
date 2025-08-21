@@ -18,6 +18,7 @@ export { transactionService } from './transaction.service.js';
 // 💬 SERVICES DE COMMUNICATION (Phase 3)
 export { notificationService } from './notification.service.js';
 export { messageService } from './message.service.js';
+export { commentService } from './comment.service.js';
 
 // 📊 SERVICES DE DONNÉES (Phase 2)
 export { categoryService } from './category.service.js';
@@ -53,7 +54,7 @@ export { default as supabaseService } from './supabase.service.js';
 // ============================================================================
 
 // Total des services disponibles
-export const SERVICES_COUNT = 15;
+export const SERVICES_COUNT = 16;
 
 // Liste de tous les services disponibles
 export const ALL_SERVICES = {
@@ -66,6 +67,7 @@ export const ALL_SERVICES = {
   // Services de communication
   notification: 'Système de notifications',
   message: 'Système de messagerie',
+  comment: 'Système de commentaires et avis',
   
   // Services de données
   category: 'Gestion des catégories',
