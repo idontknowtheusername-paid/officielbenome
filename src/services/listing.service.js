@@ -200,14 +200,12 @@ export const listingService = {
       console.log('🔍 Requête de base construite');
 
     // Appliquer les filtres
-    if (filters.category) {
+    if (filters.category && filters.category !== 'all') {
       query = query.eq('category', filters.category);
     }
     
-    // Par defaut, ne montrer que les annonces approuvees
-    if (!filters.status) {
-      query = query.eq('status', 'approved');
-    } else if (filters.status) {
+    // Gérer le statut - si 'all' ou pas de filtre, ne pas filtrer par statut
+    if (filters.status && filters.status !== 'all') {
       query = query.eq('status', filters.status);
     }
       

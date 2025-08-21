@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { format, startOfWeek, startOfMonth } from 'date-fns';
 
 // ============================================================================
 // SERVICE D'ANALYTICS PREMIUM - MAXIMARKET
@@ -128,6 +129,81 @@ export const analyticsService = {
     }
   },
 
+  // Récupérer les données de revenus pour la période spécifiée
+  getRevenueData: async (startDate, endDate) => {
+    if (!isSupabaseConfigured) {
+      return {
+        totalRevenue: 0,
+        revenueByDate: [],
+        revenueByCategory: {},
+        paymentMethods: {},
+        growth: 0
+      };
+    }
+
+    try {
+      const { data: payments, error } = await supabase
+        .from('payments')
+        .select(`
+          *,
+          listings (
+            category,
+            title
+          )
+        `)
+        .eq('status', 'completed')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      // Calculer le revenu total
+      const totalRevenue = payments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
+
+      // Grouper par date
+      const revenueByDate = payments?.reduce((acc, payment) => {
+        const date = format(new Date(payment.created_at), 'yyyy-MM-dd');
+        acc[date] = (acc[date] || 0) + (payment.amount || 0);
+        return acc;
+      }, {}) || {};
+
+      // Grouper par catégorie
+      const revenueByCategory = payments?.reduce((acc, payment) => {
+        const category = payment.listings?.category || 'Autre';
+        acc[category] = (acc[category] || 0) + (payment.amount || 0);
+        return acc;
+      }, {}) || {};
+
+      // Grouper par méthode de paiement
+      const paymentMethods = payments?.reduce((acc, payment) => {
+        const method = payment.payment_method || 'Autre';
+        acc[method] = (acc[method] || 0) + (payment.amount || 0);
+        return acc;
+      }, {}) || {};
+
+      return {
+        totalRevenue,
+        revenueByDate: Object.entries(revenueByDate).map(([date, amount]) => ({
+          date,
+          revenue: amount
+        })),
+        revenueByCategory,
+        paymentMethods,
+        growth: 0 // À calculer avec les données historiques
+      };
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données de revenus:', error);
+      return {
+        totalRevenue: 0,
+        revenueByDate: [],
+        revenueByCategory: {},
+        paymentMethods: {},
+        growth: 0
+      };
+    }
+  },
+
   // Récupérer les analytics utilisateur premium
   getUserPremiumAnalytics: async (userId, period = '30d') => {
     if (!isSupabaseConfigured) {
@@ -206,6 +282,102 @@ export const analyticsService = {
     } catch (error) {
       console.error('Erreur lors de la récupération des tendances:', error);
       throw error;
+    }
+  },
+
+  // Récupérer les tendances de croissance des utilisateurs et annonces
+  getGrowthTrends: async (startDate, endDate) => {
+    if (!isSupabaseConfigured) {
+      return {
+        users: {
+          daily: [],
+          weekly: [],
+          monthly: []
+        },
+        listings: {
+          daily: [],
+          weekly: [],
+          monthly: []
+        },
+        revenue: {
+          daily: [],
+          weekly: [],
+          monthly: []
+        }
+      };
+    }
+
+    try {
+      // Récupérer les utilisateurs créés dans la période
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('created_at')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate)
+        .order('created_at', { ascending: true });
+
+      if (usersError) throw usersError;
+
+      // Récupérer les annonces créées dans la période
+      const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('created_at, status')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate)
+        .order('created_at', { ascending: true });
+
+      if (listingsError) throw listingsError;
+
+      // Récupérer les paiements dans la période
+      const { data: payments, error: paymentsError } = await supabase
+        .from('payments')
+        .select('created_at, amount')
+        .eq('status', 'completed')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate)
+        .order('created_at', { ascending: true });
+
+      if (paymentsError) throw paymentsError;
+
+      // Calculer les tendances quotidiennes
+      const dailyUsers = calculateDailyGrowth(users, 'created_at');
+      const dailyListings = calculateDailyGrowth(listings, 'created_at');
+      const dailyRevenue = calculateDailyGrowth(payments, 'created_at', 'amount');
+
+      // Calculer les tendances hebdomadaires
+      const weeklyUsers = calculateWeeklyGrowth(users, 'created_at');
+      const weeklyListings = calculateWeeklyGrowth(listings, 'created_at');
+      const weeklyRevenue = calculateWeeklyGrowth(payments, 'created_at', 'amount');
+
+      // Calculer les tendances mensuelles
+      const monthlyUsers = calculateMonthlyGrowth(users, 'created_at');
+      const monthlyListings = calculateMonthlyGrowth(listings, 'created_at');
+      const monthlyRevenue = calculateMonthlyGrowth(payments, 'created_at', 'amount');
+
+      return {
+        users: {
+          daily: dailyUsers,
+          weekly: weeklyUsers,
+          monthly: monthlyUsers
+        },
+        listings: {
+          daily: dailyListings,
+          weekly: weeklyListings,
+          monthly: monthlyListings
+        },
+        revenue: {
+          daily: dailyRevenue,
+          weekly: weeklyRevenue,
+          monthly: monthlyRevenue
+        }
+      };
+    } catch (error) {
+      console.error('Erreur lors de la récupération des tendances de croissance:', error);
+      return {
+        users: { daily: [], weekly: [], monthly: [] },
+        listings: { daily: [], weekly: [], monthly: [] },
+        revenue: { daily: [], weekly: [], monthly: [] }
+      };
     }
   },
 
@@ -615,6 +787,65 @@ function calculateComparisonMetrics(data1, data2) {
       change: boosts1 > 0 ? ((boosts2 - boosts1) / boosts1) * 100 : 0
     }
   };
+}
+
+// Fonctions utilitaires pour calculer les tendances de croissance
+function calculateDailyGrowth(data, dateField, valueField = null) {
+  const dailyData = {};
+  
+  data?.forEach(item => {
+    const date = format(new Date(item[dateField]), 'yyyy-MM-dd');
+    if (valueField) {
+      dailyData[date] = (dailyData[date] || 0) + (item[valueField] || 0);
+    } else {
+      dailyData[date] = (dailyData[date] || 0) + 1;
+    }
+  });
+  
+  return Object.entries(dailyData).map(([date, value]) => ({
+    date,
+    value: valueField ? value : value
+  }));
+}
+
+function calculateWeeklyGrowth(data, dateField, valueField = null) {
+  const weeklyData = {};
+  
+  data?.forEach(item => {
+    const date = new Date(item[dateField]);
+    const weekStart = format(startOfWeek(date, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    
+    if (valueField) {
+      weeklyData[weekStart] = (weeklyData[weekStart] || 0) + (item[valueField] || 0);
+    } else {
+      weeklyData[weekStart] = (weeklyData[weekStart] || 0) + 1;
+    }
+  });
+  
+  return Object.entries(weeklyData).map(([date, value]) => ({
+    date,
+    value: valueField ? value : value
+  }));
+}
+
+function calculateMonthlyGrowth(data, dateField, valueField = null) {
+  const monthlyData = {};
+  
+  data?.forEach(item => {
+    const date = new Date(item[dateField]);
+    const monthStart = format(startOfMonth(date), 'yyyy-MM');
+    
+    if (valueField) {
+      monthlyData[monthStart] = (monthlyData[monthStart] || 0) + (item[valueField] || 0);
+    } else {
+      monthlyData[monthStart] = (monthlyData[monthStart] || 0) + 1;
+    }
+  });
+  
+  return Object.entries(monthlyData).map(([date, value]) => ({
+    date,
+    value: valueField ? value : value
+  }));
 }
 
 export default analyticsService;

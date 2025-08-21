@@ -71,7 +71,7 @@ export default function ListingsPage() {
   const [perPage, setPerPage] = useState(10);
 
   // Fetch listings with filters and pagination
-  const { data: listings, isLoading, isError } = useQuery({
+  const { data: listingsResponse, isLoading, isError } = useQuery({
     queryKey: ['adminListings', { searchTerm, statusFilter, categoryFilter, sortBy, sortOrder, page, perPage }],
     queryFn: async () => {
       const filters = {};
@@ -82,6 +82,11 @@ export default function ListingsPage() {
       return await listingService.getAllListings(filters);
     }
   });
+
+  // Extraire les annonces et les métadonnées de la réponse
+  const listings = listingsResponse?.data || [];
+  const totalCount = listingsResponse?.count || 0;
+  const hasMore = listingsResponse?.hasMore || false;
 
   // Fetch categories for filter
   const { data: categories } = useQuery({
@@ -185,6 +190,11 @@ export default function ListingsPage() {
   };
 
   const handleSearch = (e) => {
+    e.preventDefault();
+    setPage(1);
+  };
+
+  const handleSearchInputChange = (e) => {
     setSearchTerm(e.target.value);
     setPage(1);
   };
@@ -256,7 +266,7 @@ export default function ListingsPage() {
                   placeholder="Rechercher une annonce..."
                   className="pl-8"
                   value={searchTerm}
-                  onChange={handleSearch}
+                  onChange={handleSearchInputChange}
                 />
               </div>
             </div>
@@ -272,8 +282,7 @@ export default function ListingsPage() {
                   <SelectItem value="pending">En attente</SelectItem>
                   <SelectItem value="approved">Approuvé</SelectItem>
                   <SelectItem value="rejected">Rejeté</SelectItem>
-                  <SelectItem value="active">Actif</SelectItem>
-                  <SelectItem value="inactive">Inactif</SelectItem>
+                  <SelectItem value="expired">Expiré</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,10 +295,10 @@ export default function ListingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les catégories</SelectItem>
-                  <SelectItem value="real-estate">Immobilier</SelectItem>
-                  <SelectItem value="automotive">Automobile</SelectItem>
+                  <SelectItem value="real_estate">Immobilier</SelectItem>
+                  <SelectItem value="automobile">Automobile</SelectItem>
                   <SelectItem value="services">Services</SelectItem>
-                  <SelectItem value="general">Général</SelectItem>
+                  <SelectItem value="marketplace">Marketplace</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -382,16 +391,19 @@ export default function ListingsPage() {
                       <div>
                         <div className="font-medium">{listing.title}</div>
                         <div className="text-sm text-muted-foreground">
-                          Par {listing.user?.name || 'Utilisateur'}
+                          Par {listing.users?.first_name && listing.users?.last_name 
+                            ? `${listing.users.first_name} ${listing.users.last_name}` 
+                            : listing.users?.first_name || listing.users?.last_name || 'Utilisateur'}
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="capitalize">
-                      {listing.category === 'real-estate' ? 'Immobilier' :
-                       listing.category === 'automotive' ? 'Automobile' :
-                       listing.category === 'services' ? 'Services' : 'Général'}
+                      {listing.category === 'real_estate' ? 'Immobilier' :
+                       listing.category === 'automobile' ? 'Automobile' :
+                       listing.category === 'services' ? 'Services' : 
+                       listing.category === 'marketplace' ? 'Marketplace' : 'Général'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -399,14 +411,14 @@ export default function ListingsPage() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={listing.status === 'approved' ? 'success' : 
+                      variant={listing.status === 'approved' ? 'default' : 
                               listing.status === 'rejected' ? 'destructive' : 'outline'}
                       className="capitalize"
                     >
                       {listing.status === 'pending' ? 'En attente' :
                        listing.status === 'approved' ? 'Approuvé' :
                        listing.status === 'rejected' ? 'Rejeté' :
-                       listing.status === 'active' ? 'Actif' : 'Inactif'}
+                       listing.status === 'expired' ? 'Expiré' : listing.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -443,6 +455,26 @@ export default function ListingsPage() {
                               <span>Rejeter</span>
                             </DropdownMenuItem>
                           </>
+                        )}
+                        
+                        {listing.status === 'rejected' && (
+                          <DropdownMenuItem
+                            onClick={() => handleApproveListing(listing.id)}
+                            disabled={approveMutation.isLoading}
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            <span>Approuver</span>
+                          </DropdownMenuItem>
+                        )}
+                        
+                        {listing.status === 'expired' && (
+                          <DropdownMenuItem
+                            onClick={() => handleApproveListing(listing.id)}
+                            disabled={approveMutation.isLoading}
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            <span>Réactiver</span>
+                          </DropdownMenuItem>
                         )}
                         
                         <DropdownMenuItem
@@ -488,14 +520,14 @@ export default function ListingsPage() {
       </div>
 
       {/* Pagination */}
-      {listings?.total_count > 0 && (
+      {totalCount > perPage && (
         <div className="flex items-center justify-between px-2">
           <div className="flex-1 text-sm text-muted-foreground">
             Affichage de <span className="font-medium">{(page - 1) * perPage + 1}</span> à{' '}
             <span className="font-medium">
-              {Math.min(page * perPage, listings.total_count)}
+              {Math.min(page * perPage, totalCount)}
             </span>{' '}
-            sur <span className="font-medium">{listings.total_count}</span> annonces
+            sur <span className="font-medium">{totalCount}</span> annonces
           </div>
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
@@ -520,7 +552,7 @@ export default function ListingsPage() {
               </Select>
             </div>
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              Page {page} sur {listings.total_pages}
+              Page {page} sur {Math.ceil(totalCount / perPage)}
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -544,8 +576,8 @@ export default function ListingsPage() {
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => setPage(Math.min(listings.total_pages, page + 1))}
-                disabled={page === listings.total_pages}
+                onClick={() => setPage(Math.min(Math.ceil(totalCount / perPage), page + 1))}
+                disabled={page === Math.ceil(totalCount / perPage)}
               >
                 <span className="sr-only">Page suivante</span>
                 <ChevronRight className="h-4 w-4" />
@@ -553,8 +585,8 @@ export default function ListingsPage() {
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => setPage(listings.total_pages)}
-                disabled={page === listings.total_pages}
+                onClick={() => setPage(Math.ceil(totalCount / perPage))}
+                disabled={page === Math.ceil(totalCount / perPage)}
               >
                 <span className="sr-only">Aller à la dernière page</span>
                 <ChevronsRight className="h-4 w-4" />

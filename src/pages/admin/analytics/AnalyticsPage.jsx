@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import { 
   listingService,
-  userService
+  userService,
+  analyticsService
 } from '@/services';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -78,35 +79,55 @@ function AnalyticsPage() {
   }, [dateRange]);
 
   // Fetch analytics data
-  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
+  const { data: analyticsData, isLoading: isLoadingAnalytics, error: analyticsError } = useQuery({
     queryKey: ['analytics', 'overview', startDate, endDate],
     queryFn: async () => {
-      // Recuperer les donnees de base pour les analytics
-      const [listings, users] = await Promise.all([
-        listingService.getAllListings(),
-        userService.getAllUsers()
-      ]);
-      
-      // Calculer les statistiques de base
-      const totalListings = listings.length;
-      const approvedListings = listings.filter(l => l.status === 'approved').length;
-      const pendingListings = listings.filter(l => l.status === 'pending').length;
-      const totalUsers = users.length;
-      const activeUsers = users.filter(u => u.status === 'active').length;
-      
-      return {
-        totalListings,
-        approvedListings,
-        pendingListings,
-        totalUsers,
-        activeUsers,
-        revenue: 0, // TODO: Implementer les transactions
+      try {
+        // Recuperer les donnees de base pour les analytics
+        const [listings, users] = await Promise.all([
+          listingService.getAllListings(),
+          userService.getAllUsers()
+        ]);
+        
+        // Calculer les statistiques de base
+        const totalListings = listings?.length || 0;
+        const approvedListings = listings?.filter(l => l.status === 'approved')?.length || 0;
+        const pendingListings = listings?.filter(l => l.status === 'pending')?.length || 0;
+        const totalUsers = users?.length || 0;
+        const activeUsers = users?.filter(u => u.status === 'active')?.length || 0;
+        
+        return {
+          totalListings,
+          approvedListings,
+          pendingListings,
+          totalUsers,
+          activeUsers,
+                  revenue: {
+          current: 0, // Sera mis à jour avec revenueData
+          change: 0
+        },
+        orders: {
+          current: 0,
+          change: 0
+        },
+        averageOrderValue: {
+          current: 0,
+          change: 0
+        },
+        activeUsers: {
+          current: activeUsers,
+          change: 0
+        },
         growth: {
           listings: 0,
           users: 0,
           revenue: 0
         }
-      };
+        };
+      } catch (error) {
+        console.error('Erreur lors du chargement des données analytics:', error);
+        throw error;
+      }
     }
   });
 
@@ -114,8 +135,18 @@ function AnalyticsPage() {
   const { data: revenueData, isLoading: isLoadingRevenue } = useQuery({
     queryKey: ['analytics', 'revenue', startDate, endDate],
     queryFn: async () => {
-      // TODO: Implementer les donnees de revenus
-      return [];
+      try {
+        return await analyticsService.getRevenueData(startDate, endDate);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données de revenus:', error);
+        return {
+          totalRevenue: 0,
+          revenueByDate: [],
+          revenueByCategory: {},
+          paymentMethods: {},
+          growth: 0
+        };
+      }
     }
   });
 
@@ -123,19 +154,26 @@ function AnalyticsPage() {
   const { data: userData, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['analytics', 'users', startDate, endDate],
     queryFn: async () => {
-      const users = await userService.getAllUsers();
-      
-      // Grouper les utilisateurs par date de creation
-      const userGroups = users.reduce((acc, user) => {
-        const date = format(new Date(user.created_at), 'yyyy-MM-dd');
-        acc[date] = (acc[date] || 0) + 1;
-        return acc;
-      }, {});
-      
-      return Object.entries(userGroups).map(([date, count]) => ({
-        date,
-        users: count
-      }));
+      try {
+        const users = await userService.getAllUsers();
+        
+        // Grouper les utilisateurs par date de creation
+        const userGroups = users.reduce((acc, user) => {
+          if (user.created_at) {
+            const date = format(new Date(user.created_at), 'yyyy-MM-dd');
+            acc[date] = (acc[date] || 0) + 1;
+          }
+          return acc;
+        }, {});
+        
+        return Object.entries(userGroups).map(([date, count]) => ({
+          date,
+          users: count
+        }));
+      } catch (error) {
+        console.error('Erreur lors du chargement des données utilisateurs:', error);
+        return [];
+      }
     }
   });
 
@@ -145,6 +183,23 @@ function AnalyticsPage() {
     queryFn: async () => {
       // TODO: Implementer les donnees des produits les plus vendus
       return [];
+    }
+  });
+
+  // Fetch growth trends
+  const { data: growthTrends, isLoading: isLoadingGrowth } = useQuery({
+    queryKey: ['analytics', 'growth', startDate, endDate],
+    queryFn: async () => {
+      try {
+        return await analyticsService.getGrowthTrends(startDate, endDate);
+      } catch (error) {
+        console.error('Erreur lors du chargement des tendances de croissance:', error);
+        return {
+          users: { daily: [], weekly: [], monthly: [] },
+          listings: { daily: [], weekly: [], monthly: [] },
+          revenue: { daily: [], weekly: [], monthly: [] }
+        };
+      }
     }
   });
 
@@ -166,17 +221,7 @@ function AnalyticsPage() {
     }
   });
 
-  // Format revenue data for charts
-  const formattedRevenueData = useMemo(() => {
-    if (!revenueData) return [];
-    
-    return revenueData.map(item => ({
-      date: format(parseISO(item.date), dateRange === 'today' || dateRange === 'yesterday' ? 'HH:mm' : 'MMM d'),
-      revenue: item.revenue,
-      orders: item.orders,
-      averageOrderValue: item.averageOrderValue
-    }));
-  }, [revenueData, dateRange]);
+
 
   // Format user data for charts
   const formattedUserData = useMemo(() => {
@@ -200,15 +245,7 @@ function AnalyticsPage() {
     }));
   }, [trafficSources]);
 
-  // Format sales by category for pie chart
-  const formattedCategoryData = useMemo(() => {
-    if (!salesByCategory) return [];
-    
-    return Object.entries(salesByCategory).map(([name, value]) => ({
-      name,
-      value
-    }));
-  }, [salesByCategory]);
+
 
   // Calculate percentage change
   const calculateChange = (current, previous) => {
@@ -222,7 +259,28 @@ function AnalyticsPage() {
 
   // Loading state
   const isLoading = isLoadingAnalytics || isLoadingRevenue || isLoadingUsers || 
-                   isLoadingTopProducts || isLoadingTraffic || isLoadingSalesByCategory;
+                   isLoadingTopProducts || isLoadingTraffic || isLoadingSalesByCategory || isLoadingGrowth;
+
+  // Gestion globale des erreurs
+  if (analyticsError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col items-center justify-center py-12">
+          <BarChart3 className="h-16 w-16 text-muted-foreground mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Erreur de chargement</h2>
+          <p className="text-muted-foreground mb-4">
+            Une erreur est survenue lors du chargement des données.
+          </p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline"
+          >
+            Réessayer
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -262,18 +320,52 @@ function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
+              Total Annonces
+            </CardTitle>
+            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {isLoading ? '...' : analyticsData?.totalListings?.toLocaleString() || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {analyticsData?.approvedListings || 0} approuvées, {analyticsData?.pendingListings || 0} en attente
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Utilisateurs
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {isLoading ? '...' : analyticsData?.totalUsers?.toLocaleString() || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {analyticsData?.activeUsers?.current || 0} actifs
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Chiffre d'affaires
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : `$${analyticsData?.revenue?.current?.toLocaleString() || 0}`}
+              {isLoading ? '...' : `${(revenueData?.totalRevenue || 0).toLocaleString()} FCFA`}
             </div>
             <p className="text-xs text-muted-foreground">
-              {!isLoading && analyticsData?.revenue && (
-                <span className={analyticsData.revenue.change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {analyticsData.revenue.change >= 0 ? '↑' : '↓'} {Math.abs(analyticsData.revenue.change)}% vs période précédente
+              {revenueData?.revenueByDate?.length > 0 && (
+                <span className="text-green-600">
+                  ↑ {revenueData.revenueByDate.length} transactions
                 </span>
               )}
             </p>
@@ -283,62 +375,17 @@ function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Commandes
+              Taux d'approbation
             </CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? '...' : analyticsData?.orders?.current?.toLocaleString() || 0}
+              {isLoading ? '...' : analyticsData?.totalListings ? 
+                `${Math.round((analyticsData.approvedListings / analyticsData.totalListings) * 100)}%` : '0%'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {!isLoading && analyticsData?.orders && (
-                <span className={analyticsData.orders.change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {analyticsData.orders.change >= 0 ? '↑' : '↓'} {Math.abs(analyticsData.orders.change)}% vs période précédente
-                </span>
-              )}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Utilisateurs actifs
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? '...' : analyticsData?.activeUsers?.current?.toLocaleString() || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {!isLoading && analyticsData?.activeUsers && (
-                <span className={analyticsData.activeUsers.change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {analyticsData.activeUsers.change >= 0 ? '↑' : '↓'} {Math.abs(analyticsData.activeUsers.change)}% vs période précédente
-                </span>
-              )}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Panier moyen
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? '...' : `$${analyticsData?.averageOrderValue?.current?.toLocaleString() || 0}`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {!isLoading && analyticsData?.averageOrderValue && (
-                <span className={analyticsData.averageOrderValue.change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {analyticsData.averageOrderValue.change >= 0 ? '↑' : '↓'} {Math.abs(analyticsData.averageOrderValue.change)}% vs période précédente
-                </span>
-              )}
+              {analyticsData?.approvedListings || 0} sur {analyticsData?.totalListings || 0} annonces
             </p>
           </CardContent>
         </Card>
@@ -348,16 +395,16 @@ function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Aperçu du chiffre d'affaires</CardTitle>
+            <CardTitle>Évolution des Revenus</CardTitle>
             <CardDescription>
-              Évolution du chiffre d'affaires sur la période sélectionnée
+              Chiffre d'affaires sur la période sélectionnée
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={formattedRevenueData}
+                  data={revenueData?.revenueByDate || []}
                   margin={{
                     top: 5,
                     right: 10,
@@ -373,29 +420,18 @@ function AnalyticsPage() {
                     axisLine={false}
                   />
                   <YAxis 
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `${value.toLocaleString()} FCFA`}
                     tick={{ fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <Tooltip 
-                    formatter={(value, name) => [
-                      name === 'revenue' ? `$${value}` : value,
-                      name === 'revenue' ? 'Chiffre d\'affaires' : 'Commandes'
-                    ]}
+                    formatter={(value) => [`${value.toLocaleString()} FCFA`, 'Revenus']}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="revenue" 
                     stroke="#8884d8" 
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 6 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="orders" 
-                    stroke="#82ca9d" 
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 6 }}
@@ -509,9 +545,89 @@ function AnalyticsPage() {
         
         <Card className="col-span-3">
           <CardHeader>
-            <CardTitle>Ventes par catégorie</CardTitle>
+            <CardTitle>Croissance des Utilisateurs</CardTitle>
             <CardDescription>
-              Répartition des ventes par catégorie de produits
+              Nouveaux utilisateurs par période
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={growthTrends?.users?.daily || []}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [value, 'Nouveaux utilisateurs']}
+                  />
+                  <Bar 
+                    dataKey="value" 
+                    fill="#82ca9d" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Growth Trends Charts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Croissance des Annonces</CardTitle>
+            <CardDescription>
+              Nouvelles annonces créées par période
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={growthTrends?.listings?.daily || []}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [value, 'Nouvelles annonces']}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#8884d8" 
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Répartition des Revenus par Catégorie</CardTitle>
+            <CardDescription>
+              Chiffre d'affaires par catégorie d'annonces
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -519,7 +635,13 @@ function AnalyticsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={formattedCategoryData}
+                    data={Object.entries(revenueData?.revenueByCategory || {}).map(([name, value]) => ({
+                      name: name === 'real_estate' ? 'Immobilier' : 
+                            name === 'automobile' ? 'Automobile' : 
+                            name === 'services' ? 'Services' : 
+                            name === 'marketplace' ? 'Marketplace' : name,
+                      value
+                    }))}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -528,15 +650,12 @@ function AnalyticsPage() {
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {formattedCategoryData.map((entry, index) => (
+                    {Object.entries(revenueData?.revenueByCategory || {}).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value, name) => [
-                      `$${value}`,
-                      name
-                    ]}
+                    formatter={(value) => [`${value.toLocaleString()} FCFA`, 'Revenus']}
                   />
                 </PieChart>
               </ResponsiveContainer>
