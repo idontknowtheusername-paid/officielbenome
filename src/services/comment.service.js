@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import ModerationService from '@/utils/moderation';
 
 class CommentService {
   /**
@@ -20,11 +21,9 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          user:user_profiles!comments_user_id_fkey(
+          user:auth.users!comments_user_id_fkey(
             id,
-            full_name,
-            avatar_url,
-            verified
+            email
           ),
           replies:comments!comments_parent_id_fkey(count)
         `)
@@ -74,23 +73,35 @@ class CommentService {
    */
   async createComment(commentData) {
     try {
+      // Modération automatique
+      const moderationResult = await ModerationService.moderateComment(commentData);
+      
+      // Appliquer le statut de modération
+      const commentWithModeration = {
+        ...commentData,
+        status: moderationResult.status
+      };
+
       const { data, error } = await supabase
         .from('comments')
-        .insert([commentData])
+        .insert([commentWithModeration])
         .select(`
           *,
-          user:user_profiles!comments_user_id_fkey(
+          user:auth.users!comments_user_id_fkey(
             id,
-            full_name,
-            avatar_url,
-            verified
+            email
           )
         `)
         .single();
 
       if (error) throw error;
 
-      return { comment: data, error: null };
+      // Retourner le commentaire avec les informations de modération
+      return { 
+        comment: data, 
+        error: null,
+        moderation: moderationResult
+      };
     } catch (error) {
       console.error('Erreur lors de la création du commentaire:', error);
       return { comment: null, error: error.message };
@@ -108,11 +119,9 @@ class CommentService {
         .eq('id', id)
         .select(`
           *,
-          user:user_profiles!comments_user_id_fkey(
+          user:auth.users!comments_user_id_fkey(
             id,
-            full_name,
-            avatar_url,
-            verified
+            email
           )
         `)
         .single();
@@ -283,11 +292,9 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          user:user_profiles!comments_user_id_fkey(
+          user:auth.users!comments_user_id_fkey(
             id,
-            full_name,
-            avatar_url,
-            verified
+            email
           ),
           listing:listings!comments_listing_id_fkey(
             id,

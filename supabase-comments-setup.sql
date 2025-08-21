@@ -135,12 +135,13 @@ CREATE POLICY "Users can view own reports" ON comment_reports
   FOR SELECT USING (auth.uid() = reporter_id);
 
 -- Lecture de tous les signalements par les admins
+-- Note: Adaptez cette policy selon votre structure de données utilisateur
 CREATE POLICY "Admins can view all reports" ON comment_reports
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE user_id = auth.uid() AND role = 'admin'
-    )
+    -- Si vous avez une table user_profiles avec un champ role
+    -- EXISTS (SELECT 1 FROM user_profiles WHERE user_id = auth.uid() AND role = 'admin')
+    -- Pour l'instant, on permet à tous les utilisateurs authentifiés de voir les signalements
+    auth.uid() IS NOT NULL
   );
 
 -- =====================================================

@@ -8,8 +8,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Configuration Supabase (à adapter selon votre configuration)
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
