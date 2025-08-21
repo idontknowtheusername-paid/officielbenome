@@ -10,41 +10,71 @@ export const useComments = (listingId, options = {}) => {
 
   // Fonction pour récupérer les commentaires
   const fetchComments = useCallback(async (newOptions = {}) => {
-    if (!listingId) return;
+    console.log('🔍 [useComments] fetchComments appelé avec:', { listingId, options, newOptions });
+    
+    if (!listingId) {
+      console.log('❌ [useComments] Pas de listingId, arrêt');
+      return;
+    }
 
     try {
+      console.log('🔍 [useComments] Début du chargement...');
       setLoading(true);
       setError(null);
       
+      console.log('🔍 [useComments] Appel du service...');
       const { comments: newComments, pagination: newPagination, error } = 
         await commentService.getComments(listingId, { ...options, ...newOptions });
       
-      if (error) throw new Error(error);
+      console.log('🔍 [useComments] Réponse du service:', { 
+        commentsLength: newComments?.length, 
+        error, 
+        pagination: newPagination 
+      });
       
+      if (error) {
+        console.error('❌ [useComments] Erreur du service:', error);
+        throw new Error(error);
+      }
+      
+      console.log('✅ [useComments] Mise à jour du state...');
       setComments(newComments);
       setPagination(newPagination);
+      console.log('✅ [useComments] Chargement terminé avec succès');
     } catch (err) {
+      console.error('❌ [useComments] Erreur finale:', err);
       setError(err.message);
       console.error('Erreur lors du chargement des commentaires:', err);
     } finally {
+      console.log('🔍 [useComments] Fin du chargement, loading = false');
       setLoading(false);
     }
   }, [listingId, JSON.stringify(options)]);
 
   // Fonction pour récupérer les statistiques
   const fetchStats = useCallback(async () => {
-    if (!listingId) return;
+    console.log('🔍 [useComments] fetchStats appelé avec listingId:', listingId);
+    
+    if (!listingId) {
+      console.log('❌ [useComments] Pas de listingId pour les stats, arrêt');
+      return;
+    }
 
     try {
+      console.log('🔍 [useComments] Appel du service stats...');
       const { stats: newStats, error } = await commentService.getCommentStats(listingId);
       
+      console.log('🔍 [useComments] Réponse stats:', { stats: newStats, error });
+      
       if (error) {
-        console.error('Erreur lors du chargement des stats:', error);
+        console.error('❌ [useComments] Erreur stats:', error);
         return;
       }
       
+      console.log('✅ [useComments] Mise à jour des stats...');
       setStats(newStats);
     } catch (err) {
+      console.error('❌ [useComments] Erreur stats finale:', err);
       console.error('Erreur lors du chargement des statistiques:', err);
     }
   }, [listingId]);
@@ -155,9 +185,14 @@ export const useComments = (listingId, options = {}) => {
 
   // Chargement initial - CORRIGÉ : pas de dépendances qui causent des re-renders
   useEffect(() => {
+    console.log('🔍 [useComments] useEffect déclenché avec listingId:', listingId);
+    
     if (listingId) {
+      console.log('🔍 [useComments] Lancement du chargement initial...');
       fetchComments();
       fetchStats();
+    } else {
+      console.log('❌ [useComments] Pas de listingId, pas de chargement');
     }
   }, [listingId]); // Seulement listingId comme dépendance
 

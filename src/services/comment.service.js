@@ -6,6 +6,8 @@ class CommentService {
    * Récupérer les commentaires d'une annonce
    */
   async getComments(listingId, options = {}) {
+    console.log('🔍 [CommentService] getComments appelé avec:', { listingId, options });
+    
     const {
       page = 1,
       limit = 10,
@@ -17,6 +19,7 @@ class CommentService {
     } = options;
 
     try {
+      console.log('🔍 [CommentService] Construction de la requête...');
       let query = supabase
         .from('comments')
         .select(`

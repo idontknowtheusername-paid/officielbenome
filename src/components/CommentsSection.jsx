@@ -32,6 +32,8 @@ const CommentsSection = ({
   showStats = true,
   showFilters = true
 }) => {
+  console.log('🔍 [CommentsSection] Rendu avec listingId:', listingId);
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
@@ -56,6 +58,13 @@ const CommentsSection = ({
     changePage,
     refresh
   } = useComments(listingId, filters);
+  
+  console.log('🔍 [CommentsSection] État du hook:', { 
+    commentsLength: comments?.length, 
+    loading, 
+    error, 
+    stats: !!stats 
+  });
 
   const handleAddComment = async (commentData) => {
     if (!user) {
