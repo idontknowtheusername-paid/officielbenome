@@ -69,20 +69,52 @@ const AdminDashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Début du chargement des données du tableau de bord...');
       
-      // Recuperer les donnees en parallele
-      const [listings, users, notifications] = await Promise.all([
-        listingService.getAllListings(),
-        userService.getAllUsers(),
-        notificationService.getUserNotifications()
-      ]);
+      // Recuperer les donnees en parallele avec gestion d'erreur
+      let listings = [];
+      let users = [];
+      let notifications = [];
       
-      // Calculer les statistiques
+      try {
+        const listingsResponse = await listingService.getAllListings();
+        listings = listingsResponse?.data || [];
+        console.log('🔍 Annonces récupérées:', listings.length);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des annonces:', error);
+        listings = [];
+      }
+      
+      try {
+        users = await userService.getAllUsers();
+        console.log('🔍 Utilisateurs récupérés:', users.length);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des utilisateurs:', error);
+        users = [];
+      }
+      
+      try {
+        notifications = await notificationService.getUserNotifications();
+        console.log('🔍 Notifications récupérées:', notifications.length);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des notifications:', error);
+        notifications = [];
+      }
+      
+      // Calculer les statistiques avec gestion des cas d'erreur
       const activeUsers = users.filter(user => user.status === 'active').length;
       const totalUsers = users.length;
       const pendingListings = listings.filter(listing => listing.status === 'pending').length;
       const totalListings = listings.length;
       const recentNotifications = notifications.slice(0, 5);
+      
+      console.log('🔍 Statistiques calculées:', {
+        activeUsers,
+        totalUsers,
+        pendingListings,
+        totalListings,
+        recentNotifications: recentNotifications.length
+      });
       
       // Mettre a jour les statistiques
       setStats(prevStats => prevStats.map(stat => {
@@ -101,7 +133,7 @@ const AdminDashboardPage = () => {
 
       // Mettre a jour les activites recentes
       const formattedActivities = recentNotifications.map(notification => ({
-        id: notification.id,
+        id: notification.id || `notif-${Date.now()}`,
         type: notification.type || 'Notification',
         item: notification.title || notification.message || 'Nouvelle activité',
         timestamp: notification.created_at,
@@ -109,9 +141,24 @@ const AdminDashboardPage = () => {
       }));
 
       setRecentActivities(formattedActivities);
+      console.log('✅ Données du tableau de bord chargées avec succès');
     } catch (error) {
-      console.error('Erreur lors du chargement des données du tableau de bord:', error);
+      console.error('❌ Erreur lors du chargement des données du tableau de bord:', error);
       toast.error('Erreur lors du chargement des données');
+      
+      // En cas d'erreur, afficher des données par défaut
+      setStats(prevStats => prevStats.map(stat => {
+        if (stat.key === 'activeUsers') {
+          return { ...stat, value: '0', trend: 'Erreur de chargement' };
+        } else if (stat.key === 'pendingListings') {
+          return { ...stat, value: '0', trend: 'Erreur de chargement' };
+        } else if (stat.key === 'revenue') {
+          return { ...stat, value: '0 FCFA', trend: 'Erreur de chargement' };
+        } else if (stat.key === 'recentActivities') {
+          return { ...stat, value: '0', trend: 'Erreur de chargement' };
+        }
+        return stat;
+      }));
     } finally {
       setLoading(false);
     }
@@ -264,14 +311,14 @@ const AdminDashboardPage = () => {
                       {activity.value && <span className="text-green-400"> ({activity.value})</span>}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {activity.time} par {activity.user} - <span className={`font-semibold text-${activity.status === "Approuvée" || activity.status === "Complétée" || activity.status.startsWith("VIP") ? 'green' : (activity.status === "En attente KYC" || activity.status === "En cours d'examen" ? 'yellow' : 'slate')}-400`}>{activity.status}</span>
+                      {activity.timestamp ? formatTimeAgo(activity.timestamp) : 'Récemment'} - <span className={`font-semibold text-${activity.status === "read" ? 'green' : 'yellow'}-400`}>{activity.status === 'read' ? 'Lu' : 'Non lu'}</span>
                     </p>
                   </div>
                 </div>
               ))
             ) : (
               <div className="text-center py-8 text-slate-400">
-                Aucune activité récente à afficher
+                {loading ? 'Chargement des activités...' : 'Aucune activité récente à afficher'}
               </div>
             )}
           </div>
