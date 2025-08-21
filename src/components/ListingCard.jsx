@@ -50,15 +50,17 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   };
 
   const getStatusBadge = (status) => {
+    const baseClasses = "text-xs px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 inline-flex items-center whitespace-nowrap";
+    
     switch (status) {
       case 'approved':
-        return <Badge variant="default" className="badge-approved">Approuvé</Badge>;
+        return <Badge variant="default" className={`badge-approved ${baseClasses}`}>Approuvé</Badge>;
       case 'pending':
-        return <Badge variant="secondary">En attente</Badge>;
+        return <Badge variant="secondary" className={baseClasses}>En attente</Badge>;
       case 'rejected':
-        return <Badge variant="destructive">Rejeté</Badge>;
+        return <Badge variant="destructive" className={baseClasses}>Rejeté</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className={baseClasses}>{status}</Badge>;
     }
   };
 

@@ -10,7 +10,7 @@ import { resolveSearchIntent } from '@/lib/search-intent';
 import { useAuth } from '@/contexts/AuthContext';
 import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
-import HeroImage from '@/components/HeroImage';
+import OptimizedImage from '@/components/OptimizedImage';
 
 
 const HomePage = () => {
@@ -104,12 +104,16 @@ const HomePage = () => {
         transition={{ duration: 1 }}
       >
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        <HeroImage
+        <OptimizedImage
           src="https://images.unsplash.com/photo-1542044896530-05d85be9b11a?q=80&w=2070&auto=format&fit=crop"
           alt="Skyline futuriste d'une ville africaine au crépuscule avec des néons"
           className="absolute inset-0 w-full h-full -z-10 opacity-70"
+          context="hero"
+          quality="high"
           priority="high"
           showSkeleton={true}
+          enableHeroAnimations={true}
+          showOverlay={true}
         />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">

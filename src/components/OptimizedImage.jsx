@@ -13,6 +13,13 @@ const OptimizedImage = ({
   onLoad = null,
   onError = null,
   showSkeleton = true,
+  priority = 'medium', // 'low', 'medium', 'high'
+  fallbackSrc = null,
+  // Props pour les animations hero
+  enableHeroAnimations = false,
+  // Props pour les overlays
+  showOverlay = false,
+  overlayGradient = 'to-b from-transparent via-transparent to-black/20',
   ...props
 }) => {
   const [hasError, setHasError] = useState(false);
@@ -47,16 +54,32 @@ const OptimizedImage = ({
     return optimizeImageUrl(imageUrl, context, quality);
   }, [src, context, quality]);
 
+  // Fallback intelligent
+  const fallbackImage = useMemo(() => {
+    if (fallbackSrc) return fallbackSrc;
+    
+    // Images par défaut selon le contexte
+    const defaultImages = {
+      hero: "https://images.unsplash.com/photo-1542044896530-05d85be9b11a?q=80&w=2070&auto=format&fit=crop",
+      city: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1920&auto=format&fit=crop",
+      business: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
+    };
+    
+    return defaultImages[context] || defaultImages.hero;
+  }, [fallbackSrc, context]);
+
   // Lazy loading avec Intersection Observer
   const { elementRef, isIntersecting, imageState, setImageSrc } = useImageLazyLoading({
     threshold: 0.1,
-    rootMargin: '100px',
+    rootMargin: priority === 'high' ? '50px' : '100px',
     onLoad: (loadedSrc) => {
       setIsLoaded(true);
+      setHasError(false);
       onLoad?.(loadedSrc);
     },
     onError: (errorSrc) => {
       setHasError(true);
+      setIsLoaded(false);
       onError?.(errorSrc);
     }
   });
@@ -74,6 +97,9 @@ const OptimizedImage = ({
       props.onClick(e);
     }
   }, [props.onClick]);
+
+  // Image finale à afficher
+  const finalSrc = hasError ? fallbackImage : (imageState.src || extractImageUrl(src));
 
   // Skeleton de chargement
   const ImageSkeleton = () => (
@@ -140,31 +166,56 @@ const OptimizedImage = ({
         </AnimatePresence>
       )}
 
-      {/* Image principale - CORRIGÉE */}
-      <AnimatePresence>
+      {/* Image principale - CORRIGÉE avec animations hero */}
+      <AnimatePresence mode="wait">
         {!hasError && hasValidUrl && (
           <motion.img
-            src={imageState.src || extractImageUrl(src)}
+            key={finalSrc}
+            src={finalSrc}
             alt={alt}
             className={`w-full h-full object-cover transition-opacity duration-300 ${
               isLoaded ? 'opacity-100' : 'opacity-0'
             }`}
+            initial={enableHeroAnimations ? { opacity: 0, scale: 1.1 } : { opacity: 0 }}
+            animate={enableHeroAnimations ? { 
+              opacity: isLoaded ? 1 : 0.7, 
+              scale: isLoaded ? 1 : 1.05 
+            } : { opacity: isLoaded ? 1 : 0 }}
+            exit={enableHeroAnimations ? { opacity: 0, scale: 0.95 } : { opacity: 0 }}
+            transition={enableHeroAnimations ? { 
+              duration: 0.8, 
+              ease: "easeOut",
+              opacity: { duration: 0.5 }
+            } : { duration: 0.3 }}
             onLoad={() => {
-              if (imageState.src || extractImageUrl(src)) {
+              if (finalSrc) {
                 setIsLoaded(true);
-                onLoad?.(imageState.src || extractImageUrl(src));
+                setHasError(false);
+                onLoad?.(finalSrc);
               }
             }}
             onError={() => {
               setHasError(true);
-              onError?.(imageState.src || extractImageUrl(src));
+              setIsLoaded(false);
+              onError?.(finalSrc);
             }}
             onClick={handleClick}
-            loading="lazy"
+            loading={priority === 'high' ? 'eager' : 'lazy'}
+            decoding="async"
             {...props}
           />
         )}
       </AnimatePresence>
+
+      {/* Overlay de transition pour hero */}
+      {showOverlay && isLoaded && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className={`absolute inset-0 bg-gradient-${overlayGradient}`}
+        />
+      )}
 
       {/* Placeholder d'erreur */}
       {hasError && (
@@ -183,7 +234,11 @@ const OptimizedImage = ({
       {/* Indicateur de chargement */}
       {imageState.isLoading && !isLoaded && !hasError && hasValidUrl && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/10">
-          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full"
+          />
         </div>
       )}
 
