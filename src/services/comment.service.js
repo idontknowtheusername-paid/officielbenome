@@ -21,11 +21,8 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          user:auth.users!comments_user_id_fkey(
-            id,
-            email
-          ),
-          replies:comments!comments_parent_id_fkey(count)
+          user:auth.users(id, email),
+          replies:comments(count)
         `)
         .eq('listing_id', listingId)
         .eq('status', 'approved');
@@ -87,10 +84,7 @@ class CommentService {
         .insert([commentWithModeration])
         .select(`
           *,
-          user:auth.users!comments_user_id_fkey(
-            id,
-            email
-          )
+          user:auth.users(id, email)
         `)
         .single();
 
@@ -119,10 +113,7 @@ class CommentService {
         .eq('id', id)
         .select(`
           *,
-          user:auth.users!comments_user_id_fkey(
-            id,
-            email
-          )
+          user:auth.users(id, email)
         `)
         .single();
 
@@ -236,12 +227,7 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          listing:listings!comments_listing_id_fkey(
-            id,
-            title,
-            category,
-            images
-          )
+          listing:listings(id, title, category, images)
         `)
         .eq('user_id', userId);
 
@@ -292,15 +278,8 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          user:auth.users!comments_user_id_fkey(
-            id,
-            email
-          ),
-          listing:listings!comments_listing_id_fkey(
-            id,
-            title,
-            category
-          )
+          user:auth.users(id, email),
+          listing:listings(id, title, category)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
