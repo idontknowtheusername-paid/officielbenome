@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { listingService, messageService } from '@/services';
 import ImageGallery from '@/components/ImageGallery';
 import ShareListing from '@/components/ShareListing';
+import CommentsSection from '@/components/CommentsSection';
 import { useListingImages } from '@/hooks';
 import ReportModal from '@/components/ReportModal';
 
@@ -558,6 +559,15 @@ const ListingDetailPage = () => {
                 <li>• Signalez tout comportement suspect</li>
               </ul>
             </div>
+          </div>
+
+          {/* Section Commentaires et Avis */}
+          <div className="mb-8">
+            <CommentsSection 
+              listingId={listing.id}
+              listing={listing}
+              className="mt-8"
+            />
           </div>
 
           {/* Annonces similaires */}
