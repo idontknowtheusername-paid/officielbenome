@@ -160,11 +160,37 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto"
+            className="text-xl md:text-2xl text-gray-300 mb-16 max-w-3xl mx-auto"
           >
             Explorez, découvrez, connectez. Votre marketplace de confiance.
           </motion.p>
 
+          {/* Indicateur discret de l'annonce en cours - Plus bas */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.8 }}
+            className="text-white/60 text-sm mb-4"
+          >
+            Découvrez : {currentListing.title}
+          </motion.div>
+
+          {/* Bouton discret pour voir l'annonce - Plus bas */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 1 }}
+            className="flex justify-center"
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10 border border-white/20"
+              onClick={() => handleListingClick(currentListing)}
+            >
+              Voir cette annonce
+            </Button>
+          </motion.div>
 
         </div>
       </div>
