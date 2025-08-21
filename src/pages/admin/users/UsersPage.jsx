@@ -119,7 +119,7 @@ function UsersPage() {
 
   // Update user role mutation
   const updateRoleMutation = useMutation({
-    mutationFn: ({ userId, role }) => userService.updateProfile({ role }),
+    mutationFn: ({ userId, role }) => userService.updateUserRole(userId, role),
     onSuccess: () => {
       queryClient.invalidateQueries(['adminUsers']);
       toast({
@@ -339,20 +339,27 @@ function UsersPage() {
                   Erreur lors du chargement des utilisateurs
                 </TableCell>
               </TableRow>
-            ) : data?.users?.length > 0 ? (
-              data.users.map((user) => (
-                <TableRow key={user._id}>
+            ) : users?.length > 0 ? (
+              users
+                .slice((page - 1) * perPage, page * perPage)
+                .map((user) => (
+                <TableRow key={user.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-3">
                       <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
                         <span className="text-sm font-medium text-slate-700">
-                          {user.name?.charAt(0) || 'U'}
+                          {user.first_name?.charAt(0) || user.last_name?.charAt(0) || 'U'}
                         </span>
                       </div>
                       <div>
-                        <div className="font-medium">{user.name || 'Utilisateur sans nom'}</div>
+                        <div className="font-medium">
+                          {user.first_name && user.last_name 
+                            ? `${user.first_name} ${user.last_name}` 
+                            : user.first_name || user.last_name || 'Utilisateur sans nom'
+                          }
+                        </div>
                         <div className="text-sm text-muted-foreground">
-                          ID: {user._id?.substring(0, 6)}...
+                          ID: {user.id?.substring(0, 6)}...
                         </div>
                       </div>
                     </div>
@@ -361,7 +368,7 @@ function UsersPage() {
                   <TableCell>
                     <Select
                       value={user.role}
-                      onValueChange={(value) => handleRoleChange(user._id, value)}
+                      onValueChange={(value) => handleRoleChange(user.id, value)}
                       disabled={updateRoleMutation.isLoading}
                     >
                       <SelectTrigger className="w-[120px]">
@@ -377,7 +384,7 @@ function UsersPage() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={user.status === 'active' ? 'success' :
+                      variant={user.status === 'active' ? 'default' :
                         user.status === 'suspended' ? 'destructive' : 'outline'}
                       className="capitalize"
                     >
@@ -387,7 +394,7 @@ function UsersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {user.createdAt ? format(new Date(user.createdAt), 'PP', { locale: fr }) : 'N/A'}
+                    {user.created_at ? format(new Date(user.created_at), 'PP', { locale: fr }) : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
@@ -404,7 +411,7 @@ function UsersPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleStatusChange(
-                            user._id,
+                            user.id,
                             user.status === 'active' ? 'suspended' : 'active'
                           )}
                           disabled={updateStatusMutation.isLoading}
@@ -424,7 +431,7 @@ function UsersPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive"
-                          onClick={() => handleDeleteUser(user._id)}
+                          onClick={() => handleDeleteUser(user.id)}
                           disabled={deleteUserMutation.isLoading}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -447,14 +454,14 @@ function UsersPage() {
       </div>
 
       {/* Pagination */}
-      {data?.totalPages > 1 && (
+      {users && users.length > perPage && (
         <div className="flex items-center justify-between px-2">
           <div className="flex-1 text-sm text-muted-foreground">
             Affichage de <span className="font-medium">{(page - 1) * perPage + 1}</span> à{' '}
             <span className="font-medium">
-              {Math.min(page * perPage, data.totalCount)}
+              {Math.min(page * perPage, users.length)}
             </span>{' '}
-            sur <span className="font-medium">{data.totalCount}</span> utilisateurs
+            sur <span className="font-medium">{users.length}</span> utilisateurs
           </div>
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
@@ -479,7 +486,7 @@ function UsersPage() {
               </Select>
             </div>
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-              Page {page} sur {data.totalPages}
+              Page {page} sur {Math.ceil(users.length / perPage)}
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -503,8 +510,8 @@ function UsersPage() {
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => setPage(Math.min(data.totalPages, page + 1))}
-                disabled={page === data.totalPages}
+                onClick={() => setPage(Math.min(Math.ceil(users.length / perPage), page + 1))}
+                disabled={page === Math.ceil(users.length / perPage)}
               >
                 <span className="sr-only">Page suivante</span>
                 <ChevronRight className="h-4 w-4" />
@@ -512,8 +519,8 @@ function UsersPage() {
               <Button
                 variant="outline"
                 className="h-8 w-8 p-0"
-                onClick={() => setPage(data.totalPages)}
-                disabled={page === data.totalPages}
+                onClick={() => setPage(Math.ceil(users.length / perPage))}
+                disabled={page === Math.ceil(users.length / perPage)}
               >
                 <span className="sr-only">Aller à la dernière page</span>
                 <ChevronsRight className="h-4 w-4" />
