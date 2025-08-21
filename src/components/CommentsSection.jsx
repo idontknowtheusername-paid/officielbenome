@@ -24,6 +24,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import CommentsDebug from './CommentsDebug';
 
 const CommentsSection = ({
   listingId,
@@ -150,19 +151,24 @@ const CommentsSection = ({
 
   if (error) {
     return (
-      <Card className={cn('mt-8', className)}>
-        <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">
-            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-lg font-semibold mb-2">Impossible de charger les commentaires</h3>
-            <p className="mb-4">Une erreur est survenue lors du chargement des commentaires.</p>
-            <Button onClick={refresh} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Réessayer
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className={cn('mt-8', className)}>
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="text-center text-muted-foreground">
+              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="text-lg font-semibold mb-2">Impossible de charger les commentaires</h3>
+              <p className="mb-4">Une erreur est survenue lors du chargement des commentaires.</p>
+              <Button onClick={refresh} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Réessayer
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Debug component pour diagnostiquer le problème */}
+        <CommentsDebug listingId={listingId} />
+      </div>
     );
   }
 
