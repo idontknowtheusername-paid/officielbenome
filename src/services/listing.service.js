@@ -94,7 +94,47 @@ const getCategoryByHour = () => {
   return 'services';
 };
 
-// Fonction pour obtenir des annonces hero selon l'heure
+// Fonction helper pour les données de test
+const getMockHeroListings = (category, hour, limit) => {
+  const mockListings = {
+    real_estate: [
+      { id: 'hero-re-1', title: 'Appartement de luxe au Plateau', price: 850000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1500, is_featured: true, is_boosted: true },
+      { id: 'hero-re-2', title: 'Villa avec piscine à Almadies', price: 2500000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1200, is_featured: true, is_boosted: false },
+      { id: 'hero-re-3', title: 'Terrain constructible à Thiès', price: 350000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Thiès', country: 'Sénégal' }, images: [], views_count: 800, is_featured: false, is_boosted: true }
+    ],
+    automobile: [
+      { id: 'hero-auto-1', title: 'Toyota Land Cruiser 2022', price: 4500000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 2000, is_featured: true, is_boosted: true },
+      { id: 'hero-auto-2', title: 'BMW X5 2021 - Excellent état', price: 3200000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1800, is_featured: true, is_boosted: false },
+      { id: 'hero-auto-3', title: 'Peugeot 3008 2020', price: 1800000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 950, is_featured: false, is_boosted: true }
+    ],
+    services: [
+      { id: 'hero-serv-1', title: 'Service de nettoyage professionnel', price: 25000, category: 'services', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1200, is_featured: true, is_boosted: true },
+      { id: 'hero-serv-2', title: 'Cours particuliers - Mathématiques', price: 15000, category: 'services', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 800, is_featured: true, is_boosted: false },
+      { id: 'hero-serv-3', title: 'Service de déménagement', price: 45000, category: 'services', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 600, is_featured: false, is_boosted: true }
+    ],
+    marketplace: [
+      { id: 'hero-mp-1', title: 'iPhone 15 Pro Max - Neuf', price: 850000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 2500, is_featured: true, is_boosted: true },
+      { id: 'hero-mp-2', title: 'MacBook Pro M2 - 2023', price: 1200000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1800, is_featured: true, is_boosted: false },
+      { id: 'hero-mp-3', title: 'PS5 + 5 jeux - Comme neuf', price: 350000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1100, is_featured: false, is_boosted: true }
+    ]
+  };
+  
+  return {
+    data: mockListings[category]?.slice(0, limit) || [],
+    category: category,
+    hour: hour,
+    fallbackLevel: 5,
+    nextRotation: new Date(Date.now() + 60 * 60 * 1000),
+    rotationInfo: {
+      currentHour: hour,
+      currentCategory: category,
+      timeSlot: getTimeSlot(hour),
+      fallbackLevel: 5
+    }
+  };
+};
+
+// Fonction pour obtenir des annonces hero selon l'heure avec fallback multi-niveaux
 const getHeroListingsByHour = async (limit = 6) => {
   const currentHour = new Date().getHours();
   const currentCategory = getCategoryByHour();
@@ -103,42 +143,174 @@ const getHeroListingsByHour = async (limit = 6) => {
   
   if (!isSupabaseConfigured) {
     console.warn('⚠️ Supabase non configuré, retour de données de test pour hero');
+    return getMockHeroListings(currentCategory, currentHour, limit);
+  }
+
+  try {
+    let finalListings = [];
+    let fallbackLevel = 1;
     
-    const mockListings = {
-      real_estate: [
-        { id: 'hero-re-1', title: 'Appartement de luxe au Plateau', price: 850000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1500, is_featured: true, is_boosted: true },
-        { id: 'hero-re-2', title: 'Villa avec piscine à Almadies', price: 2500000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1200, is_featured: true, is_boosted: false },
-        { id: 'hero-re-3', title: 'Terrain constructible à Thiès', price: 350000, category: 'real_estate', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Thiès', country: 'Sénégal' }, images: [], views_count: 800, is_featured: false, is_boosted: true }
-      ],
-      automobile: [
-        { id: 'hero-auto-1', title: 'Toyota Land Cruiser 2022', price: 4500000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 2000, is_featured: true, is_boosted: true },
-        { id: 'hero-auto-2', title: 'BMW X5 2021 - Excellent état', price: 3200000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1800, is_featured: true, is_boosted: false },
-        { id: 'hero-auto-3', title: 'Peugeot 3008 2020', price: 1800000, category: 'automobile', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 950, is_featured: false, is_boosted: true }
-      ],
-      services: [
-        { id: 'hero-serv-1', title: 'Service de nettoyage professionnel', price: 25000, category: 'services', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1200, is_featured: true, is_boosted: true },
-        { id: 'hero-serv-2', title: 'Cours particuliers - Mathématiques', price: 15000, category: 'services', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 800, is_featured: true, is_boosted: false },
-        { id: 'hero-serv-3', title: 'Service de déménagement', price: 45000, category: 'services', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 600, is_featured: false, is_boosted: true }
-      ],
-      marketplace: [
-        { id: 'hero-mp-1', title: 'iPhone 15 Pro Max - Neuf', price: 850000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 2500, is_featured: true, is_boosted: true },
-        { id: 'hero-mp-2', title: 'MacBook Pro M2 - 2023', price: 1200000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1800, is_featured: true, is_boosted: false },
-        { id: 'hero-mp-3', title: 'PS5 + 5 jeux - Comme neuf', price: 350000, category: 'marketplace', status: 'approved', created_at: new Date().toISOString(), location: { city: 'Dakar', country: 'Sénégal' }, images: [], views_count: 1100, is_featured: false, is_boosted: true }
-      ]
-    };
+    // NIVEAU 1 : Annonces premium de la catégorie actuelle
+    console.log(`🔄 Niveau ${fallbackLevel}: Annonces premium de ${currentCategory}`);
+    const { data: premiumListings, error: premiumError } = await supabase
+      .from('listings')
+      .select(`
+        *,
+        users (
+          id,
+          first_name,
+          last_name,
+          profile_image
+        ),
+        listing_boosts (
+          boost_packages (
+            name,
+            features
+          ),
+          end_date
+        )
+      `)
+      .eq('category', currentCategory)
+      .eq('status', 'approved')
+      .or('is_featured.eq.true,is_boosted.eq.true')
+      .order('created_at', { ascending: false })
+      .limit(limit * 2);
+
+    if (!premiumError && premiumListings && premiumListings.length > 0) {
+      finalListings = premiumListings;
+      console.log(`✅ Niveau ${fallbackLevel} réussi: ${finalListings.length} annonces premium trouvées`);
+    } else {
+      console.log(`❌ Niveau ${fallbackLevel} échoué: ${premiumError?.message || 'Aucune annonce premium'}`);
+      fallbackLevel++;
+    }
+
+    // NIVEAU 2 : Annonces populaires de la catégorie actuelle
+    if (finalListings.length < limit) {
+      console.log(`🔄 Niveau ${fallbackLevel}: Annonces populaires de ${currentCategory}`);
+      const { data: popularListings, error: popularError } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          users (
+            id,
+            first_name,
+            last_name,
+            profile_image
+          )
+        `)
+        .eq('category', currentCategory)
+        .eq('status', 'approved')
+        .eq('is_featured', false)
+        .eq('is_boosted', false)
+        .order('views_count', { ascending: false })
+        .limit(limit - finalListings.length);
+
+      if (!popularError && popularListings && popularListings.length > 0) {
+        finalListings = [...finalListings, ...popularListings];
+        console.log(`✅ Niveau ${fallbackLevel} réussi: ${popularListings.length} annonces populaires ajoutées`);
+      } else {
+        console.log(`❌ Niveau ${fallbackLevel} échoué: ${popularError?.message || 'Aucune annonce populaire'}`);
+        fallbackLevel++;
+      }
+    }
+
+    // NIVEAU 3 : Annonces premium d'autres catégories
+    if (finalListings.length < limit) {
+      console.log(`🔄 Niveau ${fallbackLevel}: Annonces premium d'autres catégories`);
+      const { data: otherPremiumListings, error: otherError } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          users (
+            id,
+            first_name,
+            last_name,
+            profile_image
+          )
+        `)
+        .neq('category', currentCategory)
+        .eq('status', 'approved')
+        .or('is_featured.eq.true,is_boosted.eq.true')
+        .order('created_at', { ascending: false })
+        .limit(limit - finalListings.length);
+
+      if (!otherError && otherPremiumListings && otherPremiumListings.length > 0) {
+        finalListings = [...finalListings, ...otherPremiumListings];
+        console.log(`✅ Niveau ${fallbackLevel} réussi: ${otherPremiumListings.length} annonces d'autres catégories ajoutées`);
+      } else {
+        console.log(`❌ Niveau ${fallbackLevel} échoué: ${otherError?.message || 'Aucune annonce d\'autre catégorie'}`);
+        fallbackLevel++;
+      }
+    }
+
+    // NIVEAU 4 : Annonces récentes de toutes catégories
+    if (finalListings.length < limit) {
+      console.log(`🔄 Niveau ${fallbackLevel}: Annonces récentes de toutes catégories`);
+      const { data: recentListings, error: recentError } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          users (
+            id,
+            first_name,
+            last_name,
+            profile_image
+          )
+        `)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(limit - finalListings.length);
+
+      if (!recentError && recentListings && recentListings.length > 0) {
+        finalListings = [...finalListings, ...recentListings];
+        console.log(`✅ Niveau ${fallbackLevel} réussi: ${recentListings.length} annonces récentes ajoutées`);
+      } else {
+        console.log(`❌ Niveau ${fallbackLevel} échoué: ${recentError?.message || 'Aucune annonce récente'}`);
+        fallbackLevel++;
+      }
+    }
+
+    // NIVEAU 5 : Données de test (fallback final)
+    if (finalListings.length === 0) {
+      console.log(`🔄 Niveau ${fallbackLevel}: Données de test (fallback final)`);
+      return getMockHeroListings(currentCategory, currentHour, limit);
+    }
+
+    // Appliquer la rotation horaire
+    const today = new Date();
+    const hourOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60));
+    const rotationOffset = hourOfYear % Math.max(1, finalListings.length);
     
+    const rotatedListings = [];
+    for (let i = 0; i < limit && i < finalListings.length; i++) {
+      const index = (rotationOffset + i) % finalListings.length;
+      rotatedListings.push(finalListings[index]);
+    }
+
+    console.log(`🔄 Hero rotation: ${finalListings.length} total, ${rotatedListings.length} affichées, catégorie: ${currentCategory}, heure: ${currentHour}h, niveau de fallback: ${fallbackLevel}`);
+
     return {
-      data: mockListings[currentCategory]?.slice(0, limit) || [],
+      data: rotatedListings,
       category: currentCategory,
       hour: currentHour,
-      nextRotation: new Date(Date.now() + 60 * 60 * 1000), // Prochaine heure
+      nextRotation: new Date(Date.now() + 60 * 60 * 1000),
+      fallbackLevel,
       rotationInfo: {
         currentHour,
         currentCategory,
-        timeSlot: getTimeSlot(currentHour)
+        timeSlot: getTimeSlot(currentHour),
+        totalListings: finalListings.length,
+        rotationOffset,
+        fallbackLevel
       }
     };
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la récupération des annonces hero:', error);
+    console.log('🔄 Fallback vers les données de test');
+    return getMockHeroListings(currentCategory, currentHour, limit);
   }
+};
 
   try {
     // Récupérer les annonces premium de la catégorie actuelle
