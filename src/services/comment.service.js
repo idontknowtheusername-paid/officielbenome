@@ -17,13 +17,10 @@ class CommentService {
       
       console.log('🔍 [CommentService] Paramètres de pagination:', { page, limit, from, to });
       
-      // Requête pour récupérer les commentaires avec les données utilisateur
+      // Requête pour récupérer les commentaires (sans jointure pour éviter les erreurs de permissions)
       const { data: comments, error: commentsError } = await supabase
         .from('comments')
-        .select(`
-          *,
-          user:auth.users(id, email, raw_user_meta_data)
-        `)
+        .select('*')
         .eq('listing_id', listingId)
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
@@ -53,30 +50,22 @@ class CommentService {
       const total = count || 0;
       const pages = Math.ceil(total / limit);
       
-      // Traiter les données utilisateur pour chaque commentaire
+      // Traiter les commentaires avec des noms d'utilisateur simplifiés
       const processedComments = comments?.map(comment => {
-        const userData = comment.user;
+        // Générer un nom d'affichage basé sur l'ID utilisateur
+        const userId = comment.user_id;
         let displayName = 'Utilisateur anonyme';
         
-        if (userData?.raw_user_meta_data) {
-          const meta = userData.raw_user_meta_data;
-          if (meta.first_name && meta.last_name) {
-            displayName = `${meta.first_name} ${meta.last_name}`;
-          } else if (meta.first_name) {
-            displayName = meta.first_name;
-          } else if (meta.name) {
-            displayName = meta.name;
-          } else if (userData.email) {
-            displayName = userData.email.split('@')[0];
-          }
-        } else if (userData?.email) {
-          displayName = userData.email.split('@')[0];
+        if (userId) {
+          // Utiliser les premiers caractères de l'ID pour créer un nom
+          const shortId = userId.slice(0, 8);
+          displayName = `Utilisateur ${shortId}`;
         }
 
         return {
           ...comment,
           user_display_name: displayName,
-          user_email: userData?.email
+          user_email: null // Pas d'email pour l'instant
         };
       }) || [];
 
@@ -146,9 +135,16 @@ class CommentService {
 
       console.log('✅ [CommentService] Commentaire créé avec succès');
       
+      // Traiter le nom d'utilisateur pour le commentaire créé
+      const processedComment = {
+        ...data,
+        user_display_name: `Utilisateur ${data.user_id?.slice(0, 8)}`,
+        user_email: null
+      };
+      
       // Retourner le commentaire avec les informations de modération
       return { 
-        comment: data, 
+        comment: processedComment, 
         error: null,
         moderation: moderationResult
       };
@@ -167,15 +163,19 @@ class CommentService {
         .from('comments')
         .update(updates)
         .eq('id', id)
-        .select(`
-          *,
-          user:auth.users(id, email)
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;
 
-      return { comment: data, error: null };
+      // Traiter le nom d'utilisateur
+      const processedComment = {
+        ...data,
+        user_display_name: `Utilisateur ${data.user_id?.slice(0, 8)}`,
+        user_email: null
+      };
+
+      return { comment: processedComment, error: null };
     } catch (error) {
       console.error('Erreur lors de la mise à jour du commentaire:', error);
       return { comment: null, error: error.message };
