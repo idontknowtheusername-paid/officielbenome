@@ -142,6 +142,7 @@ const CommentForm = ({
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         {console.log('🔍 [CommentForm] Rendu du formulaire, isValid:', isValid, 'errors:', errors)}
+        {console.log('🔍 [CommentForm] VERSION DE TEST - 2024-08-21-15h30')}
         {/* Note */}
         <div className="space-y-2">
           <label className="text-sm font-medium">
