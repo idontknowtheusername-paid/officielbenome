@@ -550,14 +550,74 @@ const ListingDetailPage = () => {
 
           {/* Informations de sécurité */}
           <div className="mb-8">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Conseils de sécurité</h3>
-              <ul className="text-sm text-muted-foreground space-y-2">
-                <li>• Rencontrez le vendeur dans un lieu public</li>
-                <li>• Vérifiez l'état du bien avant l'achat</li>
-                <li>• Paiements en espèces recommandés - Évitez tout dépôt électronique sans avoir inspecté le bien et vérifié la fiabilité du vendeur</li>
-                <li>• Signalez tout comportement suspect</li>
-              </ul>
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-amber-600 dark:text-amber-400 text-lg">⚠️</span>
+                </div>
+                <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200">Conseils de sécurité</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Rencontre sécurisée */}
+                <div>
+                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
+                    <span className="mr-2">🤝</span>
+                    Rencontre sécurisée
+                  </h4>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                    <li>• Rencontrez-vous dans un lieu public fréquenté</li>
+                    <li>• Évitez les rendez-vous tardifs ou isolés</li>
+                    <li>• Informez un proche de votre rendez-vous</li>
+                  </ul>
+                </div>
+
+                {/* Vérification du bien */}
+                <div>
+                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
+                    <span className="mr-2">🔍</span>
+                    Vérification
+                  </h4>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                    <li>• Inspectez minutieusement le bien</li>
+                    <li>• Testez le fonctionnement (véhicules, appareils)</li>
+                    <li>• Demandez les documents authentiques</li>
+                  </ul>
+                </div>
+
+                {/* Paiement sécurisé */}
+                <div>
+                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
+                    <span className="mr-2">💰</span>
+                    Paiement sécurisé
+                  </h4>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                    <li>• Privilégiez les paiements en espèces</li>
+                    <li>• Évitez les virements avant inspection</li>
+                    <li>• Méfiez-vous des prix anormalement bas</li>
+                  </ul>
+                </div>
+
+                {/* Signalement */}
+                <div>
+                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
+                    <span className="mr-2">🚨</span>
+                    En cas de problème
+                  </h4>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                    <li>• Signalez tout comportement suspect</li>
+                    <li>• Conservez toutes les communications</li>
+                    <li>• Contactez les autorités si nécessaire</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
+                  💡 <strong>Rappel :</strong> MaxiMarket ne peut être tenu responsable des transactions entre particuliers. 
+                  Restez vigilant et utilisez votre bon sens pour éviter les arnaques.
+                </p>
+              </div>
             </div>
           </div>
 
