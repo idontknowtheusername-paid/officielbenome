@@ -93,7 +93,7 @@ const Navbar = () => {
             </nav>
 
             <div className="flex items-center space-x-3">
-              <LanguageSelector />
+              <LanguageSelector className="md:hidden" />
               <Button 
                 variant="ghost" 
                 size="icon" 

@@ -9,7 +9,7 @@ import {
 } from './ui/dropdown-menu';
 import { Globe, Check } from 'lucide-react';
 
-const LanguageSelector = () => {
+const LanguageSelector = ({ className = '' }) => {
   const { currentLanguage, changeLanguage, availableLanguages, languageNames } = useI18n();
   
   const handleLanguageChange = (lang) => {
@@ -19,7 +19,7 @@ const LanguageSelector = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+        <Button variant="ghost" size="sm" className={`flex items-center space-x-2 ${className}`}>
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{languageNames[currentLanguage]}</span>
           <span className="sm:hidden">{currentLanguage.toUpperCase()}</span>
