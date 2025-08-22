@@ -55,6 +55,7 @@ const CommentForm = ({
 
   const handleFormSubmit = async (data) => {
     console.log('🔍 [CommentForm] handleFormSubmit appelé avec:', { data, rating });
+    console.log('🔍 [CommentForm] Formulaire soumis !');
     
     if (rating === 0) {
       console.log('❌ [CommentForm] Note manquante');
@@ -144,6 +145,7 @@ const CommentForm = ({
       </div>
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        {console.log('🔍 [CommentForm] Rendu du formulaire, isValid:', isValid, 'errors:', errors)}
         {/* Note */}
         <div className="space-y-2">
           <label className="text-sm font-medium">
@@ -217,7 +219,6 @@ const CommentForm = ({
           <Button
             type="submit"
             disabled={isSubmitting || rating === 0 || !content?.trim()}
-            onClick={() => console.log('🔍 [CommentForm] Bouton Publier cliqué')}
             className="flex items-center space-x-2"
           >
             {isSubmitting ? (
