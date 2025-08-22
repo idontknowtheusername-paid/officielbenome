@@ -3,16 +3,23 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import des ressources de traduction
+import frCommon from '../locales/fr/common.json';
+import frAuth from '../locales/fr/auth.json';
+import frListings from '../locales/fr/listings.json';
+import enCommon from '../locales/en/common.json';
+import enAuth from '../locales/en/auth.json';
+import enListings from '../locales/en/listings.json';
+
 const resources = {
   fr: {
-    common: require('../locales/fr/common.json'),
-    auth: require('../locales/fr/auth.json'),
-    listings: require('../locales/fr/listings.json'),
+    common: frCommon,
+    auth: frAuth,
+    listings: frListings,
   },
   en: {
-    common: require('../locales/en/common.json'),
-    auth: require('../locales/en/auth.json'),
-    listings: require('../locales/en/listings.json'),
+    common: enCommon,
+    auth: enAuth,
+    listings: enListings,
   },
   // Seulement FR et EN supportés
 };
