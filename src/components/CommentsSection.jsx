@@ -13,14 +13,9 @@ import RatingStars from '@/components/ui/RatingStars';
 import {
   MessageSquare,
   Star,
-  Filter,
-  SortAsc,
-  SortDesc,
   Plus,
   X,
   CheckCircle,
-  Users,
-  TrendingUp,
   RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -37,12 +32,7 @@ const CommentsSection = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
-  const [filters, setFilters] = useState({
-    rating: null,
-    verifiedOnly: false,
-    sort: 'created_at',
-    order: 'desc'
-  });
+
 
   const {
     comments,
@@ -53,10 +43,9 @@ const CommentsSection = ({
     updateComment,
     deleteComment,
     reportComment,
-    changeFilters,
     changePage,
     refresh
-  } = useComments(listingId, filters);
+  } = useComments(listingId);
   
   console.log('🔍 [CommentsSection] État du hook:', { 
     commentsLength: comments?.length, 
@@ -133,10 +122,7 @@ const CommentsSection = ({
     return result;
   };
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-    changeFilters({ ...filters, ...newFilters });
-  };
+
 
 
 
@@ -211,68 +197,7 @@ const CommentsSection = ({
         )}
       </AnimatePresence>
 
-      {/* Filtres */}
-      {showFilters && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Filtres :</span>
-              </div>
 
-              {/* Filtre par note */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm">Note :</span>
-                <select
-                  value={filters.rating || ''}
-                  onChange={(e) => handleFilterChange({ rating: e.target.value || null })}
-                  className="text-sm border rounded px-2 py-1"
-                >
-                  <option value="">Toutes</option>
-                  <option value="5">5 étoiles</option>
-                  <option value="4">4 étoiles</option>
-                  <option value="3">3 étoiles</option>
-                  <option value="2">2 étoiles</option>
-                  <option value="1">1 étoile</option>
-                </select>
-              </div>
-
-              {/* Filtre achats vérifiés */}
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="verifiedOnly"
-                  checked={filters.verifiedOnly}
-                  onChange={(e) => handleFilterChange({ verifiedOnly: e.target.checked })}
-                  className="rounded"
-                />
-                <label htmlFor="verifiedOnly" className="text-sm">
-                  Achats vérifiés uniquement
-                </label>
-              </div>
-
-              {/* Tri */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm">Tri :</span>
-                <select
-                  value={`${filters.sort}-${filters.order}`}
-                  onChange={(e) => {
-                    const [sort, order] = e.target.value.split('-');
-                    handleFilterChange({ sort, order });
-                  }}
-                  className="text-sm border rounded px-2 py-1"
-                >
-                  <option value="created_at-desc">Plus récents</option>
-                  <option value="created_at-asc">Plus anciens</option>
-                  <option value="rating-desc">Meilleures notes</option>
-                  <option value="rating-asc">Moins bonnes notes</option>
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Liste des commentaires */}
       <div className="space-y-4">

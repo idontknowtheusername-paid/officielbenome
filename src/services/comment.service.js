@@ -55,15 +55,23 @@ class CommentService {
    * Créer un nouveau commentaire
    */
   async createComment(commentData) {
+    console.log('🔍 [CommentService] createComment appelé avec:', commentData);
+    
     try {
+      console.log('🔍 [CommentService] Début de la création...');
+      
       // Modération automatique
+      console.log('🔍 [CommentService] Appel de la modération...');
       const moderationResult = await ModerationService.moderateComment(commentData);
+      console.log('🔍 [CommentService] Résultat modération:', moderationResult);
       
       // Appliquer le statut de modération
       const commentWithModeration = {
         ...commentData,
         status: moderationResult.status
       };
+      
+      console.log('🔍 [CommentService] Données à insérer:', commentWithModeration);
 
       const { data, error } = await supabase
         .from('comments')
@@ -74,8 +82,12 @@ class CommentService {
         `)
         .single();
 
+      console.log('🔍 [CommentService] Résultat insertion:', { data, error });
+
       if (error) throw error;
 
+      console.log('✅ [CommentService] Commentaire créé avec succès');
+      
       // Retourner le commentaire avec les informations de modération
       return { 
         comment: data, 
@@ -83,7 +95,7 @@ class CommentService {
         moderation: moderationResult
       };
     } catch (error) {
-      console.error('Erreur lors de la création du commentaire:', error);
+      console.error('❌ [CommentService] Erreur lors de la création du commentaire:', error);
       return { comment: null, error: error.message };
     }
   }
