@@ -42,15 +42,6 @@ const CommentCard = ({
   const [showRepliesList, setShowRepliesList] = useState(false);
   const [replies, setReplies] = useState(comment.replies || []);
 
-  // Debug: Afficher les données du commentaire
-  console.log('🔍 [CommentCard] Rendu avec commentaire:', {
-    id: comment.id,
-    user_id: comment.user_id,
-    user_display_name: comment.user_display_name,
-    user: comment.user,
-    content: comment.content?.substring(0, 50) + '...'
-  });
-
   const isOwner = user?.id === comment.user_id;
   const isAdmin = user?.role === 'admin';
   const canModify = isOwner || isAdmin;

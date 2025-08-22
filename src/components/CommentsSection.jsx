@@ -44,7 +44,8 @@ const CommentsSection = ({
     deleteComment,
     reportComment,
     changePage,
-    refresh
+    refresh,
+    forceRefresh
   } = useComments(listingId);
   
   console.log('🔍 [CommentsSection] État du hook:', { 
@@ -155,15 +156,31 @@ const CommentsSection = ({
           <h2 className="text-2xl font-bold">Commentaires et Avis</h2>
         </div>
 
-        {user && !showForm && (
-          <Button onClick={() => {
-            console.log('🔍 [CommentsSection] Bouton Ajouter cliqué');
-            setShowForm(true);
-          }} className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Ajouter un commentaire</span>
+        <div className="flex items-center space-x-2">
+          {user && !showForm && (
+            <Button onClick={() => {
+              console.log('🔍 [CommentsSection] Bouton Ajouter cliqué');
+              setShowForm(true);
+            }} className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Ajouter un commentaire</span>
+            </Button>
+          )}
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              console.log('🔄 [CommentsSection] Force refresh cliqué');
+              forceRefresh();
+            }}
+            disabled={loading}
+            className="flex items-center space-x-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>Actualiser</span>
           </Button>
-        )}
+        </div>
       </div>
 
 

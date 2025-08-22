@@ -51,6 +51,28 @@ export const useComments = (listingId, options = {}) => {
     }
   }, [listingId]); // Supprimer options pour éviter les re-renders
 
+  // Fonction pour forcer le rechargement (éviter le cache)
+  const forceRefresh = useCallback(async () => {
+    console.log('🔄 [useComments] Force refresh activé...');
+    
+    // Nettoyer le cache local si disponible
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const keys = Object.keys(localStorage);
+        const commentKeys = keys.filter(key => key.includes('comment') || key.includes('benome'));
+        commentKeys.forEach(key => {
+          console.log('🗑️ [useComments] Suppression du cache:', key);
+          localStorage.removeItem(key);
+        });
+        console.log('✅ [useComments] Cache local nettoyé');
+      }
+    } catch (error) {
+      console.warn('⚠️ [useComments] Erreur lors du nettoyage du cache:', error);
+    }
+    
+    await fetchComments({ forceRefresh: true });
+  }, [fetchComments]);
+
   // Fonction pour ajouter un commentaire
   const addComment = useCallback(async (commentData) => {
     try {
@@ -175,7 +197,8 @@ export const useComments = (listingId, options = {}) => {
     reportComment,
     changePage,
     changeFilters,
-    refresh
+    refresh,
+    forceRefresh
   };
 };
 
