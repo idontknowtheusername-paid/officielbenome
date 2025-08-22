@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Send, ArrowRight, Zap } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Send, ArrowRight, Zap, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { personalData } from '@/lib/personalData';
@@ -49,9 +49,10 @@ const Footer = () => {
   ].filter(social => social.path && !social.path.includes('yourusername'));
 
   return (
-    <footer className="bg-card text-card-foreground border-t border-border pt-16 pb-8">
+    <footer className="bg-card text-card-foreground border-t border-border">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8 mb-12">
+        {/* Section principale - Desktop */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8 pt-16 pb-8">
           {/* Logo & Newsletter */}
           <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 pr-4">
             <Link to="/" className="flex items-center space-x-2 mb-6">
@@ -69,7 +70,7 @@ const Footer = () => {
             </form>
           </div>
 
-          {/* Footer Links */}
+          {/* Footer Links - Desktop */}
           {footerLinks.map((section) => (
             <div key={section.title}>
               <p className="font-semibold mb-4">{section.title}</p>
@@ -90,24 +91,114 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-xs text-muted-foreground mb-4 md:mb-0">
+        {/* Section mobile optimisée */}
+        <div className="md:hidden">
+          {/* Logo et description - Mobile */}
+          <div className="pt-8 pb-6 text-center">
+            <Link to="/" className="flex items-center justify-center space-x-2 mb-4">
+              <span className="text-xl font-bold gradient-text">{personalData.siteName}</span>
+            </Link>
+            <p className="text-muted-foreground text-sm mb-4">
+              La plateforme N°1 en Afrique de l'Ouest
+            </p>
+            
+            {/* Newsletter mobile */}
+            <div className="mb-6">
+              <p className="font-semibold mb-2 text-sm">Newsletter :</p>
+              <form className="flex items-center gap-2 max-w-xs mx-auto">
+                <Input type="email" placeholder="Email" className="flex-grow text-sm" />
+                <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90">
+                  <Send className="h-3 w-3" />
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          {/* Liens organisés horizontalement - Mobile */}
+          <div className="pb-6">
+            <div className="grid grid-cols-3 gap-4">
+              {footerLinks.map((section) => (
+                <div key={section.title} className="text-center">
+                  <p className="font-semibold mb-3 text-sm text-primary">{section.title}</p>
+                  <div className="space-y-2">
+                    {section.links.slice(0, 3).map((link) => (
+                      <Link
+                        key={link.name}
+                        to={link.path}
+                        className="block text-xs text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Réseaux sociaux - Mobile (plus visible) */}
+          <div className="pb-6">
+            <p className="text-center font-semibold mb-4 text-sm text-primary">Suivez-nous</p>
+            <div className="flex justify-center space-x-6">
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.name}
+                  to={social.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.name}
+                  className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-accent"
+                >
+                  {social.icon}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact rapide - Mobile */}
+          <div className="pb-6">
+            <p className="text-center font-semibold mb-4 text-sm text-primary">Contact</p>
+            <div className="flex justify-center space-x-6 text-xs text-muted-foreground">
+              <Link to="/contact" className="flex items-center space-x-1 hover:text-primary">
+                <Mail className="h-3 w-3" />
+                <span>Contact</span>
+              </Link>
+              <Link to="/aide" className="flex items-center space-x-1 hover:text-primary">
+                <Phone className="h-3 w-3" />
+                <span>Aide</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Section copyright et réseaux sociaux - Desktop */}
+        <div className="hidden md:block border-t border-border pt-8 pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-xs text-muted-foreground mb-4 md:mb-0">
+              &copy; {currentYear} {personalData.siteName}. Tous droits réservés.
+            </p>
+            <div className="flex space-x-4">
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.name}
+                  to={social.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.name}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {social.icon}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright mobile */}
+        <div className="md:hidden border-t border-border pt-6 pb-8 text-center">
+          <p className="text-xs text-muted-foreground">
             &copy; {currentYear} {personalData.siteName}. Tous droits réservés.
           </p>
-          <div className="flex space-x-4">
-            {socialLinks.map((social) => (
-              <Link
-                key={social.name}
-                to={social.path}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={social.name}
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                {social.icon}
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
     </footer>
