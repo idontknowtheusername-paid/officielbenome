@@ -1,5 +1,6 @@
 // Service de traduction automatique avec Google Translate API
-import { Translate } from '@google-cloud/translate';
+// Note: @google-cloud/translate n'est pas compatible avec le build client
+// Nous utilisons une approche alternative pour la production
 
 class TranslationService {
   constructor() {
@@ -24,27 +25,17 @@ class TranslationService {
   // Initialiser le service
   async initialize() {
     try {
-      // Vérifier si on a une clé API directe
+      // Pour la production, nous utiliserons une API REST directe
+      // car @google-cloud/translate n'est pas compatible avec le build client
       if (this.googleTranslateConfig.key) {
-        this.translate = new Translate({
-          key: this.googleTranslateConfig.key,
-        });
         this.isConfigured = true;
-        console.log('Translation service initialized with API key');
-      }
-      // Vérifier si on a un projet Google Cloud configuré
-      else if (this.googleTranslateConfig.projectId && this.googleTranslateConfig.keyFilename) {
-        this.translate = new Translate({
-          projectId: this.googleTranslateConfig.projectId,
-          keyFilename: this.googleTranslateConfig.keyFilename,
-        });
-        this.isConfigured = true;
-        console.log('Translation service initialized with Google Cloud project');
+        this.apiKey = this.googleTranslateConfig.key;
+        console.log('Translation service initialized with API key (REST mode)');
       }
       // Mode simulé pour le développement
       else {
         console.warn('Translation service not configured, using mock mode');
-        console.info('To enable real translation, set VITE_GOOGLE_TRANSLATE_API_KEY or VITE_GOOGLE_CLOUD_PROJECT_ID');
+        console.info('To enable real translation, set VITE_GOOGLE_TRANSLATE_API_KEY');
         this.isConfigured = false;
       }
       
@@ -87,13 +78,31 @@ class TranslationService {
     try {
       let translation = text;
       
-      if (this.isConfigured && this.translate) {
-        // Utiliser Google Translate API
-        const [result] = await this.translate.translate(text, {
-          from: sourceLanguage,
-          to: targetLanguage,
-        });
-        translation = result;
+      if (this.isConfigured && this.apiKey) {
+        // Utiliser Google Translate API via REST
+        try {
+          const response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              q: text,
+              source: sourceLanguage,
+              target: targetLanguage,
+            }),
+          });
+          
+          const data = await response.json();
+          if (data.data && data.data.translations && data.data.translations[0]) {
+            translation = data.data.translations[0].translatedText;
+          } else {
+            throw new Error('Invalid response from Google Translate API');
+          }
+        } catch (apiError) {
+          console.warn('Google Translate API error, falling back to mock translation:', apiError);
+          translation = this._mockTranslate(text, targetLanguage, sourceLanguage);
+        }
       } else {
         // Traduction simulée pour le développement
         translation = this._mockTranslate(text, targetLanguage, sourceLanguage);
@@ -350,16 +359,29 @@ class TranslationService {
     
     try {
       const testText = 'Hello world';
-      const [translation] = await this.translate.translate(testText, {
-        from: 'en',
-        to: 'fr',
+      const response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          q: testText,
+          source: 'en',
+          target: 'fr',
+        }),
       });
       
-      return { 
-        success: true, 
-        message: 'API connection successful',
-        test: { original: testText, translated: translation }
-      };
+      const data = await response.json();
+      if (data.data && data.data.translations && data.data.translations[0]) {
+        const translation = data.data.translations[0].translatedText;
+        return { 
+          success: true, 
+          message: 'API connection successful',
+          test: { original: testText, translated: translation }
+        };
+      } else {
+        throw new Error('Invalid response from Google Translate API');
+      }
     } catch (error) {
       return { 
         success: false, 

@@ -25,21 +25,21 @@ Ce guide vous explique comment configurer Google Translate API pour activer la t
 
 ### **2. Configurer l'Authentification**
 
-#### **Option A : Clé API (Recommandée pour le développement)**
+#### **Clé API (Recommandée)**
 
 1. **Créer une clé API**
    - Allez à "APIs & Services" > "Credentials"
    - Cliquez sur "Create Credentials" > "API Key"
    - Copiez la clé générée
 
-2. **Restreindre la clé (optionnel mais recommandé)**
+2. **Restreindre la clé (recommandé)**
    - Cliquez sur la clé créée
    - Dans "Application restrictions", sélectionnez "HTTP referrers"
    - Ajoutez vos domaines (ex: `localhost:5173/*`, `yourdomain.com/*`)
    - Dans "API restrictions", sélectionnez "Restrict key"
    - Sélectionnez "Cloud Translation API"
 
-#### **Option B : Compte de Service (Recommandée pour la production)**
+**Note :** Nous utilisons l'API REST directe pour la compatibilité avec le build client.
 
 1. **Créer un compte de service**
    - Allez à "IAM & Admin" > "Service Accounts"
@@ -60,7 +60,7 @@ Ce guide vous explique comment configurer Google Translate API pour activer la t
 
 ### **3. Configuration dans l'Application**
 
-#### **Option A : Clé API**
+#### **Configuration de la Clé API**
 
 1. **Créer le fichier .env**
    ```bash
@@ -74,7 +74,7 @@ Ce guide vous explique comment configurer Google Translate API pour activer la t
    VITE_GOOGLE_TRANSLATE_API_KEY=your_actual_api_key_here
    ```
 
-#### **Option B : Compte de Service**
+**Note :** Cette configuration utilise l'API REST directe, compatible avec tous les environnements de build.
 
 1. **Placer le fichier JSON**
    ```bash
@@ -128,12 +128,8 @@ Ce guide vous explique comment configurer Google Translate API pour activer la t
 
 ### **Variables d'Environnement Complètes**
 ```env
-# Google Translate API
+# Google Translate API (REST)
 VITE_GOOGLE_TRANSLATE_API_KEY=your_api_key
-
-# OU Google Cloud Project
-VITE_GOOGLE_CLOUD_PROJECT_ID=your_project_id
-VITE_GOOGLE_CLOUD_KEY_FILE=path/to/service-account.json
 
 # Configuration de l'application
 VITE_APP_NAME=MaxiMarket
