@@ -10,14 +10,11 @@ import RatingStars from '@/components/ui/RatingStars';
 import { Send, Star, CheckCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Schéma de validation
+// Schéma de validation (sans rating car géré séparément)
 const commentSchema = z.object({
   content: z.string()
     .min(1, 'Le commentaire ne peut pas être vide')
     .max(1000, 'Le commentaire ne peut pas dépasser 1000 caractères'),
-  rating: z.number()
-    .min(1, 'Veuillez donner une note')
-    .max(5, 'La note doit être entre 1 et 5'),
   parent_id: z.string().uuid().optional()
 });
 
@@ -44,7 +41,6 @@ const CommentForm = ({
     resolver: zodResolver(commentSchema),
     defaultValues: {
       content: initialData?.content || '',
-      rating: initialData?.rating || 0,
       parent_id: parentId || initialData?.parent_id
     },
     mode: 'onChange'
@@ -220,6 +216,14 @@ const CommentForm = ({
             type="submit"
             disabled={isSubmitting || rating === 0 || !content?.trim()}
             className="flex items-center space-x-2"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('🔍 [CommentForm] Bouton cliqué - validation manuelle');
+              console.log('🔍 [CommentForm] État:', { rating, content: content?.trim(), isSubmitting });
+              if (rating > 0 && content?.trim() && !isSubmitting) {
+                handleSubmit(handleFormSubmit)();
+              }
+            }}
           >
             {isSubmitting ? (
               <>
