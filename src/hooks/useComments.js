@@ -69,16 +69,13 @@ export const useComments = (listingId, options = {}) => {
       // Ajouter le nouveau commentaire au début de la liste
       setComments(prev => [comment, ...prev]);
       
-      // Rafraîchir les statistiques
-      fetchStats();
-      
       return { comment, error: null };
     } catch (err) {
       const errorMessage = err.message;
       setError(errorMessage);
       return { comment: null, error: errorMessage };
     }
-  }, [listingId, fetchStats]);
+  }, [listingId]);
 
   // Fonction pour mettre à jour un commentaire
   const updateComment = useCallback(async (commentId, updates) => {
@@ -114,16 +111,13 @@ export const useComments = (listingId, options = {}) => {
       // Supprimer le commentaire de la liste
       setComments(prev => prev.filter(c => c.id !== commentId));
       
-      // Rafraîchir les statistiques
-      fetchStats();
-      
       return { error: null };
     } catch (err) {
       const errorMessage = err.message;
       setError(errorMessage);
       return { error: errorMessage };
     }
-  }, [fetchStats]);
+  }, []);
 
   // Fonction pour signaler un commentaire
   const reportComment = useCallback(async (commentId, reportData) => {
