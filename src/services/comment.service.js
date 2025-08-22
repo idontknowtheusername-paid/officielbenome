@@ -22,7 +22,7 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          user:auth.users(id, email)
+          users(id, email)
         `)
         .eq('listing_id', listingId)
         .eq('status', 'approved')
@@ -108,7 +108,7 @@ class CommentService {
         .insert([commentWithModeration])
         .select(`
           *,
-          user:auth.users(id, email)
+          users(id, email)
         `)
         .single();
 
@@ -306,7 +306,7 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          user:auth.users(id, email),
+          users(id, email),
           listing:listings(id, title, category)
         `)
         .eq('status', 'pending')
