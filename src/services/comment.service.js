@@ -8,35 +8,65 @@ class CommentService {
   async getComments(listingId, options = {}) {
     console.log('🔍 [CommentService] getComments appelé avec:', { listingId, options });
     
-    // Test ultra-simple d'abord
     try {
-      console.log('🔍 [CommentService] Test de connexion...');
-      const { data: testData, error: testError } = await supabase
+      console.log('🔍 [CommentService] Construction de la requête...');
+      
+      const { page = 1, limit = 10 } = options;
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      
+      console.log('🔍 [CommentService] Paramètres de pagination:', { page, limit, from, to });
+      
+      // Requête pour récupérer les commentaires
+      const { data: comments, error: commentsError } = await supabase
         .from('comments')
-        .select('id')
-        .limit(1);
+        .select(`
+          *,
+          user:auth.users(id, email)
+        `)
+        .eq('listing_id', listingId)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .range(from, to);
       
-      console.log('🔍 [CommentService] Test résultat:', { testData, testError });
+      console.log('🔍 [CommentService] Résultat requête commentaires:', { comments, commentsError });
       
-      if (testError) {
-        console.error('❌ [CommentService] Erreur test:', testError);
-        return {
-          comments: [],
-          pagination: { page: 1, limit: 10, total: 0, pages: 0 },
-          error: testError.message
-        };
+      if (commentsError) {
+        console.error('❌ [CommentService] Erreur requête commentaires:', commentsError);
+        throw commentsError;
       }
       
-      console.log('✅ [CommentService] Connexion OK');
+      // Requête pour compter le total
+      const { count, error: countError } = await supabase
+        .from('comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('listing_id', listingId)
+        .eq('status', 'approved');
       
-      // Retour de données de test pour commencer
+      console.log('🔍 [CommentService] Résultat comptage:', { count, countError });
+      
+      if (countError) {
+        console.error('❌ [CommentService] Erreur comptage:', countError);
+        throw countError;
+      }
+      
+      const total = count || 0;
+      const pages = Math.ceil(total / limit);
+      
+      console.log('✅ [CommentService] Commentaires récupérés avec succès:', {
+        commentsCount: comments?.length || 0,
+        total,
+        pages,
+        currentPage: page
+      });
+      
       return {
-        comments: [],
+        comments: comments || [],
         pagination: {
-          page: 1,
-          limit: 10,
-          total: 0,
-          pages: 0
+          page,
+          limit,
+          total,
+          pages
         },
         error: null
       };
