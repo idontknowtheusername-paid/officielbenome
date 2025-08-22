@@ -25,6 +25,8 @@ const ListingDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [showSecurityDetails, setShowSecurityDetails] = useState(false);
+  const [showSecurityTooltip, setShowSecurityTooltip] = useState(false);
   const { images } = useListingImages(listing);
 
   useEffect(() => {
@@ -548,78 +550,85 @@ const ListingDetailPage = () => {
             </div>
           </div>
 
-          {/* Informations de sécurité */}
-          <div className="mb-8">
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6">
-              <div className="flex items-center mb-4">
-                <div className="flex-shrink-0 w-8 h-8 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-amber-600 dark:text-amber-400 text-lg">⚠️</span>
+          {/* Informations de sécurité - Version compacte */}
+          <div className="mb-6">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <span className="text-amber-600 dark:text-amber-400 text-lg mr-2">⚠️</span>
+                  <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Conseils de sécurité</h3>
                 </div>
-                <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200">Conseils de sécurité</h3>
+                <button 
+                  onClick={() => setShowSecurityDetails(!showSecurityDetails)}
+                  className="text-xs text-amber-600 dark:text-amber-400 hover:underline"
+                >
+                  {showSecurityDetails ? 'Masquer' : 'Voir plus'}
+                </button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Rencontre sécurisée */}
-                <div>
-                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
-                    <span className="mr-2">🤝</span>
-                    Rencontre sécurisée
-                  </h4>
-                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                    <li>• Rencontrez-vous dans un lieu public fréquenté</li>
-                    <li>• Évitez les rendez-vous tardifs ou isolés</li>
-                    <li>• Informez un proche de votre rendez-vous</li>
-                  </ul>
-                </div>
-
-                {/* Vérification du bien */}
-                <div>
-                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
-                    <span className="mr-2">🔍</span>
-                    Vérification
-                  </h4>
-                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                    <li>• Inspectez minutieusement le bien</li>
-                    <li>• Testez le fonctionnement (véhicules, appareils)</li>
-                    <li>• Demandez les documents authentiques</li>
-                  </ul>
-                </div>
-
-                {/* Paiement sécurisé */}
-                <div>
-                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
-                    <span className="mr-2">💰</span>
-                    Paiement sécurisé
-                  </h4>
-                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                    <li>• Privilégiez les paiements en espèces</li>
-                    <li>• Évitez les virements avant inspection</li>
-                    <li>• Méfiez-vous des prix anormalement bas</li>
-                  </ul>
-                </div>
-
-                {/* Signalement */}
-                <div>
-                  <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2 flex items-center">
-                    <span className="mr-2">🚨</span>
-                    En cas de problème
-                  </h4>
-                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                <li>• Signalez tout comportement suspect</li>
-                    <li>• Conservez toutes les communications</li>
-                    <li>• Contactez les autorités si nécessaire</li>
-              </ul>
-                </div>
+              <div className="text-xs text-amber-700 dark:text-amber-300 mb-2">
+                🤝 Lieu public • 🔍 Vérifiez le bien • 💰 Paiement sécurisé • 🚨 Signalez les problèmes
               </div>
-
-              <div className="mt-4 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
-                  💡 <strong>Rappel :</strong> MaxiMarket ne peut être tenu responsable des transactions entre particuliers. 
-                  Restez vigilant et utilisez votre bon sens pour éviter les arnaques.
-                </p>
-              </div>
+              
+              {showSecurityDetails && (
+                <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <strong className="text-amber-800 dark:text-amber-200">Rencontre :</strong>
+                      <div className="text-amber-700 dark:text-amber-300">Lieu public, évitez les heures tardives</div>
+                    </div>
+                    <div>
+                      <strong className="text-amber-800 dark:text-amber-200">Vérification :</strong>
+                      <div className="text-amber-700 dark:text-amber-300">Inspectez, testez, demandez les documents</div>
+                    </div>
+                    <div>
+                      <strong className="text-amber-800 dark:text-amber-200">Paiement :</strong>
+                      <div className="text-amber-700 dark:text-amber-300">Espèces privilégiées, méfiez-vous des prix bas</div>
+                    </div>
+                    <div>
+                      <strong className="text-amber-800 dark:text-amber-200">Signalement :</strong>
+                      <div className="text-amber-700 dark:text-amber-300">Conservez les communications, signalez les abus</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* ALTERNATIVE 2 : Badge Flottant Intelligent (à décommenter si vous préférez) */}
+          {/*
+          <div className="fixed bottom-4 right-4 z-50">
+            <div className="relative">
+              <button
+                onClick={() => setShowSecurityTooltip(!showSecurityTooltip)}
+                className="bg-amber-500 hover:bg-amber-600 text-white rounded-full p-3 shadow-lg transition-all duration-300 hover:scale-110"
+                title="Conseils de sécurité"
+              >
+                <span className="text-lg">⚠️</span>
+              </button>
+              
+              {showSecurityTooltip && (
+                <div className="absolute bottom-full right-0 mb-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-amber-200 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">Sécurité</h3>
+                    <button 
+                      onClick={() => setShowSecurityTooltip(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <div>🤝 <strong>Rencontre :</strong> Lieu public, heures de jour</div>
+                    <div>🔍 <strong>Vérification :</strong> Inspectez, testez, documents</div>
+                    <div>💰 <strong>Paiement :</strong> Espèces privilégiées</div>
+                    <div>🚨 <strong>Signalement :</strong> Conservez les preuves</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          */}
 
           {/* Section Commentaires et Avis */}
           <div className="mb-8">

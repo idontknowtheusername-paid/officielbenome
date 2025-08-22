@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { emailService } from './email.service.js';
 
 // ============================================================================
 // SERVICE NEWSLETTER
@@ -40,9 +41,17 @@ export const newsletterService = {
 
           if (updateError) throw updateError;
           
+          // Envoyer l'email de réactivation
+          try {
+            await emailService.sendReactivationEmail(email.toLowerCase());
+            console.log('✅ Email de réactivation envoyé à:', email);
+          } catch (emailError) {
+            console.warn('⚠️ Erreur envoi email de réactivation:', emailError);
+          }
+          
           return {
             success: true,
-            message: 'Inscription réactivée avec succès !',
+            message: 'Inscription réactivée avec succès ! Email de confirmation envoyé.',
             action: 'reactivated'
           };
         }
@@ -62,9 +71,18 @@ export const newsletterService = {
 
       if (error) throw error;
 
+      // Envoyer l'email de bienvenue
+      try {
+        await emailService.sendWelcomeEmail(email.toLowerCase());
+        console.log('✅ Email de bienvenue envoyé à:', email);
+      } catch (emailError) {
+        console.warn('⚠️ Erreur envoi email de bienvenue:', emailError);
+        // Ne pas faire échouer l'inscription si l'email échoue
+      }
+
       return {
         success: true,
-        message: 'Inscription à la newsletter réussie !',
+        message: 'Inscription à la newsletter réussie ! Email de bienvenue envoyé.',
         action: 'subscribed',
         data
       };

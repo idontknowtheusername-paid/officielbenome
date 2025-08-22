@@ -42,6 +42,7 @@ export { preferencesService } from './preferences.service.js';
 export { activityService } from './activity.service.js';
 export { settingsService } from './settings.service.js';
 export { newsletterService } from './newsletter.service.js';
+export { emailService } from './email.service.js';
 
 // ============================================================================
 // EXPORT PAR DÉFAUT
@@ -55,7 +56,7 @@ export { default as supabaseService } from './supabase.service.js';
 // ============================================================================
 
 // Total des services disponibles
-export const SERVICES_COUNT = 17;
+export const SERVICES_COUNT = 18;
 
 // Liste de tous les services disponibles
 export const ALL_SERVICES = {
@@ -82,5 +83,6 @@ export const ALL_SERVICES = {
   cachedListing: 'Cache intelligent des annonces',
   preferences: 'Préférences utilisateur',
   activity: 'Suivi des activités utilisateur',
-  newsletter: 'Système d\'inscription à la newsletter'
+  newsletter: 'Système d\'inscription à la newsletter',
+  email: 'Service d\'envoi d\'emails avec SendGrid'
 };
