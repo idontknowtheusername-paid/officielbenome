@@ -150,23 +150,13 @@ const CommentsSection = ({
   return (
     <div className={cn('space-y-6', className)}>
       {/* En-tête */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center space-x-3">
           <MessageSquare className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold">Commentaires et Avis</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">Commentaires et Avis</h2>
         </div>
 
         <div className="flex items-center space-x-2">
-          {user && !showForm && (
-            <Button onClick={() => {
-              console.log('🔍 [CommentsSection] Bouton Ajouter cliqué');
-              setShowForm(true);
-            }} className="flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>Ajouter un commentaire</span>
-            </Button>
-          )}
-          
           <Button 
             variant="outline" 
             size="sm" 
@@ -178,7 +168,7 @@ const CommentsSection = ({
             className="flex items-center space-x-2"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Actualiser</span>
+            <span className="hidden sm:inline">Actualiser</span>
           </Button>
         </div>
       </div>

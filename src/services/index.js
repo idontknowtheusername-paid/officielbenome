@@ -41,6 +41,7 @@ export { cachedListingService } from './cachedListingService.js';
 export { preferencesService } from './preferences.service.js';
 export { activityService } from './activity.service.js';
 export { settingsService } from './settings.service.js';
+export { newsletterService } from './newsletter.service.js';
 
 // ============================================================================
 // EXPORT PAR DÉFAUT
@@ -54,7 +55,7 @@ export { default as supabaseService } from './supabase.service.js';
 // ============================================================================
 
 // Total des services disponibles
-export const SERVICES_COUNT = 16;
+export const SERVICES_COUNT = 17;
 
 // Liste de tous les services disponibles
 export const ALL_SERVICES = {
@@ -80,5 +81,6 @@ export const ALL_SERVICES = {
   // Services utilitaires
   cachedListing: 'Cache intelligent des annonces',
   preferences: 'Préférences utilisateur',
-  activity: 'Suivi des activités utilisateur'
+  activity: 'Suivi des activités utilisateur',
+  newsletter: 'Système d\'inscription à la newsletter'
 };

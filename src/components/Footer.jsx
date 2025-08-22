@@ -1,13 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Send, ArrowRight, Zap, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { personalData } from '@/lib/personalData';
+import { newsletterService } from '@/services/newsletter.service';
+import { useToast } from '@/hooks/use-toast';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const footerLinks = [
     {
@@ -50,6 +55,44 @@ const Footer = () => {
   console.log("🔍 Réseaux sociaux disponibles:", personalData.socials);
   console.log("🔍 Réseaux sociaux filtrés:", socialLinks);
 
+  // Gestionnaire pour l'inscription à la newsletter
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!email.trim()) {
+      toast({
+        title: "Email requis",
+        description: "Veuillez saisir votre adresse email",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const result = await newsletterService.subscribe(email.trim());
+      
+      toast({
+        title: "Inscription réussie !",
+        description: result.message,
+      });
+      
+      setEmail(''); // Vider le champ
+      
+    } catch (error) {
+      console.error('Erreur inscription newsletter:', error);
+      
+      toast({
+        title: "Erreur d'inscription",
+        description: error.message || "Une erreur s'est produite",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <footer className="bg-card text-card-foreground border-t border-border">
       <div className="container mx-auto px-4 md:px-6">
@@ -64,10 +107,26 @@ const Footer = () => {
               La plateforme N°1 en Afrique de l'Ouest pour l'immobilier, l'automobile, les services et bien plus.
             </p>
             <p className="font-semibold mb-2 text-sm">Restez informé de nos nouveautés :</p>
-            <form className="flex items-center gap-2">
-              <Input type="email" placeholder="Votre adresse e-mail" className="flex-grow" />
-              <Button type="submit" size="icon" className="bg-primary hover:bg-primary/90">
-                <Send className="h-4 w-4" />
+            <form onSubmit={handleNewsletterSubmit} className="flex items-center gap-2">
+              <Input 
+                type="email" 
+                placeholder="Votre adresse e-mail" 
+                className="flex-grow"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+              />
+              <Button 
+                type="submit" 
+                size="icon" 
+                className="bg-primary hover:bg-primary/90"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </div>
@@ -107,10 +166,26 @@ const Footer = () => {
             {/* Newsletter mobile */}
             <div className="mb-6">
               <p className="font-semibold mb-2 text-sm">Newsletter :</p>
-              <form className="flex items-center gap-2 max-w-xs mx-auto">
-                <Input type="email" placeholder="Email" className="flex-grow text-sm" />
-                <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90">
-                  <Send className="h-3 w-3" />
+              <form onSubmit={handleNewsletterSubmit} className="flex items-center gap-2 max-w-xs mx-auto">
+                <Input 
+                  type="email" 
+                  placeholder="Email" 
+                  className="flex-grow text-sm"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
+                />
+                <Button 
+                  type="submit" 
+                  size="sm" 
+                  className="bg-primary hover:bg-primary/90"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Send className="h-3 w-3" />
+                  )}
                 </Button>
               </form>
             </div>
