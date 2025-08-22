@@ -54,7 +54,10 @@ const CommentForm = ({
   const isEditing = !!initialData;
 
   const handleFormSubmit = async (data) => {
+    console.log('🔍 [CommentForm] handleFormSubmit appelé avec:', { data, rating });
+    
     if (rating === 0) {
+      console.log('❌ [CommentForm] Note manquante');
       toast({
         title: "Note requise",
         description: "Veuillez donner une note à cette annonce.",
@@ -63,9 +66,11 @@ const CommentForm = ({
       return;
     }
 
+    console.log('🔍 [CommentForm] Début de la soumission...');
     setIsSubmitting(true);
 
     try {
+      console.log('🔍 [CommentForm] Préparation des données...');
       const commentData = {
         ...data,
         rating,
@@ -73,7 +78,10 @@ const CommentForm = ({
         parent_id: parentId || initialData?.parent_id
       };
 
+      console.log('🔍 [CommentForm] Données préparées:', commentData);
+      console.log('🔍 [CommentForm] Appel de onSubmit...');
       const result = await onSubmit(commentData);
+      console.log('🔍 [CommentForm] Résultat onSubmit:', result);
 
       if (result.error) {
         throw new Error(result.error);
@@ -209,6 +217,7 @@ const CommentForm = ({
           <Button
             type="submit"
             disabled={isSubmitting || rating === 0 || !content?.trim()}
+            onClick={() => console.log('🔍 [CommentForm] Bouton Publier cliqué')}
             className="flex items-center space-x-2"
           >
             {isSubmitting ? (
