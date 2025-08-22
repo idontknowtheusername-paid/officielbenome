@@ -1,6 +1,5 @@
 // Service de traduction automatique avec Google Translate API
-// Note: @google-cloud/translate n'est pas compatible avec le build client
-// Nous utilisons une approche alternative pour la production
+// Version simplifiée et robuste pour éviter les erreurs de page blanche
 
 class TranslationService {
   constructor() {
@@ -12,39 +11,34 @@ class TranslationService {
     
     // Configuration pour Google Translate API
     this.googleTranslateConfig = {
-      projectId: import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID,
-      keyFilename: import.meta.env.VITE_GOOGLE_CLOUD_KEY_FILE,
-      // Alternative: utiliser une clé API directement
       key: import.meta.env.VITE_GOOGLE_TRANSLATE_API_KEY,
     };
     
-    // Initialiser le service
-    this.initialize();
+    // Initialiser le service de manière synchrone
+    this._initializeSync();
   }
   
-  // Initialiser le service
-  async initialize() {
+  // Initialiser le service de manière synchrone
+  _initializeSync() {
     try {
-      // Pour la production, nous utiliserons une API REST directe
-      // car @google-cloud/translate n'est pas compatible avec le build client
       if (this.googleTranslateConfig.key) {
         this.isConfigured = true;
         this.apiKey = this.googleTranslateConfig.key;
         console.log('Translation service initialized with API key (REST mode)');
-      }
-      // Mode simulé pour le développement
-      else {
+      } else {
         console.warn('Translation service not configured, using mock mode');
         console.info('To enable real translation, set VITE_GOOGLE_TRANSLATE_API_KEY');
         this.isConfigured = false;
       }
-      
-      return this.isConfigured;
     } catch (error) {
       console.error('Failed to initialize translation service:', error);
       this.isConfigured = false;
-      return false;
     }
+  }
+
+  // Initialiser le service (méthode async pour compatibilité)
+  async initialize() {
+    return this._initializeSync();
   }
   
   // Générer une clé de cache
@@ -115,189 +109,143 @@ class TranslationService {
       return translation;
     } catch (error) {
       console.error('Translation error:', error);
-      
-      // En cas d'erreur avec l'API, utiliser la traduction simulée
-      if (this.isConfigured) {
-        console.warn('Falling back to mock translation due to API error');
-        const mockTranslation = this._mockTranslate(text, targetLanguage, sourceLanguage);
-        this.cache.set(cacheKey, mockTranslation);
-        this._manageCache();
-        return mockTranslation;
-      }
-      
       return text; // Retourner le texte original en cas d'erreur
     }
   }
   
   // Traduction simulée pour le développement
   _mockTranslate(text, targetLanguage, sourceLanguage) {
-    // Dictionnaire de traductions simulées pour les tests
-    const mockTranslations = {
-      'fr-en': {
-        'Bonjour': 'Hello',
-        'Merci': 'Thank you',
-        'Au revoir': 'Goodbye',
-        'Bienvenue': 'Welcome',
-        'Accueil': 'Home',
-        'Marketplace': 'Marketplace',
-        'Immobilier': 'Real Estate',
-        'Automobile': 'Automotive',
-        'Services': 'Services',
-        'Blog': 'Blog',
-        'Contact': 'Contact',
-        'À propos': 'About',
-        'Connexion': 'Login',
-        'Inscription': 'Sign up',
-        'Rechercher': 'Search',
-        'Filtrer': 'Filter',
-        'Trier': 'Sort',
-        'Prix': 'Price',
-        'Description': 'Description',
-        'Localisation': 'Location',
-        'Catégorie': 'Category',
-        'État': 'Condition',
-        'Neuf': 'New',
-        'Occasion': 'Used',
-        'Reconditionné': 'Refurbished',
-        'Négociable': 'Negotiable',
-        'Vues': 'Views',
-        'Favoris': 'Favorites',
-        'Partages': 'Shares',
-        'Publié par': 'Posted by',
-        'Publié le': 'Posted on',
-        'Contacter le vendeur': 'Contact seller',
-        'Signaler l\'annonce': 'Report listing',
-        'Partager l\'annonce': 'Share listing',
-        'Annonces similaires': 'Similar listings',
-        'Annonces connexes': 'Related listings',
-        'Aucune description disponible': 'No description available',
-        'Prix sur demande': 'Price on request',
-        'Localisation non spécifiée': 'Location not specified',
-        'Date inconnue': 'Unknown date',
-        'Aucune donnée disponible': 'No data available',
-        'Erreur de traduction': 'Translation error',
-        'Traduction en cours...': 'Translating...',
-        'Traduit automatiquement': 'Automatically translated',
-        'Affichage en langue originale': 'Showing in original language',
-        'Réessayer': 'Retry',
-        'Erreur de réseau': 'Network error',
-        'Vérifiez votre connexion': 'Check your connection',
-        'Trop de tentatives': 'Too many attempts',
-        'Veuillez réessayer plus tard': 'Please try again later',
+    const translations = {
+      'fr': {
+        'en': {
+          'Bonjour': 'Hello',
+          'Merci': 'Thank you',
+          'Au revoir': 'Goodbye',
+          'Bienvenue': 'Welcome',
+          'Annonce': 'Listing',
+          'Prix': 'Price',
+          'Description': 'Description',
+          'Titre': 'Title',
+          'Catégorie': 'Category',
+          'Localisation': 'Location',
+          'Date': 'Date',
+          'Contact': 'Contact',
+          'Détails': 'Details',
+          'Voir plus': 'See more',
+          'Ajouter aux favoris': 'Add to favorites',
+          'Partager': 'Share',
+          'Signaler': 'Report',
+          'Modifier': 'Edit',
+          'Supprimer': 'Delete',
+          'Confirmer': 'Confirm',
+          'Annuler': 'Cancel',
+          'Sauvegarder': 'Save',
+          'Rechercher': 'Search',
+          'Filtrer': 'Filter',
+          'Trier': 'Sort',
+          'Nouveau': 'New',
+          'Populaire': 'Popular',
+          'Récent': 'Recent',
+          'Ancien': 'Old',
+          'Cher': 'Expensive',
+          'Bon marché': 'Cheap',
+          'Disponible': 'Available',
+          'Vendu': 'Sold',
+          'En location': 'For rent',
+          'À vendre': 'For sale',
+          'Immobilier': 'Real estate',
+          'Automobile': 'Automotive',
+          'Services': 'Services',
+          'Marketplace': 'Marketplace',
+          'Découvrir': 'Discover',
+          'Voir toutes les annonces': 'View all listings',
+          'Annonces populaires': 'Popular listings',
+          'Voir toutes les annonces premium': 'View all premium listings',
+        }
       },
-      'en-fr': {
-        'Hello': 'Bonjour',
-        'Thank you': 'Merci',
-        'Goodbye': 'Au revoir',
-        'Welcome': 'Bienvenue',
-        'Home': 'Accueil',
-        'Marketplace': 'Marketplace',
-        'Real Estate': 'Immobilier',
-        'Automotive': 'Automobile',
-        'Services': 'Services',
-        'Blog': 'Blog',
-        'Contact': 'Contact',
-        'About': 'À propos',
-        'Login': 'Connexion',
-        'Sign up': 'Inscription',
-        'Search': 'Rechercher',
-        'Filter': 'Filtrer',
-        'Sort': 'Trier',
-        'Price': 'Prix',
-        'Description': 'Description',
-        'Location': 'Localisation',
-        'Category': 'Catégorie',
-        'Condition': 'État',
-        'New': 'Neuf',
-        'Used': 'Occasion',
-        'Refurbished': 'Reconditionné',
-        'Negotiable': 'Négociable',
-        'Views': 'Vues',
-        'Favorites': 'Favoris',
-        'Shares': 'Partages',
-        'Posted by': 'Publié par',
-        'Posted on': 'Publié le',
-        'Contact seller': 'Contacter le vendeur',
-        'Report listing': 'Signaler l\'annonce',
-        'Share listing': 'Partager l\'annonce',
-        'Similar listings': 'Annonces similaires',
-        'Related listings': 'Annonces connexes',
-        'No description available': 'Aucune description disponible',
-        'Price on request': 'Prix sur demande',
-        'Location not specified': 'Localisation non spécifiée',
-        'Unknown date': 'Date inconnue',
-        'No data available': 'Aucune donnée disponible',
-        'Translation error': 'Erreur de traduction',
-        'Translating...': 'Traduction en cours...',
-        'Automatically translated': 'Traduit automatiquement',
-        'Showing in original language': 'Affichage en langue originale',
-        'Retry': 'Réessayer',
-        'Network error': 'Erreur de réseau',
-        'Check your connection': 'Vérifiez votre connexion',
-        'Too many attempts': 'Trop de tentatives',
-        'Please try again later': 'Veuillez réessayer plus tard',
+      'en': {
+        'fr': {
+          'Hello': 'Bonjour',
+          'Thank you': 'Merci',
+          'Goodbye': 'Au revoir',
+          'Welcome': 'Bienvenue',
+          'Listing': 'Annonce',
+          'Price': 'Prix',
+          'Description': 'Description',
+          'Title': 'Titre',
+          'Category': 'Catégorie',
+          'Location': 'Localisation',
+          'Date': 'Date',
+          'Contact': 'Contact',
+          'Details': 'Détails',
+          'See more': 'Voir plus',
+          'Add to favorites': 'Ajouter aux favoris',
+          'Share': 'Partager',
+          'Report': 'Signaler',
+          'Edit': 'Modifier',
+          'Delete': 'Supprimer',
+          'Confirm': 'Confirmer',
+          'Cancel': 'Annuler',
+          'Save': 'Sauvegarder',
+          'Search': 'Rechercher',
+          'Filter': 'Filtrer',
+          'Sort': 'Trier',
+          'New': 'Nouveau',
+          'Popular': 'Populaire',
+          'Recent': 'Récent',
+          'Old': 'Ancien',
+          'Expensive': 'Cher',
+          'Cheap': 'Bon marché',
+          'Available': 'Disponible',
+          'Sold': 'Vendu',
+          'For rent': 'En location',
+          'For sale': 'À vendre',
+          'Real estate': 'Immobilier',
+          'Automotive': 'Automobile',
+          'Services': 'Services',
+          'Marketplace': 'Marketplace',
+          'Discover': 'Découvrir',
+          'View all listings': 'Voir toutes les annonces',
+          'Popular listings': 'Annonces populaires',
+          'View all premium listings': 'Voir toutes les annonces premium',
+        }
       }
     };
     
-    const key = `${sourceLanguage}-${targetLanguage}`;
-    const translations = mockTranslations[key] || {};
-    
-    // Chercher une traduction exacte
-    if (translations[text]) {
-      return translations[text];
+    const translationMap = translations[sourceLanguage]?.[targetLanguage];
+    if (translationMap && translationMap[text]) {
+      return translationMap[text];
     }
     
-    // Si pas de traduction exacte, retourner le texte original avec un indicateur
-    return `[${targetLanguage.toUpperCase()}] ${text}`;
+    // Si pas de traduction exacte, retourner le texte original
+    return text;
   }
   
-  // Traduire un objet complet
-  async translateObject(obj, targetLanguage, sourceLanguage = 'auto') {
+  // Traduire un objet (annonce, etc.)
+  async translateObject(obj, targetLanguage, sourceLanguage = 'fr') {
     if (!obj || typeof obj !== 'object') {
       return obj;
     }
     
-    const translatedObj = {};
+    const translatedObj = { ...obj };
     
-    for (const [key, value] of Object.entries(obj)) {
-      if (typeof value === 'string') {
-        translatedObj[key] = await this.translateText(value, targetLanguage, sourceLanguage);
-      } else if (typeof value === 'object' && value !== null) {
-        translatedObj[key] = await this.translateObject(value, targetLanguage, sourceLanguage);
-      } else {
-        translatedObj[key] = value;
+    // Traduire les champs de texte
+    const textFields = ['title', 'description', 'category', 'location'];
+    
+    for (const field of textFields) {
+      if (obj[field] && typeof obj[field] === 'string') {
+        translatedObj[field] = await this.translateText(obj[field], targetLanguage, sourceLanguage);
       }
     }
     
-    return translatedObj;
-  }
-  
-  // Traduire une annonce complète
-  async translateListing(listing, targetLanguage, sourceLanguage = 'fr') {
-    if (!listing) {
-      return listing;
-    }
-    
-    const translatableFields = {
-      title: listing.title,
-      description: listing.description,
-      location: listing.location,
-      tags: listing.tags,
-    };
-    
-    const translatedFields = await this.translateObject(
-      translatableFields, 
-      targetLanguage, 
-      sourceLanguage
-    );
-    
-    return {
-      ...listing,
-      ...translatedFields,
+    // Ajouter des métadonnées de traduction
+    translatedObj.translation_metadata = {
       original_language: sourceLanguage,
       translated_language: targetLanguage,
       is_translated: true,
     };
+    
+    return translatedObj;
   }
   
   // Traduire une liste d'annonces
@@ -309,7 +257,7 @@ class TranslationService {
     const translatedListings = [];
     
     for (const listing of listings) {
-      const translatedListing = await this.translateListing(
+      const translatedListing = await this.translateObject(
         listing, 
         targetLanguage, 
         sourceLanguage
@@ -394,3 +342,6 @@ class TranslationService {
 
 // Instance singleton
 export const translationService = new TranslationService();
+
+// Export de la classe pour les tests
+export { TranslationService };
