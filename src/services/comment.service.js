@@ -29,7 +29,16 @@ class CommentService {
         .order('created_at', { ascending: false })
         .range(from, to);
       
-      console.log('🔍 [CommentService] Résultat requête commentaires:', { comments, commentsError });
+      console.log('🔍 [CommentService] Résultat requête commentaires:', { 
+        commentsCount: comments?.length || 0,
+        comments: comments?.map(c => ({
+          id: c.id,
+          user_id: c.user_id,
+          user: c.user,
+          content: c.content?.substring(0, 50) + '...'
+        })),
+        commentsError 
+      });
       
       if (commentsError) {
         console.error('❌ [CommentService] Erreur requête commentaires:', commentsError);
@@ -59,7 +68,21 @@ class CommentService {
         let displayName = 'Utilisateur anonyme';
         let userEmail = null;
         
+        console.log('🔍 [CommentService] Traitement commentaire:', {
+          commentId: comment.id,
+          userId: comment.user_id,
+          userData: userData,
+          hasUserData: !!userData,
+          userDataKeys: userData ? Object.keys(userData) : null
+        });
+        
         if (userData) {
+          console.log('🔍 [CommentService] Données utilisateur trouvées:', {
+            firstName: userData.first_name,
+            lastName: userData.last_name,
+            email: userData.email
+          });
+          
           if (userData.first_name && userData.last_name) {
             displayName = `${userData.first_name} ${userData.last_name}`;
           } else if (userData.first_name) {
@@ -71,6 +94,7 @@ class CommentService {
           }
           userEmail = userData.email;
         } else {
+          console.log('❌ [CommentService] Aucune donnée utilisateur trouvée pour user_id:', comment.user_id);
           // Fallback si pas de données utilisateur
           const userId = comment.user_id;
           if (userId) {
@@ -78,6 +102,8 @@ class CommentService {
             displayName = `Utilisateur ${shortId}`;
           }
         }
+
+        console.log('🔍 [CommentService] Nom final affiché:', displayName);
 
         return {
           ...comment,
