@@ -63,4 +63,5 @@ export const TableRowSkeleton = () => (
   </div>
 );
 
+export { Skeleton };
 export default Skeleton; 

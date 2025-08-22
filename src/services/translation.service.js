@@ -75,6 +75,7 @@ class TranslationService {
       if (this.isConfigured && this.apiKey) {
         // Utiliser Google Translate API via REST
         try {
+          console.log(`🌍 Traduction réelle: "${text}" (${sourceLanguage} → ${targetLanguage})`);
           const response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`, {
             method: 'POST',
             headers: {
@@ -90,15 +91,17 @@ class TranslationService {
           const data = await response.json();
           if (data.data && data.data.translations && data.data.translations[0]) {
             translation = data.data.translations[0].translatedText;
+            console.log(`✅ Traduit: "${text}" → "${translation}"`);
           } else {
             throw new Error('Invalid response from Google Translate API');
           }
         } catch (apiError) {
-          console.warn('Google Translate API error, falling back to mock translation:', apiError);
+          console.warn('❌ Google Translate API error, falling back to mock translation:', apiError);
           translation = this._mockTranslate(text, targetLanguage, sourceLanguage);
         }
       } else {
         // Traduction simulée pour le développement
+        console.log(`🎭 Traduction simulée: "${text}" (${sourceLanguage} → ${targetLanguage})`);
         translation = this._mockTranslate(text, targetLanguage, sourceLanguage);
       }
       
