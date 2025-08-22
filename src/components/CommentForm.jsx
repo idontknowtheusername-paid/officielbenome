@@ -53,15 +53,8 @@ const CommentForm = ({
     console.log('🔍 [CommentForm] handleFormSubmit appelé avec:', { data, rating });
     console.log('🔍 [CommentForm] Formulaire soumis !');
     
-    if (rating === 0) {
-      console.log('❌ [CommentForm] Note manquante');
-      toast({
-        title: "Note requise",
-        description: "Veuillez donner une note à cette annonce.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Rating optionnel maintenant
+    console.log('🔍 [CommentForm] Note fournie:', rating);
 
     console.log('🔍 [CommentForm] Début de la soumission...');
     setIsSubmitting(true);
@@ -70,7 +63,7 @@ const CommentForm = ({
       console.log('🔍 [CommentForm] Préparation des données...');
       const commentData = {
         ...data,
-        rating,
+        rating: rating || null, // Rating optionnel
         listing_id: listingId,
         parent_id: parentId || initialData?.parent_id
       };
@@ -146,7 +139,7 @@ const CommentForm = ({
         {/* Note */}
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            Votre note *
+            Votre note (optionnelle)
           </label>
           <RatingStars
             rating={rating}
@@ -154,12 +147,7 @@ const CommentForm = ({
             size="lg"
             showLabel={true}
           />
-          {rating === 0 && (
-            <p className="text-sm text-red-500 flex items-center">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              Veuillez donner une note
-            </p>
-          )}
+
         </div>
 
         {/* Contenu */}
@@ -215,13 +203,13 @@ const CommentForm = ({
 
           <Button
             type="submit"
-            disabled={isSubmitting || rating === 0 || !content?.trim()}
+            disabled={isSubmitting || !content?.trim()}
             className="flex items-center space-x-2"
             onClick={(e) => {
               e.preventDefault();
               console.log('🔍 [CommentForm] Bouton cliqué - validation manuelle');
               console.log('🔍 [CommentForm] État:', { rating, content: content?.trim(), isSubmitting });
-              if (rating > 0 && content?.trim() && !isSubmitting) {
+              if (content?.trim() && !isSubmitting) {
                 handleSubmit(handleFormSubmit)();
               }
             }}

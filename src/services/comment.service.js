@@ -92,9 +92,13 @@ class CommentService {
       const moderationResult = await ModerationService.moderateComment(commentData);
       console.log('🔍 [CommentService] Résultat modération:', moderationResult);
       
-      // Appliquer le statut de modération
+      // Appliquer le statut de modération et nettoyer les données
       const commentWithModeration = {
-        ...commentData,
+        listing_id: commentData.listing_id,
+        user_id: commentData.user_id,
+        content: commentData.content,
+        rating: commentData.rating,
+        parent_id: commentData.parent_id || null,
         status: moderationResult.status
       };
       
