@@ -24,7 +24,7 @@ export { Progress } from './progress';
 export { RadioGroup, RadioGroupItem } from './radio-group';
 export { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from './select';
 export { Separator } from './separator';
-export { Skeleton } from './Skeleton';
+export { default as Skeleton } from './Skeleton';
 export { Switch } from './switch';
 export { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from './table';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
@@ -33,7 +33,7 @@ export { Toast, ToastAction, ToastClose, ToastDescription, ToastProvider, ToastT
 export { Toaster } from './toaster';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 export { default as UserAvatar } from './UserAvatar';
-export { default as ValidationError } from './ValidationError';
+export { ValidationError, FieldValidationError, ValidationErrors, useValidationErrors } from './ValidationError';
 export { default as RefreshButton } from './RefreshButton';
 
 // Export loading components

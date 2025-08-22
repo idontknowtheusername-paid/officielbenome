@@ -11,11 +11,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
 import HeroCarousel from '@/components/HeroCarousel';
+import { useI18n } from '@/i18n/hooks';
 
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useI18n();
   const [popularListings, setPopularListings] = useState([]);
   const [loadingPopular, setLoadingPopular] = useState(true);
   const [errorPopular, setErrorPopular] = useState(null);
@@ -225,7 +227,7 @@ const HomePage = () => {
                   {category.description}
                 </p>
                 <div className="w-full border border-primary/50 rounded-md px-4 py-2 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  Découvrir{" "}
+                  {t('actions.discover')}{" "}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform inline" />
                 </div>
               </motion.div>
@@ -303,7 +305,7 @@ const HomePage = () => {
               className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-lg"
               onClick={() => navigate("/premium")}
             >
-              Voir Toutes les Annonces Premium{" "}
+              {t('listings.viewAllPremium')}{" "}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -314,7 +316,7 @@ const HomePage = () => {
       <section className="py-16 md:py-24 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            Annonces <span className="gradient-text">Populaires</span>
+            {t('listings.popular')} <span className="gradient-text">{t('listings.listings')}</span>
           </h2>
           {errorPopular && (
             <p className="text-center text-destructive mb-8">{errorPopular}</p>
@@ -357,7 +359,7 @@ const HomePage = () => {
               className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-primary-foreground"
               onClick={() => navigate("/marketplace?sort=popular&per=24")}
             >
-              Voir Toutes les Annonces <ArrowRight className="ml-2 h-5 w-5" />
+              {t('listings.viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>

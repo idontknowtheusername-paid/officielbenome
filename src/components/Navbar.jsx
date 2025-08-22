@@ -5,20 +5,23 @@ import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, 
 import { Button } from '@/components/ui/button';
 import { personalData } from '@/lib/personalData';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/i18n/hooks';
+import LanguageSelector from './LanguageSelector';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const { user } = useAuth();
+  const { t } = useI18n();
 
   // Optimisation : Mémoriser les éléments de navigation pour éviter les re-renders
   const navItems = useMemo(() => [
-    { name: 'Immobilier', path: '/immobilier', icon: <Home className="mr-2 h-4 w-4" /> },
-    { name: 'Automobile', path: '/automobile', icon: <Car className="mr-2 h-4 w-4" /> },
-    { name: 'Services', path: '/services', icon: <Briefcase className="mr-2 h-4 w-4" /> },
-    { name: 'Marketplace', path: '/marketplace', icon: <ShoppingBag className="mr-2 h-4 w-4" /> },
-  ], []);
+    { name: t('navigation.immobilier'), path: '/immobilier', icon: <Home className="mr-2 h-4 w-4" /> },
+    { name: t('navigation.automobile'), path: '/automobile', icon: <Car className="mr-2 h-4 w-4" /> },
+    { name: t('navigation.services'), path: '/services', icon: <Briefcase className="mr-2 h-4 w-4" /> },
+    { name: t('navigation.marketplace'), path: '/marketplace', icon: <ShoppingBag className="mr-2 h-4 w-4" /> },
+  ], [t]);
 
   // Optimisation : Mémoriser les animations pour éviter les recalculs
   const mobileMenuVariants = useMemo(() => ({
@@ -90,6 +93,7 @@ const Navbar = () => {
             </nav>
 
             <div className="flex items-center space-x-3">
+              <LanguageSelector />
               <Button 
                 variant="ghost" 
                 size="icon" 

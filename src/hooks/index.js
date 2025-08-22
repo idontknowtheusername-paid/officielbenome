@@ -15,7 +15,7 @@ export {
   useRealtimeMessages 
 } from './useMessages';
 export { useNotifications } from './useNotifications';
-export { useAdminDashboard } from './useAdminDashboard';
+export { default as useAdminDashboard } from './useAdminDashboard';
 export { 
   useComments, 
   useUserComments, 
@@ -23,7 +23,7 @@ export {
 } from './useComments';
 
 // Hooks utilitaires
-export { useApi } from './useApi';
+export { default as useApi } from './useApi';
 export { useTabNavigation } from './useTabNavigation';
 export { useImagePreloader } from './useImagePreloader';
 export { 

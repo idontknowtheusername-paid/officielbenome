@@ -10,11 +10,13 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+import { useI18n } from '@/i18n/hooks';
 
 const LoginForm = () => {
   const { login } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
   const [rememberMe, setRememberMe] = useState(false);
+  const { t } = useI18n('auth');
 
   const onSubmit = async (data) => {
     await login(data, rememberMe);
@@ -29,13 +31,13 @@ const LoginForm = () => {
     >
       <Card>
         <CardHeader>
-          <CardTitle>Connexion</CardTitle>
-          <CardDescription>Connectez-vous à votre compte MaxiMarket</CardDescription>
+          <CardTitle>{t('login.title')}</CardTitle>
+          <CardDescription>{t('login.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('login.email')}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -44,10 +46,10 @@ const LoginForm = () => {
                   placeholder="votre@email.com"
                   className="pl-10"
                   {...register('email', {
-                    required: 'L\'email est requis',
+                    required: t('validation.emailRequired'),
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Email invalide'
+                      message: t('validation.emailInvalid')
                     }
                   })}
                 />
@@ -58,7 +60,7 @@ const LoginForm = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">{t('login.password')}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -67,10 +69,10 @@ const LoginForm = () => {
                   placeholder="••••••••"
                   className="pl-10"
                   {...register('password', {
-                    required: 'Le mot de passe est requis',
+                    required: t('validation.passwordRequired'),
                     minLength: {
                       value: 8,
-                      message: 'Le mot de passe doit contenir au moins 8 caractères'
+                      message: t('validation.passwordMinLength')
                     }
                   })}
                 />
@@ -91,7 +93,7 @@ const LoginForm = () => {
                 htmlFor="rememberMe"
                 className="text-sm font-normal cursor-pointer"
               >
-                Se souvenir de moi pendant 7 jours
+                {t('login.rememberMe')}
               </Label>
             </div>
 
@@ -103,10 +105,10 @@ const LoginForm = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Connexion en cours...
+                  {t('status.loading')}
                 </>
               ) : (
-                'Se connecter'
+                t('login.loginButton')
               )}
             </Button>
           </form>

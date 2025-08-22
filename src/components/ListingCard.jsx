@@ -10,6 +10,8 @@ import { useListingImages } from '@/hooks';
 import BoostStatus from '@/components/BoostStatus';
 import ShareListing from '@/components/ShareListing';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n/hooks';
+import TranslatedContent from './TranslatedContent';
 
 const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const { user } = useAuth();
@@ -17,22 +19,14 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
   const { images } = useListingImages(listing);
   const [isFavorite, setIsFavorite] = useState(listing.is_favorite || false);
   const [isToggling, setIsToggling] = useState(false);
+  const { t, formatCurrency, formatDate } = useI18n();
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
+    return formatCurrency(price, listing.currency || 'XOF');
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+  const formatListingDate = (dateString) => {
+    return formatDate(new Date(dateString), 'P');
   };
 
   const getCategoryIcon = (category) => {
@@ -179,9 +173,13 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
       {/* Content - Padding responsive */}
       <div className="p-3 sm:p-4 md:p-6">
         {/* Title - Taille responsive */}
-        <h3 className="text-lg sm:text-xl font-semibold mb-2 truncate group-hover:text-primary transition-colors">
-          {listing.title}
-        </h3>
+        <TranslatedContent content={{ title: listing.title }} sourceLanguage="fr">
+          {(translatedContent) => (
+            <h3 className="text-lg sm:text-xl font-semibold mb-2 truncate group-hover:text-primary transition-colors">
+              {translatedContent.title}
+            </h3>
+          )}
+        </TranslatedContent>
         
         {/* Location - Icône et texte adaptés */}
         <div className="flex items-center text-muted-foreground mb-2 sm:mb-3">
@@ -205,9 +203,13 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         </div>
         
         {/* Description - Ligne limitée sur mobile */}
-        <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base line-clamp-2 sm:line-clamp-2">
-          {listing.description || 'Aucune description disponible'}
-        </p>
+        <TranslatedContent content={{ description: listing.description }} sourceLanguage="fr">
+          {(translatedContent) => (
+            <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base line-clamp-2 sm:line-clamp-2">
+              {translatedContent.description || t('messages.noData')}
+            </p>
+          )}
+        </TranslatedContent>
         
         {/* Badge Premium Simple - Affiché seulement si l'annonce est premium */}
         {isPremium && (
@@ -223,7 +225,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           <div className="flex items-center">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
             <span className="text-xs sm:text-sm">
-              {listing.created_at ? formatDate(listing.created_at) : 'Date inconnue'}
+                              {listing.created_at ? formatListingDate(listing.created_at) : t('messages.noData')}
             </span>
           </div>
           
