@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Send, ArrowRight, Zap, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Send, ArrowRight, Zap, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { personalData } from '@/lib/personalData';
@@ -44,9 +44,11 @@ const Footer = () => {
     { name: "Facebook", icon: <Facebook className="h-5 w-5" />, path: personalData.socials.facebook },
     { name: "Twitter", icon: <Twitter className="h-5 w-5" />, path: personalData.socials.twitter },
     { name: "Instagram", icon: <Instagram className="h-5 w-5" />, path: personalData.socials.instagram },
-    { name: "LinkedIn", icon: <Linkedin className="h-5 w-5" />, path: personalData.socials.linkedin },
-    { name: "YouTube", icon: <Youtube className="h-5 w-5" />, path: personalData.socials.youtube },
-  ].filter(social => social.path && !social.path.includes('yourusername'));
+  ].filter(social => social.path && social.path !== "");
+
+  // Debug: Afficher les réseaux sociaux dans la console
+  console.log("🔍 Réseaux sociaux disponibles:", personalData.socials);
+  console.log("🔍 Réseaux sociaux filtrés:", socialLinks);
 
   return (
     <footer className="bg-card text-card-foreground border-t border-border">
@@ -140,18 +142,22 @@ const Footer = () => {
           <div className="pb-6">
             <p className="text-center font-semibold mb-4 text-sm text-primary">Suivez-nous</p>
             <div className="flex justify-center space-x-6">
-              {socialLinks.map((social) => (
-                <Link
-                  key={social.name}
-                  to={social.path}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.name}
-                  className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-accent"
-                >
-                  {social.icon}
-                </Link>
-              ))}
+              {socialLinks.length > 0 ? (
+                socialLinks.map((social) => (
+                  <Link
+                    key={social.name}
+                    to={social.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.name}
+                    className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-accent"
+                  >
+                    {social.icon}
+                  </Link>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground">Réseaux sociaux en cours de configuration</p>
+              )}
             </div>
           </div>
 
@@ -178,18 +184,22 @@ const Footer = () => {
               &copy; {currentYear} {personalData.siteName}. Tous droits réservés.
             </p>
             <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <Link
-                  key={social.name}
-                  to={social.path}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.name}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {social.icon}
-                </Link>
-              ))}
+              {socialLinks.length > 0 ? (
+                socialLinks.map((social) => (
+                  <Link
+                    key={social.name}
+                    to={social.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.name}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {social.icon}
+                  </Link>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground">Réseaux sociaux en cours de configuration</p>
+              )}
             </div>
           </div>
         </div>
