@@ -50,7 +50,9 @@ const CommentsSection = ({
   console.log('🔍 [CommentsSection] État du hook:', { 
     commentsLength: comments?.length, 
     loading, 
-    error
+    error,
+    user: !!user,
+    showForm
   });
 
   const handleAddComment = async (commentData) => {
@@ -154,7 +156,10 @@ const CommentsSection = ({
         </div>
 
         {user && !showForm && (
-          <Button onClick={() => setShowForm(true)} className="flex items-center space-x-2">
+          <Button onClick={() => {
+            console.log('🔍 [CommentsSection] Bouton Ajouter cliqué');
+            setShowForm(true);
+          }} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Ajouter un commentaire</span>
           </Button>
@@ -215,7 +220,10 @@ const CommentsSection = ({
                 Soyez le premier à laisser un commentaire sur cette annonce !
               </p>
               {user && (
-                <Button onClick={() => setShowForm(true)}>
+                <Button onClick={() => {
+                  console.log('🔍 [CommentsSection] Bouton Ajouter (carte vide) cliqué');
+                  setShowForm(true);
+                }}>
                   <Plus className="h-4 w-4 mr-2" />
                   Ajouter un commentaire
                 </Button>
