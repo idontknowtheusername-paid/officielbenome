@@ -52,32 +52,7 @@ export const useComments = (listingId, options = {}) => {
   }, [listingId]); // Supprimer options pour éviter les re-renders
 
   // Fonction pour récupérer les statistiques
-  const fetchStats = useCallback(async () => {
-    console.log('🔍 [useComments] fetchStats appelé avec listingId:', listingId);
-    
-    if (!listingId) {
-      console.log('❌ [useComments] Pas de listingId pour les stats, arrêt');
-      return;
-    }
 
-    try {
-      console.log('🔍 [useComments] Appel du service stats...');
-      const { stats: newStats, error } = await commentService.getCommentStats(listingId);
-      
-      console.log('🔍 [useComments] Réponse stats:', { stats: newStats, error });
-      
-      if (error) {
-        console.error('❌ [useComments] Erreur stats:', error);
-        return;
-      }
-      
-      console.log('✅ [useComments] Mise à jour des stats...');
-      setStats(newStats);
-    } catch (err) {
-      console.error('❌ [useComments] Erreur stats finale:', err);
-      console.error('Erreur lors du chargement des statistiques:', err);
-    }
-  }, [listingId]);
 
   // Fonction pour ajouter un commentaire
   const addComment = useCallback(async (commentData) => {
@@ -180,8 +155,7 @@ export const useComments = (listingId, options = {}) => {
   // Fonction pour rafraîchir les données
   const refresh = useCallback(() => {
     fetchComments();
-    fetchStats();
-  }, [fetchComments, fetchStats]);
+  }, [fetchComments]);
 
   // Chargement initial - CORRIGÉ : pas de dépendances qui causent des re-renders
   useEffect(() => {
@@ -190,7 +164,6 @@ export const useComments = (listingId, options = {}) => {
     if (listingId) {
       console.log('🔍 [useComments] Lancement du chargement initial...');
       fetchComments();
-      fetchStats();
     } else {
       console.log('❌ [useComments] Pas de listingId, pas de chargement');
     }
@@ -202,7 +175,6 @@ export const useComments = (listingId, options = {}) => {
     loading,
     error,
     pagination,
-    stats,
     
     // Actions
     fetchComments,
@@ -212,8 +184,7 @@ export const useComments = (listingId, options = {}) => {
     reportComment,
     changePage,
     changeFilters,
-    refresh,
-    fetchStats
+    refresh
   };
 };
 

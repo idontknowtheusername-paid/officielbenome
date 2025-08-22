@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 // Schéma de validation
 const commentSchema = z.object({
   content: z.string()
-    .min(10, 'Le commentaire doit contenir au moins 10 caractères')
+    .min(1, 'Le commentaire ne peut pas être vide')
     .max(1000, 'Le commentaire ne peut pas dépasser 1000 caractères'),
   rating: z.number()
     .min(1, 'Veuillez donner une note')
@@ -116,7 +116,7 @@ const CommentForm = ({
 
   const getCharacterCountColor = () => {
     const count = getCharacterCount();
-    if (count < 10) return 'text-red-500';
+    if (count === 0) return 'text-red-500';
     if (count > 900) return 'text-orange-500';
     return 'text-muted-foreground';
   };
@@ -208,7 +208,7 @@ const CommentForm = ({
 
           <Button
             type="submit"
-            disabled={isSubmitting || !isValid || rating === 0}
+            disabled={isSubmitting || rating === 0 || !content?.trim()}
             className="flex items-center space-x-2"
           >
             {isSubmitting ? (

@@ -49,7 +49,6 @@ const CommentsSection = ({
     loading,
     error,
     pagination,
-    stats,
     addComment,
     updateComment,
     deleteComment,
@@ -62,8 +61,7 @@ const CommentsSection = ({
   console.log('🔍 [CommentsSection] État du hook:', { 
     commentsLength: comments?.length, 
     loading, 
-    error, 
-    stats: !!stats 
+    error
   });
 
   const handleAddComment = async (commentData) => {
@@ -140,22 +138,7 @@ const CommentsSection = ({
     changeFilters({ ...filters, ...newFilters });
   };
 
-  const getRatingDistribution = () => {
-    if (!stats?.rating_distribution) return null;
 
-    const total = stats.total_comments;
-    if (total === 0) return null;
-
-    return Object.entries(stats.rating_distribution).map(([rating, count]) => ({
-      rating: parseInt(rating),
-      count,
-      percentage: Math.round((count / total) * 100)
-    }));
-  };
-
-  const getAverageRating = () => {
-    return stats?.average_rating ? parseFloat(stats.average_rating.toFixed(1)) : 0;
-  };
 
   if (error) {
     return (
@@ -182,11 +165,6 @@ const CommentsSection = ({
         <div className="flex items-center space-x-3">
           <MessageSquare className="h-6 w-6 text-primary" />
           <h2 className="text-2xl font-bold">Commentaires et Avis</h2>
-          {stats && (
-            <Badge variant="secondary" className="text-sm">
-              {stats.total_comments} commentaire{stats.total_comments !== 1 ? 's' : ''}
-            </Badge>
-          )}
         </div>
 
         {user && !showForm && (
@@ -197,79 +175,7 @@ const CommentsSection = ({
         )}
       </div>
 
-      {/* Statistiques */}
-      {showStats && stats && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5" />
-              <span>Statistiques</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Note moyenne */}
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">
-                  {getAverageRating()}
-                </div>
-                <RatingStars rating={getAverageRating()} readonly size="lg" />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Note moyenne
-                </p>
-              </div>
 
-              {/* Total commentaires */}
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">
-                  {stats.total_comments}
-                </div>
-                <MessageSquare className="h-6 w-6 mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Commentaires
-                </p>
-              </div>
-
-              {/* Achats vérifiés */}
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">
-                  {stats.verified_purchases}
-                </div>
-                <CheckCircle className="h-6 w-6 mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Achats vérifiés
-                </p>
-              </div>
-            </div>
-
-            {/* Distribution des notes */}
-            {getRatingDistribution() && (
-              <div className="mt-6">
-                <h4 className="text-sm font-medium mb-3">Distribution des notes</h4>
-                <div className="space-y-2">
-                  {getRatingDistribution().reverse().map(({ rating, count, percentage }) => (
-                    <div key={rating} className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-1 w-16">
-                        <span className="text-sm">{rating}</span>
-                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      </div>
-                      <div className="flex-1 bg-muted rounded-full h-2">
-                        <div
-                          className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-muted-foreground w-12 text-right">
-                        {count}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Formulaire d'ajout */}
       <AnimatePresence>
