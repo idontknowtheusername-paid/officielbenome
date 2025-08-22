@@ -51,9 +51,6 @@ export const useComments = (listingId, options = {}) => {
     }
   }, [listingId]); // Supprimer options pour éviter les re-renders
 
-  // Fonction pour récupérer les statistiques
-
-
   // Fonction pour ajouter un commentaire
   const addComment = useCallback(async (commentData) => {
     try {
