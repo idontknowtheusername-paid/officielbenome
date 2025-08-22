@@ -32,7 +32,7 @@ const CommentForm = ({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rating, setRating] = useState(initialData?.rating || 0);
-  const [showPreview, setShowPreview] = useState(false);
+
 
   const {
     register,
@@ -179,18 +179,6 @@ const CommentForm = ({
             <span className={getCharacterCountColor()}>
               {getCharacterCount()}/1000 caractères
             </span>
-
-            <div className="flex items-center space-x-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPreview(!showPreview)}
-                className="text-xs"
-              >
-                {showPreview ? 'Masquer' : 'Prévisualiser'}
-              </Button>
-            </div>
           </div>
 
           {errors.content && (
@@ -201,16 +189,7 @@ const CommentForm = ({
           )}
         </div>
 
-        {/* Prévisualisation */}
-        {showPreview && content && (
-          <div className="p-4 bg-muted rounded-lg border">
-            <h4 className="text-sm font-medium mb-2">Prévisualisation :</h4>
-            <div className="space-y-2">
-              <RatingStars rating={rating} readonly size="sm" />
-              <p className="text-sm whitespace-pre-wrap">{content}</p>
-            </div>
-          </div>
-        )}
+
 
         {/* Actions */}
         <div className="flex items-center justify-between pt-2">
@@ -247,16 +226,7 @@ const CommentForm = ({
         </div>
       </form>
 
-      {/* Conseils */}
-      <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-        <p className="font-medium mb-1">💡 Conseils pour un bon commentaire :</p>
-        <ul className="space-y-1">
-          <li>• Soyez constructif et respectueux</li>
-          <li>• Partagez votre expérience personnelle</li>
-          <li>• Mentionnez les points positifs et négatifs</li>
-          <li>• Évitez les commentaires trop courts ou trop longs</li>
-        </ul>
-      </div>
+
     </div>
   );
 };
