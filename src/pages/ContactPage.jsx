@@ -86,12 +86,7 @@ const ContactPage = () => {
               </div>
             </div>
             
-            <div className="relative aspect-video rounded-lg overflow-hidden gradient-border">
-              <img  
-                className="w-full h-full object-cover"
-                alt="Carte de localisation"
-                src="https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a" />
-            </div>
+
           </motion.div>
           
           <motion.div

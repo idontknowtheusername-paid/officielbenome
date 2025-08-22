@@ -8,12 +8,12 @@ export const personalData = {
   phone: "+221 77 123 4567",
   address: "Dakar, Sénégal",
   socials: {
-    github: "https://github.com/yourusername",
-    linkedin: "https://linkedin.com/in/yourusername",
-    twitter: "https://twitter.com/yourusername",
-    instagram: "https://instagram.com/yourusername",
-    facebook: "https://facebook.com/yourusername",
-    youtube: "https://youtube.com/yourusername",
+    github: "https://github.com/maximarket",
+    linkedin: "https://linkedin.com/company/maximarket",
+    twitter: "https://twitter.com/maximarket",
+    instagram: "https://instagram.com/maximarket",
+    facebook: "https://facebook.com/maximarket",
+    youtube: "https://youtube.com/@maximarket",
   },
   skills: [
     // You can repurpose this for something else if needed, or remove

@@ -316,7 +316,7 @@ const HomePage = () => {
       <section className="py-16 md:py-24 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            🔥 <span className="gradient-text">{t('listings.popularListings')}</span>
+            🔥 <span className="gradient-text">{t('listings.listings')} {t('listings.popular')}</span>
           </h2>
           {errorPopular && (
             <p className="text-center text-destructive mb-8">{errorPopular}</p>
