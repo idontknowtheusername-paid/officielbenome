@@ -204,16 +204,16 @@ const CommentsSection = ({
 
 
 
-      {/* Liste des commentaires */}
-      <div className="space-y-4">
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Chargement des commentaires...</p>
-          </div>
-        ) : comments.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
+      {/* Liste des commentaires dans une seule carte */}
+      <Card>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Chargement des commentaires...</p>
+            </div>
+          ) : comments.length === 0 ? (
+            <div className="p-8 text-center">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
               <h3 className="text-lg font-semibold mb-2">Aucun commentaire</h3>
               <p className="text-muted-foreground mb-4">
@@ -228,50 +228,54 @@ const CommentsSection = ({
                   Ajouter un commentaire
                 </Button>
               )}
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {comments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                onUpdate={handleUpdateComment}
-                onDelete={handleDeleteComment}
-                onReply={handleReplyComment}
-                onReport={handleReportComment}
-              />
-            ))}
-
-            {/* Pagination */}
-            {pagination && pagination.pages > 1 && (
-              <div className="flex items-center justify-center space-x-2 mt-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => changePage(pagination.page - 1)}
-                  disabled={pagination.page <= 1}
-                >
-                  Précédent
-                </Button>
-
-                <span className="text-sm text-muted-foreground">
-                  Page {pagination.page} sur {pagination.pages}
-                </span>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => changePage(pagination.page + 1)}
-                  disabled={pagination.page >= pagination.pages}
-                >
-                  Suivant
-                </Button>
+            </div>
+          ) : (
+            <div className="max-h-96 overflow-y-auto">
+              <div className="divide-y divide-border">
+                {comments.map((comment, index) => (
+                  <div key={comment.id} className="p-4 hover:bg-muted/30 transition-colors">
+                    <CommentCard
+                      comment={comment}
+                      onUpdate={handleUpdateComment}
+                      onDelete={handleDeleteComment}
+                      onReply={handleReplyComment}
+                      onReport={handleReportComment}
+                      className="border-0 p-0 shadow-none"
+                    />
+                  </div>
+                ))}
               </div>
-            )}
-          </>
-        )}
-      </div>
+
+              {/* Pagination */}
+              {pagination && pagination.pages > 1 && (
+                <div className="flex items-center justify-center space-x-2 p-4 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => changePage(pagination.page - 1)}
+                    disabled={pagination.page <= 1}
+                  >
+                    Précédent
+                  </Button>
+
+                  <span className="text-sm text-muted-foreground">
+                    Page {pagination.page} sur {pagination.pages}
+                  </span>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => changePage(pagination.page + 1)}
+                    disabled={pagination.page >= pagination.pages}
+                  >
+                    Suivant
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

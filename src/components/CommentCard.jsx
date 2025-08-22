@@ -181,7 +181,7 @@ const CommentCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={cn('border rounded-lg p-4 hover:shadow-md transition-shadow', className)}
+      className={cn('transition-all', className)}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -195,7 +195,7 @@ const CommentCard = ({
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h4 className="font-medium text-sm">
-                Utilisateur {comment.user_id?.slice(0, 8)}...
+                {comment.user_display_name || `Utilisateur ${comment.user_id?.slice(0, 8)}...`}
               </h4>
 
               {comment.is_verified_purchase && (

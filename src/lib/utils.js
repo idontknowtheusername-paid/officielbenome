@@ -14,18 +14,26 @@ export function formatDate(dateString) {
   
   const date = new Date(dateString);
   const now = new Date();
-  const diffInHours = (now - date) / (1000 * 60 * 60);
+  const diffInMinutes = (now - date) / (1000 * 60);
+  const diffInHours = diffInMinutes / 60;
+  const diffInDays = diffInHours / 24;
   
-  if (diffInHours < 1) {
+  if (diffInMinutes < 1) {
     return 'À l\'instant';
+  } else if (diffInMinutes < 60) {
+    const minutes = Math.floor(diffInMinutes);
+    return `Il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
   } else if (diffInHours < 24) {
     const hours = Math.floor(diffInHours);
     return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
-  } else if (diffInHours < 48) {
+  } else if (diffInDays < 2) {
     return 'Hier';
-  } else if (diffInHours < 168) { // 7 jours
-    const days = Math.floor(diffInHours / 24);
+  } else if (diffInDays < 7) {
+    const days = Math.floor(diffInDays);
     return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
+  } else if (diffInDays < 30) {
+    const weeks = Math.floor(diffInDays / 7);
+    return `Il y a ${weeks} semaine${weeks > 1 ? 's' : ''}`;
   } else {
     return date.toLocaleDateString('fr-FR', {
       day: 'numeric',

@@ -17,10 +17,13 @@ class CommentService {
       
       console.log('🔍 [CommentService] Paramètres de pagination:', { page, limit, from, to });
       
-      // Requête pour récupérer les commentaires (sans jointure pour l'instant)
+      // Requête pour récupérer les commentaires avec les données utilisateur
       const { data: comments, error: commentsError } = await supabase
         .from('comments')
-        .select('*')
+        .select(`
+          *,
+          user:auth.users(id, email, raw_user_meta_data)
+        `)
         .eq('listing_id', listingId)
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
@@ -50,15 +53,42 @@ class CommentService {
       const total = count || 0;
       const pages = Math.ceil(total / limit);
       
+      // Traiter les données utilisateur pour chaque commentaire
+      const processedComments = comments?.map(comment => {
+        const userData = comment.user;
+        let displayName = 'Utilisateur anonyme';
+        
+        if (userData?.raw_user_meta_data) {
+          const meta = userData.raw_user_meta_data;
+          if (meta.first_name && meta.last_name) {
+            displayName = `${meta.first_name} ${meta.last_name}`;
+          } else if (meta.first_name) {
+            displayName = meta.first_name;
+          } else if (meta.name) {
+            displayName = meta.name;
+          } else if (userData.email) {
+            displayName = userData.email.split('@')[0];
+          }
+        } else if (userData?.email) {
+          displayName = userData.email.split('@')[0];
+        }
+
+        return {
+          ...comment,
+          user_display_name: displayName,
+          user_email: userData?.email
+        };
+      }) || [];
+
       console.log('✅ [CommentService] Commentaires récupérés avec succès:', {
-        commentsCount: comments?.length || 0,
+        commentsCount: processedComments?.length || 0,
         total,
         pages,
         currentPage: page
       });
       
       return {
-        comments: comments || [],
+        comments: processedComments,
         pagination: {
           page,
           limit,

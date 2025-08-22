@@ -388,17 +388,17 @@ const ListingDetailPage = () => {
                 </div>
               </div>
               
-                              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                   <ShareListing listing={listing} variant="compact" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleReport}
-                  >
-                    <Flag className="h-4 w-4 mr-1" />
-                    Signaler
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReport}
+                >
+                  <Flag className="h-4 w-4 mr-1" />
+                  Signaler
+                </Button>
+              </div>
             </div>
 
             {/* Prix */}
@@ -605,10 +605,10 @@ const ListingDetailPage = () => {
                     En cas de problème
                   </h4>
                   <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-                    <li>• Signalez tout comportement suspect</li>
+                <li>• Signalez tout comportement suspect</li>
                     <li>• Conservez toutes les communications</li>
                     <li>• Contactez les autorités si nécessaire</li>
-                  </ul>
+              </ul>
                 </div>
               </div>
 
