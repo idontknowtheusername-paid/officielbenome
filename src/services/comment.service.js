@@ -17,13 +17,10 @@ class CommentService {
       
       console.log('🔍 [CommentService] Paramètres de pagination:', { page, limit, from, to });
       
-      // Requête pour récupérer les commentaires
+      // Requête pour récupérer les commentaires (sans jointure pour l'instant)
       const { data: comments, error: commentsError } = await supabase
         .from('comments')
-        .select(`
-          *,
-          users(id, email)
-        `)
+        .select('*')
         .eq('listing_id', listingId)
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
@@ -106,10 +103,7 @@ class CommentService {
       const { data, error } = await supabase
         .from('comments')
         .insert([commentWithModeration])
-        .select(`
-          *,
-          users(id, email)
-        `)
+        .select('*')
         .single();
 
       console.log('🔍 [CommentService] Résultat insertion:', { data, error });
@@ -306,7 +300,6 @@ class CommentService {
         .from('comments')
         .select(`
           *,
-          users(id, email),
           listing:listings(id, title, category)
         `)
         .eq('status', 'pending')

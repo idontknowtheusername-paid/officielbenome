@@ -187,24 +187,16 @@ const CommentCard = ({
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={comment.user?.avatar_url} alt={comment.user?.full_name} />
             <AvatarFallback className="bg-primary/10 text-primary">
-              {getUserInitials(comment.user?.full_name || comment.user?.email)}
+              {getUserInitials(comment.user_id || 'U')}
             </AvatarFallback>
           </Avatar>
 
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h4 className="font-medium text-sm">
-                {comment.user?.full_name || comment.user?.email || 'Utilisateur anonyme'}
+                Utilisateur {comment.user_id?.slice(0, 8)}...
               </h4>
-
-              {comment.user?.verified && (
-                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-300">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Vérifié
-                </Badge>
-              )}
 
               {comment.is_verified_purchase && (
                 <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
