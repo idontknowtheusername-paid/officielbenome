@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { boostService, paymentService } from '@/services';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import PaymentMethodSelector from '@/components/PaymentMethodSelector';
@@ -71,7 +72,21 @@ const PaymentProcessPage = () => {
         if (boostInfo.currentBoost) {
           setBoostData(boostInfo.currentBoost);
         } else {
-          throw new Error('Boost non trouvé');
+          // Si pas de boost actuel, récupérer directement depuis listing_boosts
+          const { data: boost, error } = await supabase
+            .from('listing_boosts')
+            .select(`
+              *,
+              boost_packages (*)
+            `)
+            .eq('id', boostId)
+            .single();
+            
+          if (error || !boost) {
+            throw new Error('Boost non trouvé');
+          }
+          
+          setBoostData(boost);
         }
       }
     } catch (err) {
@@ -91,16 +106,20 @@ const PaymentProcessPage = () => {
       setCurrentStep('payment-processing');
       setProgress(0);
       
+      // Récupérer les données du package
+      const packageData = boostData.boost_packages;
+      const amount = packageData?.price || 0;
+      
       // Créer le paiement
       const paymentResult = await paymentService.createPayment({
         userId: user.id,
-        amount: boostData.amount,
+        amount: amount,
         currency: 'XOF',
         paymentMethod: paymentData.method,
         boostId: boostData.id,
-        packageName: boostData.package_name,
+        packageName: packageData?.name || 'Package Premium',
         listingId: boostData.listing_id,
-        description: `Boost ${boostData.package_name}`,
+        description: `Boost ${packageData?.name || 'Premium'}`,
         phoneNumber: paymentData.phoneNumber,
         email: user.email,
         country: paymentData.country,
@@ -113,16 +132,16 @@ const PaymentProcessPage = () => {
 
       setProgress(30);
 
-      // Initier le paiement selon la méthode
-      let paymentInitiation;
+        // Initier le paiement selon la méthode
+        let paymentInitiation;
       if (paymentData.method === 'orange_money') {
-        paymentInitiation = await paymentService.initiateOrangeMoneyPayment(
-          paymentResult.paymentId, 
+            paymentInitiation = await paymentService.initiateOrangeMoneyPayment(
+              paymentResult.paymentId,
           paymentData.phoneNumber
-        );
+            );
       } else if (paymentData.method === 'mtn_mobile_money') {
-        paymentInitiation = await paymentService.initiateMTNPayment(
-          paymentResult.paymentId, 
+            paymentInitiation = await paymentService.initiateMTNPayment(
+              paymentResult.paymentId,
           paymentData.phoneNumber
         );
       } else if (paymentData.method === 'moov_money') {
@@ -131,8 +150,8 @@ const PaymentProcessPage = () => {
           paymentData.phoneNumber
         );
       } else if (paymentData.method === 'card') {
-        paymentInitiation = await paymentService.initiateCardPayment(
-          paymentResult.paymentId, 
+            paymentInitiation = await paymentService.initiateCardPayment(
+              paymentResult.paymentId,
           paymentData.cardData
         );
       }
@@ -244,14 +263,14 @@ const PaymentProcessPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="p-8 text-center">
-            <div className="text-6xl mb-4">🔒</div>
-            <h1 className="text-2xl font-bold mb-4">Connexion requise</h1>
-            <p className="text-muted-foreground mb-6">
-              Vous devez être connecté pour effectuer un paiement.
-            </p>
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold mb-4">Connexion requise</h1>
+          <p className="text-muted-foreground mb-6">
+            Vous devez être connecté pour effectuer un paiement.
+          </p>
             <Button onClick={() => navigate('/connexion')} className="w-full">
-              Se connecter
-            </Button>
+            Se connecter
+          </Button>
           </CardContent>
         </Card>
       </div>
@@ -277,9 +296,9 @@ const PaymentProcessPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="p-8 text-center">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold mb-4">Erreur de paiement</h1>
-            <p className="text-muted-foreground mb-6">{error}</p>
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold mb-4">Erreur de paiement</h1>
+          <p className="text-muted-foreground mb-6">{error}</p>
             
             {retryCount < 3 && (
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -293,16 +312,16 @@ const PaymentProcessPage = () => {
               {retryCount < 3 && (
                 <Button onClick={handleRetry} className="w-full">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Réessayer
-                </Button>
+              Réessayer
+            </Button>
               )}
               <Button onClick={handleBackToMethodSelection} variant="outline" className="w-full">
                 Changer de méthode
               </Button>
               <Button onClick={() => navigate(-1)} variant="ghost" className="w-full">
-                Retour
-              </Button>
-            </div>
+              Retour
+            </Button>
+          </div>
           </CardContent>
         </Card>
       </div>
@@ -330,10 +349,10 @@ const PaymentProcessPage = () => {
           <div className="text-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
               💳 Paiement Sécurisé
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Finalisez votre achat de boost premium en toute sécurité
-            </p>
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Finalisez votre achat de boost premium en toute sécurité
+          </p>
           </div>
         </motion.div>
 
@@ -451,13 +470,13 @@ const PaymentProcessPage = () => {
                     </div>
                   </div>
                   
-                  <Button
-                    onClick={handleBackToMethodSelection}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Annuler
-                  </Button>
+                    <Button
+                      onClick={handleBackToMethodSelection}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Annuler
+                    </Button>
                 </CardContent>
               </Card>
             </motion.div>
