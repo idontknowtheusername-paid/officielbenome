@@ -291,37 +291,7 @@ const BoostListingPage = () => {
           >
 
 
-            {/* Avantages du boost */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Star className="h-5 w-5 mr-2 text-yellow-500" />
-                  Avantages du boost
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-sm">Visibilité prioritaire dans les résultats</span>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-sm">Badge "Boosté" visible</span>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-sm">Mise en avant sur la page d'accueil</span>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-sm">Analytics détaillés des performances</span>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-sm">Support prioritaire</span>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* CTA principal */}
             {!boostStatus?.hasActiveBoost && (
