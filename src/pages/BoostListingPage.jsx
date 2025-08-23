@@ -289,40 +289,7 @@ const BoostListingPage = () => {
             transition={{ delay: 0.3 }}
             className="space-y-6"
           >
-            {/* Statistiques actuelles */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2 text-primary" />
-                  Statistiques actuelles
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Eye className="h-4 w-4 mr-2 text-blue-500" />
-                    <span>Vues</span>
-                  </div>
-                  <span className="font-semibold">{listing.views_count || 0}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Heart className="h-4 w-4 mr-2 text-red-500" />
-                    <span>Favoris</span>
-                  </div>
-                  <span className="font-semibold">{listing.favorites_count || 0}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-2 text-green-500" />
-                    <span>Contacts</span>
-                  </div>
-                  <span className="font-semibold">-</span>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* Avantages du boost */}
             <Card>
