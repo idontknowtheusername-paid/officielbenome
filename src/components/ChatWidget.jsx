@@ -6,8 +6,10 @@ import { resolveSearchIntent } from '@/lib/search-intent';
 import { listingService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { TypingIndicator, ProgressBar } from '@/components/ui/loading';
+import AdvancedThinkingIndicator from '@/components/ui/loading/AdvancedThinkingIndicator';
 import MessageBubble from '@/components/ui/MessageBubble';
 import SuggestionChips from '@/components/ui/SuggestionChips';
+import { aidaIntelligenceService } from '@/services/aidaIntelligence.service';
 
 const ChatWidget = ({ pageContext = {} }) => {
   const { user } = useAuth();
@@ -21,6 +23,11 @@ const ChatWidget = ({ pageContext = {} }) => {
   const [hasSuggestions, setHasSuggestions] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [advancedThinking, setAdvancedThinking] = useState(false);
+  const [thinkingSteps, setThinkingSteps] = useState([]);
+  const [currentThinkingStep, setCurrentThinkingStep] = useState(0);
+  const [userContext, setUserContext] = useState(null);
+  const [intelligentSuggestions, setIntelligentSuggestions] = useState([]);
   const listRef = useRef(null);
   const abortRef = useRef(null);
 
@@ -60,9 +67,60 @@ const ChatWidget = ({ pageContext = {} }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  // Initialiser l'analyse contextuelle AIDA
+  useEffect(() => {
+    const initializeAIDAContext = async () => {
+      try {
+        // Récupérer l'historique de recherche depuis localStorage
+        const searchHistory = JSON.parse(localStorage.getItem('search_history') || '[]');
+        
+        // Analyser le contexte utilisateur
+        const context = await aidaIntelligenceService.analyzeUserContext(
+          user?.id,
+          window.location.pathname,
+          searchHistory
+        );
+        
+        setUserContext(context);
+        
+        // Générer des suggestions intelligentes
+        if (context) {
+          const recommendations = await aidaIntelligenceService.generateRecommendations(context, '');
+          setIntelligentSuggestions(recommendations);
+        }
+      } catch (error) {
+        console.error('Erreur initialisation contexte AIDA:', error);
+      }
+    };
+
+    if (open) {
+      initializeAIDAContext();
+    }
+  }, [open, user?.id]);
+
   // Fonction pour traiter un message (extrait de send pour réutilisation)
   const processMessage = async (msg, newHistory) => {
     try {
+      // Démarrer le thinking avancé pour les requêtes complexes
+      const isComplexQuery = msg.length > 20 || /\b(prix|marché|tendance|recommandation|suggestion|analyse|comparaison)\b/i.test(msg);
+      
+      if (isComplexQuery && userContext) {
+        setAdvancedThinking(true);
+        const steps = aidaIntelligenceService.getAdvancedThinkingSteps(userContext, msg);
+        setThinkingSteps(steps);
+        setCurrentThinkingStep(0);
+        
+        // Simuler les étapes de thinking
+        for (let i = 0; i < steps.length; i++) {
+          setCurrentThinkingStep(i);
+          await new Promise(resolve => setTimeout(resolve, steps[i].duration));
+        }
+        
+        // Générer des recommandations intelligentes
+        const recommendations = await aidaIntelligenceService.generateRecommendations(userContext, msg);
+        setIntelligentSuggestions(recommendations);
+      }
+
       // Verifier si c'est vraiment une recherche (pas juste un salut)
       const isGreeting = /^(yo|salut|bonjour|hello|hi|hey|ciao|hola|bonsoir|bonne\s+nuit)$/i.test(msg.trim());
       const hasSearchKeywords = /\b(appartement|maison|voiture|service|immobilier|auto|plombier|electricien|terrain|studio|villa|moto|scooter|camion|menage|jardinage|coiffure|reparation|demenagement|cours|prof|informatique|evenementiel)\b/i.test(msg.toLowerCase());
@@ -102,6 +160,13 @@ const ChatWidget = ({ pageContext = {} }) => {
             setHasSuggestions(true);
           }
         } catch {}
+      }
+
+      // Terminer le thinking avancé si actif
+      if (advancedThinking) {
+        setAdvancedThinking(false);
+        setThinkingSteps([]);
+        setCurrentThinkingStep(0);
       }
 
       // Streaming: on ajoute d'abord un message assistant vide prefixe
@@ -726,17 +791,85 @@ const ChatWidget = ({ pageContext = {} }) => {
                 isUser={m.role === 'user'}
               />
             ))}
+            
+            {/* Suggestions intelligentes après la réponse d'AIDA */}
+            {!loading && intelligentSuggestions && Object.keys(intelligentSuggestions).length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, fontWeight: 600 }}>
+                  💡 Suggestions intelligentes d'AIDA
+                </div>
+                {Object.entries(intelligentSuggestions).map(([category, suggestions]) => (
+                  suggestions.length > 0 && (
+                    <div key={category} style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 6, textTransform: 'uppercase' }}>
+                        {category === 'immediate' && 'Recommandations immédiates'}
+                        {category === 'contextual' && 'Actions contextuelles'}
+                        {category === 'trending' && 'Tendances du marché'}
+                        {category === 'personalized' && 'Personnalisé pour vous'}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {suggestions.slice(0, 3).map((suggestion, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              const text = suggestion.value || suggestion.text || suggestion;
+                              setInput(text);
+                              setTimeout(() => {
+                                const msg = text.trim();
+                                if (msg && !loading) {
+                                  const newHistory = [...history, { role: 'user', content: msg }];
+                                  setHistory(newHistory);
+                                  setInput('');
+                                  setLoading(true);
+                                  setLoadingStage('thinking');
+                                  processMessage(msg, newHistory);
+                                }
+                              }, 100);
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              border: '1px solid #374151',
+                              borderRadius: 8,
+                              background: 'linear-gradient(135deg, #1f2937, #111827)',
+                              color: '#e5e7eb',
+                              fontSize: 12,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = 'linear-gradient(135deg, #374151, #1f2937)'}
+                            onMouseLeave={(e) => e.target.style.background = 'linear-gradient(135deg, #1f2937, #111827)'}
+                          >
+                            <span>{suggestion.icon || '💬'}</span>
+                            <span>{suggestion.value || suggestion.text || suggestion}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+            )}
             {loading && (
               <div style={{ margin: '10px 0' }}>
-                {loadingStage === 'thinking' && (
+                {advancedThinking && thinkingSteps.length > 0 ? (
+                  <AdvancedThinkingIndicator 
+                    steps={thinkingSteps}
+                    currentStep={currentThinkingStep}
+                    onStepComplete={(stepIndex) => {
+                      console.log(`Étape ${stepIndex + 1} terminée`);
+                    }}
+                  />
+                ) : loadingStage === 'thinking' ? (
                   <TypingIndicator message="AIDA réfléchit à votre demande..." />
-                )}
-                {loadingStage === 'searching' && (
-                  <ProgressBar 
+                ) : loadingStage === 'searching' ? (
+                  <ProgressBar
                     duration={2000} 
                     message="AIDA recherche des annonces..." 
                   />
-                )}
+                ) : null}
                 {loadingStage === 'processing' && (
                   <TypingIndicator message="AIDA rédige sa réponse..." />
                 )}
