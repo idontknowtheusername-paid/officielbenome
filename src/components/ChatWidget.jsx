@@ -696,7 +696,7 @@ const ChatWidget = ({ pageContext = {} }) => {
           </div>
 
           <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 14, paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
-            {history.length === 0 && (
+            {history.length === 0 && !showMenu && (
               <div style={{ fontSize: 14, color: '#9ca3af' }}>
                 Bonjour ! Je suis AIDA, votre assistant intelligent MaxiMarket. Indiquez ce que vous recherchez (catégorie, budget, ville) ou posez votre question.
                 <SuggestionChips 
@@ -747,7 +747,7 @@ const ChatWidget = ({ pageContext = {} }) => {
                   }}
                 />
                 {/* Actions contextuelles si on est sur une page d'annonce */}
-                {context.listing && (
+                {context.listing && !showMenu && (
                   <div style={{ marginTop: 15, paddingTop: 15, borderTop: '1px solid #1f2937' }}>
                     <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>Actions rapides :</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -793,7 +793,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             ))}
             
             {/* Suggestions intelligentes après la réponse d'AIDA */}
-            {!loading && intelligentSuggestions && Object.keys(intelligentSuggestions).length > 0 && (
+            {!loading && !showMenu && intelligentSuggestions && Object.keys(intelligentSuggestions).length > 0 && (
               <div style={{ marginTop: 16 }}>
                 <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, fontWeight: 600 }}>
                   💡 Suggestions intelligentes d'AIDA
