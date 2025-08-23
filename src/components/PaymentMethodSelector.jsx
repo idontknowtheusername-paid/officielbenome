@@ -14,7 +14,8 @@ import {
   Zap,
   Info,
   Eye,
-  EyeOff
+  EyeOff,
+  Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,13 +25,15 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { paymentService } from '@/services/payment.service';
 
 const PaymentMethodSelector = ({ 
   amount, 
   currency = 'XOF',
   onPaymentMethodSelected, 
   onClose,
-  packageName = 'Package Premium'
+  packageName = 'Package Premium',
+  userCountry = 'CI'
 }) => {
   const [selectedMethod, setSelectedMethod] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -45,39 +48,10 @@ const PaymentMethodSelector = ({
   const [error, setError] = useState(null);
   const [showCardDetails, setShowCardDetails] = useState(false);
   const [focusedField, setFocusedField] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState(userCountry);
 
-  const paymentMethods = [
-    {
-      id: 'orange_money',
-      name: 'Orange Money',
-      icon: <Circle className="h-6 w-6 text-orange-500" />,
-      description: 'Paiement sécurisé via Orange Money',
-      advantages: ['Paiement instantané', 'Sécurisé', 'Sans frais'],
-      color: 'orange',
-      popular: true,
-      processingTime: '2-3 minutes'
-    },
-    {
-      id: 'mtn_mobile_money',
-      name: 'MTN Mobile Money',
-      icon: <Wifi className="h-6 w-6 text-yellow-500" />,
-      description: 'Paiement via MTN Mobile Money',
-      advantages: ['Paiement rapide', 'Sécurisé', 'Large couverture'],
-      color: 'yellow',
-      popular: false,
-      processingTime: '2-3 minutes'
-    },
-    {
-      id: 'card',
-      name: 'Carte Bancaire',
-      icon: <CreditCard className="h-6 w-6 text-blue-500" />,
-      description: 'Paiement par carte Visa/Mastercard',
-      advantages: ['Paiement international', 'Sécurisé', 'Accepté partout'],
-      color: 'blue',
-      popular: false,
-      processingTime: '30 secondes'
-    }
-  ];
+  // Obtenir les méthodes de paiement disponibles selon le pays
+  const availablePaymentMethods = paymentService.getPaymentMethods(selectedCountry);
 
   const formatAmount = (amount) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -88,41 +62,13 @@ const PaymentMethodSelector = ({
     }).format(amount);
   };
 
-  const validatePhoneNumber = (phone) => {
-    // Validation pour les numéros ivoiriens
-    const phoneRegex = /^(225|00225|\+225)?[0-9]{10}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ''));
-  };
-
-  const validateCardData = () => {
-    if (!cardData.number || !cardData.expiry || !cardData.cvv || !cardData.name) {
-      return false;
-    }
-    
-    // Validation basique de la carte
-    const cardNumberRegex = /^[0-9]{13,19}$/;
-    const expiryRegex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
-    const cvvRegex = /^[0-9]{3,4}$/;
-    
-    return cardNumberRegex.test(cardData.number.replace(/\s/g, '')) &&
-           expiryRegex.test(cardData.expiry) &&
-           cvvRegex.test(cardData.cvv);
-  };
-
   const handlePaymentMethodSelect = (methodId) => {
     setSelectedMethod(methodId);
     setError(null);
   };
 
   const handlePhoneNumberChange = (value) => {
-    // Formatage automatique du numéro de téléphone
-    let formatted = value.replace(/\D/g, '');
-    if (formatted.startsWith('225')) {
-      formatted = formatted.substring(3);
-    }
-    if (formatted.length > 0) {
-      formatted = formatted.match(/.{1,2}/g).join(' ');
-    }
+    const formatted = paymentService.formatPhoneNumber(value, selectedCountry);
     setPhoneNumber(formatted);
   };
 
@@ -158,15 +104,15 @@ const PaymentMethodSelector = ({
       return;
     }
 
-    if (selectedMethod === 'orange_money' || selectedMethod === 'mtn_mobile_money') {
-      if (!phoneNumber || !validatePhoneNumber(phoneNumber)) {
+    if (selectedMethod === 'orange_money' || selectedMethod === 'mtn_mobile_money' || selectedMethod === 'moov_money') {
+      if (!phoneNumber || !paymentService.validatePhoneNumber(phoneNumber, selectedCountry)) {
         setError('Veuillez entrer un numéro de téléphone valide');
         return;
       }
     }
 
     if (selectedMethod === 'card') {
-      if (!validateCardData()) {
+      if (!cardData.number || !cardData.expiry || !cardData.cvv || !cardData.name) {
         setError('Veuillez remplir tous les champs de la carte correctement');
         return;
       }
@@ -180,7 +126,8 @@ const PaymentMethodSelector = ({
         amount: amount,
         currency: currency,
         packageName: packageName,
-        ...(selectedMethod === 'orange_money' || selectedMethod === 'mtn_mobile_money' ? { phoneNumber } : {}),
+        country: selectedCountry,
+        ...(selectedMethod === 'orange_money' || selectedMethod === 'mtn_mobile_money' || selectedMethod === 'moov_money' ? { phoneNumber } : {}),
         ...(selectedMethod === 'card' ? { cardData } : {})
       };
 
@@ -197,6 +144,7 @@ const PaymentMethodSelector = ({
       case 'orange': return 'border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100';
       case 'yellow': return 'border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100';
       case 'blue': return 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100';
+      case 'green': return 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100';
       default: return 'border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100';
     }
   };
@@ -208,6 +156,21 @@ const PaymentMethodSelector = ({
       case 'amex': return '💳';
       default: return '💳';
     }
+  };
+
+  const getCountryFlag = (country) => {
+    const flags = {
+      'CI': '🇨🇮',
+      'BJ': '🇧🇯',
+      'SN': '🇸🇳',
+      'ML': '🇲🇱 Mali',
+      'BF': '🇧🇫 Burkina Faso',
+      'NE': '🇳🇪 Niger',
+      'TG': '🇹🇬 Togo',
+      'GH': '🇬🇭 Ghana',
+      'NG': '🇳🇬 Nigeria'
+    };
+    return flags[country] || '🌍';
   };
 
   return (
@@ -226,6 +189,30 @@ const PaymentMethodSelector = ({
             Sélectionnez votre méthode de paiement préférée pour finaliser votre achat
           </p>
           
+          {/* Sélecteur de pays */}
+          <div className="mt-4 flex justify-center">
+            <div className="flex items-center gap-2 bg-white/50 px-4 py-2 rounded-lg border">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Pays :</span>
+              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <SelectTrigger className="w-32 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
+                  <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+                  <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
+                  <SelectItem value="ML">🇲🇱 Mali</SelectItem>
+                  <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+                  <SelectItem value="NE">🇳🇪 Niger</SelectItem>
+                  <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                  <SelectItem value="GH">🇬🇭 Ghana</SelectItem>
+                  <SelectItem value="NG">🇳🇬 Nigeria</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
           {/* Résumé de la commande */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
@@ -236,7 +223,7 @@ const PaymentMethodSelector = ({
             <div className="font-semibold text-lg text-primary">{packageName}</div>
             <div className="text-3xl font-bold text-primary">{formatAmount(amount)}</div>
             <div className="mt-2 text-xs text-muted-foreground">
-              Paiement sécurisé • Pas de frais cachés
+              Paiement sécurisé via Kkiapay • Frais : 1.5% + 50 FCFA
             </div>
           </motion.div>
         </motion.div>
@@ -244,24 +231,24 @@ const PaymentMethodSelector = ({
         {/* Méthodes de paiement */}
         <RadioGroup value={selectedMethod} onValueChange={handlePaymentMethodSelect}>
           <div className="space-y-4">
-            {paymentMethods.map((method, index) => (
+            {Object.entries(availablePaymentMethods).map(([methodId, method], index) => (
               <motion.div
-                key={method.id}
+                key={methodId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <RadioGroupItem
-                  value={method.id}
-                  id={method.id}
+                  value={methodId}
+                  id={methodId}
                   className="sr-only"
                 />
                 <Label
-                  htmlFor={method.id}
+                  htmlFor={methodId}
                   className={`block cursor-pointer p-6 border-2 rounded-xl transition-all duration-300 hover:shadow-lg ${
-                    selectedMethod === method.id
+                    selectedMethod === methodId
                       ? 'border-primary bg-gradient-to-r from-primary/5 to-blue-500/5 shadow-lg scale-[1.02]'
-                      : getMethodColor(method.color)
+                      : getMethodColor(method.color || 'blue')
                   }`}
                 >
                   <div className="flex items-start gap-4">
@@ -270,7 +257,7 @@ const PaymentMethodSelector = ({
                         whileHover={{ scale: 1.1 }}
                         className="p-3 rounded-lg bg-white shadow-sm"
                       >
-                        {method.icon}
+                        <span className="text-2xl">{method.icon}</span>
                       </motion.div>
                     </div>
                     
@@ -293,29 +280,18 @@ const PaymentMethodSelector = ({
                         </Tooltip>
                       </div>
                       
-                      <p className="text-muted-foreground mb-3">{method.description}</p>
-                      
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {method.advantages.map((advantage, idx) => (
-                          <div key={idx} className="flex items-center gap-1 text-xs text-muted-foreground bg-white/50 px-2 py-1 rounded-full">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            {advantage}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground mb-2">
                         ⏱️ Traitement : {method.processingTime}
                       </div>
                     </div>
                     
                     <div className="flex-shrink-0">
                       <div className={`w-6 h-6 rounded-full border-2 transition-all duration-300 ${
-                        selectedMethod === method.id
+                        selectedMethod === methodId
                           ? 'border-primary bg-primary shadow-lg'
                           : 'border-gray-300'
                       }`}>
-                        {selectedMethod === method.id && (
+                        {selectedMethod === methodId && (
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
@@ -341,8 +317,8 @@ const PaymentMethodSelector = ({
               exit={{ opacity: 0, height: 0 }}
               className="space-y-4"
             >
-              {/* Orange Money / MTN */}
-              {(selectedMethod === 'orange_money' || selectedMethod === 'mtn_mobile_money') && (
+              {/* Mobile Money (Orange, MTN, Moov) */}
+              {(selectedMethod === 'orange_money' || selectedMethod === 'mtn_mobile_money' || selectedMethod === 'moov_money') && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -351,7 +327,7 @@ const PaymentMethodSelector = ({
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Smartphone className="h-5 w-5" />
-                        {selectedMethod === 'orange_money' ? 'Orange Money' : 'MTN Mobile Money'}
+                        {availablePaymentMethods[selectedMethod]?.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -362,7 +338,7 @@ const PaymentMethodSelector = ({
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder="Ex: 07 08 09 10 11"
+                          placeholder={`Ex: ${selectedCountry === 'CI' ? '07 08 09 10 11' : 'Numéro local'}`}
                           value={phoneNumber}
                           onChange={(e) => handlePhoneNumberChange(e.target.value)}
                           className="mt-2 h-12 text-lg"
@@ -370,7 +346,7 @@ const PaymentMethodSelector = ({
                           onBlur={() => setFocusedField('')}
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                          Entrez votre numéro {selectedMethod === 'orange_money' ? 'Orange' : 'MTN'}
+                          Entrez votre numéro {availablePaymentMethods[selectedMethod]?.name}
                         </p>
                       </div>
                       
@@ -562,7 +538,7 @@ const PaymentMethodSelector = ({
         >
           <div className="flex items-center justify-center gap-2 mb-2">
             <Lock className="h-4 w-4" />
-            <span>Paiement 100% sécurisé</span>
+            <span>Paiement 100% sécurisé via Kkiapay</span>
           </div>
           <p>Vos informations de paiement sont protégées par un chiffrement SSL de niveau bancaire</p>
         </motion.div>

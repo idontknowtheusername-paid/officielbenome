@@ -43,6 +43,7 @@ import ListingDetailPage from '@/pages/ListingDetailPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import BoostListingPage from '@/pages/BoostListingPage';
 import PaymentProcessPage from '@/pages/PaymentProcessPage';
+import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -151,17 +152,20 @@ function App() {
                     } 
                   />
                   
-                  {/* Paiement pour boost */}
-                  <Route 
-                    path="paiement/:boostId" 
-                    element={
-                      <ProtectedRoute>
-                        <PaymentProcessPage />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  
-                  {/* Modifier une annonce */}
+                                       {/* Paiement pour boost */}
+                     <Route 
+                       path="paiement/:boostId" 
+                       element={
+                         <ProtectedRoute>
+                           <PaymentProcessPage />
+                         </ProtectedRoute>
+                       } 
+                     />
+                     
+                     {/* Callback de paiement */}
+                     <Route path="payment-callback" element={<PaymentCallbackPage />} />
+                     
+                     {/* Modifier une annonce */}
                   <Route 
                     path="annonce/:id/modifier" 
                     element={
