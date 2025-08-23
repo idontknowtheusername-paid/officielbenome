@@ -5,12 +5,16 @@ import { Input } from '@/components/ui/input';
 import { resolveSearchIntent } from '@/lib/search-intent';
 import { listingService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
+import { TypingIndicator, ProgressBar } from '@/components/ui/loading';
+import MessageBubble from '@/components/ui/MessageBubble';
+import SuggestionChips from '@/components/ui/SuggestionChips';
 
 const ChatWidget = ({ pageContext = {} }) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(''); // 'thinking', 'searching', 'processing'
   const [history, setHistory] = useState([]); // {role, content}
   const [conversations, setConversations] = useState([]); // [{id, title, messages, date}]
   const [currentConversationId, setCurrentConversationId] = useState(null);
@@ -76,6 +80,7 @@ const ChatWidget = ({ pageContext = {} }) => {
     setHistory(newHistory);
     setInput('');
     setLoading(true);
+    setLoadingStage('thinking');
     try {
       // Verifier si c'est vraiment une recherche (pas juste un salut)
       const isGreeting = /^(yo|salut|bonjour|hello|hi|hey|ciao|hola|bonsoir|bonne\s+nuit)$/i.test(msg.trim());
@@ -93,6 +98,7 @@ const ChatWidget = ({ pageContext = {} }) => {
       }
       
       if (intent) {
+        setLoadingStage('searching');
         const { section, params } = intent;
         const categoryMap = {
           immobilier: 'real_estate',
@@ -118,6 +124,7 @@ const ChatWidget = ({ pageContext = {} }) => {
       }
 
       // Streaming: on ajoute d'abord un message assistant vide prefixe
+      setLoadingStage('processing');
       setHistory(h => [...h, { role: 'assistant', content: prefixedContent }]);
       const assistantIndex = newHistory.length; // position du message assistant insere
       let streamed = '';
@@ -162,6 +169,7 @@ const ChatWidget = ({ pageContext = {} }) => {
       }
     } finally {
       setLoading(false);
+      setLoadingStage('');
     }
   };
 
@@ -210,21 +218,30 @@ const ChatWidget = ({ pageContext = {} }) => {
     
     // Suggestions basees sur l'historique
     if (hasSearchedRealEstate) {
-      suggestions.push('Appartements 2 chambres à Dakar');
-      suggestions.push('Terrains constructibles');
+      suggestions.push(
+        { text: 'Appartements 2 chambres à Dakar', icon: '🏠' },
+        { text: 'Terrains constructibles', icon: '🏗️' }
+      );
     }
     if (hasSearchedCars) {
-      suggestions.push('Voitures d\'occasion récentes');
-      suggestions.push('Motos économiques');
+      suggestions.push(
+        { text: 'Voitures d\'occasion récentes', icon: '🚗' },
+        { text: 'Motos économiques', icon: '🏍️' }
+      );
     }
     if (hasSearchedServices) {
-      suggestions.push('Services de nettoyage');
-      suggestions.push('Réparation électroménager');
+      suggestions.push(
+        { text: 'Services de nettoyage', icon: '🧹' },
+        { text: 'Réparation électroménager', icon: '🔧' }
+      );
     }
     
     // Suggestions par defaut si pas d'historique
     if (suggestions.length === 0) {
-      suggestions.push('Immobilier à Dakar', 'Voitures < 3 000 000 XOF');
+      suggestions.push(
+        { text: 'Immobilier à Dakar', icon: '🏠' },
+        { text: 'Voitures < 3 000 000 XOF', icon: '🚗' }
+      );
     }
     
     return suggestions.slice(0, 3); // Max 3 suggestions
@@ -609,43 +626,27 @@ const ChatWidget = ({ pageContext = {} }) => {
           <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 14, paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
             {history.length === 0 && (
               <div style={{ fontSize: 14, color: '#9ca3af' }}>
-                Bonjour. Je suis l'assistant Maximarket. Indiquez ce que vous recherchez (catégorie, budget, ville) ou posez votre question.
-                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {[
+                Bonjour ! Je suis AIDA, votre assistant intelligent MaxiMarket. Indiquez ce que vous recherchez (catégorie, budget, ville) ou posez votre question.
+                <SuggestionChips 
+                  suggestions={[
                     ...getSmartSuggestions(),
-                    'Publier une annonce',
-                    'Services plomberie',
-                    user ? 'Voir mes annonces' : 'Se connecter'
-                  ].map((s, i) => (
-                    <button 
-                      key={i} 
-                      onClick={() => {
-                        if (s === 'Publier une annonce') {
-                          handleAction('publish_listing');
-                        } else if (s === 'Voir mes annonces') {
-                          handleAction('my_listings');
-                        } else if (s === 'Se connecter') {
-                          window.location.href = '/connexion';
-                        } else {
-                          setInput(s);
-                        }
-                      }} 
-                      style={{ 
-                        padding: '6px 10px', 
-                        border: '1px solid #374151', 
-                        borderRadius: 999, 
-                        background: '#0e141b', 
-                        color: '#e5e7eb',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.target.style.background = '#1f2937'}
-                      onMouseLeave={(e) => e.target.style.background = '#0e141b'}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                    { text: 'Publier une annonce', icon: '📝' },
+                    { text: 'Services plomberie', icon: '🔧' },
+                    { text: user ? 'Voir mes annonces' : 'Se connecter', icon: user ? '📋' : '🔐' }
+                  ]}
+                  onSuggestionClick={(suggestion) => {
+                    const text = suggestion.text || suggestion;
+                    if (text === 'Publier une annonce') {
+                      handleAction('publish_listing');
+                    } else if (text === 'Voir mes annonces') {
+                      handleAction('my_listings');
+                    } else if (text === 'Se connecter') {
+                      window.location.href = '/connexion';
+                    } else {
+                      setInput(text);
+                    }
+                  }}
+                />
                 {/* Actions contextuelles si on est sur une page d'annonce */}
                 {context.listing && (
                   <div style={{ marginTop: 15, paddingTop: 15, borderTop: '1px solid #1f2937' }}>
@@ -685,14 +686,28 @@ const ChatWidget = ({ pageContext = {} }) => {
               </div>
             )}
             {history.map((m, idx) => (
-              <div key={idx} style={{ margin: '10px 0', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: m.role === 'user' ? '#111827' : '#0e141b', color: '#e5e7eb', display: 'grid', placeItems: 'center', fontSize: 12, border: '1px solid #1f2937' }}>
-                  {m.role === 'user' ? 'Vous' : 'AI'}
-                </div>
-                <div style={{ whiteSpace: 'pre-wrap', background: m.role === 'user' ? '#0e141b' : '#0b0f14', border: '1px solid #1f2937', color: '#e5e7eb', borderRadius: 12, padding: '10px 12px', maxWidth: '85%' }}>{m.content}</div>
-              </div>
+              <MessageBubble 
+                key={idx} 
+                message={m} 
+                isUser={m.role === 'user'}
+              />
             ))}
-            {loading && <div style={{ color: '#9ca3af', fontSize: 14 }}>Rédaction...</div>}
+            {loading && (
+              <div style={{ margin: '10px 0' }}>
+                {loadingStage === 'thinking' && (
+                  <TypingIndicator message="AIDA réfléchit à votre demande..." />
+                )}
+                {loadingStage === 'searching' && (
+                  <ProgressBar 
+                    duration={2000} 
+                    message="AIDA recherche des annonces..." 
+                  />
+                )}
+                {loadingStage === 'processing' && (
+                  <TypingIndicator message="AIDA rédige sa réponse..." />
+                )}
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: 8, padding: 12, paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid #1f2937', background: '#0e141b', borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
