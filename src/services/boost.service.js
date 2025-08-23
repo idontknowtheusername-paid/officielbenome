@@ -66,6 +66,8 @@ export const boostService = {
       }
 
       // Créer le boost
+      const endDate = new Date(Date.now() + packageData.duration_days * 24 * 60 * 60 * 1000);
+      
       const { data: boost, error: boostError } = await supabase
         .from('listing_boosts')
         .insert({
@@ -73,10 +75,14 @@ export const boostService = {
           user_id: userId,
           package_id: packageId,
           status: 'pending',
-          price: packageData.price,
-          duration_days: packageData.duration_days,
-          features: packageData.features,
-          expires_at: new Date(Date.now() + packageData.duration_days * 24 * 60 * 60 * 1000).toISOString()
+          start_date: new Date().toISOString(),
+          end_date: endDate.toISOString(),
+          metadata: {
+            price: packageData.price,
+            duration_days: packageData.duration_days,
+            features: packageData.features,
+            package_name: packageData.name
+          }
         })
         .select()
         .single();

@@ -53,7 +53,7 @@ const BoostPackageSelector = ({ listingId, onPackageSelected, onClose }) => {
       setPurchasing(true);
       setError(null);
 
-      const result = await boostService.purchaseBoost(listingId, selectedPackage.id, user.id);
+      const result = await boostService.purchaseBoost(selectedPackage.id, listingId, user.id);
       
       if (result.success) {
         // Rediriger vers la page de paiement ou afficher le succès
