@@ -35,7 +35,7 @@ const addWelcomeMessage = async (userId) => {
       conversation_id: conversation.id,
       sender_id: '00000000-0000-0000-0000-000000000000',
       receiver_id: userId,
-      content: `🤖 Bienvenue sur MaxiMarket !
+      content: `🤖 Bonjour ! Je suis AIDA, votre assistant intelligent MaxiMarket !
 
 Votre marketplace de confiance pour l'Afrique de l'Ouest.
 
@@ -154,8 +154,8 @@ export const messageService = {
             messages: [welcomeMsg],
             participant1: {
               id: '00000000-0000-0000-0000-000000000000',
-              first_name: 'Assistant',
-              last_name: 'MaxiMarket',
+              first_name: 'AIDA',
+              last_name: 'Assistant',
               profile_image: null
             },
             participant2: {

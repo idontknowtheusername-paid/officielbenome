@@ -248,7 +248,7 @@ export default defineConfig({
               return;
             }
             const systemPrompt = [
-              "Tu es MaxiMarket Assistant, le chatbot du site MaxiMarket (marketplace Afrique de l'Ouest).",
+              "Tu es AIDA, l'assistant intelligent de MaxiMarket (marketplace Afrique de l'Ouest).",
               'Règles:',
               '- Réponds en français, ton professionnel, concis et actionnable.',
               "- Si l'utilisateur demande à trouver des annonces, propose des filtres (catégorie, prix XOF, localisation) et des actions (ouvrir résultats, affiner).",

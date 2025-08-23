@@ -1,4 +1,4 @@
-# 🤖 CONVERSATION ASSISTANT MAXIMARKET - GUIDE COMPLET
+# 🤖 CONVERSATION AIDA - GUIDE COMPLET
 
 ## 📋 **RÉSUMÉ DES MODIFICATIONS**
 
@@ -24,7 +24,7 @@
 ### **1. Test en console** 📱
 ```javascript
 // Ouvrir la console du navigateur et exécuter :
-import('./test-assistant-conversation.js').then(module => {
+import('./test-aida-conversation.js').then(module => {
   module.runAllTests();
 });
 ```
@@ -32,7 +32,7 @@ import('./test-assistant-conversation.js').then(module => {
 ### **2. Test manuel** 👤
 1. **Se connecter** à MaxiMarket
 2. **Aller sur la page de messagerie** (`/messages`)
-3. **Vérifier** que la conversation de l'assistant apparaît en premier
+3. **Vérifier** que la conversation d'AIDA apparaît en premier
 4. **Cliquer** sur la conversation pour l'ouvrir
 5. **Vérifier** l'affichage des messages
 
@@ -41,17 +41,17 @@ import('./test-assistant-conversation.js').then(module => {
 ## 🎯 **RÉSULTATS ATTENDUS**
 
 ### **Dans la liste des conversations** 📋
-- ✅ **Première conversation** : Assistant MaxiMarket
+- ✅ **Première conversation** : AIDA Assistant
 - ✅ **Style distinctif** : Gradient bleu-violet
-- ✅ **Badge "🤖 Assistant"** en haut à droite
+- ✅ **Badge "🤖 AIDA"** en haut à droite
 - ✅ **Bordure bleue** à gauche
 - ✅ **Avatar personnalisé** avec icône Bot et Sparkles
 
 ### **Dans la conversation** 💬
-- ✅ **Titre** : "Assistant MaxiMarket"
+- ✅ **Titre** : "AIDA Assistant"
 - ✅ **Description** : "Support et assistance"
 - ✅ **Message de bienvenue** avec contenu complet
-- ✅ **Style spécial** pour les messages de l'assistant
+- ✅ **Style spécial** pour les messages d'AIDA
 - ✅ **Avatar personnalisé** dans les bulles de message
 
 ---
@@ -95,7 +95,7 @@ bg-gradient-to-r from-blue-50 to-purple-50
 /* Bordure spéciale */
 border-l-4 border-blue-500
 
-/* Badge "🤖 Assistant" */
+/* Badge "🤖 AIDA" */
 bg-gradient-to-r from-blue-500 to-purple-500
 text-white text-xs px-2 py-1 rounded-full
 ```
@@ -135,7 +135,7 @@ Gradient rotatif avec opacity 20%
 
 ### **Messages** 📝
 - ✅ **Message de bienvenue** automatique
-- ✅ **Style distinctif** pour l'assistant
+- ✅ **Style distinctif** pour AIDA
 - ✅ **Horodatage** correct
 - ✅ **Statut de lecture** géré
 
