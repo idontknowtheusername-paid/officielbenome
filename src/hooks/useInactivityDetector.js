@@ -20,13 +20,22 @@ const useInactivityDetector = () => {
     if (!session) return;
 
     // Ne pas configurer le timer si "Se souvenir de moi" est activé
-    if (isRememberMe) return;
+    if (isRememberMe) {
+      console.log('🔒 Mode "Se souvenir" activé, pas de déconnexion automatique');
+      return;
+    }
 
-    // Ne pas configurer le timer si la déconnexion automatique est désactivée
-    if (!preferences?.security_settings?.auto_logout) return;
+    // Vérifier si la déconnexion automatique est activée dans les préférences
+    const autoLogoutEnabled = preferences?.security_settings?.auto_logout ?? true; // Par défaut true
+    if (!autoLogoutEnabled) {
+      console.log('🔒 Déconnexion automatique désactivée dans les préférences');
+      return;
+    }
 
-    const timeoutMinutes = preferences.security_settings.session_timeout || 30;
+    const timeoutMinutes = preferences?.security_settings?.session_timeout ?? 30; // Par défaut 30 min
     const timeoutMs = timeoutMinutes * 60 * 1000;
+
+    console.log(`⏰ Configuration du timer d'inactivité: ${timeoutMinutes} minutes`);
 
     inactivityTimerRef.current = setTimeout(() => {
       console.log('🕐 Inactivité détectée, déconnexion automatique');
@@ -42,6 +51,8 @@ const useInactivityDetector = () => {
   // Configurer les écouteurs d'événements
   useEffect(() => {
     if (!session) return;
+
+    console.log('🔍 Configuration des écouteurs d\'activité');
 
     // Événements qui indiquent une activité utilisateur
     const activityEvents = [
@@ -67,6 +78,7 @@ const useInactivityDetector = () => {
 
     // Nettoyer les écouteurs et le timer
     return () => {
+      console.log('🧹 Nettoyage des écouteurs d\'activité');
       activityEvents.forEach(event => {
         document.removeEventListener(event, handleActivity);
       });
@@ -80,6 +92,7 @@ const useInactivityDetector = () => {
   // Nettoyer le timer lors de la déconnexion
   useEffect(() => {
     if (!session && inactivityTimerRef.current) {
+      console.log('🚪 Déconnexion détectée, nettoyage du timer');
       clearTimeout(inactivityTimerRef.current);
     }
   }, [session]);
