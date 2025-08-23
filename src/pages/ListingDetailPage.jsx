@@ -407,7 +407,7 @@ const ListingDetailPage = () => {
             {/* Prix */}
             <div className="text-3xl font-bold text-primary mb-4">
               {formatPrice(listing.price)}
-              {/* Badge Premium si l'annonce est boostée */}
+              {/* Badge Premium si l'annonce est boostée - Visible pour tous */}
               {(listing.is_featured || listing.is_boosted || listing.is_premium) && (
                 <Badge className="ml-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-amber-600">
                   ⭐ Premium

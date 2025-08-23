@@ -55,13 +55,16 @@ const BoostListingPage = () => {
     setPurchaseResult(result);
     setShowPackageSelector(false);
     
-    toast({
-      title: 'Boost acheté avec succès !',
-      description: 'Votre boost sera activé après confirmation du paiement.',
-    });
-
-    // Rediriger vers la page de paiement ou afficher le succès
-    // Pour l'instant, on affiche juste le résultat
+    // Rediriger vers la page de paiement
+    if (result.boostId) {
+      navigate(`/paiement/${result.boostId}`);
+    } else {
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la création du boost. Veuillez réessayer.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleRenewBoost = async () => {

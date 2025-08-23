@@ -42,6 +42,7 @@ import CreateListingPage from '@/pages/CreateListingPage';
 import ListingDetailPage from '@/pages/ListingDetailPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import BoostListingPage from '@/pages/BoostListingPage';
+import PaymentProcessPage from '@/pages/PaymentProcessPage';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -146,6 +147,16 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <BoostListingPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* Paiement pour boost */}
+                  <Route 
+                    path="paiement/:boostId" 
+                    element={
+                      <ProtectedRoute>
+                        <PaymentProcessPage />
                       </ProtectedRoute>
                     } 
                   />
