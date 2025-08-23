@@ -53,8 +53,18 @@ export const paymentService = {
   // Initier un paiement avec Orange Money
   initiateOrangeMoneyPayment: async (paymentId, phoneNumber) => {
     try {
+      console.log('🚀 Initialisation paiement Orange Money via Kkiapay...');
+      console.log('📱 Téléphone:', phoneNumber);
+      console.log('💰 Payment ID:', paymentId);
+      
       const paymentData = await getPaymentData(paymentId);
       const userData = await getUserData(paymentData.user_id);
+      
+      console.log('📊 Données paiement:', {
+        amount: paymentData.amount,
+        email: userData.email,
+        phone: phoneNumber
+      });
       
       const kkiapayResult = await kkiapayService.initializePayment({
         amount: paymentData.amount,
@@ -69,6 +79,8 @@ export const paymentService = {
         package_name: paymentData.metadata?.package_name,
         user_id: paymentData.user_id
       });
+
+      console.log('✅ Résultat Kkiapay:', kkiapayResult);
 
       await updatePaymentStatus(paymentId, 'processing', {
         kkiapay_transaction_id: kkiapayResult.transactionId,
@@ -85,6 +97,7 @@ export const paymentService = {
         message: 'Paiement Orange Money initié avec succès via Kkiapay'
       };
     } catch (error) {
+      console.error('❌ Erreur Orange Money:', error);
       throw new Error(`Erreur Orange Money: ${error.message}`);
     }
   },

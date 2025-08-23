@@ -3,8 +3,8 @@
 // ============================================================================
 
 const KKIAPAY_CONFIG = {
-  publicKey: process.env.VITE_KKIAPAY_PUBLIC_KEY,
-  secretKey: process.env.VITE_KKIAPAY_SECRET_KEY,
+  publicKey: import.meta.env.VITE_KKIAPAY_PUBLIC_KEY,
+  secretKey: import.meta.env.VITE_KKIAPAY_SECRET_KEY,
   baseUrl: 'https://api.kkiapay.me',
   currency: 'XOF',
   defaultCountry: 'BJ', // Bénin comme pays principal
@@ -51,9 +51,18 @@ const SUPPORTED_PAYMENT_METHODS = {
   }
 };
 
+// Vérifier si Kkiapay est configuré
+const isKkiapayConfigured = () => {
+  return KKIAPAY_CONFIG.publicKey && KKIAPAY_CONFIG.secretKey;
+};
+
 export const kkiapayService = {
   // Initialiser un paiement
   initializePayment: async (paymentData) => {
+    if (!isKkiapayConfigured()) {
+      throw new Error('Kkiapay non configuré. Vérifiez VITE_KKIAPAY_PUBLIC_KEY et VITE_KKIAPAY_SECRET_KEY');
+    }
+    
     try {
       const {
         amount,
