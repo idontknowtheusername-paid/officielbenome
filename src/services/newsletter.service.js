@@ -166,6 +166,145 @@ export const newsletterService = {
       console.error('Erreur récupération stats newsletter:', error);
       throw error;
     }
+  },
+
+  // Envoyer une newsletter hebdomadaire automatique
+  sendWeeklyNewsletter: async (data = {}) => {
+    try {
+      const { data: subscribers, error } = await supabase
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      if (subscribers.length === 0) {
+        console.log('📧 Aucun abonné actif pour la newsletter hebdomadaire');
+        return { success: true, message: 'Aucun abonné à notifier' };
+      }
+
+      const result = await emailService.sendWeeklyNewsletter(subscribers, data);
+      console.log('✅ Newsletter hebdomadaire envoyée à', subscribers.length, 'abonnés');
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Erreur envoi newsletter hebdomadaire:', error);
+      throw error;
+    }
+  },
+
+  // Envoyer une newsletter mensuelle automatique
+  sendMonthlyNewsletter: async (data = {}) => {
+    try {
+      const { data: subscribers, error } = await supabase
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      if (subscribers.length === 0) {
+        console.log('📧 Aucun abonné actif pour la newsletter mensuelle');
+        return { success: true, message: 'Aucun abonné à notifier' };
+      }
+
+      const result = await emailService.sendMonthlyNewsletter(subscribers, data);
+      console.log('✅ Newsletter mensuelle envoyée à', subscribers.length, 'abonnés');
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Erreur envoi newsletter mensuelle:', error);
+      throw error;
+    }
+  },
+
+  // Envoyer une offre spéciale
+  sendSpecialOffer: async (data = {}) => {
+    try {
+      const { data: subscribers, error } = await supabase
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      if (subscribers.length === 0) {
+        console.log('📧 Aucun abonné actif pour l\'offre spéciale');
+        return { success: true, message: 'Aucun abonné à notifier' };
+      }
+
+      const result = await emailService.sendSpecialOffer(subscribers, data);
+      console.log('✅ Offre spéciale envoyée à', subscribers.length, 'abonnés');
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Erreur envoi offre spéciale:', error);
+      throw error;
+    }
+  },
+
+  // Envoyer un email de réengagement aux utilisateurs inactifs
+  sendReengagementCampaign: async (data = {}) => {
+    try {
+      const { data: inactiveSubscribers, error } = await supabase
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('is_active', true)
+        .lt('updated_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Inactifs depuis 30 jours
+
+      if (error) throw error;
+
+      if (inactiveSubscribers.length === 0) {
+        console.log('📧 Aucun utilisateur inactif pour la campagne de réengagement');
+        return { success: true, message: 'Aucun utilisateur inactif à notifier' };
+      }
+
+      let successCount = 0;
+      for (const subscriber of inactiveSubscribers) {
+        try {
+          await emailService.sendReengagementEmail(subscriber.email, data);
+          successCount++;
+        } catch (emailError) {
+          console.warn('⚠️ Erreur envoi email réengagement à', subscriber.email, ':', emailError);
+        }
+      }
+
+      console.log('✅ Campagne de réengagement envoyée à', successCount, 'utilisateurs inactifs');
+      
+      return {
+        success: true,
+        message: `Campagne de réengagement envoyée à ${successCount} utilisateurs`,
+        stats: { successCount, total: inactiveSubscribers.length }
+      };
+    } catch (error) {
+      console.error('❌ Erreur campagne de réengagement:', error);
+      throw error;
+    }
+  },
+
+  // Envoyer une notification de maintenance
+  sendMaintenanceNotification: async (data = {}) => {
+    try {
+      const { data: subscribers, error } = await supabase
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      if (subscribers.length === 0) {
+        console.log('📧 Aucun abonné actif pour la notification de maintenance');
+        return { success: true, message: 'Aucun abonné à notifier' };
+      }
+
+      const result = await emailService.sendMaintenanceNotification(subscribers, data);
+      console.log('✅ Notification de maintenance envoyée à', subscribers.length, 'abonnés');
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Erreur notification de maintenance:', error);
+      throw error;
+    }
   }
 };
 

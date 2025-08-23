@@ -51,6 +51,7 @@ import AdminAnalyticsPage from '@/pages/admin/analytics/AnalyticsPage';
 import AdminModerationPage from '@/pages/admin/moderation/ModerationPage';
 import AdminCategoriesPage from '@/pages/admin/categories/CategoriesPage';
 import AdminSettingsPage from '@/pages/admin/settings/SettingsPage';
+import NewsletterAdminPage from '@/pages/admin/NewsletterAdminPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 // Static Pages
@@ -197,6 +198,14 @@ function App() {
                       element={
                         <AdminRoute>
                           <AdminAnalyticsPage />
+                        </AdminRoute>
+                      } 
+                    />
+                    <Route 
+                      path="newsletter" 
+                      element={
+                        <AdminRoute>
+                          <NewsletterAdminPage />
                         </AdminRoute>
                       } 
                     />

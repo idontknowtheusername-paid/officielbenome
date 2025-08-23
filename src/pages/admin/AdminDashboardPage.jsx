@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Users, ListChecks, BarChart2, AlertTriangle, Settings, 
   ShieldCheck, ShoppingBag, Car, Briefcase, TrendingUp, 
-  MessageSquare as MessageSquareWarning, DollarSign, PackageCheck, Loader2, AlertCircle
+  MessageSquare as MessageSquareWarning, DollarSign, PackageCheck, Loader2, AlertCircle, Mail
 } from 'lucide-react';
 import { 
   listingService,
@@ -32,6 +32,7 @@ const AdminDashboardPage = () => {
   const [quickActions] = useState([
     { label: "Gérer les Annonces", icon: <ListChecks className="mr-3 h-5 w-5" />, color: "blue", link: "/admin/listings" },
     { label: "Gérer les Utilisateurs", icon: <Users className="mr-3 h-5 w-5" />, color: "green", link: "/admin/users" },
+    { label: "Newsletter", icon: <Mail className="mr-3 h-5 w-5" />, color: "orange", link: "/admin/newsletter" },
     { label: "Voir les Transactions", icon: <DollarSign className="mr-3 h-5 w-5" />, color: "purple", link: "/admin/transactions" },
     { label: "Statistiques Détaillées", icon: <BarChart2 className="mr-3 h-5 w-5" />, color: "teal", link: "/admin/analytics" },
   ]);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Heart, Phone, Mail, Calendar, Eye, Flag, MessageSquare } from 'lucide-react';
+import { ArrowLeft, MapPin, Heart, Phone, Mail, Calendar, Eye, Flag, MessageSquare, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -11,6 +11,7 @@ import { listingService, messageService } from '@/services';
 import ImageGallery from '@/components/ImageGallery';
 import ShareListing from '@/components/ShareListing';
 import CommentsSection from '@/components/CommentsSection';
+import BoostStatus from '@/components/BoostStatus';
 import { useListingImages } from '@/hooks';
 import ReportModal from '@/components/ReportModal';
 
@@ -406,6 +407,12 @@ const ListingDetailPage = () => {
             {/* Prix */}
             <div className="text-3xl font-bold text-primary mb-4">
               {formatPrice(listing.price)}
+              {/* Badge Premium si l'annonce est boostée */}
+              {(listing.is_featured || listing.is_boosted || listing.is_premium) && (
+                <Badge className="ml-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-amber-600">
+                  ⭐ Premium
+                </Badge>
+              )}
             </div>
 
             {/* Badges */}
@@ -415,6 +422,17 @@ const ListingDetailPage = () => {
               </Badge>
               {listing.status === 'approved' && (
                 <Badge variant="default" className="badge-approved">Approuvé</Badge>
+              )}
+              
+              {/* Boost Status - Visible uniquement pour le propriétaire de l'annonce */}
+              {user && listing.user_id === user.id && (
+                <BoostStatus 
+                  listingId={listing.id}
+                  listing={listing}
+                  size="default"
+                  showActions={true}
+                  className="ml-auto"
+                />
               )}
             </div>
           </div>

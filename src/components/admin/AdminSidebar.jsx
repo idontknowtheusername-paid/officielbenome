@@ -10,7 +10,8 @@ import {
   Shield,
   FileText,
   Bell,
-  Tag
+  Tag,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,7 @@ const navItems = [
   { name: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
   { name: 'Utilisateurs', href: '/admin/users', icon: Users },
   { name: 'Annonces', href: '/admin/listings', icon: ListChecks },
+  { name: 'Newsletter', href: '/admin/newsletter', icon: Mail },
   { name: 'Transactions', href: '/admin/transactions', icon: DollarSign },
   { name: 'Catégories', href: '/admin/categories', icon: Tag },
   { name: 'Rapports', href: '/admin/analytics', icon: BarChart2 },
