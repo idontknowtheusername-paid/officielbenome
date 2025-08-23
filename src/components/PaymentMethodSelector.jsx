@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   CreditCard, 
   Smartphone, 
-  Orange, 
+  Circle, 
   Wifi, 
   CheckCircle,
   Lock,
@@ -42,7 +42,7 @@ const PaymentMethodSelector = ({
     {
       id: 'orange_money',
       name: 'Orange Money',
-      icon: <Orange className="h-6 w-6 text-orange-500" />,
+      icon: <Circle className="h-6 w-6 text-orange-500" />,
       description: 'Paiement sécurisé via Orange Money',
       advantages: ['Paiement instantané', 'Sécurisé', 'Sans frais'],
       color: 'orange',

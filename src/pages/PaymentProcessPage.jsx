@@ -8,7 +8,7 @@ import {
   AlertCircle, 
   CreditCard,
   Smartphone,
-  Orange,
+  Circle,
   Wifi,
   Shield,
   Lock,
@@ -199,7 +199,7 @@ const PaymentProcessPage = () => {
   const getPaymentMethodIcon = (method) => {
     switch (method) {
       case 'orange_money':
-        return <Orange className="h-6 w-6 text-orange-500" />;
+        return <Circle className="h-6 w-6 text-orange-500" />;
       case 'mtn_mobile_money':
         return <Wifi className="h-6 w-6 text-yellow-500" />;
       case 'card':
