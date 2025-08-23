@@ -87,7 +87,7 @@ const ProgressBar = ({
         
         .progress-bar-fill {
           height: 100%;
-          background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+          background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 50%, #0ea5e9 100%);
           border-radius: 3px;
           transition: width 0.1s ease-out;
           position: relative;

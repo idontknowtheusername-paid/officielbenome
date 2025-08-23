@@ -1,4 +1,5 @@
 import React from 'react';
+import AIDAProfile from './AIDAProfile';
 
 const MessageBubble = ({ 
   message, 
@@ -18,10 +19,7 @@ const MessageBubble = ({
               <span>👤</span>
             </div>
           ) : (
-            <div className="assistant-avatar">
-              <div className="avatar-glow"></div>
-              <span>🤖</span>
-            </div>
+            <AIDAProfile size="default" showStatus={false} />
           )}
         </div>
       )}
@@ -59,37 +57,15 @@ const MessageBubble = ({
           width: 32px;
           height: 32px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 16px;
-          border: 2px solid #4c51bf;
+          border: 2px solid #2563eb;
         }
         
-        .assistant-avatar {
-          position: relative;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
-        }
-        
-        .avatar-glow {
-          position: absolute;
-          top: -2px;
-          left: -2px;
-          right: -2px;
-          bottom: -2px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          opacity: 0.3;
-          animation: pulse 2s infinite;
-        }
+
         
         .message-bubble {
           max-width: 75%;

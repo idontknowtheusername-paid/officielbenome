@@ -1,4 +1,5 @@
 import React from 'react';
+import AIDAProfile from '../AIDAProfile';
 
 const TypingIndicator = ({ 
   message = "AIDA réfléchit...", 
@@ -8,8 +9,7 @@ const TypingIndicator = ({
   return (
     <div className={`typing-indicator ${className}`}>
       <div className="typing-avatar">
-        <div className="avatar-pulse"></div>
-        <div className="avatar-icon">🤖</div>
+        <AIDAProfile size="default" showStatus={true} />
       </div>
       
       <div className="typing-content">
@@ -37,32 +37,7 @@ const TypingIndicator = ({
         }
         
         .typing-avatar {
-          position: relative;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
           flex-shrink: 0;
-        }
-        
-        .avatar-pulse {
-          position: absolute;
-          top: -2px;
-          left: -2px;
-          right: -2px;
-          bottom: -2px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          opacity: 0.3;
-          animation: pulse 2s infinite;
-        }
-        
-        .avatar-icon {
-          font-size: 16px;
-          z-index: 1;
         }
         
         .typing-content {
@@ -87,7 +62,7 @@ const TypingIndicator = ({
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
           animation: typing 1.4s infinite ease-in-out;
         }
         

@@ -69,9 +69,9 @@ const SuggestionChips = ({
         
         .suggestion-chip:hover {
           background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-          border-color: #667eea;
+          border-color: #3b82f6;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
         
         .suggestion-chip:active {
