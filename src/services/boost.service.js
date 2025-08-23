@@ -370,6 +370,50 @@ export const boostService = {
       console.error('Erreur lors de la récupération des statistiques:', error);
       throw new Error(`Erreur de récupération des statistiques: ${error.message}`);
     }
+  },
+
+  // Vérifier le statut d'un boost pour une annonce
+  getBoostStatus: async (listingId) => {
+    if (!isSupabaseConfigured) {
+      return {
+        hasActiveBoost: false,
+        currentBoost: null,
+        boostHistory: []
+      };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('listing_boosts')
+        .select(`
+          *,
+          boost_packages (
+            name,
+            description,
+            features
+          )
+        `)
+        .eq('listing_id', listingId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const activeBoost = data?.find(boost => boost.status === 'active');
+      const boostHistory = data || [];
+
+      return {
+        hasActiveBoost: !!activeBoost,
+        currentBoost: activeBoost,
+        boostHistory
+      };
+    } catch (error) {
+      console.error('Erreur lors de la vérification du statut de boost:', error);
+      return {
+        hasActiveBoost: false,
+        currentBoost: null,
+        boostHistory: []
+      };
+    }
   }
 };
 
