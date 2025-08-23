@@ -39,14 +39,14 @@ export const boostService = {
 
     try {
       // Vérifier que le package existe et est actif
-      const { data: package, error: packageError } = await supabase
+      const { data: packageData, error: packageError } = await supabase
         .from('boost_packages')
         .select('*')
         .eq('id', packageId)
         .eq('is_active', true)
         .single();
 
-      if (packageError || !package) {
+      if (packageError || !packageData) {
         throw new Error('Package de boost non trouvé ou inactif');
       }
 
@@ -73,10 +73,10 @@ export const boostService = {
           user_id: userId,
           package_id: packageId,
           status: 'pending',
-          price: package.price,
-          duration_days: package.duration_days,
-          features: package.features,
-          expires_at: new Date(Date.now() + package.duration_days * 24 * 60 * 60 * 1000).toISOString()
+          price: packageData.price,
+          duration_days: packageData.duration_days,
+          features: packageData.features,
+          expires_at: new Date(Date.now() + packageData.duration_days * 24 * 60 * 60 * 1000).toISOString()
         })
         .select()
         .single();
