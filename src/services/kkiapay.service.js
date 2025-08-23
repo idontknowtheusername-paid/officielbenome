@@ -7,39 +7,40 @@ const KKIAPAY_CONFIG = {
   secretKey: process.env.VITE_KKIAPAY_SECRET_KEY,
   baseUrl: 'https://api.kkiapay.me',
   currency: 'XOF',
-  countries: ['CI', 'BJ', 'SN', 'ML', 'BF', 'NE', 'TG', 'GH', 'NG'],
+  defaultCountry: 'BJ', // Bénin comme pays principal
+  countries: ['BJ', 'CI', 'SN', 'ML', 'BF', 'NE', 'TG', 'GH', 'NG'],
   redirectUrl: `${window.location.origin}/payment-callback`
 };
 
-// Méthodes de paiement supportées en Afrique de l'Ouest
+// Méthodes de paiement supportées en Afrique de l'Ouest (Bénin en premier)
 const SUPPORTED_PAYMENT_METHODS = {
   orange_money: {
     name: 'Orange Money',
     code: 'orange_money',
     icon: '🟠',
     processingTime: '2-3 minutes',
-    countries: ['CI', 'BJ', 'ML', 'BF', 'NE']
+    countries: ['BJ', 'CI', 'ML', 'BF', 'NE']
   },
   mtn_mobile_money: {
     name: 'MTN Mobile Money',
     code: 'mtn_mobile_money',
     icon: '🟡',
     processingTime: '2-3 minutes',
-    countries: ['CI', 'BJ', 'GH', 'NG']
+    countries: ['BJ', 'CI', 'GH', 'NG']
   },
   moov_money: {
     name: 'Moov Money',
     code: 'moov_money',
     icon: '🔵',
     processingTime: '2-3 minutes',
-    countries: ['CI', 'BJ', 'TG']
+    countries: ['BJ', 'CI', 'TG']
   },
   card: {
     name: 'Carte Bancaire',
     code: 'card',
     icon: '💳',
     processingTime: '30 secondes',
-    countries: ['CI', 'BJ', 'SN', 'ML', 'BF', 'NE', 'TG', 'GH', 'NG']
+    countries: ['BJ', 'CI', 'SN', 'ML', 'BF', 'NE', 'TG', 'GH', 'NG']
   },
   wave: {
     name: 'Wave',
@@ -59,7 +60,7 @@ export const kkiapayService = {
         email,
         phone,
         name,
-        country = 'CI',
+        country = KKIAPAY_CONFIG.defaultCountry, // Bénin par défaut
         payment_method,
         callback_url,
         customizations
@@ -221,7 +222,7 @@ export const kkiapayService = {
   },
 
   // Obtenir les méthodes de paiement disponibles par pays
-  getPaymentMethods: (country = 'CI') => {
+  getPaymentMethods: (country = KKIAPAY_CONFIG.defaultCountry) => {
     const methods = {};
     Object.keys(SUPPORTED_PAYMENT_METHODS).forEach(key => {
       const method = SUPPORTED_PAYMENT_METHODS[key];
@@ -233,10 +234,10 @@ export const kkiapayService = {
   },
 
   // Valider un numéro de téléphone par pays
-  validatePhoneNumber: (phone, country = 'CI') => {
+  validatePhoneNumber: (phone, country = KKIAPAY_CONFIG.defaultCountry) => {
     const phonePatterns = {
+      'BJ': /^(229|00229|\+229)?[0-9]{8}$/, // Bénin en premier
       'CI': /^(225|00225|\+225)?[0-9]{10}$/,
-      'BJ': /^(229|00229|\+229)?[0-9]{8}$/,
       'SN': /^(221|00221|\+221)?[0-9]{9}$/,
       'ML': /^(223|00223|\+223)?[0-9]{8}$/,
       'BF': /^(226|00226|\+226)?[0-9]{8}$/,
@@ -246,17 +247,17 @@ export const kkiapayService = {
       'NG': /^(234|00234|\+234)?[0-9]{10}$/
     };
 
-    const pattern = phonePatterns[country] || phonePatterns['CI'];
+    const pattern = phonePatterns[country] || phonePatterns[KKIAPAY_CONFIG.defaultCountry];
     return pattern.test(phone.replace(/\s/g, ''));
   },
 
   // Formater un numéro de téléphone par pays
-  formatPhoneNumber: (phone, country = 'CI') => {
+  formatPhoneNumber: (phone, country = KKIAPAY_CONFIG.defaultCountry) => {
     let formatted = phone.replace(/\D/g, '');
     
     const countryCodes = {
+      'BJ': '229', // Bénin en premier
       'CI': '225',
-      'BJ': '229',
       'SN': '221',
       'ML': '223',
       'BF': '226',
@@ -266,15 +267,15 @@ export const kkiapayService = {
       'NG': '234'
     };
 
-    const countryCode = countryCodes[country];
+    const countryCode = countryCodes[country] || countryCodes[KKIAPAY_CONFIG.defaultCountry];
     if (formatted.startsWith(countryCode)) {
       formatted = formatted.substring(countryCode.length);
     }
 
     // Formatage selon le pays
     const formats = {
+      'BJ': (num) => num.match(/.{1,2}/g)?.join(' ') || num, // Bénin en premier
       'CI': (num) => num.match(/.{1,2}/g)?.join(' ') || num,
-      'BJ': (num) => num.match(/.{1,2}/g)?.join(' ') || num,
       'SN': (num) => num.match(/.{1,3}/g)?.join(' ') || num,
       'ML': (num) => num.match(/.{1,2}/g)?.join(' ') || num,
       'BF': (num) => num.match(/.{1,2}/g)?.join(' ') || num,
@@ -284,7 +285,7 @@ export const kkiapayService = {
       'NG': (num) => num.match(/.{1,4}/g)?.join(' ') || num
     };
 
-    const format = formats[country] || formats['CI'];
+    const format = formats[country] || formats[KKIAPAY_CONFIG.defaultCountry];
     return format(formatted);
   },
 
@@ -311,17 +312,17 @@ export const kkiapayService = {
   },
 
   // Obtenir les informations de support par pays
-  getSupportInfo: (country = 'CI') => {
+  getSupportInfo: (country = KKIAPAY_CONFIG.defaultCountry) => {
     const supportInfo = {
+      'BJ': { // Bénin en premier
+        phone: '+229 21 30 03 03',
+        email: 'support@kkiapay.bj',
+        address: 'Cotonou, Bénin'
+      },
       'CI': {
         phone: '+225 27 22 49 24 24',
         email: 'support@kkiapay.ci',
         address: 'Abidjan, Côte d\'Ivoire'
-      },
-      'BJ': {
-        phone: '+229 21 30 03 03',
-        email: 'support@kkiapay.bj',
-        address: 'Cotonou, Bénin'
       },
       'SN': {
         phone: '+221 33 889 00 00',
@@ -330,7 +331,7 @@ export const kkiapayService = {
       }
     };
 
-    return supportInfo[country] || supportInfo['CI'];
+    return supportInfo[country] || supportInfo[KKIAPAY_CONFIG.defaultCountry];
   },
 
   // Vérifier la disponibilité du service

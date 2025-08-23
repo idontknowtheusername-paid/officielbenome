@@ -33,7 +33,7 @@ const PaymentMethodSelector = ({
   onPaymentMethodSelected, 
   onClose,
   packageName = 'Package Premium',
-  userCountry = 'CI'
+  userCountry = 'BJ' // Bénin par défaut
 }) => {
   const [selectedMethod, setSelectedMethod] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -160,15 +160,15 @@ const PaymentMethodSelector = ({
 
   const getCountryFlag = (country) => {
     const flags = {
-      'CI': '🇨🇮',
       'BJ': '🇧🇯',
+      'CI': '🇨🇮',
       'SN': '🇸🇳',
-      'ML': '🇲🇱 Mali',
-      'BF': '🇧🇫 Burkina Faso',
-      'NE': '🇳🇪 Niger',
-      'TG': '🇹🇬 Togo',
-      'GH': '🇬🇭 Ghana',
-      'NG': '🇳🇬 Nigeria'
+      'ML': '🇲🇱',
+      'BF': '🇧🇫',
+      'NE': '🇳🇪',
+      'TG': '🇹🇬',
+      'GH': '🇬🇭',
+      'NG': '🇳🇬'
     };
     return flags[country] || '🌍';
   };
@@ -199,8 +199,8 @@ const PaymentMethodSelector = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
                   <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+                  <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
                   <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
                   <SelectItem value="ML">🇲🇱 Mali</SelectItem>
                   <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
@@ -338,7 +338,7 @@ const PaymentMethodSelector = ({
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder={`Ex: ${selectedCountry === 'CI' ? '07 08 09 10 11' : 'Numéro local'}`}
+                          placeholder={`Ex: ${selectedCountry === 'BJ' ? '90 12 34 56' : selectedCountry === 'CI' ? '07 08 09 10 11' : 'Numéro local'}`}
                           value={phoneNumber}
                           onChange={(e) => handlePhoneNumberChange(e.target.value)}
                           className="mt-2 h-12 text-lg"

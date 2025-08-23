@@ -86,129 +86,77 @@ const PaymentProcessPage = () => {
     }
   };
 
-  const handlePaymentMethodSelected = async (methodData) => {
+  const handlePaymentMethodSelected = async (paymentData) => {
     try {
-      setPaymentData(methodData);
       setCurrentStep('payment-processing');
       setProgress(0);
-      setRetryCount(0);
       
-      // Animation de progression
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 500);
-
-      // Créer la transaction de paiement
+      // Créer le paiement
       const paymentResult = await paymentService.createPayment({
         userId: user.id,
-        amount: methodData.amount,
-        currency: methodData.currency,
-        paymentMethod: methodData.method,
-        paymentGateway: methodData.method,
-        boostId: boostId,
-        packageName: methodData.packageName,
-        listingId: boostData?.listing_id,
-        description: `Boost premium - ${methodData.packageName}`
+        amount: boostData.amount,
+        currency: 'XOF',
+        paymentMethod: paymentData.method,
+        boostId: boostData.id,
+        packageName: boostData.package_name,
+        listingId: boostData.listing_id,
+        description: `Boost ${boostData.package_name}`,
+        phoneNumber: paymentData.phoneNumber,
+        email: user.email,
+        country: paymentData.country,
+        cardData: paymentData.cardData
       });
 
-      if (paymentResult.success) {
-        setProgress(30);
-        
-        // Initier le paiement selon la méthode
-        let paymentInitiation;
-        
-        switch (methodData.method) {
-          case 'orange_money':
-            paymentInitiation = await paymentService.initiateOrangeMoneyPayment(
-              paymentResult.paymentId,
-              methodData.phoneNumber
-            );
-            break;
-          case 'mtn_mobile_money':
-            paymentInitiation = await paymentService.initiateMTNPayment(
-              paymentResult.paymentId,
-              methodData.phoneNumber
-            );
-            break;
-          case 'card':
-            paymentInitiation = await paymentService.initiateCardPayment(
-              paymentResult.paymentId,
-              methodData.cardData
-            );
-            break;
-          default:
-            throw new Error('Méthode de paiement non supportée');
-        }
-
-        if (paymentInitiation.success) {
-          setProgress(60);
-          // Simuler le processus de paiement
-          await simulatePaymentProcess(paymentResult.paymentId);
-        } else {
-          throw new Error('Erreur lors de l\'initiation du paiement');
-        }
-      } else {
-        throw new Error('Erreur lors de la création de la transaction');
+      if (!paymentResult.success) {
+        throw new Error('Erreur lors de la création du paiement');
       }
-    } catch (err) {
-      setError(err.message || 'Erreur lors du traitement du paiement');
+
+      setProgress(30);
+
+      // Initier le paiement selon la méthode
+      let paymentInitiation;
+      if (paymentData.method === 'orange_money') {
+        paymentInitiation = await paymentService.initiateOrangeMoneyPayment(
+          paymentResult.paymentId, 
+          paymentData.phoneNumber
+        );
+      } else if (paymentData.method === 'mtn_mobile_money') {
+        paymentInitiation = await paymentService.initiateMTNPayment(
+          paymentResult.paymentId, 
+          paymentData.phoneNumber
+        );
+      } else if (paymentData.method === 'moov_money') {
+        paymentInitiation = await paymentService.initiateMoovPayment(
+          paymentResult.paymentId, 
+          paymentData.phoneNumber
+        );
+      } else if (paymentData.method === 'card') {
+        paymentInitiation = await paymentService.initiateCardPayment(
+          paymentResult.paymentId, 
+          paymentData.cardData
+        );
+      }
+
+      setProgress(60);
+
+      if (!paymentInitiation.success) {
+        throw new Error('Erreur lors de l\'initialisation du paiement');
+      }
+
+      setProgress(80);
+
+      // Rediriger vers la page de paiement Kkiapay
+      if (paymentInitiation.paymentUrl) {
+        window.location.href = paymentInitiation.paymentUrl;
+      } else {
+        throw new Error('URL de paiement non disponible');
+      }
+
+      setProgress(100);
+    } catch (error) {
+      console.error('Erreur lors du traitement du paiement:', error);
+      setError(error.message);
       setCurrentStep('error');
-      toast({
-        title: 'Erreur de paiement',
-        description: err.message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const simulatePaymentProcess = async (paymentId) => {
-    setPaymentStatus('processing');
-    
-    // Simulation réaliste du processus
-    const steps = [
-      { progress: 70, message: 'Vérification de la transaction...' },
-      { progress: 80, message: 'Confirmation du paiement...' },
-      { progress: 90, message: 'Activation du boost...' },
-      { progress: 100, message: 'Finalisation...' }
-    ];
-
-    for (const step of steps) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setProgress(step.progress);
-    }
-    
-    // Simuler la confirmation du paiement
-    const confirmationResult = await paymentService.confirmPayment(paymentId, {
-      userId: user.id,
-      transactionId: `TXN-${Date.now()}`,
-      amount: paymentData.amount,
-      currency: paymentData.currency,
-      paymentMethod: paymentData.method
-    });
-
-    if (confirmationResult.success) {
-      // Activer le boost
-      const boostActivation = await boostService.activateBoost(paymentId, user.id);
-      
-      if (boostActivation.success) {
-        setPaymentStatus('completed');
-        setCurrentStep('success');
-        
-        toast({
-          title: '🎉 Paiement réussi !',
-          description: 'Votre boost a été activé avec succès.',
-        });
-      } else {
-        throw new Error('Erreur lors de l\'activation du boost');
-      }
-    } else {
-      throw new Error('Erreur lors de la confirmation du paiement');
     }
   };
 
