@@ -41,6 +41,7 @@ import PremiumPage from '@/pages/PremiumPage';
 import CreateListingPage from '@/pages/CreateListingPage';
 import ListingDetailPage from '@/pages/ListingDetailPage';
 import FavoritesPage from '@/pages/FavoritesPage';
+import BoostListingPage from '@/pages/BoostListingPage';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -138,6 +139,16 @@ function App() {
                   
                   {/* Détails d'annonce */}
                   <Route path="annonce/:id" element={<ListingDetailPage />} />
+                  
+                  {/* Booster une annonce */}
+                  <Route 
+                    path="booster-annonce/:id" 
+                    element={
+                      <ProtectedRoute>
+                        <BoostListingPage />
+                      </ProtectedRoute>
+                    } 
+                  />
                   
                   {/* Modifier une annonce */}
                   <Route 
