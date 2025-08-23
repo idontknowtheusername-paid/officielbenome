@@ -24,8 +24,8 @@ const BoostPackageSelector = ({ listingId, onPackageSelected, onClose }) => {
   const loadBoostPackages = async () => {
     try {
       setLoading(true);
-      const data = await boostService.getBoostPackages();
-      setPackages(data);
+      const response = await boostService.getBoostPackages();
+      setPackages(response.packages || []);
     } catch (err) {
       setError('Erreur lors du chargement des packages de boost');
       console.error('Erreur packages:', err);
