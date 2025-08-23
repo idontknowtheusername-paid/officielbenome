@@ -97,13 +97,13 @@ const Footer = () => {
     <footer className="bg-card text-card-foreground border-t border-border">
       <div className="container mx-auto px-4 md:px-6">
         {/* Section principale - Desktop */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8 pt-16 pb-8">
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 pt-8 pb-6">
           {/* Logo & Newsletter */}
           <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 pr-4">
-            <Link to="/" className="flex items-center space-x-2 mb-6">
+            <Link to="/" className="flex items-center space-x-2 mb-4">
               <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
             </Link>
-            <p className="text-muted-foreground text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-4">
               La plateforme N°1 en Afrique de l'Ouest pour l'immobilier, l'automobile, les services et bien plus.
             </p>
             <p className="font-semibold mb-2 text-sm">Restez informé de nos nouveautés :</p>
@@ -134,8 +134,8 @@ const Footer = () => {
           {/* Footer Links - Desktop */}
           {footerLinks.map((section) => (
             <div key={section.title}>
-              <p className="font-semibold mb-4">{section.title}</p>
-              <ul className="space-y-2">
+              <p className="font-semibold mb-3">{section.title}</p>
+              <ul className="space-y-1">
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <Link
@@ -155,16 +155,16 @@ const Footer = () => {
         {/* Section mobile optimisée */}
         <div className="md:hidden">
           {/* Logo et description - Mobile */}
-          <div className="pt-8 pb-6 text-center">
-            <Link to="/" className="flex items-center justify-center space-x-2 mb-4">
+          <div className="pt-6 pb-4 text-center">
+            <Link to="/" className="flex items-center justify-center space-x-2 mb-3">
               <span className="text-xl font-bold gradient-text">{personalData.siteName}</span>
             </Link>
-            <p className="text-muted-foreground text-sm mb-4">
+            <p className="text-muted-foreground text-sm mb-3">
               La plateforme N°1 en Afrique de l'Ouest
             </p>
             
             {/* Newsletter mobile */}
-            <div className="mb-6">
+            <div className="mb-4">
               <p className="font-semibold mb-2 text-sm">Newsletter :</p>
               <form onSubmit={handleNewsletterSubmit} className="flex items-center gap-2 max-w-xs mx-auto">
                 <Input 
@@ -192,12 +192,12 @@ const Footer = () => {
           </div>
 
           {/* Liens organisés horizontalement - Mobile */}
-          <div className="pb-6">
+          <div className="pb-4">
             <div className="grid grid-cols-3 gap-4">
               {footerLinks.map((section) => (
                 <div key={section.title} className="text-center">
-                  <p className="font-semibold mb-3 text-sm text-primary">{section.title}</p>
-                  <div className="space-y-2">
+                  <p className="font-semibold mb-2 text-sm text-primary">{section.title}</p>
+                  <div className="space-y-1">
                     {section.links.slice(0, 3).map((link) => (
                       <Link
                         key={link.name}
@@ -214,8 +214,8 @@ const Footer = () => {
           </div>
 
           {/* Réseaux sociaux - Mobile (plus visible) */}
-          <div className="pb-6">
-            <p className="text-center font-semibold mb-4 text-sm text-primary">Suivez-nous</p>
+          <div className="pb-4">
+            <p className="text-center font-semibold mb-3 text-sm text-primary">Suivez-nous</p>
             <div className="flex justify-center space-x-6">
               {socialLinks.length > 0 ? (
                 socialLinks.map((social) => (
@@ -237,8 +237,8 @@ const Footer = () => {
           </div>
 
           {/* Contact rapide - Mobile */}
-          <div className="pb-6">
-            <p className="text-center font-semibold mb-4 text-sm text-primary">Contact</p>
+          <div className="pb-4">
+            <p className="text-center font-semibold mb-3 text-sm text-primary">Contact</p>
             <div className="flex justify-center space-x-6 text-xs text-muted-foreground">
               <Link to="/contact" className="flex items-center space-x-1 hover:text-primary">
                 <Mail className="h-3 w-3" />
@@ -253,7 +253,7 @@ const Footer = () => {
         </div>
 
         {/* Section copyright et réseaux sociaux - Desktop */}
-        <div className="hidden md:block border-t border-border pt-8 pb-8">
+        <div className="hidden md:block border-t border-border pt-6 pb-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-xs text-muted-foreground mb-4 md:mb-0">
               &copy; {currentYear} {personalData.siteName}. Tous droits réservés.
@@ -280,7 +280,7 @@ const Footer = () => {
         </div>
 
         {/* Copyright mobile */}
-        <div className="md:hidden border-t border-border pt-6 pb-8 text-center">
+        <div className="md:hidden border-t border-border pt-4 pb-6 text-center">
           <p className="text-xs text-muted-foreground">
             &copy; {currentYear} {personalData.siteName}. Tous droits réservés.
           </p>
