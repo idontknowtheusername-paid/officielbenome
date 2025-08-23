@@ -14,12 +14,20 @@ import {
   Lock,
   Download,
   Receipt,
-  TrendingUp
+  TrendingUp,
+  Zap,
+  Star,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  X,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 import { boostService, paymentService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -39,6 +47,9 @@ const PaymentProcessPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
+  const [showSecurityInfo, setShowSecurityInfo] = useState(false);
 
   useEffect(() => {
     if (boostId) {
@@ -59,10 +70,17 @@ const PaymentProcessPage = () => {
         const boostInfo = await boostService.getBoostStatus(boostId);
         if (boostInfo.currentBoost) {
           setBoostData(boostInfo.currentBoost);
+        } else {
+          throw new Error('Boost non trouvé');
         }
       }
     } catch (err) {
       setError(err.message || 'Erreur lors du chargement des données du boost');
+      toast({
+        title: 'Erreur',
+        description: err.message,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -72,7 +90,20 @@ const PaymentProcessPage = () => {
     try {
       setPaymentData(methodData);
       setCurrentStep('payment-processing');
+      setProgress(0);
+      setRetryCount(0);
       
+      // Animation de progression
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 500);
+
       // Créer la transaction de paiement
       const paymentResult = await paymentService.createPayment({
         userId: user.id,
@@ -87,6 +118,8 @@ const PaymentProcessPage = () => {
       });
 
       if (paymentResult.success) {
+        setProgress(30);
+        
         // Initier le paiement selon la méthode
         let paymentInitiation;
         
@@ -114,6 +147,7 @@ const PaymentProcessPage = () => {
         }
 
         if (paymentInitiation.success) {
+          setProgress(60);
           // Simuler le processus de paiement
           await simulatePaymentProcess(paymentResult.paymentId);
         } else {
@@ -125,15 +159,29 @@ const PaymentProcessPage = () => {
     } catch (err) {
       setError(err.message || 'Erreur lors du traitement du paiement');
       setCurrentStep('error');
+      toast({
+        title: 'Erreur de paiement',
+        description: err.message,
+        variant: 'destructive',
+      });
     }
   };
 
   const simulatePaymentProcess = async (paymentId) => {
-    // Simulation du processus de paiement
     setPaymentStatus('processing');
     
-    // Attendre quelques secondes pour simuler le traitement
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Simulation réaliste du processus
+    const steps = [
+      { progress: 70, message: 'Vérification de la transaction...' },
+      { progress: 80, message: 'Confirmation du paiement...' },
+      { progress: 90, message: 'Activation du boost...' },
+      { progress: 100, message: 'Finalisation...' }
+    ];
+
+    for (const step of steps) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setProgress(step.progress);
+    }
     
     // Simuler la confirmation du paiement
     const confirmationResult = await paymentService.confirmPayment(paymentId, {
@@ -153,7 +201,7 @@ const PaymentProcessPage = () => {
         setCurrentStep('success');
         
         toast({
-          title: 'Paiement réussi !',
+          title: '🎉 Paiement réussi !',
           description: 'Votre boost a été activé avec succès.',
         });
       } else {
@@ -164,11 +212,18 @@ const PaymentProcessPage = () => {
     }
   };
 
+  const handleRetry = async () => {
+    setRetryCount(prev => prev + 1);
+    setError(null);
+    setCurrentStep('method-selection');
+  };
+
   const handleBackToMethodSelection = () => {
     setCurrentStep('method-selection');
     setPaymentData(null);
     setPaymentStatus('pending');
     setError(null);
+    setProgress(0);
   };
 
   const handleViewReceipt = () => {
@@ -186,6 +241,11 @@ const PaymentProcessPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        toast({
+          title: 'Reçu téléchargé',
+          description: 'Le reçu a été téléchargé avec succès.',
+        });
       }
     } catch (err) {
       toast({
@@ -222,49 +282,81 @@ const PaymentProcessPage = () => {
     }
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return 'text-green-600';
+      case 'processing': return 'text-blue-600';
+      case 'error': return 'text-red-600';
+      default: return 'text-gray-600';
+    }
+  };
+
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-20">
-          <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold mb-4">Connexion requise</h1>
-          <p className="text-muted-foreground mb-6">
-            Vous devez être connecté pour effectuer un paiement.
-          </p>
-          <Button onClick={() => navigate('/connexion')}>
-            Se connecter
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="p-8 text-center">
+            <div className="text-6xl mb-4">🔒</div>
+            <h1 className="text-2xl font-bold mb-4">Connexion requise</h1>
+            <p className="text-muted-foreground mb-6">
+              Vous devez être connecté pour effectuer un paiement.
+            </p>
+            <Button onClick={() => navigate('/connexion')} className="w-full">
+              Se connecter
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <h2 className="text-lg font-semibold mb-2">Chargement...</h2>
+            <p className="text-muted-foreground">Préparation de votre paiement</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (error && currentStep === 'error') {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-20">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold mb-4">Erreur de paiement</h1>
-          <p className="text-muted-foreground mb-6">{error}</p>
-          <div className="flex gap-3 justify-center">
-            <Button onClick={handleBackToMethodSelection} variant="outline">
-              Réessayer
-            </Button>
-            <Button onClick={() => navigate(-1)}>
-              Retour
-            </Button>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="p-8 text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h1 className="text-2xl font-bold mb-4">Erreur de paiement</h1>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            
+            {retryCount < 3 && (
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  Tentative {retryCount + 1} sur 3
+                </p>
+              </div>
+            )}
+            
+            <div className="space-y-3">
+              {retryCount < 3 && (
+                <Button onClick={handleRetry} className="w-full">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réessayer
+                </Button>
+              )}
+              <Button onClick={handleBackToMethodSelection} variant="outline" className="w-full">
+                Changer de méthode
+              </Button>
+              <Button onClick={() => navigate(-1)} variant="ghost" className="w-full">
+                Retour
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -281,54 +373,66 @@ const PaymentProcessPage = () => {
           <Button
             onClick={() => navigate(-1)}
             variant="ghost"
-            className="mb-4"
+            className="mb-4 hover:bg-white/50"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour
           </Button>
           
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            💳 Processus de Paiement
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Finalisez votre achat de boost premium en toute sécurité
-          </p>
+          <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              💳 Paiement Sécurisé
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Finalisez votre achat de boost premium en toute sécurité
+            </p>
+          </div>
         </motion.div>
 
         {/* Étapes du processus */}
         <div className="mb-8">
-          <div className="flex items-center justify-center space-x-4">
+          <div className="flex items-center justify-center space-x-4 mb-4">
             <div className={`flex items-center ${currentStep === 'method-selection' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                currentStep === 'method-selection' ? 'border-primary bg-primary text-white' : 'border-muted-foreground'
+              <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                currentStep === 'method-selection' ? 'border-primary bg-primary text-white shadow-lg' : 'border-muted-foreground'
               }`}>
                 1
               </div>
-              <span className="ml-2 text-sm font-medium">Méthode de paiement</span>
+              <span className="ml-3 text-sm font-medium hidden sm:block">Méthode de paiement</span>
             </div>
             
             <div className="w-8 h-1 bg-muted-foreground/30"></div>
             
             <div className={`flex items-center ${currentStep === 'payment-processing' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                currentStep === 'payment-processing' ? 'border-primary bg-primary text-white' : 'border-muted-foreground'
+              <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                currentStep === 'payment-processing' ? 'border-primary bg-primary text-white shadow-lg' : 'border-muted-foreground'
               }`}>
                 2
               </div>
-              <span className="ml-2 text-sm font-medium">Traitement</span>
+              <span className="ml-3 text-sm font-medium hidden sm:block">Traitement</span>
             </div>
             
             <div className="w-8 h-1 bg-muted-foreground/30"></div>
             
             <div className={`flex items-center ${currentStep === 'success' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                currentStep === 'success' ? 'border-primary bg-primary text-white' : 'border-muted-foreground'
+              <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                currentStep === 'success' ? 'border-primary bg-primary text-white shadow-lg' : 'border-muted-foreground'
               }`}>
                 3
               </div>
-              <span className="ml-2 text-sm font-medium">Confirmation</span>
+              <span className="ml-3 text-sm font-medium hidden sm:block">Confirmation</span>
             </div>
           </div>
+          
+          {/* Barre de progression */}
+          {currentStep === 'payment-processing' && (
+            <div className="max-w-md mx-auto">
+              <Progress value={progress} className="h-2" />
+              <p className="text-center text-sm text-muted-foreground mt-2">
+                {progress}% terminé
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Contenu des étapes */}
@@ -357,13 +461,17 @@ const PaymentProcessPage = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="max-w-md mx-auto text-center"
+              className="max-w-md mx-auto"
             >
-              <Card>
-                <CardContent className="p-8">
-                  <div className="mb-6">
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-8 text-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="mb-6"
+                  >
                     {getPaymentMethodIcon(paymentData?.method)}
-                  </div>
+                  </motion.div>
                   
                   <h3 className="text-xl font-semibold mb-2">
                     Traitement en cours...
@@ -373,23 +481,35 @@ const PaymentProcessPage = () => {
                     Votre paiement via {getPaymentMethodName(paymentData?.method)} est en cours de traitement.
                   </p>
                   
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>• Vérification de la transaction</p>
-                    <p>• Confirmation du paiement</p>
-                    <p>• Activation de votre boost</p>
+                  <div className="space-y-3 text-sm text-muted-foreground mb-6">
+                    <div className="flex items-center justify-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>Vérification de la transaction</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>Confirmation du paiement</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <Clock className="h-4 w-4 text-blue-500" />
+                      <span>Activation de votre boost</span>
+                    </div>
                   </div>
                   
-                  <div className="mt-6">
-                    <Button
-                      onClick={handleBackToMethodSelection}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Annuler
-                    </Button>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+                    <div className="flex items-center gap-2 text-blue-800">
+                      <Info className="h-4 w-4" />
+                      <span className="text-sm">Ne fermez pas cette page pendant le traitement</span>
+                    </div>
                   </div>
+                  
+                  <Button
+                    onClick={handleBackToMethodSelection}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Annuler
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>
@@ -401,11 +521,18 @@ const PaymentProcessPage = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="max-w-md mx-auto text-center"
+              className="max-w-md mx-auto"
             >
-              <Card className="border-green-200 bg-green-50/50">
-                <CardContent className="p-8">
-                  <div className="text-6xl mb-4">🎉</div>
+              <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-xl">
+                <CardContent className="p-8 text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    className="text-6xl mb-4"
+                  >
+                    🎉
+                  </motion.div>
                   
                   <h3 className="text-2xl font-bold text-green-800 mb-2">
                     Paiement réussi !
@@ -415,11 +542,20 @@ const PaymentProcessPage = () => {
                     Votre boost premium a été activé avec succès.
                   </p>
                   
-                  <div className="bg-white p-4 rounded-lg border border-green-200 mb-6">
-                    <div className="text-sm text-green-800 space-y-1">
-                      <p><strong>Package :</strong> {boostData?.boost_packages?.name}</p>
-                      <p><strong>Montant :</strong> {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(boostData?.boost_packages?.price || 0)}</p>
-                      <p><strong>Méthode :</strong> {getPaymentMethodName(paymentData?.method)}</p>
+                  <div className="bg-white p-4 rounded-lg border border-green-200 mb-6 shadow-sm">
+                    <div className="text-sm text-green-800 space-y-2">
+                      <div className="flex justify-between">
+                        <span>Package :</span>
+                        <span className="font-semibold">{boostData?.boost_packages?.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Montant :</span>
+                        <span className="font-bold">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(boostData?.boost_packages?.price || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Méthode :</span>
+                        <span>{getPaymentMethodName(paymentData?.method)}</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -427,7 +563,7 @@ const PaymentProcessPage = () => {
                     <Button
                       onClick={handleViewReceipt}
                       variant="outline"
-                      className="w-full"
+                      className="w-full hover:bg-green-50"
                     >
                       <Receipt className="h-4 w-4 mr-2" />
                       Voir le reçu
@@ -435,7 +571,7 @@ const PaymentProcessPage = () => {
                     
                     <Button
                       onClick={() => navigate(`/booster-annonce/${boostData?.listing_id}`)}
-                      className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+                      className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg"
                     >
                       <TrendingUp className="h-4 w-4 mr-2" />
                       Voir mon boost
@@ -444,7 +580,7 @@ const PaymentProcessPage = () => {
                     <Button
                       onClick={() => navigate('/mes-boosts')}
                       variant="ghost"
-                      className="w-full"
+                      className="w-full hover:bg-green-50"
                     >
                       Mes boosts
                     </Button>
@@ -454,6 +590,26 @@ const PaymentProcessPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Informations de sécurité */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8 text-center"
+        >
+          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-white/50 px-4 py-2 rounded-full border">
+            <Shield className="h-4 w-4" />
+            <span>Paiement 100% sécurisé SSL</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSecurityInfo(true)}
+              className="h-6 w-6 p-0"
+            >
+              <Info className="h-3 w-3" />
+            </Button>
+          </div>
+        </motion.div>
 
         {/* Modal du reçu */}
         <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
@@ -508,6 +664,53 @@ const PaymentProcessPage = () => {
                   Fermer
                 </Button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal d'informations de sécurité */}
+        <Dialog open={showSecurityInfo} onOpenChange={setShowSecurityInfo}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Sécurité du paiement
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Lock className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Chiffrement SSL</h4>
+                    <p className="text-sm text-muted-foreground">Vos données sont protégées par un chiffrement de niveau bancaire</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Conformité PCI DSS</h4>
+                    <p className="text-sm text-muted-foreground">Nos partenaires de paiement respectent les standards internationaux</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <Eye className="h-5 w-5 text-purple-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Aucun stockage</h4>
+                    <p className="text-sm text-muted-foreground">Nous ne stockons jamais vos informations de paiement</p>
+                  </div>
+                </div>
+              </div>
+              
+              <Button
+                onClick={() => setShowSecurityInfo(false)}
+                className="w-full"
+              >
+                Compris
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
