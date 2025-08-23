@@ -60,27 +60,8 @@ const ChatWidget = ({ pageContext = {} }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const send = async () => {
-    const msg = input.trim();
-    if (!msg || loading) return;
-    
-    // Creer une nouvelle conversation si c'est le premier message
-    if (history.length === 0) {
-      const newConversationId = Date.now().toString();
-      setCurrentConversationId(newConversationId);
-      setConversations(prev => [...prev, {
-        id: newConversationId,
-        title: msg.length > 30 ? msg.substring(0, 30) + '...' : msg,
-        date: new Date().toLocaleDateString(),
-        messages: []
-      }]);
-    }
-    
-    const newHistory = [...history, { role: 'user', content: msg }];
-    setHistory(newHistory);
-    setInput('');
-    setLoading(true);
-    setLoadingStage('thinking');
+  // Fonction pour traiter un message (extrait de send pour réutilisation)
+  const processMessage = async (msg, newHistory) => {
     try {
       // Verifier si c'est vraiment une recherche (pas juste un salut)
       const isGreeting = /^(yo|salut|bonjour|hello|hi|hey|ciao|hola|bonsoir|bonne\s+nuit)$/i.test(msg.trim());
@@ -171,6 +152,32 @@ const ChatWidget = ({ pageContext = {} }) => {
       setLoading(false);
       setLoadingStage('');
     }
+  };
+
+        const send = async () => {
+    const msg = input.trim();
+    if (!msg || loading) return;
+    
+    // Creer une nouvelle conversation si c'est le premier message
+    if (history.length === 0) {
+      const newConversationId = Date.now().toString();
+      setCurrentConversationId(newConversationId);
+      setConversations(prev => [...prev, {
+        id: newConversationId,
+        title: msg.length > 30 ? msg.substring(0, 30) + '...' : msg,
+        date: new Date().toLocaleDateString(),
+        messages: []
+      }]);
+    }
+    
+    const newHistory = [...history, { role: 'user', content: msg }];
+    setHistory(newHistory);
+    setInput('');
+    setLoading(true);
+    setLoadingStage('thinking');
+    
+    // Utiliser la fonction processMessage
+    await processMessage(msg, newHistory);
   };
 
   const newChat = () => {
@@ -643,7 +650,34 @@ const ChatWidget = ({ pageContext = {} }) => {
                     } else if (text === 'Se connecter') {
                       window.location.href = '/connexion';
                     } else {
+                      // Déclencher directement l'envoi du message
                       setInput(text);
+                      // Simuler l'envoi après un court délai pour que l'input se mette à jour
+                      setTimeout(() => {
+                        const msg = text.trim();
+                        if (msg && !loading) {
+                          // Créer une nouvelle conversation si c'est le premier message
+                          if (history.length === 0) {
+                            const newConversationId = Date.now().toString();
+                            setCurrentConversationId(newConversationId);
+                            setConversations(prev => [...prev, {
+                              id: newConversationId,
+                              title: msg.length > 30 ? msg.substring(0, 30) + '...' : msg,
+                              date: new Date().toLocaleDateString(),
+                              messages: []
+                            }]);
+                          }
+                          
+                          const newHistory = [...history, { role: 'user', content: msg }];
+                          setHistory(newHistory);
+                          setInput('');
+                          setLoading(true);
+                          setLoadingStage('thinking');
+                          
+                          // Traiter la suggestion comme un message normal
+                          processMessage(msg, newHistory);
+                        }
+                      }, 100);
                     }
                   }}
                 />
