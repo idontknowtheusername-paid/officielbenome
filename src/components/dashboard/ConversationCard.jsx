@@ -78,7 +78,7 @@ const ConversationCard = ({
             {/* Message Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-2">
-                <h3 className="font-semibold text-blue-800">Assistant MaxiMarket</h3>
+                <h3 className="font-semibold text-blue-800">AIDA</h3>
                 <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
                   Système
                 </Badge>

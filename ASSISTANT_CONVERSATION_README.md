@@ -227,7 +227,7 @@ const isAssistantMessage =
 
 ## 🎉 **CONCLUSION**
 
-**La conversation de l'assistant MaxiMarket est maintenant complètement fonctionnelle !** 
+**La conversation d'AIDA est maintenant complètement fonctionnelle !** 
 
 ### **Ce qui a été accompli** ✅
 - ✅ **Vraie conversation** au lieu d'un simple message

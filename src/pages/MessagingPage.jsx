@@ -991,7 +991,7 @@ const ConversationItem = ({
           <div className="flex items-center justify-between mb-1">
             <h4 className="font-medium text-sm truncate">
               {isAssistantConversation 
-                ? 'Assistant MaxiMarket' 
+                ? 'AIDA' 
                 : (otherParticipant ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur')
               }
             </h4>
@@ -1160,7 +1160,7 @@ const MessageBubble = ({
           {!isOwn && (
             <span className={`text-xs font-medium ${isAssistantMessage ? 'text-blue-600' : ''}`}>
               {isAssistantMessage 
-                ? '🤖 Assistant MaxiMarket' 
+                ? '🤖 AIDA' 
                 : (messageSender ? `${messageSender.first_name || ''} ${messageSender.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur')
               }
             </span>

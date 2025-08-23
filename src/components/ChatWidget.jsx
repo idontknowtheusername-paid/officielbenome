@@ -545,7 +545,7 @@ const ChatWidget = ({ pageContext = {} }) => {
                   >
                     {/* En-tête du menu */}
                     <div style={{ borderBottom: '1px solid #1f2937', paddingBottom: 12, marginBottom: 12 }}>
-                      <div style={{ fontWeight: 700, color: '#e5e7eb', fontSize: 14, marginBottom: 4 }}>Assistant MaxiMarket</div>
+                      <div style={{ fontWeight: 700, color: '#e5e7eb', fontSize: 14, marginBottom: 4 }}>AIDA</div>
                       <div style={{ fontSize: 12, color: '#9ca3af' }}>
                         {getConversationStats().totalMessages} messages • {getConversationStats().userMessages} recherches
                       </div>
@@ -680,7 +680,7 @@ const ChatWidget = ({ pageContext = {} }) => {
                 )}
               </div>
               <div>
-                <div style={{ fontWeight: 700, color: '#e5e7eb', fontSize: 15 }}>Assistant MaxiMarket</div>
+                <div style={{ fontWeight: 700, color: '#e5e7eb', fontSize: 15 }}>AIDA</div>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -698,7 +698,6 @@ const ChatWidget = ({ pageContext = {} }) => {
           <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 14, paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
             {history.length === 0 && !showMenu && (
               <div style={{ fontSize: 14, color: '#9ca3af' }}>
-                Bonjour ! Je suis AIDA, votre assistant intelligent MaxiMarket. Indiquez ce que vous recherchez (catégorie, budget, ville) ou posez votre question.
                 <SuggestionChips 
                   suggestions={[
                     ...getSmartSuggestions(),

@@ -27,7 +27,7 @@ const MessageCard = ({
   onStar,
   showActions = true 
 }) => {
-  // Vérifier si c'est un message système (assistant MaxiMarket)
+      // Vérifier si c'est un message système (AIDA)
   const isSystemMessage = message.sender_id === '00000000-0000-0000-0000-000000000000' || 
                          message.message_type === 'system';
 
@@ -47,7 +47,7 @@ const MessageCard = ({
             {/* Message Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-2">
-                <h3 className="font-semibold text-primary">Assistant MaxiMarket</h3>
+                <h3 className="font-semibold text-primary">AIDA</h3>
                 <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">
                   Système
                 </Badge>
@@ -260,7 +260,7 @@ const getSenderName = (message) => {
   // Si c'est un message système (assistant)
   if (message.sender_id === '00000000-0000-0000-0000-000000000000' || 
       message.message_type === 'system') {
-    return 'Assistant MaxiMarket';
+    return 'AIDA';
   }
   
   // Si on a les données de l'expéditeur avec first_name et last_name
