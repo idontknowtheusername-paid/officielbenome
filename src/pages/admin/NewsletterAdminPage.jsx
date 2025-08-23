@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { newsletterService } from '@/services/newsletter.service.js';
 import { emailService } from '@/services/email.service.js';
 import { campaignService } from '@/services/campaign.service.js';
