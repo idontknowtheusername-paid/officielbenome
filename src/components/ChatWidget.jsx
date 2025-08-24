@@ -436,7 +436,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             <path d="M21 12c0 4.418-4.03 8-9 8-1.032 0-2.021-.152-2.94-.432L3 21l1.49-4.47C3.55 15.19 3 13.65 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" stroke="white" strokeWidth="1.2"/>
             <path d="M7.5 11h9M7.5 14h5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
           </svg>
-          Demander à AIDA
+          AIDA
         </button>
       )}
 

@@ -11,7 +11,7 @@ Le système de contact et de messagerie de MaxiMarket est maintenant **complète
 - ✅ **Navigation** : Clic sur la carte → Redirection vers la page de détail
 - ✅ **Pas de bouton de contact** : Conforme à votre demande
 
-### **2. Depuis la Page de Détail (ListingDetailPage)**
+### **2. Depuis la Page de Détail ,(ListingDetailPage)**
 - ✅ **Carte de contact** : Section dédiée "Contacter le vendeur"
 - ✅ **Options multiples** : WhatsApp, Appel, Message interne
 - ✅ **Bouton Message** : Création automatique de conversation
