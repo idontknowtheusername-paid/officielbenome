@@ -407,15 +407,36 @@ const ChatWidget = ({ pageContext = {} }) => {
             bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
             right: 'calc(16px + env(safe-area-inset-right, 0px))',
             zIndex: 9999,
-            width: 56, height: 56, borderRadius: 14,
-            background: 'linear-gradient(135deg,#111827,#0b0f14)', color: 'white', border: '1px solid #1f2937',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.55)', display: 'grid', placeItems: 'center'
+            width: 'auto',
+            height: 56,
+            padding: '0 16px',
+            borderRadius: 28,
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)';
+            e.target.style.boxShadow = '0 12px 35px rgba(59, 130, 246, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
+            e.target.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.3)';
           }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 12c0 4.418-4.03 8-9 8-1.032 0-2.021-.152-2.94-.432L3 21l1.49-4.47C3.55 15.19 3 13.65 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" stroke="#e5e7eb" strokeWidth="1.2"/>
-            <path d="M7.5 11h9M7.5 14h5" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12c0 4.418-4.03 8-9 8-1.032 0-2.021-.152-2.94-.432L3 21l1.49-4.47C3.55 15.19 3 13.65 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" stroke="white" strokeWidth="1.2"/>
+            <path d="M7.5 11h9M7.5 14h5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
           </svg>
+          Demander à AIDA
         </button>
       )}
 
