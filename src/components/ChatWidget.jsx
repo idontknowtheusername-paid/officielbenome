@@ -408,8 +408,8 @@ const ChatWidget = ({ pageContext = {} }) => {
             right: 'calc(16px + env(safe-area-inset-right, 0px))',
             zIndex: 9999,
             width: 'auto',
-            height: 56,
-            padding: '0 16px',
+            height: 48,
+            padding: '0 14px',
             borderRadius: 28,
             background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
             color: 'white',
@@ -418,7 +418,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: '600',
             cursor: 'pointer',
             transition: 'all 0.2s ease'
@@ -432,11 +432,8 @@ const ChatWidget = ({ pageContext = {} }) => {
             e.target.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.3)';
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 12c0 4.418-4.03 8-9 8-1.032 0-2.021-.152-2.94-.432L3 21l1.49-4.47C3.55 15.19 3 13.65 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" stroke="white" strokeWidth="1.2"/>
-            <path d="M7.5 11h9M7.5 14h5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
-          </svg>
-          AIDA
+          <span style={{ fontSize: '18px', lineHeight: 1 }}>⚡</span>
+          Demander à AIDA
         </button>
       )}
 
