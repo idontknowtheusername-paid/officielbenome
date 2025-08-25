@@ -3,13 +3,17 @@
 // ============================================================================
 
 const KKIAPAY_CONFIG = {
-  publicKey: import.meta.env.VITE_KKIAPAY_PUBLIC_KEY,
-  secretKey: import.meta.env.VITE_KKIAPAY_SECRET_KEY,
+  publicKey: import.meta.env.VITE_KKIAPAY_PUBLIC_KEY || '0cf13550819511f09ce691e5b43c1d2c',
+  secretKey: import.meta.env.VITE_KKIAPAY_SECRET_KEY || 'tsk_0cf15c60819511f09ce691e5b43c1d2c',
   baseUrl: 'https://api.kkiapay.me',
   currency: 'XOF',
   defaultCountry: 'BJ', // Bénin comme pays principal
   countries: ['BJ', 'CI', 'SN', 'ML', 'BF', 'NE', 'TG', 'GH', 'NG'],
-  redirectUrl: `${window.location.origin}/payment-callback`
+  redirectUrl: `${window.location.origin}/payment-callback`,
+  // URLs de callback pour sandbox
+  successUrl: 'https://maxiimarket.com/payment-callback',
+  cancelUrl: 'https://maxiimarket.com/payment-callback?status=cancelled',
+  webhookUrl: 'https://maxiimarket.com/api/payment/webhook'
 };
 
 // Méthodes de paiement supportées en Afrique de l'Ouest (Bénin en premier)
