@@ -81,7 +81,7 @@ Ce guide vous explique comment configurer Google Translate API pour activer la t
    # Créer un dossier pour les clés
    mkdir -p keys
    # Placer le fichier JSON téléchargé
-   mv ~/Downloads/maximarket-translate-service-*.json keys/
+   mv ~/Downloads/maximarket-translate-service-*.json keys/.
    ```
 
 2. **Configurer les variables d'environnement**

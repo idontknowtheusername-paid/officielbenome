@@ -18,3 +18,5 @@ SELECT
 FROM boost_packages 
 WHERE is_active = true 
 ORDER BY price ASC;
+
+

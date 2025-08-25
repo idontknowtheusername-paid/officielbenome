@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
@@ -28,16 +28,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
   const handleMouseEnter = useCallback(() => setIsAutoPlaying(false), []);
   const handleMouseLeave = useCallback(() => setIsAutoPlaying(true), []);
 
-  // Navigation manuelle
-  const goToNext = useCallback(() => {
-    console.log('🔄 goToNext appelé, currentIndex:', currentIndex, 'listings.length:', listings.length);
-    setCurrentIndex((prev) => (prev + 1) % listings.length);
-  }, [listings.length, currentIndex]);
 
-  const goToPrevious = useCallback(() => {
-    console.log('🔄 goToPrevious appelé, currentIndex:', currentIndex, 'listings.length:', listings.length);
-    setCurrentIndex((prev) => (prev - 1 + listings.length) % listings.length);
-  }, [listings.length, currentIndex]);
 
   const goToSlide = useCallback((index) => {
     setCurrentIndex(index);
@@ -197,46 +188,22 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
         </div>
       </div>
 
-      {/* Navigation - En dehors du conteneur principal */}
+      {/* Indicateurs discrets - Seulement les points de navigation */}
       {listings.length > 1 && (
-        <>
-          {/* Boutons précédent/suivant */}
-          <div className="absolute inset-0 pointer-events-none z-50">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-50">
+          {listings.map((_, index) => (
             <button
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white border-0 rounded-full w-12 h-12 flex items-center justify-center pointer-events-auto transition-all duration-200 hover:scale-110"
-              onClick={goToPrevious}
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white border-0 rounded-full w-12 h-12 flex items-center justify-center pointer-events-auto transition-all duration-200 hover:scale-110"
-              onClick={goToNext}
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* Indicateurs */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-50">
-            {listings.map((_, index) => (
-              <button
-                key={index}
-                className={cn(
-                  "w-3 h-3 rounded-full transition-all duration-300 cursor-pointer",
-                  index === currentIndex 
-                    ? "bg-white scale-125" 
-                    : "bg-white/50 hover:bg-white/75"
-                )}
-                onClick={() => goToSlide(index)}
-              />
-            ))}
-          </div>
-
-          {/* Compteur */}
-          <div className="absolute top-8 right-8 text-white/70 text-sm z-50">
-            {currentIndex + 1} / {listings.length}
-          </div>
-        </>
+              key={index}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all duration-300 cursor-pointer",
+                index === currentIndex 
+                  ? "bg-white scale-125" 
+                  : "bg-white/30 hover:bg-white/50"
+              )}
+              onClick={() => goToSlide(index)}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
