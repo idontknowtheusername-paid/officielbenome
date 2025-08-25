@@ -1,5 +1,7 @@
 import React from 'react';
 import PaymentSimulator from '@/components/PaymentSimulator';
+import PaystackTest from '@/components/PaystackTest';
+import KkiapayCorrected from '@/components/KkiapayCorrected';
 
 const KkiapayTestPage = () => {
   return (
@@ -7,14 +9,18 @@ const KkiapayTestPage = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">
-            🧪 Simulateur de Paiement
+            🧪 Tests de Paiement Réels
           </h1>
           <p className="text-muted-foreground">
-            Testez les paiements en mode simulation - Aucun vrai argent ne sera débité
+            Testez différents fournisseurs de paiement pour l'Afrique de l'Ouest
           </p>
         </div>
         
-        <PaymentSimulator />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <PaymentSimulator />
+          <PaystackTest />
+          <KkiapayCorrected />
+        </div>
         
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-semibold mb-2">📋 Instructions de test :</h3>
