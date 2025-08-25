@@ -1157,12 +1157,9 @@ const MessageBubble = ({
         )}
         
         <div className="flex items-center space-x-2 mb-1">
-          {!isOwn && (
-            <span className={`text-xs font-medium ${isAssistantMessage ? 'text-blue-600' : ''}`}>
-              {isAssistantMessage 
-                ? '🤖 AIDA' 
-                : (messageSender ? `${messageSender.first_name || ''} ${messageSender.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur')
-              }
+          {!isOwn && isAssistantMessage && (
+            <span className="text-xs font-medium text-blue-600">
+              🤖 AIDA
             </span>
           )}
           <span className="text-xs opacity-75">
