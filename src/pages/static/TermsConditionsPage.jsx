@@ -182,7 +182,7 @@ const TermsConditionsPage = () => {
             11. Nous Contacter
           </h2>
           <p className="text-muted-foreground">
-            Si vous avez des questions concernant ces Termes, veuillez nous contacter à <a href={`mailto:legal@${personalData.siteName.toLowerCase()}.com`} className="text-primary hover:underline">legal@{personalData.siteName.toLowerCase()}.com</a>.
+            Si vous avez des questions concernant ces Termes, veuillez nous contacter à <a href={`mailto:${personalData.contactEmail}`} className="text-primary hover:underline">{personalData.contactEmail}</a>.
           </p>
         </div>
       </motion.div>

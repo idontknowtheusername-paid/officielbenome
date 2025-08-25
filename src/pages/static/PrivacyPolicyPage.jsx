@@ -138,7 +138,7 @@ const PrivacyPolicyPage = () => {
             9. Nous contacter
           </h2>
           <p className="text-muted-foreground">
-            Si vous avez des questions ou des préoccupations concernant cette politique de confidentialité ou nos pratiques en matière de données, veuillez nous contacter à <a href={`mailto:privacy@${personalData.siteName.toLowerCase()}.com`} className="text-primary hover:underline">privacy@{personalData.siteName.toLowerCase()}.com</a>.
+            Si vous avez des questions ou des préoccupations concernant cette politique de confidentialité ou nos pratiques en matière de données, veuillez nous contacter à <a href={`mailto:${personalData.contactEmail}`} className="text-primary hover:underline">{personalData.contactEmail}</a>.
           </p>
         </div>
       </motion.div>

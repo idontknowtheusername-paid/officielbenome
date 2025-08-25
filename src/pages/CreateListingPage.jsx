@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { listingService } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
+import { personalData } from '@/lib/personalData';
 import { 
   ArrowLeft, 
   CheckCircle, 
@@ -188,7 +189,7 @@ Support : support@maximarket.com
 Site : https://maximarket.com`);
 
     // Construire l'URL mailto avec tous les paramètres
-    const mailtoUrl = `mailto:support@maximarket.com?subject=${subject}&body=${body}`;
+const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=${body}`;
     
     // Ouvrir le client mail par défaut
     window.open(mailtoUrl, '_blank');

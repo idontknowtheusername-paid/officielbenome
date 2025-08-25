@@ -29,6 +29,7 @@ import {
   listingService,
   userService
 } from '@/services';
+import { personalData } from '@/lib/personalData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -195,7 +196,7 @@ function ModerationPage() {
         reporter: {
           id: 'system',
           name: 'Système',
-          email: 'system@maximarket.com'
+          email: personalData.supportEmail
         },
         reason: 'Annonce en attente de modération',
         description: 'Cette annonce nécessite une vérification avant publication',

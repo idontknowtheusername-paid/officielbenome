@@ -36,8 +36,8 @@ const PressPage = () => {
 
   const pressContacts = {
     name: "Service Relations Presse",
-    email: "presse@maximarket.com",
-    phone: "+221 77 123 45 67",
+    email: "press@maxiimarket.com",
+    phone: personalData.phone,
   };
 
   return (

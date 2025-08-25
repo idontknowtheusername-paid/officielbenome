@@ -3,18 +3,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Github, Twitter, Linkedin } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
+import { personalData } from '@/lib/personalData';
 
 const ContactPage = () => {
   const contactInfo = [
-    { icon: <Mail className="h-6 w-6" />, label: "Email", value: "contact@example.com", href: "mailto:contact@example.com" },
-    { icon: <Phone className="h-6 w-6" />, label: "Téléphone", value: "+33 6 12 34 56 78", href: "tel:+33612345678" },
-    { icon: <MapPin className="h-6 w-6" />, label: "Adresse", value: "Paris, France", href: "https://maps.google.com/?q=Paris,France" },
+    { icon: <Mail className="h-6 w-6" />, label: "Email", value: personalData.contactEmail, href: `mailto:${personalData.contactEmail}` },
+    { icon: <Phone className="h-6 w-6" />, label: "Téléphone", value: personalData.phone, href: `tel:${personalData.phone}` },
+    { icon: <MapPin className="h-6 w-6" />, label: "Adresse", value: personalData.address, href: `https://maps.google.com/?q=${encodeURIComponent(personalData.address)}` },
   ];
   
   const socialLinks = [
-    { icon: <Github className="h-6 w-6" />, label: "GitHub", href: "https://github.com" },
-    { icon: <Twitter className="h-6 w-6" />, label: "Twitter", href: "https://twitter.com" },
-    { icon: <Linkedin className="h-6 w-6" />, label: "LinkedIn", href: "https://linkedin.com" },
+    { icon: <Github className="h-6 w-6" />, label: "GitHub", href: personalData.socials.github },
+    { icon: <Twitter className="h-6 w-6" />, label: "Twitter", href: personalData.socials.twitter },
+    { icon: <Linkedin className="h-6 w-6" />, label: "LinkedIn", href: personalData.socials.linkedin },
   ];
 
   return (
@@ -26,10 +27,10 @@ const ContactPage = () => {
         className="max-w-3xl mx-auto text-center mb-12"
       >
         <h1 className="text-4xl font-bold mb-4">
-          Contactez <span className="gradient-text">moi</span>
+          Contactez <span className="gradient-text">{personalData.name}</span>
         </h1>
         <p className="text-muted-foreground">
-          Vous avez un projet en tête ou une question ? N'hésitez pas à me contacter !
+          Vous avez un projet en tête ou une question ? N'hésitez pas à nous contacter !
         </p>
       </motion.div>
       
