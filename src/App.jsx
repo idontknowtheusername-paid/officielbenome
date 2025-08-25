@@ -164,7 +164,9 @@ function App() {
                      
                      {/* Callback de paiement */}
                      <Route path="payment-callback" element={<PaymentCallbackPage />} />
-                  <Route path="kkiapay-test" element={<KkiapayTestPage />} />
+                     
+                     {/* Test KkiaPay */}
+                     <Route path="kkiapay-test" element={<KkiapayTestPage />} />
                      
                      {/* Modifier une annonce */}
                   <Route 
