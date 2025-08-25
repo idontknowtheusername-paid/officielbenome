@@ -7,13 +7,71 @@ const KkiapayTest = () => {
   const [name, setName] = useState('Test User');
 
   const handlePayment = () => {
-    // URL de paiement KkiaPay officielle
-    const kkiapayUrl = `https://kkiapay.me/pay?amount=${amount}&key=0cf13550819511f09ce691e5b43c1d2c&callback=https://maxiimarket.com/payment-callback&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&description=${encodeURIComponent('Test KkiaPay - Boost Premium')}`;
+    // Méthode officielle KkiaPay - Widget HTML
+    const kkiapayWidget = document.createElement('kkiapay-widget');
+    kkiapayWidget.setAttribute('amount', amount);
+    kkiapayWidget.setAttribute('key', '0cf13550819511f09ce691e5b43c1d2c');
+    kkiapayWidget.setAttribute('callback', 'https://maxiimarket.com/payment-callback');
+    kkiapayWidget.setAttribute('data-email', email);
+    kkiapayWidget.setAttribute('data-phone', phone);
+    kkiapayWidget.setAttribute('data-name', name);
+    kkiapayWidget.setAttribute('data-description', 'Test KkiaPay - Boost Premium');
 
-    console.log('🧪 URL KkiaPay:', kkiapayUrl);
-    
-    // Ouvrir dans un nouvel onglet
-    window.open(kkiapayUrl, '_blank');
+    // Charger le script KkiaPay si pas déjà fait
+    if (!document.querySelector('script[src*="kkiapay"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.kkiapay.me/k.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    // Créer un modal pour afficher le widget
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    `;
+
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+    `;
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '✕';
+    closeButton.style.cssText = `
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+    `;
+    closeButton.onclick = () => document.body.removeChild(modal);
+
+    modalContent.appendChild(closeButton);
+    modalContent.appendChild(kkiapayWidget);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+
+    console.log('🧪 Widget KkiaPay créé');
   };
 
   return (
