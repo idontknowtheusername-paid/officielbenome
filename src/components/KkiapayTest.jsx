@@ -7,10 +7,15 @@ const KkiapayTest = () => {
   const [name, setName] = useState('Test User');
 
   const handlePayment = () => {
+    // Récupérer la clé depuis les variables d'environnement
+    const kkiapayKey = import.meta.env.VITE_KKIAPAY_PUBLIC_KEY || '0cf13550819511f09ce691e5b43c1d2c';
+    
+    console.log('🧪 Clé KkiaPay utilisée:', kkiapayKey);
+    
     // Méthode officielle KkiaPay - Widget HTML
     const kkiapayWidget = document.createElement('kkiapay-widget');
     kkiapayWidget.setAttribute('amount', amount);
-    kkiapayWidget.setAttribute('key', '0cf13550819511f09ce691e5b43c1d2c');
+    kkiapayWidget.setAttribute('key', kkiapayKey);
     kkiapayWidget.setAttribute('callback', 'https://maxiimarket.com/payment-callback');
     kkiapayWidget.setAttribute('data-email', email);
     kkiapayWidget.setAttribute('data-phone', phone);
