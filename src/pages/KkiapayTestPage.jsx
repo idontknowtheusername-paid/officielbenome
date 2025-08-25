@@ -1,5 +1,5 @@
 import React from 'react';
-import KkiapayTest from '@/components/KkiapayTest';
+import KkiapayWidget from '@/components/KkiapayWidget';
 
 const KkiapayTestPage = () => {
   return (
@@ -14,7 +14,7 @@ const KkiapayTestPage = () => {
           </p>
         </div>
         
-        <KkiapayTest />
+        <KkiapayWidget />
         
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-semibold mb-2">📋 Instructions de test :</h3>

@@ -97,7 +97,7 @@ export const kkiapayService = {
         }
       };
 
-      const response = await fetch(`${KKIAPAY_CONFIG.baseUrl}/api/v1/transactions/initialize`, {
+      const response = await fetch(`${KKIAPAY_CONFIG.baseUrl}/api/v1/transactions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export const kkiapayService = {
   // Vérifier le statut d'un paiement
   verifyPayment: async (transactionId) => {
     try {
-      const response = await fetch(`${KKIAPAY_CONFIG.baseUrl}/api/v1/transactions/${transactionId}/status`, {
+      const response = await fetch(`${KKIAPAY_CONFIG.baseUrl}/api/v1/transactions/${transactionId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${KKIAPAY_CONFIG.publicKey}`,
@@ -173,7 +173,7 @@ export const kkiapayService = {
         reason
       };
 
-      const response = await fetch(`${KKIAPAY_CONFIG.baseUrl}/api/v1/transactions/${transactionId}/refund`, {
+      const response = await fetch(`${KKIAPAY_CONFIG.baseUrl}/api/v1/transactions/${transactionId}/refunds`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
