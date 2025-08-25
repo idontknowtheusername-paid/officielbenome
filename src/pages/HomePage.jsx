@@ -12,6 +12,8 @@ import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
 import HeroCarousel from '@/components/HeroCarousel';
 import { useI18n } from '@/i18n/hooks';
+import { useHeroListings } from '@/hooks/useHeroListings';
+import CacheDebug from '@/components/CacheDebug';
 
 
 const HomePage = () => {
@@ -27,11 +29,17 @@ const HomePage = () => {
   const [loadingPremium, setLoadingPremium] = useState(true);
   const [errorPremium, setErrorPremium] = useState(null);
   
-  // État pour les annonces hero
-  const [heroListings, setHeroListings] = useState([]);
-  const [loadingHero, setLoadingHero] = useState(true);
-  const [errorHero, setErrorHero] = useState(null);
-  const [heroInfo, setHeroInfo] = useState({ category: '', hour: 0, timeSlot: '' });
+  // Utiliser le hook optimisé pour les annonces hero
+  const { 
+    heroListings, 
+    heroInfo, 
+    loading: loadingHero, 
+    error: errorHero,
+    lastUpdate,
+    forceRefresh: forceRefreshHero,
+    isCacheValid,
+    cacheStats
+  } = useHeroListings(6);
 
   useEffect(() => {
     let timerId;
@@ -60,33 +68,14 @@ const HomePage = () => {
       }
     };
 
-    const loadHero = async () => {
-      try {
-        setLoadingHero(true);
-        const data = await listingService.getHeroListings(6);
-        setHeroListings(data?.data || []);
-        setHeroInfo({
-          category: data?.category || '',
-          hour: data?.hour || 0,
-          timeSlot: data?.rotationInfo?.timeSlot || ''
-        });
-      } catch (e) {
-        setErrorHero(e?.message || 'Erreur lors du chargement des annonces hero');
-      } finally {
-        setLoadingHero(false);
-      }
-    };
-
-    // Charger les trois types d'annonces
+    // Charger les annonces populaires et premium
     loadPopular();
     loadPremium();
-    loadHero();
     
-    // Rafraichissement periodique toutes les 30 minutes
+    // Rafraichissement periodique toutes les 30 minutes (sauf hero qui a son propre cache)
     timerId = setInterval(() => {
       loadPopular();
       loadPremium();
-      loadHero();
     }, 1800000);
     
     return () => clearInterval(timerId);
@@ -144,6 +133,15 @@ const HomePage = () => {
         </div>
       ) : (
         <>
+          {/* Indicateur de cache discret */}
+          {isCacheValid && (
+            <div className="absolute top-4 right-4 z-50">
+              <div className="bg-green-500/20 backdrop-blur-sm text-green-300 text-xs px-2 py-1 rounded-full border border-green-500/30">
+                💾 Cache (24h)
+              </div>
+            </div>
+          )}
+          
           <HeroCarousel
             listings={heroListings}
             category={heroInfo.category}
@@ -415,6 +413,9 @@ const HomePage = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Debug du cache (mode développement uniquement) */}
+      <CacheDebug />
     </div>
   );
 };

@@ -42,3 +42,4 @@ export {
 
 export { default as usePreferences } from './usePreferences';
 export { default as useInactivityDetector } from './useInactivityDetector';
+export { useHeroListings } from './useHeroListings';
