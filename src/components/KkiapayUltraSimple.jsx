@@ -1,36 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const KkiapayTest = () => {
+const KkiapayUltraSimple = () => {
   const [amount, setAmount] = useState('100');
   const [email, setEmail] = useState('test@maxiimarket.com');
   const [phone, setPhone] = useState('+22990123456');
   const [name, setName] = useState('Test User');
 
+  useEffect(() => {
+    // Charger le script KkiaPay une seule fois
+    const script = document.createElement('script');
+    script.src = 'https://cdn.kkiapay.me/k.js';
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
+
   const handlePayment = () => {
-    // Récupérer la clé depuis les variables d'environnement
-    const kkiapayKey = import.meta.env.VITE_KKIAPAY_PUBLIC_KEY || '0cf13550819511f09ce691e5b43c1d2c';
-    
-    console.log('🧪 Clé KkiaPay utilisée:', kkiapayKey);
-    
-    // Méthode officielle KkiaPay - Widget HTML
-    const kkiapayWidget = document.createElement('kkiapay-widget');
-    kkiapayWidget.setAttribute('amount', amount);
-    kkiapayWidget.setAttribute('key', kkiapayKey);
-    kkiapayWidget.setAttribute('callback', 'https://maxiimarket.com/payment-callback');
-    kkiapayWidget.setAttribute('data-email', email);
-    kkiapayWidget.setAttribute('data-phone', phone);
-    kkiapayWidget.setAttribute('data-name', name);
-    kkiapayWidget.setAttribute('data-description', 'Test KkiaPay - Boost Premium');
+    // Créer directement le widget HTML
+    const widget = document.createElement('kkiapay-widget');
+    widget.setAttribute('amount', amount);
+    widget.setAttribute('key', '0cf13550819511f09ce691e5b43c1d2c');
+    widget.setAttribute('callback', 'https://maxiimarket.com/payment-callback');
+    widget.setAttribute('data-email', email);
+    widget.setAttribute('data-phone', phone);
+    widget.setAttribute('data-name', name);
+    widget.setAttribute('data-description', 'Test KkiaPay');
 
-    // Charger le script KkiaPay si pas déjà fait
-    if (!document.querySelector('script[src*="kkiapay"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.kkiapay.me/k.js';
-      script.async = true;
-      document.head.appendChild(script);
-    }
-
-    // Créer un modal pour afficher le widget
+    // Créer un modal simple
     const modal = document.createElement('div');
     modal.style.cssText = `
       position: fixed;
@@ -38,26 +33,25 @@ const KkiapayTest = () => {
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.8);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 9999;
     `;
 
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
+    const content = document.createElement('div');
+    content.style.cssText = `
       background: white;
       padding: 20px;
       border-radius: 10px;
       position: relative;
-      max-width: 90%;
-      max-height: 90%;
+      min-width: 300px;
     `;
 
-    const closeButton = document.createElement('button');
-    closeButton.textContent = '✕';
-    closeButton.style.cssText = `
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.cssText = `
       position: absolute;
       top: 10px;
       right: 10px;
@@ -69,14 +63,12 @@ const KkiapayTest = () => {
       height: 30px;
       cursor: pointer;
     `;
-    closeButton.onclick = () => document.body.removeChild(modal);
+    closeBtn.onclick = () => document.body.removeChild(modal);
 
-    modalContent.appendChild(closeButton);
-    modalContent.appendChild(kkiapayWidget);
-    modal.appendChild(modalContent);
+    content.appendChild(closeBtn);
+    content.appendChild(widget);
+    modal.appendChild(content);
     document.body.appendChild(modal);
-
-    console.log('🧪 Widget KkiaPay créé');
   };
 
   return (
@@ -91,7 +83,7 @@ const KkiapayTest = () => {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="100"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
 
@@ -102,7 +94,7 @@ const KkiapayTest = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="test@maxiimarket.com"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
 
@@ -113,7 +105,7 @@ const KkiapayTest = () => {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+22990123456"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
 
@@ -124,13 +116,13 @@ const KkiapayTest = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Test User"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
 
         <button
           onClick={handlePayment}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md"
         >
           💳 Tester KkiaPay
         </button>
@@ -143,4 +135,4 @@ const KkiapayTest = () => {
   );
 };
 
-export default KkiapayTest;
+export default KkiapayUltraSimple;
