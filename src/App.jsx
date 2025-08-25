@@ -43,6 +43,7 @@ import FavoritesPage from '@/pages/FavoritesPage';
 import BoostListingPage from '@/pages/BoostListingPage';
 import PaymentProcessPage from '@/pages/PaymentProcessPage';
 import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
+import KkiapayTestPage from '@/pages/KkiapayTestPage';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -163,6 +164,7 @@ function App() {
                      
                      {/* Callback de paiement */}
                      <Route path="payment-callback" element={<PaymentCallbackPage />} />
+                  <Route path="kkiapay-test" element={<KkiapayTestPage />} />
                      
                      {/* Modifier une annonce */}
                   <Route 
