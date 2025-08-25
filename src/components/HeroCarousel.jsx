@@ -114,7 +114,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
       {/* Overlay sombre */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-      {/* Contenu principal - Simplifié pour ne montrer que l'image en arrière-plan */}
+      {/* Contenu principal - Centré */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
           {/* Badge de catégorie et heure - Discret en haut */}
@@ -153,12 +153,17 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="text-xl md:text-2xl text-gray-300 mb-32 max-w-3xl mx-auto"
+            className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto"
           >
             Explorez, découvrez, connectez. Votre marketplace de confiance.
           </motion.p>
+        </div>
+      </div>
 
-          {/* Indicateur discret de l'annonce en cours - Plus bas */}
+      {/* Contenu en bas - Texte et bouton */}
+      <div className="absolute bottom-32 left-0 right-0 z-10">
+        <div className="container mx-auto px-4 md:px-6 text-center">
+          {/* Indicateur discret de l'annonce en cours */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -168,7 +173,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             Découvrez : {currentListing.title}
           </motion.div>
 
-          {/* Bouton discret pour voir l'annonce - Plus bas */}
+          {/* Bouton discret pour voir l'annonce */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -184,7 +189,6 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
               Voir cette annonce
             </Button>
           </motion.div>
-
         </div>
       </div>
 
