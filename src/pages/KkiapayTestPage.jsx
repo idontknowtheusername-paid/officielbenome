@@ -1,5 +1,5 @@
 import React from 'react';
-import KkiapayUltraSimple from '@/components/KkiapayUltraSimple';
+import PaymentSimulator from '@/components/PaymentSimulator';
 
 const KkiapayTestPage = () => {
   return (
@@ -7,14 +7,14 @@ const KkiapayTestPage = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">
-            🧪 Test KkiaPay Sandbox
+            🧪 Simulateur de Paiement
           </h1>
           <p className="text-muted-foreground">
-            Testez les paiements en mode sandbox - Aucun vrai argent ne sera débité
+            Testez les paiements en mode simulation - Aucun vrai argent ne sera débité
           </p>
         </div>
         
-        <KkiapayUltraSimple />
+        <PaymentSimulator />
         
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-semibold mb-2">📋 Instructions de test :</h3>
@@ -22,8 +22,8 @@ const KkiapayTestPage = () => {
             <li>• Entrez un montant (ex: 100 XOF)</li>
             <li>• Remplissez vos informations</li>
             <li>• Cliquez sur une méthode de paiement</li>
-            <li>• Suivez le processus de paiement</li>
-            <li>• Vérifiez le callback sur votre site</li>
+            <li>• Attendez la simulation (2 secondes)</li>
+            <li>• Vérifiez le résultat du paiement</li>
           </ul>
         </div>
       </div>
