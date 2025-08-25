@@ -13,7 +13,6 @@ import ListingCard from '@/components/ListingCard';
 import HeroCarousel from '@/components/HeroCarousel';
 import { useI18n } from '@/i18n/hooks';
 import { useHeroListings } from '@/hooks/useHeroListings';
-import CacheDebug from '@/components/CacheDebug';
 
 
 const HomePage = () => {
@@ -133,15 +132,6 @@ const HomePage = () => {
         </div>
       ) : (
         <>
-          {/* Indicateur de cache discret */}
-          {isCacheValid && (
-            <div className="absolute top-4 right-4 z-50">
-              <div className="bg-green-500/20 backdrop-blur-sm text-green-300 text-xs px-2 py-1 rounded-full border border-green-500/30">
-                💾 Cache (24h)
-              </div>
-            </div>
-          )}
-          
           <HeroCarousel
             listings={heroListings}
             category={heroInfo.category}
@@ -413,9 +403,6 @@ const HomePage = () => {
           </motion.div>
         </div>
       </section>
-
-      {/* Debug du cache (mode développement uniquement) */}
-      <CacheDebug />
     </div>
   );
 };
