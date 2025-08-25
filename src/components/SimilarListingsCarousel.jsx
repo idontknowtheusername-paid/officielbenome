@@ -9,9 +9,26 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Configuration du carrousel
-  const itemsPerView = 3; // Nombre d'items visibles à la fois
+  // Configuration du carrousel responsive
+  const getItemsPerView = () => {
+    if (typeof window === 'undefined') return 3;
+    if (window.innerWidth < 768) return 2; // Mobile: 2 annonces
+    if (window.innerWidth < 1024) return 2; // Tablet: 2 annonces
+    return 3; // Desktop: 3 annonces
+  };
+
+  const [itemsPerView, setItemsPerView] = useState(getItemsPerView());
   const maxIndex = Math.max(0, listings.length - itemsPerView);
+
+  // Mettre à jour le nombre d'items visibles selon la taille d'écran
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerView(getItemsPerView());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Auto-play toutes les 5 secondes
   useEffect(() => {
@@ -61,50 +78,35 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6">
         <h2 className="text-2xl font-bold">{title}</h2>
-        
-        {/* Contrôles de navigation */}
+      </div>
+
+      {/* Container du carrousel */}
+      <div className="relative overflow-hidden">
+        {/* Flèches de navigation sur les annonces */}
         {listings.length > itemsPerView && (
-          <div className="flex items-center gap-2">
+          <>
             <Button
               variant="outline"
               size="sm"
               onClick={goToPrevious}
-              className="h-8 w-8 p-0"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 bg-white/90 hover:bg-white shadow-lg border-0"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
-            
-            {/* Indicateurs */}
-            <div className="flex gap-1">
-              {Array.from({ length: maxIndex + 1 }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === currentIndex 
-                      ? 'bg-primary' 
-                      : 'bg-muted hover:bg-muted-foreground'
-                  }`}
-                />
-              ))}
-            </div>
             
             <Button
               variant="outline"
               size="sm"
               onClick={goToNext}
-              className="h-8 w-8 p-0"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 bg-white/90 hover:bg-white shadow-lg border-0"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
-          </div>
+          </>
         )}
-      </div>
 
-      {/* Container du carrousel */}
-      <div className="relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
@@ -112,22 +114,20 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="flex gap-4"
             style={{
               transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
-              width: `${(listings.length / itemsPerView) * 100}%`,
-              display: 'flex',
-              gap: '1.5rem'
+              width: `${(listings.length / itemsPerView) * 100}%`
             }}
           >
             {listings.map((listing, index) => (
-              <motion.div
-                key={listing.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="min-w-[300px] flex-shrink-0"
-              >
+                             <motion.div
+                 key={listing.id}
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.5, delay: index * 0.1 }}
+                 className="min-w-[280px] sm:min-w-[320px] md:min-w-[300px] flex-shrink-0"
+               >
                 <Link 
                   to={`/annonce/${listing.id}`}
                   className="group block"
@@ -187,12 +187,22 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
         </AnimatePresence>
       </div>
 
-      {/* Indicateur de progression */}
+      {/* Indicateurs de progression en bas */}
       {listings.length > itemsPerView && (
-        <div className="mt-4 text-center">
-          <span className="text-sm text-muted-foreground">
-            {currentIndex + 1} / {maxIndex + 1}
-          </span>
+        <div className="mt-6 flex justify-center">
+          <div className="flex gap-2">
+            {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentIndex 
+                    ? 'bg-primary scale-125' 
+                    : 'bg-muted hover:bg-muted-foreground'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
