@@ -4,7 +4,7 @@ export const personalData = {
   siteName: "MaxiMarket",
   tagline: "Votre Hub Innovant pour l'Afrique de l'Ouest",
   description: "Plateforme marketplace futuriste pour l'immobilier, l'automobile, les services et plus.",
-  email: "contact@maximarket.com",
+  email: "contact@maxiimarket.com",
   phone: "+221 77 123 4567",
   address: "Dakar, Sénégal",
   socials: {
