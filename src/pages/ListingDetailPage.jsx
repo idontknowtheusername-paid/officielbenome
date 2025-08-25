@@ -12,6 +12,7 @@ import ImageGallery from '@/components/ImageGallery';
 import ShareListing from '@/components/ShareListing';
 import CommentsSection from '@/components/CommentsSection';
 import BoostStatus from '@/components/BoostStatus';
+import SimilarListingsCarousel from '@/components/SimilarListingsCarousel';
 import { useListingImages } from '@/hooks';
 import ReportModal from '@/components/ReportModal';
 
@@ -56,14 +57,14 @@ const ListingDetailPage = () => {
             });
           }
           
-          // Recuperer des annonces similaires
+          // Recuperer des annonces similaires (max 10)
           const { data: related } = await listingService.getAllListings({
             category: foundListing.category,
             status: 'approved',
-            limit: 10
+            limit: 15 // Récupérer plus pour avoir assez après filtrage
           });
           
-          setRelatedListings(related.filter(l => l.id !== foundListing.id).slice(0, 3));
+          setRelatedListings(related.filter(l => l.id !== foundListing.id).slice(0, 10));
         } else {
           toast({
             title: "Annonce non trouvée",
@@ -657,42 +658,11 @@ const ListingDetailPage = () => {
             />
           </div>
 
-          {/* Annonces similaires */}
-          {relatedListings.length > 0 && (
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-6">Annonces similaires</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {relatedListings.map((relatedListing) => (
-                  <Link 
-                    key={relatedListing.id} 
-                    to={`/annonce/${relatedListing.id}`}
-                    className="group block"
-                  >
-                    <div className="rounded-lg border border-border overflow-hidden transition-all duration-300 hover:border-primary">
-                      <div className="aspect-video relative overflow-hidden">
-                        <img   
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          alt={relatedListing.title}
-                          src={relatedListing.images?.[0] || images[0]}
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold mb-2 group-hover:text-primary transition-colors">
-                          {relatedListing.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {relatedListing.description}
-                        </p>
-                        <p className="text-lg font-bold text-primary mt-2">
-                          {formatPrice(relatedListing.price)}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Annonces similaires - Carrousel automatique */}
+          <SimilarListingsCarousel 
+            listings={relatedListings}
+            title="Annonces similaires"
+          />
         </div>
       </div>
 
