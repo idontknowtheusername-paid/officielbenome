@@ -14,42 +14,82 @@ const QUALITY_SETTINGS = {
   high: 95
 };
 
-/**
- * Optimise une URL d'image selon le contexte d'utilisation
- * @param {string} url - URL de l'image originale
- * @param {string} context - Contexte d'utilisation ('thumbnail', 'card', 'gallery', 'fullscreen', 'hero')
- * @param {string} quality - Qualité souhaitée ('low', 'medium', 'high')
- * @returns {string} URL optimisée
- */
+// Optimisation d'images pour de meilleures performances
 export const optimizeImageUrl = (url, context = 'gallery', quality = 'medium') => {
   if (!url) return url;
 
-  const size = IMAGE_SIZES[context] || IMAGE_SIZES.gallery;
-  const qualityValue = QUALITY_SETTINGS[quality] || QUALITY_SETTINGS.medium;
-
-  // Optimisation pour Unsplash
-  if (url.includes('unsplash.com')) {
-    return `${url}?w=${size.width}&h=${size.height}&fit=crop&q=${qualityValue}&auto=format&fm=webp`;
+  // Si c'est déjà une URL optimisée, la retourner
+  if (url.includes('unsplash.com') || url.includes('cloudinary.com')) {
+    return url;
   }
 
-  // Optimisation pour Cloudinary
-  if (url.includes('cloudinary.com')) {
-    return url.replace('/upload/', `/upload/w_${size.width},h_${size.height},c_fill,q_${qualityValue},f_auto/`);
+  // Paramètres d'optimisation selon le contexte
+  const optimizationParams = {
+    hero: {
+      width: 1920,
+      height: 1080,
+      quality: 85,
+      format: 'webp'
+    },
+    gallery: {
+      width: 800,
+      height: 600,
+      quality: 80,
+      format: 'webp'
+    },
+    thumbnail: {
+      width: 400,
+      height: 300,
+      quality: 75,
+      format: 'webp'
+    },
+    avatar: {
+      width: 150,
+      height: 150,
+      quality: 80,
+      format: 'webp'
+    }
+  };
+
+  const params = optimizationParams[context] || optimizationParams.gallery;
+
+  // Si c'est une URL locale ou relative, la retourner telle quelle
+  if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) {
+    return url;
   }
 
-  // Optimisation pour ImageKit
-  if (url.includes('imagekit.io')) {
-    return `${url}?tr=w-${size.width},h-${size.height},c-at_max,q-${qualityValue}`;
-  }
+  // Pour les URLs externes, essayer d'optimiser
+  try {
+    const urlObj = new URL(url);
+    
+    // Si c'est une image Unsplash, optimiser
+    if (urlObj.hostname.includes('unsplash.com')) {
+      urlObj.searchParams.set('w', params.width);
+      urlObj.searchParams.set('h', params.height);
+      urlObj.searchParams.set('q', params.quality);
+      urlObj.searchParams.set('auto', 'format');
+      urlObj.searchParams.set('fit', 'crop');
+      return urlObj.toString();
+    }
 
-  // Optimisation générique pour les CDN
-  if (url.includes('cdn.') || url.includes('static.')) {
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}w=${size.width}&h=${size.height}&q=${qualityValue}`;
-  }
+    // Si c'est une image Cloudinary, optimiser
+    if (urlObj.hostname.includes('cloudinary.com')) {
+      const pathParts = urlObj.pathname.split('/');
+      const uploadIndex = pathParts.findIndex(part => part === 'upload');
+      
+      if (uploadIndex !== -1) {
+        pathParts.splice(uploadIndex + 1, 0, `f_${params.format},q_${params.quality},w_${params.width},h_${params.height},c_fill`);
+        urlObj.pathname = pathParts.join('/');
+        return urlObj.toString();
+      }
+    }
 
-  // Retourner l'URL originale si aucun pattern reconnu
-  return url;
+    // Pour les autres URLs, retourner l'original
+    return url;
+  } catch (error) {
+    // Si l'URL n'est pas valide, retourner l'original
+    return url;
+  }
 };
 
 /**
@@ -149,4 +189,25 @@ export const optimizeImageUrlWithAutoFormat = (url, context = 'gallery', quality
   }
   
   return optimizedUrl;
+}; 
+
+// Fonction pour précharger les images importantes
+export const preloadImage = (src) => {
+  if (!src) return;
+  
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'image';
+  link.href = src;
+  document.head.appendChild(link);
+};
+
+// Fonction pour optimiser les images en arrière-plan
+export const optimizeBackgroundImage = (url) => {
+  return optimizeImageUrl(url, 'hero', 'high');
+};
+
+// Fonction pour créer des placeholders optimisés
+export const createImagePlaceholder = (width = 400, height = 300) => {
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'%3E%3Crect width='100%25' height='100%25' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='%239ca3af'%3EChargement...%3C/text%3E%3C/svg%3E`;
 }; 

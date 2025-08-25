@@ -322,8 +322,13 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
-          utils: ['date-fns', 'framer-motion'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
+          animations: ['framer-motion'],
+          utils: ['date-fns', 'clsx', 'tailwind-merge'],
+          forms: ['react-hook-form', '@hookform/resolvers'],
+          query: ['@tanstack/react-query'],
+          supabase: ['@supabase/supabase-js'],
         },
       },
     },
@@ -333,8 +338,10 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
       },
     },
+    target: 'es2015',
   },
 	server: {
 		cors: true,
