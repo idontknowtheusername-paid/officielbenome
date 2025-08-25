@@ -1,8 +1,5 @@
 import React from 'react';
-import KkiapayWidget from '@/components/KkiapayWidget';
-import KkiapayDirect from '@/components/KkiapayDirect';
-import KkiapayIframe from '@/components/KkiapayIframe';
-import KkiapayRedirect from '@/components/KkiapayRedirect';
+import KkiapayTest from '@/components/KkiapayTest';
 
 const KkiapayTestPage = () => {
   return (
@@ -17,12 +14,7 @@ const KkiapayTestPage = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KkiapayWidget />
-          <KkiapayDirect />
-          <KkiapayIframe />
-          <KkiapayRedirect />
-        </div>
+        <KkiapayTest />
         
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-semibold mb-2">📋 Instructions de test :</h3>

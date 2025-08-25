@@ -1,157 +1,85 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
-import { kkiapayService } from '@/services/kkiapay.service';
 
 const KkiapayTest = () => {
   const [amount, setAmount] = useState('100');
   const [email, setEmail] = useState('test@maxiimarket.com');
   const [phone, setPhone] = useState('+22990123456');
   const [name, setName] = useState('Test User');
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
-  const handleTestPayment = async (paymentMethod) => {
-    setIsLoading(true);
-    
-    try {
-      console.log('🧪 Test paiement KkiaPay:', paymentMethod);
-      
-      const paymentData = {
-        amount: parseInt(amount),
-        email,
-        phone,
-        name,
-        payment_method: paymentMethod,
-        country: 'BJ',
-        customizations: {
-          description: `Test ${paymentMethod} - Boost Premium`
-        },
-        boost_id: 'test_boost_123',
-        listing_id: 'test_listing_456',
-        package_name: 'Premium Boost',
-        user_id: 'test_user_789'
-      };
+  const handlePayment = () => {
+    // URL de paiement KkiaPay
+    const kkiapayUrl = `https://widget-v3.kkiapay.me/?amount=${amount}&key=0cf13550819511f09ce691e5b43c1d2c&callback=https://maxiimarket.com/payment-callback&data=${encodeURIComponent(JSON.stringify({
+      email,
+      phone,
+      name,
+      description: 'Test KkiaPay - Boost Premium'
+    }))}`;
 
-      const result = await kkiapayService.initializePayment(paymentData);
-      
-      console.log('✅ Résultat paiement:', result);
-      
-      toast({
-        title: "Paiement initié",
-        description: `Redirection vers ${paymentMethod}...`,
-      });
-
-      // Ouvrir la page de paiement
-      if (result.paymentUrl) {
-        window.open(result.paymentUrl, '_blank');
-      }
-
-    } catch (error) {
-      console.error('❌ Erreur paiement:', error);
-      
-      toast({
-        title: "Erreur de paiement",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Ouvrir dans un nouvel onglet
+    window.open(kkiapayUrl, '_blank');
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>🧪 Test KkiaPay Sandbox</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-center">🧪 Test KkiaPay</h2>
+      
+      <div className="space-y-4">
         <div>
-          <Label htmlFor="amount">Montant (XOF)</Label>
-          <Input
-            id="amount"
+          <label className="block text-sm font-medium mb-2">Montant (XOF)</label>
+          <input
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="100"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
+          <label className="block text-sm font-medium mb-2">Email</label>
+          <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="test@maxiimarket.com"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <Label htmlFor="phone">Téléphone</Label>
-          <Input
-            id="phone"
+          <label className="block text-sm font-medium mb-2">Téléphone</label>
+          <input
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+22990123456"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <Label htmlFor="name">Nom</Label>
-          <Input
-            id="name"
+          <label className="block text-sm font-medium mb-2">Nom</label>
+          <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Test User"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            onClick={() => handleTestPayment('orange_money')}
-            disabled={isLoading}
-            className="bg-orange-500 hover:bg-orange-600"
-          >
-            🟠 Orange Money
-          </Button>
-          
-          <Button
-            onClick={() => handleTestPayment('mtn_mobile_money')}
-            disabled={isLoading}
-            className="bg-yellow-500 hover:bg-yellow-600"
-          >
-            🟡 MTN Money
-          </Button>
-          
-          <Button
-            onClick={() => handleTestPayment('moov_money')}
-            disabled={isLoading}
-            className="bg-blue-500 hover:bg-blue-600"
-          >
-            🔵 Moov Money
-          </Button>
-          
-          <Button
-            onClick={() => handleTestPayment('card')}
-            disabled={isLoading}
-            className="bg-green-500 hover:bg-green-600"
-          >
-            💳 Carte
-          </Button>
-        </div>
+        <button
+          onClick={handlePayment}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
+        >
+          💳 Tester KkiaPay
+        </button>
 
         <div className="text-xs text-gray-500 text-center">
           Mode Sandbox - Aucun vrai paiement
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
