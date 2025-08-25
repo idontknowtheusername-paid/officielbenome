@@ -10,8 +10,7 @@ import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
 import { queryClient } from '@/lib/queryClient';
 import { usePreload } from '@/hooks/usePreload';
 import { swManager } from '@/lib/swManager';
-import { CacheMonitor } from '@/components/CacheMonitor';
-import { AdvancedCacheMonitor } from '@/components/AdvancedCacheMonitor';
+
 import { QueryErrorBoundary } from '@/components/QueryErrorBoundary';
 import InactivityDetector from '@/components/InactivityDetector';
 
@@ -283,8 +282,6 @@ function App() {
           </AuthProvider>
           <Toaster />
           <ChatWidget />
-          <CacheMonitor />
-          <AdvancedCacheMonitor />
         </AppWrapper>
       </QueryErrorBoundary>
       {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen={false} />}
