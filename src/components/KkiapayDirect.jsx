@@ -1,74 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-const KkiapayWidget = () => {
+const KkiapayDirect = () => {
   const [amount, setAmount] = useState('100');
   const [email, setEmail] = useState('test@maxiimarket.com');
   const [phone, setPhone] = useState('+22990123456');
   const [name, setName] = useState('Test User');
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    // Charger le script KkiaPay
-    const script = document.createElement('script');
-    script.src = 'https://cdn.kkiapay.me/k.js';
-    script.async = true;
-    script.onload = () => {
-      console.log('✅ Script KkiaPay chargé');
-    };
-    script.onerror = () => {
-      console.error('❌ Erreur chargement script KkiaPay');
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      // Nettoyer le script
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, []);
-
-  const handlePayment = () => {
-    setIsLoading(true);
-
-    if (!window.Kkiapay) {
-      alert('❌ Widget KkiaPay non chargé. Vérifiez la console.');
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // Configuration du widget KkiaPay
-      const config = {
-        amount: parseInt(amount),
-        key: '0cf13550819511f09ce691e5b43c1d2c', // Votre clé publique
-        callback: 'https://maxiimarket.com/payment-callback',
-        data: {
-          email,
-          phone,
-          name,
-          description: 'Test KkiaPay - Boost Premium'
-        }
-      };
-
-      console.log('🧪 Configuration KkiaPay:', config);
-
-      // Ouvrir le widget KkiaPay
-      window.Kkiapay.open(config);
-
-      alert('✅ Widget KkiaPay ouvert !');
-
-    } catch (error) {
-      console.error('❌ Erreur KkiaPay:', error);
-      alert(`❌ Erreur: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">🧪 Test KkiaPay Widget</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">🧪 Test KkiaPay Direct</h2>
       
       <div className="space-y-4">
         <div>
@@ -115,13 +55,18 @@ const KkiapayWidget = () => {
           />
         </div>
 
-        <button
-          onClick={handlePayment}
-          disabled={isLoading}
-          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-md transition-colors"
-        >
-          {isLoading ? '⏳ Chargement...' : '💳 Payer avec KkiaPay'}
-        </button>
+        {/* Widget KkiaPay direct */}
+        <div className="text-center">
+          <kkiapay-widget 
+            amount={amount}
+            key="0cf13550819511f09ce691e5b43c1d2c"
+            callback="https://maxiimarket.com/payment-callback"
+            data-email={email}
+            data-phone={phone}
+            data-name={name}
+            data-description="Test KkiaPay - Boost Premium"
+          />
+        </div>
 
         <div className="text-xs text-gray-500 text-center">
           Mode Sandbox - Aucun vrai paiement
@@ -131,4 +76,4 @@ const KkiapayWidget = () => {
   );
 };
 
-export default KkiapayWidget;
+export default KkiapayDirect;

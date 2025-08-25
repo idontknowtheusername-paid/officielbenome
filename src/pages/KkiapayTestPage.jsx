@@ -1,5 +1,6 @@
 import React from 'react';
 import KkiapayWidget from '@/components/KkiapayWidget';
+import KkiapayDirect from '@/components/KkiapayDirect';
 
 const KkiapayTestPage = () => {
   return (
@@ -14,7 +15,10 @@ const KkiapayTestPage = () => {
           </p>
         </div>
         
-        <KkiapayWidget />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <KkiapayWidget />
+          <KkiapayDirect />
+        </div>
         
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-semibold mb-2">📋 Instructions de test :</h3>
