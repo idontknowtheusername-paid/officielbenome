@@ -91,7 +91,7 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
               variant="outline"
               size="sm"
               onClick={goToPrevious}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 bg-white/90 hover:bg-white shadow-lg border-0"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 bg-black/20 hover:bg-black/40 text-white shadow-lg border-0 backdrop-blur-sm"
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
@@ -100,7 +100,7 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
               variant="outline"
               size="sm"
               onClick={goToNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 bg-white/90 hover:bg-white shadow-lg border-0"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 bg-black/20 hover:bg-black/40 text-white shadow-lg border-0 backdrop-blur-sm"
             >
               <ChevronRight className="h-5 w-5" />
             </Button>
