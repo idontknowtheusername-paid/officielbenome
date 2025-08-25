@@ -1,24 +1,60 @@
 import React, { useState } from 'react';
 
-const KkiapayTest = () => {
+const KkiapayApiTest = () => {
   const [amount, setAmount] = useState('100');
   const [email, setEmail] = useState('test@maxiimarket.com');
   const [phone, setPhone] = useState('+22990123456');
   const [name, setName] = useState('Test User');
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState(null);
 
-  const handlePayment = () => {
-    // URL de paiement KkiaPay officielle
-    const kkiapayUrl = `https://kkiapay.me/pay?amount=${amount}&key=0cf13550819511f09ce691e5b43c1d2c&callback=https://maxiimarket.com/payment-callback&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&description=${encodeURIComponent('Test KkiaPay - Boost Premium')}`;
+  const handlePayment = async () => {
+    setIsLoading(true);
+    setResult(null);
 
-    console.log('🧪 URL KkiaPay:', kkiapayUrl);
-    
-    // Ouvrir dans un nouvel onglet
-    window.open(kkiapayUrl, '_blank');
+    try {
+      const response = await fetch('https://api.kkiapay.me/api/v1/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer tsk_0cf15c60819511f09ce691e5b43c1d2c'
+        },
+        body: JSON.stringify({
+          amount: parseInt(amount),
+          currency: 'XOF',
+          country: 'BJ',
+          phone,
+          email,
+          name,
+          reason: 'Test KkiaPay - Boost Premium',
+          callback_url: 'https://maxiimarket.com/payment-callback',
+          return_url: 'https://maxiimarket.com/payment-callback',
+          data: {
+            description: 'Test KkiaPay - Boost Premium'
+          }
+        })
+      });
+
+      const data = await response.json();
+      console.log('🧪 Réponse KkiaPay:', data);
+      
+      setResult(data);
+
+      if (data.paymentUrl) {
+        window.open(data.paymentUrl, '_blank');
+      }
+
+    } catch (error) {
+      console.error('❌ Erreur KkiaPay:', error);
+      setResult({ error: error.message });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">🧪 Test KkiaPay</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">🧪 Test KkiaPay API</h2>
       
       <div className="space-y-4">
         <div>
@@ -67,10 +103,20 @@ const KkiapayTest = () => {
 
         <button
           onClick={handlePayment}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
+          disabled={isLoading}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-md transition-colors"
         >
-          💳 Tester KkiaPay
+          {isLoading ? '⏳ Chargement...' : '💳 Tester API KkiaPay'}
         </button>
+
+        {result && (
+          <div className="mt-4 p-3 bg-gray-100 rounded-md">
+            <h4 className="font-semibold mb-2">Résultat :</h4>
+            <pre className="text-xs overflow-auto">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </div>
+        )}
 
         <div className="text-xs text-gray-500 text-center">
           Mode Sandbox - Aucun vrai paiement
@@ -80,4 +126,4 @@ const KkiapayTest = () => {
   );
 };
 
-export default KkiapayTest;
+export default KkiapayApiTest;
