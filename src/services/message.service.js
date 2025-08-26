@@ -5,11 +5,71 @@ import { MESSAGING_CONFIG, MESSAGING_FALLBACKS, MESSAGING_ERROR_MESSAGES } from 
 // SERVICE MESSAGERIE
 // ============================================================================
 
+// Fonction pour vérifier/créer l'utilisateur assistant
+const ensureAssistantUser = async () => {
+  try {
+    const assistantId = '00000000-0000-0000-0000-000000000000';
+    
+    // Vérifier si l'utilisateur assistant existe
+    const { data: existingAssistant, error: checkError } = await supabase
+      .from('users')
+      .select('id, first_name, last_name')
+      .eq('id', assistantId)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('❌ Erreur vérification utilisateur assistant:', checkError);
+      return false;
+    }
+
+    if (!existingAssistant) {
+      // Créer l'utilisateur assistant
+      const { error: createError } = await supabase
+        .from('users')
+        .insert([{
+          id: assistantId,
+          first_name: 'AIDA',
+          last_name: 'Assistant',
+          email: 'aida@maximarket.com',
+          role: 'assistant',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }]);
+
+      if (createError) {
+        console.error('❌ Erreur création utilisateur assistant:', createError);
+        return false;
+      }
+
+      console.log('✅ Utilisateur assistant créé');
+    } else {
+      console.log('✅ Utilisateur assistant existe déjà');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur ensureAssistantUser:', error);
+    return false;
+  }
+};
+
 // Fonction pour ajouter le message de bienvenue
-const addWelcomeMessage = async (userId) => {
+export const addWelcomeMessage = async (userId) => {
   try {
     console.log('🔍 Création de la conversation de bienvenue pour l\'utilisateur:', userId);
     
+    // Vérifier que l'utilisateur existe
+    if (!userId) {
+      throw new Error('ID utilisateur requis');
+    }
+
+    // S'assurer que l'utilisateur assistant existe
+    const assistantExists = await ensureAssistantUser();
+    if (!assistantExists) {
+      throw new Error('Impossible de créer/vérifier l\'utilisateur assistant');
+    }
+
     // 1. CRÉER une vraie conversation avec l'assistant
     const { data: conversation, error: convError } = await supabase
       .from('conversations')
@@ -62,6 +122,11 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
 
     if (msgError) {
       console.error('❌ Erreur ajout message de bienvenue:', msgError);
+      // Supprimer la conversation si le message ne peut pas être ajouté
+      await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversation.id);
       throw msgError;
     }
 
@@ -131,6 +196,10 @@ export const messageService = {
         // Créer la conversation de l'assistant si elle n'existe pas
         console.log('Création de la conversation de l\'assistant pour l\'utilisateur:', user.id);
         assistantConversation = await addWelcomeMessage(user.id);
+        
+        if (!assistantConversation) {
+          console.error('❌ Impossible de créer la conversation de l\'assistant');
+        }
       } else {
         // Récupérer la conversation existante
         console.log('Conversation de l\'assistant existante trouvée:', existingAssistantConv.id);
