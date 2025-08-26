@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, FolderHeart as HomeIcon, BadgeCent as CarIcon, Briefcase as BriefcaseIcon, ShoppingBag as ShoppingBagIcon, SearchCode as SearchIcon, Sparkles as SparklesIcon } from 'lucide-react';
+import { ArrowRight, Home as HomeIcon, CarFront as CarIcon, Briefcase as BriefcaseIcon, ShoppingBag as ShoppingBagIcon, SearchCode as SearchIcon, Sparkles as SparklesIcon } from 'lucide-react';
 import { personalData } from '@/lib/personalData';
 import { resolveSearchIntent } from '@/lib/search-intent';
 import { useAuth } from '@/contexts/AuthContext';
