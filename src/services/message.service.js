@@ -175,6 +175,7 @@ export const messageService = {
       console.log('🔍 Vérification de la conversation de l\'assistant...');
       
       // Vérifier si l'utilisateur a déjà une conversation avec l'assistant
+      const assistantId = '00000000-0000-0000-0000-000000000000';
       const { data: existingAssistantConv, error: assistantConvError } = await supabase
         .from('conversations')
         .select(`
@@ -186,9 +187,9 @@ export const messageService = {
           created_at,
           updated_at
         `)
-        .or(`participant1_id.eq.00000000-0000-0000-0000-000000000000,participant2_id.eq.${user.id}`)
-        .or(`participant1_id.eq.${user.id},participant2_id.eq.00000000-0000-0000-0000-000000000000`)
-        .single();
+        .or(`participant1_id.eq.${assistantId},participant2_id.eq.${user.id}`)
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.${assistantId}`)
+        .maybeSingle();
 
       let assistantConversation = null;
 
