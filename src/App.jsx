@@ -87,6 +87,16 @@ function App() {
             <InactivityDetector />
             <AnimatePresence mode="wait">
               <Routes>
+                {/* Messaging - Route séparée sans layout */}
+                <Route 
+                  path="messages" 
+                  element={
+                    <ProtectedRoute>
+                      <MessagingPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
                 <Route path="/" element={<MainLayout />}>
                   <Route index element={<HomePage />} />
                   
@@ -97,16 +107,6 @@ function App() {
                   <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
                   <Route path="reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
                   <Route path="profile" element={<ProfilePage />} />
-                  
-                  {/* Messaging */}
-                  <Route 
-                    path="messages" 
-                    element={
-                      <ProtectedRoute>
-                        <MessagingPage />
-                      </ProtectedRoute>
-                    } 
-                  />
                   
                   {/* Marketplace Sections */}
                   <Route path="immobilier" element={<RealEstatePage />} />

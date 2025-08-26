@@ -566,7 +566,7 @@ const MessagingPageContent = () => {
   }
 
     return (
-      <div className="min-h-screen bg-background">
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
         {/* Header Mobile - Afficher seulement si pas de conversation sélectionnée */}
         {!selectedConversation && (
           <MobileMessagingNav
@@ -584,7 +584,7 @@ const MessagingPageContent = () => {
 
         {/* Header Desktop - Afficher seulement si pas de conversation sélectionnée ET sur desktop */}
         {!selectedConversation && (
-          <div className="bg-card border-b border-border px-6 py-4 hidden md:block">
+          <div className="bg-card border-b border-border px-6 py-4 hidden md:block flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-card-foreground">Centre de Messages</h1>
@@ -603,7 +603,7 @@ const MessagingPageContent = () => {
         )}
 
       {/* Contenu Principal */}
-      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-140px)]">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar des conversations - cachée sur mobile si conversation sélectionnée */}
         <div className={`
           ${selectedConversation ? 'hidden md:block' : 'block'} 
