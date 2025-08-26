@@ -674,7 +674,7 @@ const MessagingPageContent = () => {
         {selectedConversation ? (
           <div className="flex-1 flex flex-col bg-card">
             {/* Header de la conversation */}
-            <div className="border-b border-border p-4">
+            <div className="border-b border-border p-4 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   {/* Bouton retour - visible seulement sur mobile */}
@@ -829,17 +829,19 @@ const MessagingPageContent = () => {
               </div>
 
             {/* Zone de saisie optimisée */}
-            <MessageInput
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onSend={handleSendMessage}
-              onAttachment={handleAttachment}
-              onEmoji={handleEmoji}
-              onVoice={() => console.log('Voice message')}
-              onCamera={() => console.log('Camera')}
-              placeholder="Tapez votre message..."
-              disabled={isLoadingMessages}
-            />
+            <div className="flex-shrink-0 border-t border-border">
+              <MessageInput
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onSend={handleSendMessage}
+                onAttachment={handleAttachment}
+                onEmoji={handleEmoji}
+                onVoice={() => console.log('Voice message')}
+                onCamera={() => console.log('Camera')}
+                placeholder="Tapez votre message..."
+                disabled={isLoadingMessages}
+              />
+            </div>
           </div>
         ) : (
           /* Écran d'accueil quand aucune conversation n'est sélectionnée */
