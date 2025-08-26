@@ -1,5 +1,7 @@
 import React from 'react';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '@/i18n/config';
 
 const AppWrapper = ({ children }) => {
   // Si Supabase n'est pas configure, afficher un message au lieu de planter
@@ -54,8 +56,12 @@ const AppWrapper = ({ children }) => {
     );
   }
 
-  // Si Supabase est configure, afficher l'app normale
-  return children;
+  // Si Supabase est configure, afficher l'app normale avec i18n
+  return (
+    <I18nextProvider i18n={i18n}>
+      {children}
+    </I18nextProvider>
+  );
 };
 
 export default AppWrapper;

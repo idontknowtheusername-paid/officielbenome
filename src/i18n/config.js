@@ -30,7 +30,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'fr',
-    debug: process.env.NODE_ENV === 'development',
+    debug: true, // Activer le debug pour voir les problèmes
     
     // Configuration de l'interpolation
     interpolation: {
