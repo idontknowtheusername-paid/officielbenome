@@ -53,19 +53,20 @@ i18n
     defaultNS: 'common',
     ns: ['common', 'auth', 'listings'],
     
-      // Configuration des langues supportées
-  supportedLngs: ['fr', 'en'],
+    // Configuration des langues supportées
+    supportedLngs: ['fr', 'en'],
     
     // Configuration du chargement
     load: 'languageOnly',
     
     // Configuration des clés manquantes
-    saveMissing: process.env.NODE_ENV === 'development',
+    saveMissing: true,
     missingKeyHandler: (lng, ns, key, fallbackValue) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`Missing translation key: ${key} in namespace: ${ns} for language: ${lng}`);
-      }
+      console.warn(`Missing translation key: ${key} in namespace: ${ns} for language: ${lng}`);
     },
+    
+    // Forcer l'initialisation
+    initImmediate: false,
   });
 
 export default i18n;

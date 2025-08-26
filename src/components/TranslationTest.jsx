@@ -13,7 +13,8 @@ const TranslationTest = () => {
     availableLanguages, 
     languageNames,
     formatCurrency,
-    formatDate 
+    formatDate,
+    ready 
   } = useI18n('listings');
 
   const testKeys = [
@@ -94,14 +95,17 @@ const TranslationTest = () => {
           {/* Informations de debug */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Informations de debug</h3>
-            <div className="p-3 bg-muted rounded-lg">
-              <div className="text-sm">
-                <div><strong>Langue actuelle:</strong> {currentLanguage}</div>
-                <div><strong>Langues disponibles:</strong> {availableLanguages.join(', ')}</div>
-                <div><strong>Namespace:</strong> listings</div>
-                <div><strong>i18n ready:</strong> {window.i18next?.isInitialized ? 'Oui' : 'Non'}</div>
-              </div>
-            </div>
+                         <div className="p-3 bg-muted rounded-lg">
+               <div className="text-sm">
+                 <div><strong>Langue actuelle:</strong> {currentLanguage}</div>
+                 <div><strong>Langues disponibles:</strong> {availableLanguages.join(', ')}</div>
+                 <div><strong>Namespace:</strong> listings</div>
+                 <div><strong>i18n ready:</strong> {ready ? 'Oui' : 'Non'}</div>
+                 <div><strong>i18n initialized:</strong> {window.i18next?.isInitialized ? 'Oui' : 'Non'}</div>
+                 <div><strong>Current language:</strong> {window.i18next?.language}</div>
+                 <div><strong>Namespaces loaded:</strong> {window.i18next?.options?.ns?.join(', ')}</div>
+               </div>
+             </div>
           </div>
 
         </CardContent>

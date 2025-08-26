@@ -2,7 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { useCallback, useMemo } from 'react';
 
 export const useI18n = (namespace = 'common') => {
-  const { t, i18n } = useTranslation(namespace);
+  const { t, i18n, ready } = useTranslation(namespace, {
+    useSuspense: false,
+  });
   
   const changeLanguage = useCallback((lng) => {
     i18n.changeLanguage(lng);
@@ -136,5 +138,6 @@ export const useI18n = (namespace = 'common') => {
     formatCurrency,
     formatDate,
     formatDistanceToNow,
+    ready,
   };
 };
