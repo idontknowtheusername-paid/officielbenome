@@ -108,7 +108,7 @@ const LoginForm = () => {
                   Connexion en cours...
                 </>
               ) : (
-                Se connecter
+                'Se connecter'
               )}
             </Button>
           </form>
