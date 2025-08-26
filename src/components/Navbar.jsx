@@ -93,7 +93,6 @@ const Navbar = () => {
             </nav>
 
             <div className="flex items-center space-x-3">
-              <LanguageSelector className="md:hidden" />
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -207,6 +206,14 @@ const Navbar = () => {
                 </NavLink>
               </>
             )}
+            {/* Sélecteur de langue dans le menu mobile */}
+            <div className="border-t border-border pt-4 mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Langue</span>
+              </div>
+              <LanguageSelector variant="mobile" className="w-full" />
+            </div>
+
             {user && user.role === 'admin' ? (
               <NavLink 
                 to="/admin" 

@@ -9,13 +9,35 @@ import {
 } from './ui/dropdown-menu';
 import { Globe, Check } from 'lucide-react';
 
-const LanguageSelector = ({ className = '' }) => {
+const LanguageSelector = ({ className = '', variant = 'dropdown' }) => {
   const { currentLanguage, changeLanguage, availableLanguages, languageNames } = useI18n();
   
   const handleLanguageChange = (lang) => {
     changeLanguage(lang);
   };
+
+  // Version pour le menu mobile (boutons pleine largeur)
+  if (variant === 'mobile') {
+    return (
+      <div className={`space-y-2 ${className}`}>
+        {availableLanguages.map((lang) => (
+          <Button
+            key={lang}
+            variant={currentLanguage === lang ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleLanguageChange(lang)}
+            className="w-full justify-start"
+          >
+            <Globe className="h-4 w-4 mr-2" />
+            {languageNames[lang]}
+            {currentLanguage === lang && <Check className="h-4 w-4 ml-auto text-primary" />}
+          </Button>
+        ))}
+      </div>
+    );
+  }
   
+  // Version dropdown par défaut
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
