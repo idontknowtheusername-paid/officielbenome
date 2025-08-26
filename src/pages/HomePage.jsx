@@ -215,7 +215,7 @@ const HomePage = () => {
                   {category.description}
                 </p>
                 <div className="w-full border border-primary/50 rounded-md px-4 py-2 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  {t('actions.discover')}{" "}
+                  Découvrir{" "}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform inline" />
                 </div>
               </motion.div>
