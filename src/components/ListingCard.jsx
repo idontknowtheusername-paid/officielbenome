@@ -171,18 +171,18 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
       </div>
 
       {/* Content - Padding responsive */}
-      <div className="p-3 sm:p-4 md:p-6">
+      <div className="p-2 sm:p-4 md:p-6">
         {/* Title - Taille responsive */}
         <TranslatedContent content={{ title: listing.title }} sourceLanguage="fr">
           {(translatedContent) => (
-            <h3 className="text-lg sm:text-xl font-semibold mb-2 truncate group-hover:text-primary transition-colors">
+            <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 truncate group-hover:text-primary transition-colors">
               {translatedContent.title}
             </h3>
           )}
         </TranslatedContent>
         
         {/* Location - Icône et texte adaptés */}
-        <div className="flex items-center text-muted-foreground mb-2 sm:mb-3">
+        <div className="flex items-center text-muted-foreground mb-1 sm:mb-3">
           <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
           <span className="truncate text-sm sm:text-base">
             {listing.location && typeof listing.location === 'object' && listing.location.city && listing.location.country 
@@ -194,7 +194,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         
         {/* Price - Taille responsive */}
         <div className={cn(
-          "text-xl sm:text-2xl font-bold mb-2 sm:mb-3",
+          "text-xl sm:text-2xl font-bold mb-1 sm:mb-3",
           isPremium 
             ? "text-slate-800" // Prix premium en couleur sombre pour un meilleur contraste
             : "text-primary" // Prix normal en bleu
@@ -205,7 +205,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         {/* Description - Ligne limitée sur mobile */}
         <TranslatedContent content={{ description: listing.description }} sourceLanguage="fr">
           {(translatedContent) => (
-            <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base line-clamp-2 sm:line-clamp-2">
+            <p className="text-muted-foreground mb-2 sm:mb-4 text-sm sm:text-base line-clamp-2 sm:line-clamp-2">
               {translatedContent.description || t('messages.noData')}
             </p>
           )}
@@ -213,7 +213,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         
         {/* Badge Premium Simple - Affiché seulement si l'annonce est premium */}
         {isPremium && (
-          <div className="mb-3">
+          <div className="mb-2 sm:mb-3">
             <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium">
               ⭐ Premium
             </Badge>
@@ -247,7 +247,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         </div>
         
         {/* Share Button - Version compacte */}
-        <div className="mt-3 pt-3 border-t border-border/20">
+        <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/20">
           <ShareListing listing={listing} variant="compact" />
         </div>
         
@@ -257,7 +257,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           listing={listing}
           size="small"
           showActions={showActions}
-          className="mt-3 pt-3 border-t border-border/20"
+          className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/20"
         />
       </div>
     </motion.div>
