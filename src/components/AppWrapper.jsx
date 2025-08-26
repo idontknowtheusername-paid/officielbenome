@@ -1,22 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/i18n/config';
 
 const AppWrapper = ({ children }) => {
-  const [i18nReady, setI18nReady] = useState(false);
-
-  useEffect(() => {
-    // Attendre que i18n soit initialisé
-    if (i18n.isInitialized) {
-      setI18nReady(true);
-    } else {
-      i18n.on('initialized', () => {
-        setI18nReady(true);
-      });
-    }
-  }, []);
-
   // Si Supabase n'est pas configure, afficher un message au lieu de planter
   if (!isSupabaseConfigured) {
     return (
@@ -69,35 +54,8 @@ const AppWrapper = ({ children }) => {
     );
   }
 
-  // Si Supabase est configure, afficher l'app normale avec i18n
-  if (!i18nReady) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-        fontFamily: 'Arial, sans-serif',
-        padding: '20px',
-        textAlign: 'center'
-      }}>
-        <div>
-          <h1 style={{ color: '#3498db', marginBottom: '20px' }}>
-            🌍 Initialisation de l'internationalisation...
-          </h1>
-          <p>Chargement des traductions...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <I18nextProvider i18n={i18n}>
-      {children}
-    </I18nextProvider>
-  );
+  // Si Supabase est configure, afficher l'app normale
+  return children;
 };
 
 export default AppWrapper;

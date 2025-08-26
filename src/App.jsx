@@ -44,7 +44,7 @@ import BoostListingPage from '@/pages/BoostListingPage';
 import PaymentProcessPage from '@/pages/PaymentProcessPage';
 import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
 import FedaPayTestPage from '@/pages/FedaPayTestPage';
-import TranslationTest from '@/components/TranslationTest';
+
 
 
 // Admin Pages
@@ -169,7 +169,7 @@ function App() {
                      
                      {/* Test FedaPay */}
                      <Route path="fedapay-test" element={<FedaPayTestPage />} />
-                  <Route path="translation-test" element={<TranslationTest />} />
+
                      
                      {/* Modifier une annonce */}
                   <Route 
