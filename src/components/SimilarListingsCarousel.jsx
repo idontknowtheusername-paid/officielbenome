@@ -12,9 +12,10 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
   // Configuration du carrousel responsive
   const getItemsPerView = () => {
     if (typeof window === 'undefined') return 3;
-    if (window.innerWidth < 768) return 2; // Mobile: 2 annonces
-    if (window.innerWidth < 1024) return 2; // Tablet: 2 annonces
-    return 3; // Desktop: 3 annonces
+    if (window.innerWidth < 640) return 1; // Mobile: 1 annonce
+    if (window.innerWidth < 768) return 2; // Small: 2 annonces
+    if (window.innerWidth < 1024) return 3; // Medium: 3 annonces
+    return 4; // Large: 4 annonces
   };
 
   const [itemsPerView, setItemsPerView] = useState(getItemsPerView());
@@ -72,6 +73,81 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
     return null;
   }
 
+  // Si moins d'annonces que d'items par vue, pas besoin de carrousel
+  if (listings.length <= itemsPerView) {
+    return (
+      <div className="mt-12">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">{title}</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {listings.map((listing, index) => (
+            <motion.div
+              key={listing.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Link 
+                to={`/annonce/${listing.id}`}
+                className="group block"
+              >
+                <div className="rounded-lg border border-border overflow-hidden transition-all duration-300 hover:border-primary hover:shadow-lg">
+                  {/* Image */}
+                  <div className="aspect-video relative overflow-hidden">
+                    <img   
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      alt={listing.title}
+                      src={listing.images?.[0] || '/placeholder-image.jpg'}
+                      loading="lazy"
+                    />
+                    
+                    {/* Badge Premium si applicable */}
+                    {(listing.is_featured || listing.is_boosted || listing.is_premium) && (
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                          ⭐ Premium
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Contenu */}
+                  <div className="p-4">
+                    <h3 className="font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                      {listing.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                      {listing.description}
+                    </p>
+                    
+                    {/* Localisation */}
+                    {listing.location && (
+                      <div className="flex items-center text-xs text-muted-foreground mb-2">
+                        <span className="mr-1">📍</span>
+                        <span>
+                          {listing.location.city && listing.location.country 
+                            ? `${listing.location.city}, ${listing.location.country}`
+                            : 'Localisation non spécifiée'
+                          }
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Prix */}
+                    <p className="text-lg font-bold text-primary">
+                      {formatPrice(listing.price)}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="mt-12"
@@ -85,7 +161,7 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
       {/* Container du carrousel */}
       <div className="relative overflow-hidden">
         {/* Flèches de navigation sur les annonces */}
-        {listings.length > itemsPerView && (
+        {listings.length > itemsPerView && maxIndex > 0 && (
           <>
             <Button
               variant="outline"
@@ -117,7 +193,9 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
             className="flex gap-4"
             style={{
               transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
-              width: `${(listings.length / itemsPerView) * 100}%`
+              width: `${(listings.length / itemsPerView) * 100}%`,
+              display: 'flex',
+              gap: '1rem'
             }}
           >
             {listings.map((listing, index) => (
@@ -126,7 +204,7 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
                  initial={{ opacity: 0, y: 20 }}
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                 className="min-w-[280px] sm:min-w-[320px] md:min-w-[300px] flex-shrink-0"
+                 className="w-full sm:w-[calc(50%-8px)] md:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] flex-shrink-0"
                >
                 <Link 
                   to={`/annonce/${listing.id}`}
@@ -188,7 +266,7 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
       </div>
 
       {/* Indicateurs de progression en bas */}
-      {listings.length > itemsPerView && (
+      {listings.length > itemsPerView && maxIndex > 0 && (
         <div className="mt-6 flex justify-center">
           <div className="flex gap-2">
             {Array.from({ length: maxIndex + 1 }).map((_, index) => (
