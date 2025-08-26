@@ -432,7 +432,7 @@ const ChatWidget = ({ pageContext = {} }) => {
             e.target.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.3)';
           }}
         >
-          <span style={{ fontSize: '18px', lineHeight: 1 }}>⚡</span>
+          <span style={{ fontSize: '18px', lineHeight: 1 }}>💬</span>
           Demander à AIDA
         </button>
       )}
