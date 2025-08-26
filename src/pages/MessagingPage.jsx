@@ -567,8 +567,8 @@ const MessagingPageContent = () => {
 
     return (
       <div className="min-h-screen bg-background">
-        {/* Header Mobile - Afficher seulement si pas de conversation sélectionnée OU sur mobile */}
-        {(!selectedConversation || isMobile) && (
+        {/* Header Mobile - Afficher seulement si pas de conversation sélectionnée */}
+        {!selectedConversation && (
           <MobileMessagingNav
             selectedConversation={selectedConversation}
             onBack={() => setSelectedConversation(null)}
