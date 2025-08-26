@@ -375,10 +375,10 @@ const ListingDetailPage = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
-                <div className="flex items-center gap-4 text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-muted-foreground">
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 mr-1" />
-                    <span>
+                    <span className="text-sm">
                       {listing.location && typeof listing.location === 'object' && listing.location.city 
                         ? `${listing.location.city}, ${listing.location.country || ''}` 
                         : 'Localisation non spécifiée'
@@ -387,7 +387,7 @@ const ListingDetailPage = () => {
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    <span>Publié le {formatDate(listing.created_at)}</span>
+                    <span className="text-sm">Publié le {formatDate(listing.created_at)}</span>
                   </div>
                 </div>
               </div>
