@@ -1,8 +1,7 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { kkiapayService } from './kkiapay.service';
 
 // ============================================================================
-// SERVICE DE GESTION DES PAIEMENTS PREMIUM - PRODUCTION KKIAPAY
+// SERVICE DE GESTION DES PAIEMENTS PREMIUM - PRODUCTION FEDAPAY
 // ============================================================================
 
 export const paymentService = {
@@ -20,7 +19,7 @@ export const paymentService = {
           amount: paymentData.amount,
           currency: paymentData.currency || 'XOF',
           payment_method: paymentData.paymentMethod,
-          payment_gateway: 'kkiapay',
+          payment_gateway: 'fedapay',
           status: 'pending',
           metadata: {
             boost_id: paymentData.boostId,
@@ -50,226 +49,68 @@ export const paymentService = {
     }
   },
 
-  // Initier un paiement avec Orange Money
-  initiateOrangeMoneyPayment: async (paymentId, phoneNumber) => {
-    try {
-      console.log('🚀 Initialisation paiement Orange Money via Kkiapay...');
-      console.log('📱 Téléphone:', phoneNumber);
-      console.log('💰 Payment ID:', paymentId);
-      
-      const paymentData = await getPaymentData(paymentId);
-      const userData = await getUserData(paymentData.user_id);
-      
-      console.log('📊 Données paiement:', {
-        amount: paymentData.amount,
-        email: userData.email,
-        phone: phoneNumber
-      });
-      
-      const kkiapayResult = await kkiapayService.initializePayment({
-        amount: paymentData.amount,
-        email: userData.email,
-        phone: phoneNumber,
-        name: userData.full_name || userData.email,
-        country: paymentData.metadata?.country || 'BJ',
-        payment_method: 'orange_money',
-        callback_url: `${window.location.origin}/payment-callback?payment_id=${paymentId}`,
-        boost_id: paymentData.metadata?.boost_id,
-        listing_id: paymentData.metadata?.listing_id,
-        package_name: paymentData.metadata?.package_name,
-        user_id: paymentData.user_id
-      });
-
-      console.log('✅ Résultat Kkiapay:', kkiapayResult);
-
-      await updatePaymentStatus(paymentId, 'processing', {
-        kkiapay_transaction_id: kkiapayResult.transactionId,
-        kkiapay_reference: kkiapayResult.reference,
-        payment_url: kkiapayResult.paymentUrl,
-        initiated_at: new Date().toISOString()
-      });
-
-      return {
-        success: true,
-        paymentUrl: kkiapayResult.paymentUrl,
-        transactionId: kkiapayResult.transactionId,
-        status: 'processing',
-        message: 'Paiement Orange Money initié avec succès via Kkiapay'
-      };
-    } catch (error) {
-      console.error('❌ Erreur Orange Money:', error);
-      throw new Error(`Erreur Orange Money: ${error.message}`);
-    }
-  },
-
-  // Initier un paiement avec MTN Mobile Money
-  initiateMTNPayment: async (paymentId, phoneNumber) => {
-    try {
-      const paymentData = await getPaymentData(paymentId);
-      const userData = await getUserData(paymentData.user_id);
-      
-      const kkiapayResult = await kkiapayService.initializePayment({
-        amount: paymentData.amount,
-        email: userData.email,
-        phone: phoneNumber,
-        name: userData.full_name || userData.email,
-        country: paymentData.metadata?.country || 'BJ',
-        payment_method: 'mtn_mobile_money',
-        callback_url: `${window.location.origin}/payment-callback?payment_id=${paymentId}`,
-        boost_id: paymentData.metadata?.boost_id,
-        listing_id: paymentData.metadata?.listing_id,
-        package_name: paymentData.metadata?.package_name,
-        user_id: paymentData.user_id
-      });
-
-      await updatePaymentStatus(paymentId, 'processing', {
-        kkiapay_transaction_id: kkiapayResult.transactionId,
-        kkiapay_reference: kkiapayResult.reference,
-        payment_url: kkiapayResult.paymentUrl,
-        initiated_at: new Date().toISOString()
-      });
-
-      return {
-        success: true,
-        paymentUrl: kkiapayResult.paymentUrl,
-        transactionId: kkiapayResult.transactionId,
-        status: 'processing',
-        message: 'Paiement MTN initié avec succès via Kkiapay'
-      };
-    } catch (error) {
-      throw new Error(`Erreur MTN: ${error.message}`);
-    }
-  },
-
-  // Initier un paiement avec Moov Money
-  initiateMoovPayment: async (paymentId, phoneNumber) => {
-    try {
-      const paymentData = await getPaymentData(paymentId);
-      const userData = await getUserData(paymentData.user_id);
-      
-      const kkiapayResult = await kkiapayService.initializePayment({
-        amount: paymentData.amount,
-        email: userData.email,
-        phone: phoneNumber,
-        name: userData.full_name || userData.email,
-        country: paymentData.metadata?.country || 'BJ',
-        payment_method: 'moov_money',
-        callback_url: `${window.location.origin}/payment-callback?payment_id=${paymentId}`,
-        boost_id: paymentData.metadata?.boost_id,
-        listing_id: paymentData.metadata?.listing_id,
-        package_name: paymentData.metadata?.package_name,
-        user_id: paymentData.user_id
-      });
-
-      await updatePaymentStatus(paymentId, 'processing', {
-        kkiapay_transaction_id: kkiapayResult.transactionId,
-        kkiapay_reference: kkiapayResult.reference,
-        payment_url: kkiapayResult.paymentUrl,
-        initiated_at: new Date().toISOString()
-      });
-
-      return {
-        success: true,
-        paymentUrl: kkiapayResult.paymentUrl,
-        transactionId: kkiapayResult.transactionId,
-        status: 'processing',
-        message: 'Paiement Moov initié avec succès via Kkiapay'
-      };
-    } catch (error) {
-      throw new Error(`Erreur Moov: ${error.message}`);
-    }
-  },
-
-  // Initier un paiement par carte
-  initiateCardPayment: async (paymentId, cardData) => {
-    try {
-      const paymentData = await getPaymentData(paymentId);
-      const userData = await getUserData(paymentData.user_id);
-      
-      const kkiapayResult = await kkiapayService.initializePayment({
-        amount: paymentData.amount,
-        email: userData.email,
-        phone: userData.phone || '',
-        name: cardData.name,
-        country: paymentData.metadata?.country || 'BJ',
-        payment_method: 'card',
-        callback_url: `${window.location.origin}/payment-callback?payment_id=${paymentId}`,
-        boost_id: paymentData.metadata?.boost_id,
-        listing_id: paymentData.metadata?.listing_id,
-        package_name: paymentData.metadata?.package_name,
-        user_id: paymentData.user_id
-      });
-
-      await updatePaymentStatus(paymentId, 'processing', {
-        kkiapay_transaction_id: kkiapayResult.transactionId,
-        kkiapay_reference: kkiapayResult.reference,
-        payment_url: kkiapayResult.paymentUrl,
-        card_brand: cardData.brand,
-        last4: cardData.number.replace(/\s/g, '').slice(-4),
-        initiated_at: new Date().toISOString()
-      });
-
-      return {
-        success: true,
-        paymentUrl: kkiapayResult.paymentUrl,
-        transactionId: kkiapayResult.transactionId,
-        status: 'processing',
-        message: 'Paiement carte initié avec succès via Kkiapay'
-      };
-    } catch (error) {
-      throw new Error(`Erreur carte: ${error.message}`);
-    }
-  },
-
-  // Confirmer un paiement
-  confirmPayment: async (paymentId, confirmationData) => {
-    try {
-      const paymentData = await getPaymentData(paymentId);
-      const kkiapayTransactionId = paymentData.metadata?.kkiapay_transaction_id;
-      
-      if (!kkiapayTransactionId) {
-        throw new Error('ID de transaction Kkiapay manquant');
-      }
-
-      const verificationResult = await kkiapayService.verifyPayment(kkiapayTransactionId);
-      
-      if (verificationResult.status === 'successful') {
-        await updatePaymentStatus(paymentId, 'completed', {
-          ...verificationResult,
-          confirmed_at: new Date().toISOString()
-        });
-
-        return {
-          success: true,
-          paymentData: verificationResult,
-          message: 'Paiement confirmé avec succès via Kkiapay'
-        };
-      } else {
-        throw new Error(`Paiement non réussi: ${verificationResult.status}`);
-      }
-    } catch (error) {
-      throw new Error(`Erreur de confirmation: ${error.message}`);
-    }
-  },
-
   // Obtenir les méthodes de paiement disponibles
   getPaymentMethods: (country = 'BJ') => {
-    return kkiapayService.getPaymentMethods(country);
+    return [
+      {
+        id: 'orange_money',
+        name: 'Orange Money',
+        icon: '🟠',
+        description: 'Paiement via Orange Money',
+        available: true
+      },
+      {
+        id: 'mtn_mobile_money',
+        name: 'MTN Mobile Money',
+        icon: '🟡',
+        description: 'Paiement via MTN Mobile Money',
+        available: true
+      },
+      {
+        id: 'moov_money',
+        name: 'Moov Money',
+        icon: '🔵',
+        description: 'Paiement via Moov Money',
+        available: true
+      },
+      {
+        id: 'card',
+        name: 'Carte Bancaire',
+        icon: '💳',
+        description: 'Paiement par carte Visa/Mastercard',
+        available: true
+      }
+    ];
   },
 
   // Calculer les frais de transaction
   calculateFees: (amount) => {
-    return kkiapayService.calculateFees(amount);
+    const feePercentage = 0.025; // 2.5%
+    const fixedFee = 50; // 50 FCFA
+    const fee = (amount * feePercentage) + fixedFee;
+    return {
+      amount: amount,
+      fee: Math.round(fee),
+      total: amount + Math.round(fee),
+      percentage: feePercentage * 100,
+      fixedFee: fixedFee
+    };
   },
 
   // Valider un numéro de téléphone
   validatePhoneNumber: (phone, country = 'BJ') => {
-    return kkiapayService.validatePhoneNumber(phone, country);
+    // Format béninois : +229 XX XX XX XX
+    const beninRegex = /^(\+229|229)?[0-9]{8}$/;
+    return beninRegex.test(phone.replace(/\s/g, ''));
   },
 
   // Formater un numéro de téléphone
   formatPhoneNumber: (phone, country = 'BJ') => {
-    return kkiapayService.formatPhoneNumber(phone, country);
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 8) {
+      return `+229 ${cleaned.slice(0, 2)} ${cleaned.slice(2, 4)} ${cleaned.slice(4, 6)} ${cleaned.slice(6, 8)}`;
+    }
+    return phone;
   }
 };
 
