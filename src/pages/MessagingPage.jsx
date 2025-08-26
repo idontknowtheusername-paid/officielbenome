@@ -26,7 +26,8 @@ import {
   Edit3,
   Copy,
   Flag,
-  Eye
+  Eye,
+  ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,6 +81,19 @@ const MessagingPageContent = () => {
   const [longPressTimer, setLongPressTimer] = useState(null);
   const [showAudioCall, setShowAudioCall] = useState(false);
   const [audioCallTarget, setAudioCallTarget] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détecter si on est sur mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Utiliser le hook de chat en temps réel
   useRealtimeMessages(selectedConversation?.id);
@@ -552,37 +566,41 @@ const MessagingPageContent = () => {
   }
 
     return (
-              <div className="min-h-screen bg-background">
-      {/* Header Mobile */}
-      <MobileMessagingNav
-        selectedConversation={selectedConversation}
-        onBack={() => setSelectedConversation(null)}
-        onMenuToggle={() => setShowMobileMenu(!showMobileMenu)}
-        onSearch={() => setShowMobileMenu(false)}
-        onFilter={() => setShowMobileMenu(false)}
-        onMore={() => console.log('Plus d\'options')}
-        onCall={handleCall}
-        onVideo={() => console.log('Video')}
-        unreadCount={stats.unread}
-      />
+      <div className="min-h-screen bg-background">
+        {/* Header Mobile - Afficher seulement si pas de conversation sélectionnée OU sur mobile */}
+        {(!selectedConversation || isMobile) && (
+          <MobileMessagingNav
+            selectedConversation={selectedConversation}
+            onBack={() => setSelectedConversation(null)}
+            onMenuToggle={() => setShowMobileMenu(!showMobileMenu)}
+            onSearch={() => setShowMobileMenu(false)}
+            onFilter={() => setShowMobileMenu(false)}
+            onMore={() => console.log('Plus d\'options')}
+            onCall={handleCall}
+            onVideo={() => console.log('Video')}
+            unreadCount={stats.unread}
+          />
+        )}
 
-      {/* Header Desktop */}
-      <div className="bg-card border-b border-border px-6 py-4 hidden md:block">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-card-foreground">Centre de Messages</h1>
-              <p className="text-muted-foreground">
-                Gérez vos conversations et échangez avec d'autres utilisateurs
-              </p>
-            </div>
-          <div className="flex items-center space-x-3">
-              <Button className="bg-primary hover:bg-primary/90">
-                <Plus className="h-4 w-4 mr-2" />
-                Nouvelle Conversation
-              </Button>
+        {/* Header Desktop - Afficher seulement si pas de conversation sélectionnée ET sur desktop */}
+        {!selectedConversation && (
+          <div className="bg-card border-b border-border px-6 py-4 hidden md:block">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-card-foreground">Centre de Messages</h1>
+                <p className="text-muted-foreground">
+                  Gérez vos conversations et échangez avec d'autres utilisateurs
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button className="bg-primary hover:bg-primary/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle Conversation
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
       {/* Contenu Principal */}
       <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-140px)]">
@@ -659,6 +677,16 @@ const MessagingPageContent = () => {
             <div className="border-b border-border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
+                  {/* Bouton retour - visible seulement sur mobile */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedConversation(null)}
+                    className="p-2 -ml-2 md:hidden"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  
                   <UserAvatar 
                     user={selectedConversation.participant1_id === user?.id 
                       ? selectedConversation.participant2 
