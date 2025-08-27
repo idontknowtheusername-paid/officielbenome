@@ -566,7 +566,7 @@ const MessagingPageContent = () => {
   }
 
     return (
-      <div className="h-screen bg-background flex flex-col overflow-hidden">
+      <div className="h-screen bg-background flex flex-col overflow-hidden max-h-screen">
         {/* Header Mobile - Afficher seulement si pas de conversation sélectionnée */}
         {!selectedConversation && (
           <MobileMessagingNav
@@ -603,7 +603,7 @@ const MessagingPageContent = () => {
         )}
 
       {/* Contenu Principal */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Sidebar des conversations - cachée sur mobile si conversation sélectionnée */}
         <div className={`
           ${selectedConversation ? 'hidden md:block' : 'block'} 
@@ -672,7 +672,7 @@ const MessagingPageContent = () => {
 
         {/* Zone de conversation active */}
         {selectedConversation ? (
-          <div className="flex-1 flex flex-col bg-card">
+          <div className="flex-1 flex flex-col bg-card min-h-0">
             {/* Header de la conversation */}
             <div className="border-b border-border p-4 flex-shrink-0">
               <div className="flex items-center justify-between">
@@ -744,7 +744,7 @@ const MessagingPageContent = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
               {/* Barre d'actions pour la sélection multiple */}
               {isMessageSelectionMode && (
                 <div className="sticky top-0 bg-card border border-border rounded-lg p-3 mb-4 shadow-sm z-10">
