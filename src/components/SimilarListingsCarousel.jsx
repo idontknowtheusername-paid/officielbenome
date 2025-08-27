@@ -24,7 +24,10 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
   // Mettre à jour le nombre d'items visibles selon la taille d'écran
   useEffect(() => {
     const handleResize = () => {
-      setItemsPerView(getItemsPerView());
+      const newItemsPerView = getItemsPerView();
+      setItemsPerView(newItemsPerView);
+      // Réinitialiser l'index si nécessaire
+      setCurrentIndex(0);
     };
 
     window.addEventListener('resize', handleResize);
@@ -183,86 +186,90 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires" 
           </>
         )}
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="flex gap-4"
-            style={{
-              transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
-              width: `${(listings.length / itemsPerView) * 100}%`,
-              display: 'flex',
-              gap: '1rem'
-            }}
-          >
-            {listings.map((listing, index) => (
-                             <motion.div
-                 key={listing.id}
-                 initial={{ opacity: 0, y: 20 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                 className="w-full sm:w-[calc(50%-8px)] md:w-[calc(33.333%-8px)] lg:w-[calc(25%-12px)] flex-shrink-0"
-               >
-                <Link 
-                  to={`/annonce/${listing.id}`}
-                  className="group block"
+        {/* Container avec overflow caché */}
+        <div className="overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex gap-4"
+              style={{
+                transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+                width: `${(listings.length / itemsPerView) * 100}%`
+              }}
+            >
+              {listings.map((listing, index) => (
+                <motion.div
+                  key={listing.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="flex-shrink-0"
+                  style={{
+                    width: `${100 / itemsPerView}%`
+                  }}
                 >
-                  <div className="rounded-lg border border-border overflow-hidden transition-all duration-300 hover:border-primary hover:shadow-lg">
-                    {/* Image */}
-                    <div className="aspect-video relative overflow-hidden">
-                      <img   
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        alt={listing.title}
-                        src={listing.images?.[0] || '/placeholder-image.jpg'}
-                        loading="lazy"
-                      />
+                  <Link 
+                    to={`/annonce/${listing.id}`}
+                    className="group block"
+                  >
+                    <div className="rounded-lg border border-border overflow-hidden transition-all duration-300 hover:border-primary hover:shadow-lg">
+                      {/* Image */}
+                      <div className="aspect-video relative overflow-hidden">
+                        <img   
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          alt={listing.title}
+                          src={listing.images?.[0] || '/placeholder-image.jpg'}
+                          loading="lazy"
+                        />
+                        
+                        {/* Badge Premium si applicable */}
+                        {(listing.is_featured || listing.is_boosted || listing.is_premium) && (
+                          <div className="absolute top-2 right-2">
+                            <span className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                              ⭐ Premium
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       
-                      {/* Badge Premium si applicable */}
-                      {(listing.is_featured || listing.is_boosted || listing.is_premium) && (
-                        <div className="absolute top-2 right-2">
-                          <span className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs px-2 py-1 rounded-full">
-                            ⭐ Premium
-                          </span>
-                        </div>
-                      )}
+                      {/* Contenu */}
+                      <div className="p-4">
+                        <h3 className="font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                          {listing.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          {listing.description}
+                        </p>
+                        
+                        {/* Localisation */}
+                        {listing.location && (
+                          <div className="flex items-center text-xs text-muted-foreground mb-2">
+                            <span className="mr-1">📍</span>
+                            <span>
+                              {listing.location.city && listing.location.country 
+                                ? `${listing.location.city}, ${listing.location.country}`
+                                : 'Localisation non spécifiée'
+                              }
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Prix */}
+                        <p className="text-lg font-bold text-primary">
+                          {formatPrice(listing.price)}
+                        </p>
+                      </div>
                     </div>
-                    
-                    {/* Contenu */}
-                    <div className="p-4">
-                      <h3 className="font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">
-                        {listing.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {listing.description}
-                      </p>
-                      
-                      {/* Localisation */}
-                      {listing.location && (
-                        <div className="flex items-center text-xs text-muted-foreground mb-2">
-                          <span className="mr-1">📍</span>
-                          <span>
-                            {listing.location.city && listing.location.country 
-                              ? `${listing.location.city}, ${listing.location.country}`
-                              : 'Localisation non spécifiée'
-                            }
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Prix */}
-                      <p className="text-lg font-bold text-primary">
-                        {formatPrice(listing.price)}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
-        </AnimatePresence>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Indicateurs de progression en bas */}
