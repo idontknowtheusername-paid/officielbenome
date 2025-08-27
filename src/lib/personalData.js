@@ -11,12 +11,9 @@ export const personalData = {
   phone: "+221 77 123 4567",
   address: "Dakar, Sénégal",
   socials: {
-    github: "https://github.com/maximarket",
-    linkedin: "https://linkedin.com/company/maximarket",
-    twitter: "https://twitter.com/maximarket",
-    instagram: "https://instagram.com/maximarket",
     facebook: "https://facebook.com/maximarket",
-    youtube: "https://youtube.com/@maximarket",
+    instagram: "https://instagram.com/maximarket",
+    tiktok: "https://tiktok.com/@maximarket",
   },
   skills: [
     // You can repurpose this for something else if needed, or remove

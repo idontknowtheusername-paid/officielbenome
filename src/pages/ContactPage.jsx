@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Github, Twitter, Linkedin } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Instagram } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
 import { personalData } from '@/lib/personalData';
 
@@ -13,9 +13,9 @@ const ContactPage = () => {
   ];
   
   const socialLinks = [
-    { icon: <Github className="h-6 w-6" />, label: "GitHub", href: personalData.socials.github },
-    { icon: <Twitter className="h-6 w-6" />, label: "Twitter", href: personalData.socials.twitter },
-    { icon: <Linkedin className="h-6 w-6" />, label: "LinkedIn", href: personalData.socials.linkedin },
+    { icon: <Facebook className="h-6 w-6" />, label: "Facebook", href: personalData.socials.facebook },
+    { icon: <Instagram className="h-6 w-6" />, label: "Instagram", href: personalData.socials.instagram },
+    { icon: <span className="text-xl">🎵</span>, label: "TikTok", href: personalData.socials.tiktok },
   ];
 
   return (

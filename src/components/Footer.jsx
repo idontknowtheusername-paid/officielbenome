@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Send, ArrowRight, Zap, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Send, ArrowRight, Zap, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { personalData } from '@/lib/personalData';
@@ -47,8 +47,8 @@ const Footer = () => {
 
   const socialLinks = [
     { name: "Facebook", icon: <Facebook className="h-5 w-5" />, path: personalData.socials.facebook },
-    { name: "Twitter", icon: <Twitter className="h-5 w-5" />, path: personalData.socials.twitter },
     { name: "Instagram", icon: <Instagram className="h-5 w-5" />, path: personalData.socials.instagram },
+    { name: "TikTok", icon: <span className="text-lg">🎵</span>, path: personalData.socials.tiktok },
   ].filter(social => social.path && social.path !== "");
 
   // Debug: Afficher les réseaux sociaux dans la console
