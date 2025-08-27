@@ -124,7 +124,7 @@ const MessageInput = ({
   ];
 
   return (
-    <div className="bg-card border-t border-border p-3">
+    <div className="bg-background border-t border-border p-4">
       {/* Actions rapides */}
       {showQuickActions && (
         <div className="mb-3 p-3 bg-muted/50 rounded-lg">

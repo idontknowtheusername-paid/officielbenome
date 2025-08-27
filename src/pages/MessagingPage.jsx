@@ -829,7 +829,7 @@ const MessagingPageContent = () => {
               </div>
 
             {/* Zone de saisie optimisée */}
-            <div className="flex-shrink-0 border-t border-border">
+            <div className="flex-shrink-0">
               <MessageInput
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
