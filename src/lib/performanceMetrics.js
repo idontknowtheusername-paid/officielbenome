@@ -12,20 +12,25 @@ class PerformanceMetrics {
     
     this.observers = [];
     this.isMonitoring = false;
+    this.monitoringInterval = null;
   }
 
   /**
-   * Démarrer le monitoring
+   * Démarrer le monitoring (optionnel)
    */
   startMonitoring() {
     if (this.isMonitoring) return;
     
     this.isMonitoring = true;
-    this.monitorMemoryUsage();
-    this.monitorNetworkRequests();
-    this.monitorCachePerformance();
     
-    console.log('📊 Monitoring de performance démarré');
+    // Monitoring mémoire réduit (toutes les 30 secondes au lieu de 5)
+    this.monitorMemoryUsage();
+    
+    // Monitoring réseau simplifié
+    this.monitorNetworkRequests();
+    
+    // Monitoring cache désactivé par défaut
+    // this.monitorCachePerformance();
   }
 
   /**
@@ -33,7 +38,11 @@ class PerformanceMetrics {
    */
   stopMonitoring() {
     this.isMonitoring = false;
-    console.log('📊 Monitoring de performance arrêté');
+    
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
   }
 
   /**
@@ -59,8 +68,8 @@ class PerformanceMetrics {
     this.metrics.apiCalls++;
     this.metrics.loadTimes.push(duration);
     
-    // Garder seulement les 100 derniers temps de chargement
-    if (this.metrics.loadTimes.length > 100) {
+    // Garder seulement les 50 derniers temps de chargement (au lieu de 100)
+    if (this.metrics.loadTimes.length > 50) {
       this.metrics.loadTimes.shift();
     }
     
@@ -112,7 +121,7 @@ class PerformanceMetrics {
   }
 
   /**
-   * Monitorer l'utilisation mémoire
+   * Monitorer l'utilisation mémoire (réduit)
    */
   monitorMemoryUsage() {
     if (!this.isMonitoring) return;
@@ -126,22 +135,25 @@ class PerformanceMetrics {
         timestamp: Date.now()
       });
       
-      // Garder seulement les 50 dernières mesures
-      if (this.metrics.memoryUsage.length > 50) {
+      // Garder seulement les 20 dernières mesures (au lieu de 50)
+      if (this.metrics.memoryUsage.length > 20) {
         this.metrics.memoryUsage.shift();
       }
     }
     
-    setTimeout(() => this.monitorMemoryUsage(), 5000); // Toutes les 5 secondes
+    // Monitoring toutes les 30 secondes (au lieu de 5)
+    this.monitoringInterval = setTimeout(() => this.monitorMemoryUsage(), 30000);
   }
 
   /**
-   * Monitorer les requêtes réseau
+   * Monitorer les requêtes réseau (simplifié)
    */
   monitorNetworkRequests() {
     if (!this.isMonitoring) return;
     
-    // Intercepter les requêtes fetch
+    // Intercepter les requêtes fetch seulement si pas déjà fait
+    if (window.fetch._monitored) return;
+    
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
       const startTime = performance.now();
@@ -157,15 +169,19 @@ class PerformanceMetrics {
         throw error;
       }
     };
+    
+    window.fetch._monitored = true;
   }
 
   /**
-   * Monitorer les performances du cache
+   * Monitorer les performances du cache (désactivé par défaut)
    */
   monitorCachePerformance() {
     if (!this.isMonitoring) return;
     
-    // Intercepter les accès localStorage
+    // Intercepter les accès localStorage seulement si pas déjà fait
+    if (Storage.prototype.getItem._monitored) return;
+    
     const originalGetItem = Storage.prototype.getItem;
     const originalSetItem = Storage.prototype.setItem;
     
@@ -183,6 +199,9 @@ class PerformanceMetrics {
       }
       return originalSetItem.call(this, key, value);
     };
+    
+    Storage.prototype.getItem._monitored = true;
+    Storage.prototype.setItem._monitored = true;
   }
 
   /**
@@ -207,7 +226,7 @@ class PerformanceMetrics {
       try {
         observer(event, data);
       } catch (error) {
-        console.error('Erreur dans l\'observateur de métriques:', error);
+        // Erreur silencieuse pour éviter les boucles
       }
     });
   }
@@ -237,13 +256,16 @@ class PerformanceMetrics {
       memoryUsage: [],
       startTime: Date.now()
     };
-    
-    console.log('📊 Métriques réinitialisées');
   }
 }
 
 // Instance singleton
 export const performanceMetrics = new PerformanceMetrics();
 
-// Démarrer automatiquement le monitoring
-performanceMetrics.startMonitoring(); 
+// Démarrer le monitoring seulement en mode développement
+if (import.meta.env.DEV) {
+  // Délai de 5 secondes avant de démarrer le monitoring
+  setTimeout(() => {
+    performanceMetrics.startMonitoring();
+  }, 5000);
+} 

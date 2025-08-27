@@ -321,28 +321,139 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
+          // Chunks principaux optimisés
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
+          
+          // UI Components - séparés pour optimiser le chargement
+          ui: [
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-dropdown-menu', 
+            '@radix-ui/react-select', 
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-hover-card',
+            '@radix-ui/react-label',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-progress',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip'
+          ],
+          
+          // Animations - séparées car volumineuses
           animations: ['framer-motion'],
-          utils: ['date-fns', 'clsx', 'tailwind-merge'],
-          forms: ['react-hook-form', '@hookform/resolvers'],
-          query: ['@tanstack/react-query'],
-          supabase: ['@supabase/supabase-js'],
+          
+          // Utilitaires
+          utils: ['date-fns', 'clsx', 'tailwind-merge', 'class-variance-authority'],
+          
+          // Formulaires
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          
+          // Query et cache
+          query: ['@tanstack/react-query', '@tanstack/react-query-devtools'],
+          
+          // Supabase et authentification
+          supabase: ['@supabase/supabase-js', '@supabase/auth-helpers-react', '@supabase/auth-ui-react'],
+          
+          // Services et API
+          services: ['axios', 'socket.io-client', 'simple-peer'],
+          
+          // Charts et visualisation
+          charts: ['recharts'],
+          
+          // Maps et géolocalisation
+          maps: ['leaflet', 'react-leaflet'],
+          
+          // Admin - séparé pour lazy loading
+          admin: [
+            '@/pages/admin/AdminDashboardPage',
+            '@/pages/admin/users/UsersPage',
+            '@/pages/admin/listings/ListingsPage',
+            '@/pages/admin/transactions/TransactionsPage',
+            '@/pages/admin/analytics/AnalyticsPage',
+            '@/pages/admin/moderation/ModerationPage',
+            '@/pages/admin/categories/CategoriesPage',
+            '@/pages/admin/settings/SettingsPage',
+            '@/pages/admin/NewsletterAdminPage'
+          ],
+          
+          // Messaging - séparé pour lazy loading
+          messaging: [
+            '@/pages/MessagingPage',
+            '@/components/messaging'
+          ],
+          
+          // Chatbot - séparé pour optimiser le chargement initial
+          chatbot: [
+            '@/components/ChatWidget',
+            '@/services/aidaIntelligence.service'
+          ]
         },
+        
+        // Optimisation des noms de chunks
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          return `assets/[name]-[hash].js`;
+        },
+        
+        // Optimisation des assets
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/\.(css)$/.test(assetInfo.name)) {
+            return `assets/[name]-[hash].css`;
+          }
+          if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(assetInfo.name)) {
+            return `assets/images/[name]-[hash].[ext]`;
+          }
+          return `assets/[name]-[hash].[ext]`;
+        }
       },
     },
+    
+    // Optimisation de la compression
     chunkSizeWarningLimit: 1000,
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+        passes: 2,
+        unsafe: true,
+        unsafe_comps: true,
+        unsafe_Function: true,
+        unsafe_math: true,
+        unsafe_proto: true,
+        unsafe_regexp: true,
+        unsafe_undefined: true
       },
+      mangle: {
+        safari10: true
+      }
     },
+    
+    // Target ES2015 pour une meilleure compatibilité
     target: 'es2015',
+    
+    // Optimisation des assets
+    assetsInlineLimit: 4096, // 4KB
+    
+    // Source maps en production pour le debugging
+    sourcemap: false,
+    
+    // Optimisation du CSS
+    cssCodeSplit: true
   },
+  
+  // Optimisation du serveur de développement
 	server: {
 		cors: true,
 		headers: {
@@ -375,10 +486,38 @@ export default defineConfig({
       }
     }
 	},
+	
+	// Optimisation de la résolution
 	resolve: {
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json', ],
 		alias: {
 			'@': path.resolve(__dirname, './src'),
 		},
 	},
+	
+	// Optimisation du préchargement
+	optimizeDeps: {
+		include: [
+			'react',
+			'react-dom',
+			'react-router-dom',
+			'@tanstack/react-query',
+			'@supabase/supabase-js',
+			'framer-motion',
+			'date-fns',
+			'clsx',
+			'tailwind-merge'
+		],
+		exclude: [
+			'@tanstack/react-query-devtools'
+		]
+	},
+	
+	// Configuration du préchargement intelligent
+	preview: {
+		port: 4173,
+		host: true,
+		strictPort: true,
+		open: false
+	}
 });

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -15,11 +15,12 @@ import { QueryErrorBoundary } from '@/components/QueryErrorBoundary';
 import InactivityDetector from '@/components/InactivityDetector';
 
 import AppWrapper from '@/components/AppWrapper';
-import ChatWidget from '@/components/ChatWidget';
+// ChatWidget en lazy loading
+const ChatWidget = lazy(() => import('@/components/ChatWidget'));
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
-import { AdminLayout } from '@/layouts/AdminLayout';
+const AdminLayout = lazy(() => import('@/layouts/AdminLayout'));
 
 // Auth Pages
 import LoginPage from '@/pages/auth/LoginPage';
@@ -28,9 +29,9 @@ import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import ProfilePage from '@/pages/auth/ProfilePage';
 import AuthCallbackPage from '@/pages/auth/AuthCallbackPage';
-import MessagingPage from '@/pages/MessagingPage';
+const MessagingPage = lazy(() => import('@/pages/MessagingPage'));
 
-// Pages
+// Pages principales (chargées immédiatement)
 import HomePage from '@/pages/HomePage'; 
 import RealEstatePage from '@/pages/marketplace/RealEstatePage';
 import AutomobilePage from '@/pages/marketplace/AutomobilePage';
@@ -45,18 +46,16 @@ import PaymentProcessPage from '@/pages/PaymentProcessPage';
 import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
 import FedaPayTestPage from '@/pages/FedaPayTestPage';
 
-
-
-// Admin Pages
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-import AdminUsersPage from '@/pages/admin/users/UsersPage';
-import AdminListingsPage from '@/pages/admin/listings/ListingsPage';
-import AdminTransactionsPage from '@/pages/admin/transactions/TransactionsPage';
-import AdminAnalyticsPage from '@/pages/admin/analytics/AnalyticsPage';
-import AdminModerationPage from '@/pages/admin/moderation/ModerationPage';
-import AdminCategoriesPage from '@/pages/admin/categories/CategoriesPage';
-import AdminSettingsPage from '@/pages/admin/settings/SettingsPage';
-import NewsletterAdminPage from '@/pages/admin/NewsletterAdminPage';
+// Admin Pages - Lazy Loading
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('@/pages/admin/users/UsersPage'));
+const AdminListingsPage = lazy(() => import('@/pages/admin/listings/ListingsPage'));
+const AdminTransactionsPage = lazy(() => import('@/pages/admin/transactions/TransactionsPage'));
+const AdminAnalyticsPage = lazy(() => import('@/pages/admin/analytics/AnalyticsPage'));
+const AdminModerationPage = lazy(() => import('@/pages/admin/moderation/ModerationPage'));
+const AdminCategoriesPage = lazy(() => import('@/pages/admin/categories/CategoriesPage'));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/settings/SettingsPage'));
+const NewsletterAdminPage = lazy(() => import('@/pages/admin/NewsletterAdminPage'));
 import NotFoundPage from '@/pages/NotFoundPage';
 
 // Static Pages
@@ -72,6 +71,29 @@ import TermsConditionsPage from '@/pages/static/TermsConditionsPage';
 // Blog/Content Pages
 import BlogPage from '@/pages/BlogPage'; 
 import BlogPostPage from '@/pages/BlogPostPage';
+
+// Composant de chargement optimisé
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
+// Composant de chargement pour les pages admin
+const AdminLoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-[400px] bg-background">
+    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    <span className="ml-3 text-muted-foreground">Chargement de l'interface admin...</span>
+  </div>
+);
+
+// Composant de chargement pour le ChatWidget
+const ChatLoadingSpinner = () => (
+  <div className="flex items-center justify-center p-4">
+    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+    <span className="ml-2 text-sm text-muted-foreground">Chargement d'AIDA...</span>
+  </div>
+);
 
 function App() {
   // Enregistrer le Service Worker
@@ -92,7 +114,9 @@ function App() {
                   path="messages" 
                   element={
                     <ProtectedRoute>
-                      <MessagingPage />
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <MessagingPage />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -154,24 +178,23 @@ function App() {
                     } 
                   />
                   
-                                       {/* Paiement pour boost */}
-                     <Route 
-                       path="paiement/:boostId" 
-                       element={
-                         <ProtectedRoute>
-                           <PaymentProcessPage />
-                         </ProtectedRoute>
-                       } 
-                     />
-                     
-                     {/* Callback de paiement */}
-                     <Route path="payment-callback" element={<PaymentCallbackPage />} />
-                     
-                     {/* Test FedaPay */}
-                     <Route path="fedapay-test" element={<FedaPayTestPage />} />
-
-                     
-                     {/* Modifier une annonce */}
+                  {/* Paiement pour boost */}
+                  <Route 
+                    path="paiement/:boostId" 
+                    element={
+                      <ProtectedRoute>
+                        <PaymentProcessPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* Callback de paiement */}
+                  <Route path="payment-callback" element={<PaymentCallbackPage />} />
+                  
+                  {/* Test FedaPay */}
+                  <Route path="fedapay-test" element={<FedaPayTestPage />} />
+                  
+                  {/* Modifier une annonce */}
                   <Route 
                     path="annonce/:id/modifier" 
                     element={
@@ -191,13 +214,19 @@ function App() {
                     } 
                   />
                   
-                  {/* Protected Admin Routes */}
-                  <Route path="admin" element={<AdminLayout />}>
+                  {/* Protected Admin Routes - Lazy Loading */}
+                  <Route path="admin" element={
+                    <Suspense fallback={<AdminLoadingSpinner />}>
+                      <AdminLayout />
+                    </Suspense>
+                  }>
                     <Route 
                       index 
                       element={
                         <AdminRoute>
-                          <AdminDashboardPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminDashboardPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -205,7 +234,9 @@ function App() {
                       path="users" 
                       element={
                         <AdminRoute>
-                          <AdminUsersPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminUsersPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -213,7 +244,9 @@ function App() {
                       path="listings" 
                       element={
                         <AdminRoute>
-                          <AdminListingsPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminListingsPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -221,7 +254,9 @@ function App() {
                       path="transactions" 
                       element={
                         <AdminRoute>
-                          <AdminTransactionsPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminTransactionsPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -229,7 +264,9 @@ function App() {
                       path="analytics" 
                       element={
                         <AdminRoute>
-                          <AdminAnalyticsPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminAnalyticsPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -237,7 +274,9 @@ function App() {
                       path="newsletter" 
                       element={
                         <AdminRoute>
-                          <NewsletterAdminPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <NewsletterAdminPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -245,7 +284,9 @@ function App() {
                       path="moderation" 
                       element={
                         <AdminRoute>
-                          <AdminModerationPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminModerationPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -253,7 +294,9 @@ function App() {
                       path="categories" 
                       element={
                         <AdminRoute>
-                          <AdminCategoriesPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminCategoriesPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -261,7 +304,9 @@ function App() {
                       path="settings" 
                       element={
                         <AdminRoute>
-                          <AdminSettingsPage />
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminSettingsPage />
+                          </Suspense>
                         </AdminRoute>
                       } 
                     />
@@ -288,7 +333,10 @@ function App() {
             </AnimatePresence>
           </AuthProvider>
           <Toaster />
-          <ChatWidget />
+          {/* ChatWidget en lazy loading */}
+          <Suspense fallback={<ChatLoadingSpinner />}>
+            <ChatWidget />
+          </Suspense>
         </AppWrapper>
       </QueryErrorBoundary>
       {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen={false} />}

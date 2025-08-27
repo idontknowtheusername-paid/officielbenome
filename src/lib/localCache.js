@@ -3,7 +3,8 @@ import { ttlOptimizer } from './ttlOptimizer';
 export class LocalCache {
   constructor(prefix = 'benome') {
     this.prefix = prefix;
-    this.maxSize = 50 * 1024 * 1024; // 50MB max
+    this.maxSize = 10 * 1024 * 1024; // 10MB max (réduit de 50MB)
+    this.cleanupInterval = 30 * 60 * 1000; // 30 minutes (au lieu de 5 minutes)
   }
 
   /**
@@ -48,7 +49,7 @@ export class LocalCache {
 
     // Supprimer les éléments les plus anciens jusqu'à libérer assez d'espace
     let currentSize = this._getCurrentCacheSize();
-    const targetSize = this.maxSize * 0.8; // Garder 80% du max
+    const targetSize = this.maxSize * 0.7; // Garder 70% du max (au lieu de 80%)
 
     for (const item of items) {
       if (currentSize <= targetSize) break;
@@ -92,23 +93,23 @@ export class LocalCache {
       
       // Vérifier si on a assez d'espace
       if (size > this.maxSize) {
-        console.warn('⚠️ Données trop volumineuses pour le cache local');
         return false;
       }
 
-      // Nettoyer si nécessaire
+      // Nettoyer si nécessaire (seulement si vraiment nécessaire)
       if (this._getCurrentCacheSize() + size > this.maxSize) {
         this._cleanup();
       }
 
       localStorage.setItem(cacheKey, JSON.stringify(item));
       
-      // Enregistrer l'usage pour l'optimisation TTL
-      ttlOptimizer.recordUsage(key, false, Date.now());
+      // Enregistrer l'usage pour l'optimisation TTL (simplifié)
+      if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
+        ttlOptimizer.recordUsage(key, false, Date.now());
+      }
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur lors de la sauvegarde en cache:', error);
       return false;
     }
   }
@@ -122,8 +123,10 @@ export class LocalCache {
       const item = localStorage.getItem(cacheKey);
       
       if (!item) {
-        // Enregistrer un miss pour l'optimisation TTL
-        ttlOptimizer.recordUsage(key, false, Date.now());
+        // Enregistrer un miss pour l'optimisation TTL (simplifié)
+        if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
+          ttlOptimizer.recordUsage(key, false, Date.now());
+        }
         return null;
       }
 
@@ -132,17 +135,20 @@ export class LocalCache {
       // Vérifier l'expiration
       if (this._isExpired(parsed.timestamp, parsed.ttl)) {
         this.delete(key);
-        // Enregistrer un miss pour l'optimisation TTL
-        ttlOptimizer.recordUsage(key, false, Date.now());
+        // Enregistrer un miss pour l'optimisation TTL (simplifié)
+        if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
+          ttlOptimizer.recordUsage(key, false, Date.now());
+        }
         return null;
       }
 
-      // Enregistrer un hit pour l'optimisation TTL
-      ttlOptimizer.recordUsage(key, true, Date.now());
+      // Enregistrer un hit pour l'optimisation TTL (simplifié)
+      if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
+        ttlOptimizer.recordUsage(key, true, Date.now());
+      }
       
       return parsed.data;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération du cache:', error);
       this.delete(key); // Supprimer l'entrée corrompue
       return null;
     }
@@ -157,7 +163,6 @@ export class LocalCache {
       localStorage.removeItem(cacheKey);
       return true;
     } catch (error) {
-      console.error('❌ Erreur lors de la suppression du cache:', error);
       return false;
     }
   }
@@ -173,7 +178,6 @@ export class LocalCache {
       cacheKeys.forEach(key => localStorage.removeItem(key));
       return true;
     } catch (error) {
-      console.error('❌ Erreur lors du vidage du cache:', error);
       return false;
     }
   }
@@ -209,7 +213,6 @@ export class LocalCache {
       stats.expiredEntries = expiredCount;
       return stats;
     } catch (error) {
-      console.error('❌ Erreur lors du calcul des statistiques:', error);
       return null;
     }
   }
@@ -236,33 +239,37 @@ export class LocalCache {
         }
       });
 
-      console.log(`🧹 Cache nettoyé: ${cleanedCount} entrées supprimées`);
       return cleanedCount;
     } catch (error) {
-      console.error('❌ Erreur lors du nettoyage du cache:', error);
       return 0;
     }
   }
 
   /**
-   * Obtenir les recommandations d'optimisation TTL
+   * Obtenir les recommandations d'optimisation TTL (simplifié)
    */
   getTTLOptimizations() {
-    return ttlOptimizer.getOptimizationRecommendations();
+    if (ttlOptimizer && typeof ttlOptimizer.getOptimizationRecommendations === 'function') {
+      return ttlOptimizer.getOptimizationRecommendations();
+    }
+    return [];
   }
 
   /**
-   * Appliquer les optimisations TTL
+   * Appliquer les optimisations TTL (simplifié)
    */
   applyTTLOptimizations() {
-    return ttlOptimizer.applyOptimizations();
+    if (ttlOptimizer && typeof ttlOptimizer.applyOptimizations === 'function') {
+      return ttlOptimizer.applyOptimizations();
+    }
+    return false;
   }
 }
 
 // Instance singleton
 export const localCache = new LocalCache();
 
-// Nettoyage automatique toutes les 5 minutes
+// Nettoyage automatique toutes les 30 minutes (au lieu de 5 minutes)
 setInterval(() => {
   localCache.cleanup();
-}, 5 * 60 * 1000); 
+}, 30 * 60 * 1000); 
