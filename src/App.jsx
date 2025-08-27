@@ -9,10 +9,13 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AdminRoute, ProtectedRoute } from '@/components/ProtectedRoute';
 import { queryClient } from '@/lib/queryClient';
 import { usePreload } from '@/hooks/usePreload';
+import { useMobileOptimization } from '@/hooks/useMobileOptimization';
 import { swManager } from '@/lib/swManager';
+import { initializePushNotifications } from '@/services/pushNotifications.service';
 
 import { QueryErrorBoundary } from '@/components/QueryErrorBoundary';
 import InactivityDetector from '@/components/InactivityDetector';
+import { MobileNavigation } from '@/components/MobileNavigation';
 
 import AppWrapper from '@/components/AppWrapper';
 // ChatWidget en lazy loading
@@ -101,12 +104,21 @@ function App() {
     swManager.register();
   }, []);
 
+  // Optimisations mobile
+  useMobileOptimization();
+
+  // Initialiser les notifications push
+  React.useEffect(() => {
+    initializePushNotifications();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <QueryErrorBoundary>
         <AppWrapper>
           <AuthProvider>
             <InactivityDetector />
+            <MobileNavigation />
             <AnimatePresence mode="wait">
               <Routes>
                 {/* Messaging - Route séparée sans layout */}

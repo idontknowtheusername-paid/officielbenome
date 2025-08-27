@@ -24,6 +24,7 @@ import {
   Settings,
   Eye
 } from 'lucide-react';
+import { MobileImageUpload } from '@/components/MobileImageUpload';
 
 const CreateListingPage = () => {
   const navigate = useNavigate();

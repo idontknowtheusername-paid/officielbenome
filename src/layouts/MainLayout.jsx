@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { cn } from '@/lib/utils';
 
 const MainLayout = () => {
@@ -51,7 +52,7 @@ const MainLayout = () => {
       </header>
       
       <main 
-        className="flex-grow pt-24 pb-16"
+        className="flex-grow pt-24 pb-20 md:pb-16"
         role="main"
         aria-label="Contenu principal"
         id="main-content"
@@ -65,6 +66,7 @@ const MainLayout = () => {
       </main>
       
       <Footer />
+      <BottomNavigation />
     </div>
   );
 };

@@ -90,6 +90,47 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Optimisations pour mobile */
+  .mobile-app {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Optimisations pour mobile */
+  @media (max-width: 768px) {
+    .mobile-optimized {
+      font-size: 16px; /* Éviter le zoom sur iOS */
+    }
+    
+    .touch-target {
+      min-height: 44px; /* Taille minimale pour le touch */
+      min-width: 44px;
+    }
+
+    /* Amélioration de la navigation mobile */
+    .bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Optimisation des animations pour mobile */
+    .mobile-transition {
+      transition: all 0.2s ease-in-out;
+    }
+
+    /* Amélioration du scroll sur mobile */
+    .mobile-scroll {
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    /* Optimisation des images pour mobile */
+    .mobile-image {
+      max-width: 100%;
+      height: auto;
+    }
+  }
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
   }
