@@ -62,7 +62,7 @@ const Navbar = () => {
   return (
     <header role="banner" aria-label="Navigation principale">
       <nav 
-        className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled || isOpen ? 'bg-background/95 shadow-lg backdrop-blur-md' : 'bg-transparent'}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isOpen ? 'bg-background/95 shadow-lg backdrop-blur-md' : 'bg-transparent'}`}
         role="navigation"
         aria-label="Menu principal"
       >
