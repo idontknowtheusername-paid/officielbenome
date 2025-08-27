@@ -13,7 +13,8 @@ import {
   Star,
   Archive,
   Trash2,
-  Settings
+  Settings,
+  Home
 } from 'lucide-react';
 
 const MobileMessagingNav = ({
@@ -83,6 +84,14 @@ const MobileMessagingNav = ({
   return (
     <div className="bg-card border-b border-border px-4 py-3 flex items-center justify-between">
       <div className="flex items-center space-x-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => window.location.href = '/'}
+          className="p-2 -ml-2"
+        >
+          <Home className="h-5 w-5" />
+        </Button>
         <h1 className="text-lg font-semibold">Messages</h1>
         {unreadCount > 0 && (
           <Badge variant="destructive" className="h-5 px-2 text-xs">

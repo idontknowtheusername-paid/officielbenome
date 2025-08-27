@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations, useRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
@@ -27,7 +27,12 @@ import {
   Copy,
   Flag,
   Eye,
-  ChevronLeft
+  ChevronLeft,
+  Home,
+  Car,
+  Briefcase,
+  ShoppingBag,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,10 +65,52 @@ const queryClient = new QueryClient({
   },
 });
 
+// Composant de navigation principale
+const MainNavigation = ({ onClose }) => {
+  const navigate = useNavigate();
+  
+  const navItems = [
+    { name: 'Accueil', path: '/', icon: <Home className="h-4 w-4" /> },
+    { name: 'Immobilier', path: '/immobilier', icon: <Home className="h-4 w-4" /> },
+    { name: 'Automobile', path: '/automobile', icon: <Car className="h-4 w-4" /> },
+    { name: 'Services', path: '/services', icon: <Briefcase className="h-4 w-4" /> },
+    { name: 'Marketplace', path: '/marketplace', icon: <ShoppingBag className="h-4 w-4" /> },
+    { name: 'Mon Compte', path: '/profile', icon: <Settings className="h-4 w-4" /> },
+  ];
+
+  return (
+    <div className="bg-card border-b border-border p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Navigation</h2>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {navItems.map((item) => (
+          <Button
+            key={item.path}
+            variant="outline"
+            className="justify-start h-auto p-3"
+            onClick={() => {
+              navigate(item.path);
+              onClose();
+            }}
+          >
+            <span className="mr-2">{item.icon}</span>
+            <span className="text-sm">{item.name}</span>
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Composant principal de la page de messagerie
 const MessagingPageContent = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { data: conversations, isLoading, error, refetch } = useConversations();
   const queryClient = useQueryClient();
@@ -72,6 +119,7 @@ const MessagingPageContent = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showNavigation, setShowNavigation] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -575,7 +623,7 @@ const MessagingPageContent = () => {
             onMenuToggle={() => setShowMobileMenu(!showMobileMenu)}
             onSearch={() => setShowMobileMenu(false)}
             onFilter={() => setShowMobileMenu(false)}
-            onMore={() => console.log('Plus d\'options')}
+            onMore={() => setShowNavigation(!showNavigation)}
             onCall={handleCall}
             onVideo={() => console.log('Video')}
             unreadCount={stats.unread}
@@ -585,6 +633,12 @@ const MessagingPageContent = () => {
         {/* Header Desktop - Afficher seulement si pas de conversation sélectionnée ET sur desktop */}
         {!selectedConversation && (
           <div className="bg-card border-b border-border px-6 py-4 hidden md:block flex-shrink-0">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+              <Link to="/" className="hover:text-primary transition-colors">Accueil</Link>
+              <span>/</span>
+              <span className="text-foreground font-medium">Messages</span>
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-card-foreground">Centre de Messages</h1>
@@ -593,6 +647,45 @@ const MessagingPageContent = () => {
                 </p>
               </div>
               <div className="flex items-center space-x-3">
+                {/* Navigation vers les autres parties du site */}
+                <div className="flex items-center space-x-2 mr-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/')}
+                    className="text-xs"
+                  >
+                    <Home className="h-3 w-3 mr-1" />
+                    Accueil
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/immobilier')}
+                    className="text-xs"
+                  >
+                    <Home className="h-3 w-3 mr-1" />
+                    Immobilier
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/automobile')}
+                    className="text-xs"
+                  >
+                    <Car className="h-3 w-3 mr-1" />
+                    Auto
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/marketplace')}
+                    className="text-xs"
+                  >
+                    <ShoppingBag className="h-3 w-3 mr-1" />
+                    Marketplace
+                  </Button>
+                </div>
                 <Button className="bg-primary hover:bg-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
                   Nouvelle Conversation
@@ -600,6 +693,11 @@ const MessagingPageContent = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Navigation mobile */}
+        {showNavigation && (
+          <MainNavigation onClose={() => setShowNavigation(false)} />
         )}
 
       {/* Contenu Principal */}
