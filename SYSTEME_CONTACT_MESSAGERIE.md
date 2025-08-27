@@ -13,7 +13,7 @@ Le système de contact et de messagerie de MaxiMarket est maintenant **complète
 
 ### **2. Depuis la Page de Détail ,(ListingDetailPage)**
 - ✅ **Carte de contact** : Section dédiée "Contacter le vendeur"
-- ✅ **Options multiples** : WhatsApp, Appel, Message interne
+- ✅ **Options multiples** : WhatsApp, Appel, Message interne,
 - ✅ **Bouton Message** : Création automatique de conversation
 
 ### **3. Redirection vers la Messagerie**
