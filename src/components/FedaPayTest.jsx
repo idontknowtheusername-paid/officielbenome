@@ -55,7 +55,7 @@ export default function FedaPayTest() {
 
       // Ouvrir l'URL de paiement dans un nouvel onglet
       if (result.paymentUrl) {
-        window.open(result.paymentUrl, '_blank');
+        window.open(result.paymentUrl, '_blank', 'noopener,noreferrer');
       }
 
     } catch (err) {

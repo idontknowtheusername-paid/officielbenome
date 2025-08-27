@@ -80,7 +80,7 @@ const ShareListing = ({ listing, variant = "default" }) => {
       });
       
       // Ouvrir Instagram dans un nouvel onglet
-      window.open('https://www.instagram.com', '_blank');
+              window.open('https://www.instagram.com', '_blank', 'noopener,noreferrer');
     }).catch(() => {
       toast({
         title: "Erreur",
@@ -105,7 +105,7 @@ const ShareListing = ({ listing, variant = "default" }) => {
       });
       
       // Ouvrir TikTok dans un nouvel onglet
-      window.open('https://www.tiktok.com', '_blank');
+              window.open('https://www.tiktok.com', '_blank', 'noopener,noreferrer');
     }).catch(() => {
       toast({
         title: "Erreur",
@@ -124,7 +124,7 @@ const ShareListing = ({ listing, variant = "default" }) => {
     const text = getShareText('whatsapp');
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     
-    window.open(url, '_blank');
+            window.open(url, '_blank', 'noopener,noreferrer');
     
     setTimeout(() => setIsSharing(false), 1000);
     
@@ -153,7 +153,7 @@ const ShareListing = ({ listing, variant = "default" }) => {
 
   // Ouvrir l'annonce dans un nouvel onglet
   const openInNewTab = () => {
-    window.open(shareUrl, '_blank');
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
   };
 
   // Version compacte (bouton dropdown)

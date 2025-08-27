@@ -166,7 +166,8 @@ const PaymentProcessPage = () => {
 
       // Rediriger vers la page de paiement Kkiapay
       if (paymentInitiation.paymentUrl) {
-        window.location.href = paymentInitiation.paymentUrl;
+        // Ouvrir dans une nouvelle fenêtre pour éviter de perdre la session
+        window.open(paymentInitiation.paymentUrl, '_blank', 'noopener,noreferrer');
       } else {
         throw new Error('URL de paiement non disponible');
       }
@@ -205,6 +206,8 @@ const PaymentProcessPage = () => {
         const link = document.createElement('a');
         link.href = receiptResult.receiptUrl;
         link.download = `receipt-${boostId}.pdf`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

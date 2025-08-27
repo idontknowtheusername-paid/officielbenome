@@ -219,7 +219,7 @@ const ListingDetailPage = () => {
 
       if (type === 'phone') {
         // Ouvrir l'appel telephonique
-        window.open(`tel:${formattedNumber}`, '_blank');
+        window.open(`tel:${formattedNumber}`, '_blank', 'noopener,noreferrer');
         
         toast({
           title: "Appel en cours",
@@ -232,7 +232,7 @@ const ListingDetailPage = () => {
         );
         
         // Ouvrir WhatsApp
-        window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank');
+        window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank', 'noopener,noreferrer');
         
         toast({
           title: "WhatsApp ouvert",

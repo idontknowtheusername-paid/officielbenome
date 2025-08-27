@@ -192,7 +192,7 @@ Site : https://maximarket.com`);
 const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=${body}`;
     
     // Ouvrir le client mail par défaut
-    window.open(mailtoUrl, '_blank');
+            window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
