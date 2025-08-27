@@ -12,6 +12,15 @@ import SuggestionChips from '@/components/ui/SuggestionChips';
 import { aidaIntelligenceService } from '@/services/aidaIntelligence.service';
 
 const ChatWidget = ({ pageContext = {} }) => {
+  // Masquer le widget sur la page de messagerie
+  const currentPath = window.location.pathname;
+  const isMessagingPage = currentPath === '/messages';
+  
+  // Ne pas afficher le widget sur la page de messagerie
+  if (isMessagingPage) {
+    return null;
+  }
+
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
