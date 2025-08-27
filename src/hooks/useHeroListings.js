@@ -9,7 +9,7 @@ const CACHE_KEYS = {
   LAST_UPDATE: 'hero-last-update'
 };
 
-const CACHE_DURATION = 24 * 60 * 60 * 5000; // 24 heures en millisecondes
+const CACHE_DURATION = 60 * 60 * 1000; // 1 heure en millisecondes (pour rafraîchir l'heure)
 
 export const useHeroListings = (limit = 6) => {
   const [heroListings, setHeroListings] = useState([]);
@@ -117,9 +117,10 @@ export const useHeroListings = (limit = 6) => {
     loadData();
   }, [loadData]);
 
-  // Rafraîchissement automatique toutes les 24h
+  // Rafraîchissement automatique toutes les heures (pour l'heure intelligente)
   useEffect(() => {
     const interval = setInterval(() => {
+      console.log('⏰ Vérification horaire du système intelligent...');
       if (!isCacheValid()) {
         console.log('⏰ Cache expiré, rechargement automatique...');
         loadFromAPI();

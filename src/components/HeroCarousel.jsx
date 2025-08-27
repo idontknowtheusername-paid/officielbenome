@@ -11,7 +11,35 @@ import { cn } from '@/lib/utils';
 const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [currentTime, setCurrentTime] = useState({ hour: hour, timeSlot: timeSlot });
   const navigate = useNavigate();
+
+  // Mise à jour de l'heure en temps réel
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const getTimeSlot = (hour) => {
+        if (hour >= 6 && hour < 12) return 'matin';
+        if (hour >= 12 && hour < 18) return 'après-midi';
+        if (hour >= 18 && hour < 22) return 'soirée';
+        return 'nuit';
+      };
+      
+      setCurrentTime({
+        hour: currentHour,
+        timeSlot: getTimeSlot(currentHour)
+      });
+    };
+
+    // Mise à jour immédiate
+    updateTime();
+
+    // Mise à jour chaque minute
+    const timeInterval = setInterval(updateTime, 60000);
+
+    return () => clearInterval(timeInterval);
+  }, []);
 
   // Auto-play toutes les 8 secondes
   useEffect(() => {
@@ -133,7 +161,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             </Badge>
             <Badge variant="outline" className="text-white/80 border-white/20 text-sm">
               <Clock className="h-3 w-3 mr-1" />
-              {timeSlot} • {hour}h
+              {currentTime.timeSlot} • {currentTime.hour}h
             </Badge>
           </motion.div>
 
