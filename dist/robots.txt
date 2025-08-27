@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://maxiimarket.com/sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /api/
+
+# Allow important pages
+Allow: /marketplace/
+Allow: /contact
+Allow: /about
+Allow: /terms
+Allow: /privacy
