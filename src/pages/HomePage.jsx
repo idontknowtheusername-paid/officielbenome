@@ -214,9 +214,9 @@ const HomePage = () => {
                 <p className="text-muted-foreground text-sm mb-5 flex-grow group-hover:text-primary/80 transition-colors">
                   {category.description}
                 </p>
-                <div className="w-full border border-primary/50 rounded-md px-4 py-2 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  Découvrir{" "}
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform inline" />
+                <div className="w-full border border-primary/50 rounded-md px-3 py-2 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 flex items-center justify-center">
+                  <span className="text-sm">Découvrir</span>
+                  <ArrowRight className="ml-2 h-3 w-3 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                 </div>
               </motion.div>
             ))}
