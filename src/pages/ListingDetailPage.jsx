@@ -662,6 +662,7 @@ const ListingDetailPage = () => {
           <SimilarListingsCarousel 
             listings={relatedListings}
             title="Annonces similaires"
+            currentListing={listing}
           />
         </div>
       </div>
