@@ -7,7 +7,7 @@ import { emailTemplates, getTemplate } from './email-templates.service.js';
 
 // Configuration SendGrid
 const SENDGRID_API_KEY = import.meta.env?.VITE_SENDGRID_API_KEY || process.env.VITE_SENDGRID_API_KEY;
-const FROM_EMAIL = import.meta.env?.VITE_FROM_EMAIL || process.env.VITE_FROM_EMAIL || 'newsletter@maximarket.com';
+const FROM_EMAIL = import.meta.env?.VITE_FROM_EMAIL || process.env.VITE_FROM_EMAIL || 'newsletter@maxiimarket.com';
 const FROM_NAME = import.meta.env?.VITE_FROM_NAME || process.env.VITE_FROM_NAME || 'MaxiMarket Newsletter';
 
 // Initialiser SendGrid

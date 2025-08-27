@@ -14,7 +14,7 @@ export const settingsService = {
           general: {
             siteName: 'MaxiMarket',
             siteDescription: 'Marketplace en ligne pour l\'Afrique de l\'Ouest',
-            contactEmail: 'contact@maximarket.com',
+            contactEmail: 'contact@maxiimarket.com',
             supportPhone: '+221 77 123 4567',
             timezone: 'Africa/Dakar',
             currency: 'XOF',
@@ -294,7 +294,7 @@ export const settingsService = {
       general: {
         siteName: 'MaxiMarket',
         siteDescription: 'Marketplace en ligne pour l\'Afrique de l\'Ouest',
-        contactEmail: 'contact@maximarket.com',
+        contactEmail: 'contact@maxiimarket.com',
         supportPhone: '+221 77 123 4567',
         timezone: 'Africa/Dakar',
         currency: 'XOF',

@@ -320,14 +320,14 @@ describe('EmailTemplates', () => {
     it('should generate password reset template correctly', () => {
       const data = {
         expiryTime: '1 heure',
-        resetLink: 'https://maximarket.com/reset-password?token=abc123'
+        resetLink: 'https://maxiimarket.com/reset-password?token=abc123'
       };
       
       const template = emailTemplates.passwordReset(data);
       
       expect(template.subject).toContain('Réinitialisation');
       expect(template.html).toContain('1 heure');
-      expect(template.html).toContain('https://maximarket.com/reset-password?token=abc123');
+      expect(template.html).toContain('https://maxiimarket.com/reset-password?token=abc123');
     });
 
     it('should handle missing data gracefully', () => {

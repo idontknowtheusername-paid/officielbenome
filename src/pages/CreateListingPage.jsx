@@ -185,8 +185,8 @@ Cordialement,
 
 ---
 Ce message a été généré automatiquement depuis le formulaire de création d'annonce MaxiMarket.
-Support : support@maximarket.com
-Site : https://maximarket.com`);
+Support : support@maxiimarket.com
+Site : https://maxiimarket.com`);
 
     // Construire l'URL mailto avec tous les paramètres
 const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=${body}`;

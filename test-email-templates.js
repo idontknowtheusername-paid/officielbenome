@@ -125,7 +125,7 @@ function generateTestData(templateName) {
     case 'passwordReset':
       return {
         expiryTime: '1 heure',
-        resetLink: 'https://maximarket.com/reset-password?token=abc123'
+        resetLink: 'https://maxiimarket.com/reset-password?token=abc123'
       };
       
     default:

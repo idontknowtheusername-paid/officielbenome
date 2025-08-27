@@ -30,7 +30,7 @@ const ensureAssistantUser = async () => {
           id: assistantId,
           first_name: 'AIDA',
           last_name: 'Assistant',
-          email: 'aida@maximarket.com',
+          email: 'aida@maxiimarket.com',
           role: 'assistant',
           is_active: true,
           created_at: new Date().toISOString(),

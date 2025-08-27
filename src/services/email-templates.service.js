@@ -102,9 +102,9 @@ export const emailTemplates = {
               
               <div class="social-links">
                 <p>Suivez-nous sur les réseaux sociaux :</p>
-                <a href="https://facebook.com/maximarket">Facebook</a> |
-                <a href="https://instagram.com/maximarket">Instagram</a> |
-                <a href="https://tiktok.com/@maximarket">TikTok</a>
+                <a href="https://facebook.com/MaxiMarketAfrique">Facebook</a> |
+                <a href="https://instagram.com/maximarket_afrique">Instagram</a> |
+                <a href="https://tiktok.com/@maximarket_afrique">TikTok</a>
               </div>
             </div>
             
