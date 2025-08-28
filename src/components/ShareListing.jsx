@@ -165,9 +165,9 @@ const ShareListing = ({ listing, variant = "default" }) => {
             variant="outline" 
             size="sm"
             disabled={isSharing}
-            className="flex items-center space-x-1 px-2 py-1 text-xs"
+            className="flex items-center space-x-1 px-1.5 py-0.5 text-xs"
           >
-            <Share2 className="h-3 w-3" />
+            <Share2 className="h-2.5 w-2.5" />
             <span>Partager</span>
           </Button>
         </DropdownMenuTrigger>

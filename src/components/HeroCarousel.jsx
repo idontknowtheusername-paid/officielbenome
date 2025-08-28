@@ -132,15 +132,15 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
       {/* Overlay sombre */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-      {/* Contenu principal - Simplifié pour ne montrer que l'image en arrière-plan */}
-      <div className="absolute inset-0 flex items-center justify-center pt-20">
+      {/* Contenu principal - Optimisé avec moins d'espace vide */}
+      <div className="absolute inset-0 flex items-center justify-center pt-8">
         <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
-          {/* Badge de catégorie et heure - Discret en haut */}
+          {/* Badge de catégorie et heure - Plus proche du titre */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex justify-center items-center gap-4 mb-8"
+            className="flex justify-center items-center gap-4 mb-6"
           >
             <Badge className={cn("text-white/80 border-0 text-sm", getCategoryColor(category))}>
               <span className="mr-1">{getCategoryIcon(category)}</span>
@@ -155,12 +155,12 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
             </Badge>
           </motion.div>
 
-          {/* Titre principal du site - Plus visible */}
+          {/* Titre principal du site - Plus compact */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
+            className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight"
           >
             Bienvenue sur{" "}
             <span className="gradient-text">MaxiMarket</span>
@@ -171,7 +171,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="text-xl md:text-2xl text-gray-300 mb-32 max-w-3xl mx-auto"
+            className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
           >
             Explorez, découvrez, connectez. Votre marketplace de confiance.
           </motion.p>
@@ -183,7 +183,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
 
       {/* Indicateurs discrets - Seulement les points de navigation */}
       {listings.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-50">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-50">
           {listings.map((_, index) => (
             <button
               key={index}

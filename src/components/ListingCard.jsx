@@ -185,7 +185,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
       </div>
 
       {/* Content - Padding responsive */}
-      <div className="p-2 sm:p-4 md:p-6">
+      <div className="p-1.5 sm:p-3 md:p-5">
         {/* Title - Taille responsive */}
         <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 truncate group-hover:text-primary transition-colors">
           {listing.title}

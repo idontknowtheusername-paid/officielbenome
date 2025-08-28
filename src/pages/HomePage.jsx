@@ -139,8 +139,8 @@ const HomePage = () => {
             timeSlot={heroInfo.timeSlot}
           />
           
-          {/* Barre de recherche flottante */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-2xl px-4" style={{ bottom: '120px' }}>
+          {/* Barre de recherche flottante - Plus proche du contenu */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-2xl px-4" style={{ bottom: '80px' }}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
