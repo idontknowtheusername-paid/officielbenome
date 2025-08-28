@@ -1,0 +1,75 @@
+{
+  "generated": "2025-08-27T23:13:18.097Z",
+  "total": 14,
+  "byPlatform": {
+    "facebook": 3,
+    "instagram": 5,
+    "linkedin": 3,
+    "twitter": 3
+  },
+  "byTemplate": {
+    "unknown": 14
+  },
+  "recent": [
+    {
+      "filename": "mockup-instagram-2025-08-27T23-10-31-408Z.json",
+      "platform": "instagram",
+      "template": "unknown",
+      "created": "2025-08-27T23:10:31.410Z"
+    },
+    {
+      "filename": "mockup-instagram-2025-08-27T23-13-17-311Z.json",
+      "platform": "instagram",
+      "template": "unknown",
+      "created": "2025-08-27T23:13:17.324Z"
+    },
+    {
+      "filename": "mockup-instagram-2025-08-27T23-13-17-622Z.json",
+      "platform": "instagram",
+      "template": "unknown",
+      "created": "2025-08-27T23:13:17.622Z"
+    },
+    {
+      "filename": "mockup-instagram-2025-08-27T23-13-18-048Z.json",
+      "platform": "instagram",
+      "template": "unknown",
+      "created": "2025-08-27T23:13:18.048Z"
+    },
+    {
+      "filename": "mockup-linkedin-2025-08-27T23-10-31-411Z.json",
+      "platform": "linkedin",
+      "template": "unknown",
+      "created": "2025-08-27T23:10:31.411Z"
+    },
+    {
+      "filename": "mockup-linkedin-2025-08-27T23-13-17-716Z.json",
+      "platform": "linkedin",
+      "template": "unknown",
+      "created": "2025-08-27T23:13:17.716Z"
+    },
+    {
+      "filename": "mockup-linkedin-2025-08-27T23-13-18-082Z.json",
+      "platform": "linkedin",
+      "template": "unknown",
+      "created": "2025-08-27T23:13:18.082Z"
+    },
+    {
+      "filename": "mockup-twitter-2025-08-27T23-10-31-411Z.json",
+      "platform": "twitter",
+      "template": "unknown",
+      "created": "2025-08-27T23:10:31.411Z"
+    },
+    {
+      "filename": "mockup-twitter-2025-08-27T23-13-17-725Z.json",
+      "platform": "twitter",
+      "template": "unknown",
+      "created": "2025-08-27T23:13:17.725Z"
+    },
+    {
+      "filename": "mockup-twitter-2025-08-27T23-13-18-086Z.json",
+      "platform": "twitter",
+      "template": "unknown",
+      "created": "2025-08-27T23:13:18.086Z"
+    }
+  ]
+}

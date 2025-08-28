@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { MobilePaddingAdjuster } from '@/components/MobilePaddingAdjuster';
 import { cn } from '@/lib/utils';
 
 const MainLayout = () => {
@@ -52,17 +53,19 @@ const MainLayout = () => {
       </header>
       
       <main 
-        className="flex-grow pt-24 pb-20 md:pb-16"
+        className="flex-grow pt-24"
         role="main"
         aria-label="Contenu principal"
         id="main-content"
       >
-        <motion.div
-          key={location.pathname}
-          {...pageTransition}
-        >
-          <Outlet />
-        </motion.div>
+        <MobilePaddingAdjuster>
+          <motion.div
+            key={location.pathname}
+            {...pageTransition}
+          >
+            <Outlet />
+          </motion.div>
+        </MobilePaddingAdjuster>
       </main>
       
       <Footer />

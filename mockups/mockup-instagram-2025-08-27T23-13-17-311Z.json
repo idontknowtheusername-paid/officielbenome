@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "created": "2025-08-27T23:13:17.324Z",
+    "platform": "instagram",
+    "template": "unknown",
+    "dimensions": {
+      "width": 1080,
+      "height": 1080
+    }
+  },
+  "design": {
+    "colors": {
+      "primary": "#2563eb",
+      "secondary": "#f59e0b",
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "dark": "#1f2937",
+      "light": "#f9fafb"
+    },
+    "content": {
+      "title": "🏠 Découvrez MaxiMarket",
+      "subtitle": "La marketplace N°1 en Afrique de l'Ouest",
+      "features": [
+        "✅ Achetez en sécurité",
+        "✅ Vendez facilement",
+        "✅ Payez en toute confiance"
+      ],
+      "cta": "📱 Téléchargez l'app !"
+    },
+    "hashtags": [
+      "#MaxiMarket",
+      "#Marketplace",
+      "#Afrique",
+      "#Ecommerce",
+      "#Immobilier",
+      "#Automobile",
+      "#Business"
+    ]
+  },
+  "instructions": {
+    "tool": "Canva ou Figma",
+    "steps": [
+      "1. Créer un nouveau design 1080x1080px",
+      "2. Appliquer le fond: gradient #2563eb vers #f59e0b",
+      "3. Ajouter le titre: \"🏠 Découvrez MaxiMarket\"",
+      "4. Ajouter le sous-titre: \"La marketplace N°1 en Afrique de l'Ouest\"",
+      "5. Intégrer le mockup d'appareil (iPhone/MacBook)",
+      "6. Ajouter les features: ✅ Achetez en sécurité, ✅ Vendez facilement, ✅ Payez en toute confiance",
+      "7. Ajouter le CTA: \"📱 Téléchargez l'app !\"",
+      "8. Ajouter les hashtags: #MaxiMarket #Marketplace #Afrique #Ecommerce #Immobilier #Automobile #Business",
+      "9. Exporter en PNG haute qualité"
+    ],
+    "assets": [
+      "logo-maximarket.png",
+      "mockup-iphone.png",
+      "mockup-macbook.png",
+      "screenshot-app.png"
+    ]
+  }
+}

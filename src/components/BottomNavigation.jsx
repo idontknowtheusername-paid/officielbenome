@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, Car, Briefcase, ShoppingBag, User, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Device } from '@capacitor/device';
 
 export const BottomNavigation = () => {
   const { user } = useAuth();
+  const [isNativeApp, setIsNativeApp] = useState(false);
+
+  // Vérifier si on est dans l'app native Capacitor
+  useEffect(() => {
+    const checkNativeApp = async () => {
+      try {
+        const info = await Device.getInfo();
+        setIsNativeApp(info.platform !== 'web');
+      } catch (error) {
+        // Si Device.getInfo() échoue, on est probablement sur le web
+        setIsNativeApp(false);
+      }
+    };
+    
+    checkNativeApp();
+  }, []);
 
   const navItems = [
     { name: 'Accueil', path: '/', icon: Home },
@@ -14,8 +31,13 @@ export const BottomNavigation = () => {
     { name: 'Marketplace', path: '/marketplace', icon: ShoppingBag },
   ];
 
+  // Ne pas afficher la BottomNavigation sur le web (même mobile)
+  if (!isNativeApp) {
+    return null;
+  }
+
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border z-50">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;

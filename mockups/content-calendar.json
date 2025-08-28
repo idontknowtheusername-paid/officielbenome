@@ -1,0 +1,126 @@
+[
+  {
+    "week": 1,
+    "posts": [
+      {
+        "day": "Lundi",
+        "template": "product_showcase",
+        "platforms": [
+          "instagram",
+          "linkedin"
+        ],
+        "content": {
+          "title": "🏠 Découvrez MaxiMarket",
+          "subtitle": "La marketplace N°1 en Afrique de l'Ouest",
+          "features": [
+            "✅ Achetez en sécurité",
+            "✅ Vendez facilement",
+            "✅ Payez en toute confiance"
+          ],
+          "cta": "📱 Téléchargez l'app !"
+        }
+      },
+      {
+        "day": "Mardi",
+        "template": "feature_highlight",
+        "platforms": [
+          "instagram",
+          "facebook"
+        ],
+        "content": {
+          "title": "🚀 Nouvelle Fonctionnalité",
+          "subtitle": "Messagerie en temps réel",
+          "features": [
+            "💬 Chat instantané",
+            "📱 Notifications push",
+            "🔒 Messages sécurisés"
+          ],
+          "cta": "👆 Testez maintenant !"
+        }
+      },
+      {
+        "day": "Mercredi",
+        "template": "testimonial",
+        "platforms": [
+          "instagram",
+          "facebook",
+          "linkedin",
+          "twitter"
+        ],
+        "content": {
+          "title": "💬 Témoignage Client",
+          "subtitle": "\"J'ai vendu ma voiture en 2 jours !\"",
+          "author": "- Aminata, Dakar",
+          "cta": "👇 Partagez votre expérience"
+        }
+      },
+      {
+        "day": "Jeudi",
+        "template": "business_insights",
+        "platforms": [
+          "linkedin",
+          "twitter"
+        ],
+        "content": {
+          "title": "💼 Transformation Digitale",
+          "subtitle": "MaxiMarket révolutionne le commerce en ligne",
+          "stats": [
+            "📊 +150% de croissance",
+            "🌍 Présence dans 5 pays",
+            "💳 Paiements locaux"
+          ],
+          "cta": "🌐 maxiimarket.com"
+        }
+      },
+      {
+        "day": "Vendredi",
+        "template": "product_showcase",
+        "platforms": [
+          "instagram",
+          "facebook"
+        ],
+        "content": {
+          "title": "🏠 Découvrez MaxiMarket",
+          "subtitle": "La marketplace N°1 en Afrique de l'Ouest",
+          "features": [
+            "✅ Achetez en sécurité",
+            "✅ Vendez facilement",
+            "✅ Payez en toute confiance"
+          ],
+          "cta": "📱 Téléchargez l'app !"
+        }
+      },
+      {
+        "day": "Samedi",
+        "template": "testimonial",
+        "platforms": [
+          "instagram"
+        ],
+        "content": {
+          "title": "💬 Témoignage Client",
+          "subtitle": "\"J'ai vendu ma voiture en 2 jours !\"",
+          "author": "- Aminata, Dakar",
+          "cta": "👇 Partagez votre expérience"
+        }
+      },
+      {
+        "day": "Dimanche",
+        "template": "business_insights",
+        "platforms": [
+          "linkedin",
+          "twitter"
+        ],
+        "content": {
+          "title": "💼 Transformation Digitale",
+          "subtitle": "MaxiMarket révolutionne le commerce en ligne",
+          "stats": [
+            "📊 +150% de croissance",
+            "🌍 Présence dans 5 pays",
+            "💳 Paiements locaux"
+          ],
+          "cta": "🌐 maxiimarket.com"
+        }
+      }
+    ]
+  }
+]

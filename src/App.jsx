@@ -48,6 +48,7 @@ import BoostListingPage from '@/pages/BoostListingPage';
 import PaymentProcessPage from '@/pages/PaymentProcessPage';
 import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
 import FedaPayTestPage from '@/pages/FedaPayTestPage';
+import MobileTestPage from '@/pages/MobileTestPage';
 
 // Admin Pages - Lazy Loading
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
@@ -205,6 +206,9 @@ function App() {
                   
                   {/* Test FedaPay */}
                   <Route path="fedapay-test" element={<FedaPayTestPage />} />
+                  
+                  {/* Tests Mobile */}
+                  <Route path="mobile-tests" element={<MobileTestPage />} />
                   
                   {/* Modifier une annonce */}
                   <Route 
