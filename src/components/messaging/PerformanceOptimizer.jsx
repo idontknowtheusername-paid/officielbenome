@@ -212,7 +212,7 @@ const PerformanceOptimizer = ({
 
     const criticalImages = [
       '/images/avatar-default.png',
-      '/images/logo.png',
+              '/logo.jpg',
       '/images/icons/camera.png',
       '/images/icons/location.png'
     ];
