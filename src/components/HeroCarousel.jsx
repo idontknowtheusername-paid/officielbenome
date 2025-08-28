@@ -6,6 +6,95 @@ import { useListingImages } from '@/hooks';
 import OptimizedImage from '@/components/OptimizedImage';
 import { cn } from '@/lib/utils';
 
+// Styles CSS personnalisés pour le hero
+const heroStyles = `
+  .hero-container {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .hero-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 1rem 8rem;
+  }
+  
+  .hero-badges {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  
+  .hero-title {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+    line-height: 1.6;
+    margin-bottom: 3rem;
+    max-width: 48rem;
+  }
+  
+  .hero-navigation {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.75rem;
+    z-index: 50;
+  }
+  
+  .hero-search {
+    position: absolute;
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 42rem;
+    padding: 0 1rem;
+    z-index: 20;
+  }
+  
+  @media (max-width: 768px) {
+    .hero-content {
+      padding: 3rem 1rem 6rem;
+    }
+    
+    .hero-badges {
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .hero-title {
+      margin-bottom: 1rem;
+    }
+    
+    .hero-subtitle {
+      margin-bottom: 2rem;
+    }
+    
+    .hero-search {
+      bottom: 4rem;
+    }
+    
+    .hero-navigation {
+      bottom: 1.5rem;
+    }
+  }
+`;
+
 const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -100,11 +189,13 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
   const currentListing = listings[currentIndex];
 
   return (
-    <div 
-      className="relative h-screen overflow-hidden"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <>
+      <style>{heroStyles}</style>
+      <div 
+        className="hero-container"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
       {/* Image de fond */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -132,73 +223,71 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
       {/* Overlay sombre */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-      {/* Contenu principal - Optimisé avec moins d'espace vide */}
-      <div className="absolute inset-0 flex items-center justify-center pt-24">
-        <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
-          {/* Badge de catégorie et heure - Plus proche du titre */}
+      {/* Contenu principal - Utilise les nouvelles classes CSS */}
+      <div className="hero-content">
+        <div className="text-center relative z-10">
+          {/* Badge de catégorie et heure - Utilise les nouvelles classes */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex justify-center items-center gap-4 mb-6"
+            className="hero-badges"
           >
-            <Badge className={cn("text-white/80 border-0 text-sm", getCategoryColor(category))}>
-              <span className="mr-1">{getCategoryIcon(category)}</span>
+            <Badge className={cn("text-white/90 border-0 text-sm px-4 py-2", getCategoryColor(category))}>
+              <span className="mr-2">{getCategoryIcon(category)}</span>
               {category === 'real_estate' && 'Immobilier'}
               {category === 'automobile' && 'Automobile'}
               {category === 'services' && 'Services'}
               {category === 'marketplace' && 'Marketplace'}
             </Badge>
-            <Badge variant="outline" className="text-white/80 border-white/20 text-sm">
-              <Clock className="h-3 w-3 mr-1" />
+            <Badge variant="outline" className="text-white/90 border-white/30 text-sm px-4 py-2">
+              <Clock className="h-4 w-4 mr-2" />
               {currentTime.timeSlot} • {currentTime.hour}h
             </Badge>
           </motion.div>
 
-          {/* Titre principal du site - Plus compact */}
+          {/* Titre principal du site - Utilise les nouvelles classes */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight"
+            className="hero-title text-white"
           >
             Bienvenue sur{" "}
             <span className="gradient-text">MaxiMarket</span>
           </motion.h1>
 
-          {/* Sous-titre */}
+          {/* Sous-titre - Utilise les nouvelles classes */}
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
+            className="hero-subtitle text-gray-200"
           >
             Explorez, découvrez, connectez. Votre marketplace de confiance.
           </motion.p>
-
-
-
         </div>
       </div>
 
-      {/* Indicateurs discrets - Seulement les points de navigation */}
+      {/* Indicateurs de navigation - Utilise les nouvelles classes */}
       {listings.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-50">
+        <div className="hero-navigation">
           {listings.map((_, index) => (
             <button
               key={index}
               className={cn(
-                "w-2 h-2 rounded-full transition-all duration-300 cursor-pointer",
+                "w-3 h-3 rounded-full transition-all duration-300 cursor-pointer",
                 index === currentIndex 
-                  ? "bg-white scale-125" 
-                  : "bg-white/30 hover:bg-white/50"
+                  ? "bg-white scale-110 shadow-lg" 
+                  : "bg-white/40 hover:bg-white/60 hover:scale-105"
               )}
               onClick={() => goToSlide(index)}
             />
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

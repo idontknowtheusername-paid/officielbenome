@@ -139,8 +139,8 @@ const HomePage = () => {
             timeSlot={heroInfo.timeSlot}
           />
           
-          {/* Barre de recherche flottante - Plus proche du contenu */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-2xl px-4" style={{ bottom: '80px' }}>
+          {/* Barre de recherche flottante - Utilise les nouvelles classes */}
+          <div className="hero-search">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -170,7 +170,7 @@ const HomePage = () => {
                   name="q"
                   type="search"
                   placeholder="Que recherchez-vous sur MaxiMarket ?"
-                  className="w-full py-4 px-6 pr-16 rounded-full text-lg bg-white/10 text-white placeholder-gray-400 border-2 border-transparent focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-16"
+                  className="w-full py-4 px-6 pr-16 rounded-full text-lg bg-white/20 text-white placeholder-gray-300 border-2 border-white/30 focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-16 shadow-xl"
                 />
                 <Button
                   type="submit"
