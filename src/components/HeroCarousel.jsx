@@ -191,7 +191,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.8 }}
-            className="text-white/60 text-sm mb-4"
+            className="text-white/60 text-sm mb-6 mt-8"
           >
             Découvrez : {currentListing.title}
           </motion.div>
@@ -201,7 +201,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1 }}
-            className="flex justify-center"
+            className="flex justify-center mt-4"
           >
             <Button
               variant="ghost"
