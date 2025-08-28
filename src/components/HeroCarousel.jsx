@@ -21,7 +21,7 @@ const heroStyles = `
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 4rem 1rem 8rem;
+    padding: 0 1rem 8rem;
   }
   
   .hero-badges {
@@ -69,7 +69,7 @@ const heroStyles = `
   
   @media (max-width: 768px) {
     .hero-content {
-      padding: 3rem 1rem 6rem;
+      padding: 0 1rem 6rem;
     }
     
     .hero-badges {
