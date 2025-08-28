@@ -111,7 +111,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
 
   return (
     <div 
-      className="relative h-screen overflow-hidden"
+      className="relative h-screen overflow-hidden -mt-24 pt-24"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -143,7 +143,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
       {/* Contenu principal - Simplifié pour ne montrer que l'image en arrière-plan */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center pt-20">
         <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
           {/* Badge de catégorie et heure - Discret en haut */}
           <motion.div

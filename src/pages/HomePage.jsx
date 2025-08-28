@@ -110,7 +110,7 @@ const HomePage = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
       {/* Hero Carousel Section */}
       {loadingHero ? (
         <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
