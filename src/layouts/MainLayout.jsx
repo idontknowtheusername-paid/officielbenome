@@ -53,7 +53,10 @@ const MainLayout = () => {
       </header>
       
       <main 
-        className="flex-grow pt-24"
+        className={cn(
+          "flex-grow",
+          location.pathname === "/" ? "" : "pt-24"
+        )}
         role="main"
         aria-label="Contenu principal"
         id="main-content"
