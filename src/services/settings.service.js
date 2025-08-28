@@ -23,7 +23,7 @@ export const settingsService = {
           appearance: {
             theme: 'auto',
             primaryColor: '#3B82F6',
-            logoUrl: '/logo.jpg',
+            logoUrl: '',
             faviconUrl: '/favicon.ico',
             enableAnimations: true,
             enableGradients: true
@@ -303,7 +303,7 @@ export const settingsService = {
       appearance: {
         theme: 'auto',
         primaryColor: '#3B82F6',
-        logoUrl: '/logo.jpg',
+        logoUrl: '',
         faviconUrl: '/favicon.ico',
         enableAnimations: true,
         enableGradients: true

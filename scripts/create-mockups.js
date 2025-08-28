@@ -7,13 +7,9 @@
  * en utilisant des templates prédéfinis et des assets organisés.
  */
 
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
 // Configuration des réseaux sociaux
 const SOCIAL_PLATFORMS = {
@@ -139,7 +135,7 @@ class MockupGenerator {
       metadata: {
         created: new Date().toISOString(),
         platform: mockupData.platform,
-        template: mockupData.template || 'unknown',
+        template: mockupData.template,
         dimensions: mockupData.dimensions
       },
       design: {
@@ -282,15 +278,15 @@ class MockupGenerator {
    */
   generateReport() {
     const mockupFiles = fs.readdirSync(this.outputDir)
-      .filter(file => file.endsWith('.json') && !file.includes('calendar') && !file.includes('report'))
+      .filter(file => file.endsWith('.json'))
       .map(file => {
         const filepath = path.join(this.outputDir, file);
         const content = JSON.parse(fs.readFileSync(filepath, 'utf8'));
         return {
           filename: file,
-          platform: content.metadata?.platform || 'unknown',
-          template: content.metadata?.template || 'unknown',
-          created: content.metadata?.created || 'unknown'
+          platform: content.metadata.platform,
+          template: content.metadata.template,
+          created: content.metadata.created
         };
       });
 
@@ -396,6 +392,8 @@ Plateformes disponibles:
 }
 
 // Exécuter si appelé directement
-main();
+if (require.main === module) {
+  main();
+}
 
-export default MockupGenerator;
+module.exports = MockupGenerator;
