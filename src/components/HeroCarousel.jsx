@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
 import { useListingImages } from '@/hooks';
 import OptimizedImage from '@/components/OptimizedImage';
 import { cn } from '@/lib/utils';
 
-const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick }) => {
+const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState({ hour: hour, timeSlot: timeSlot });
-  const navigate = useNavigate();
 
   // Mise à jour de l'heure en temps réel
   useEffect(() => {
@@ -62,14 +59,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
     setCurrentIndex(index);
   }, []);
 
-  // Gestion du clic sur une annonce
-  const handleListingClick = useCallback((listing) => {
-    if (onListingClick) {
-      onListingClick(listing);
-    } else {
-      navigate(`/annonce/${listing.id}`);
-    }
-  }, [navigate, onListingClick]);
+
 
 
 
@@ -186,32 +176,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot, onListingClick 
             Explorez, découvrez, connectez. Votre marketplace de confiance.
           </motion.p>
 
-          {/* Indicateur discret de l'annonce en cours - Plus bas */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.8 }}
-            className="text-white/60 text-sm mb-6 mt-8"
-          >
-            Découvrez : {currentListing.title}
-          </motion.div>
 
-          {/* Bouton discret pour voir l'annonce - Plus bas */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1 }}
-            className="flex justify-center mt-4"
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white/70 hover:text-white hover:bg-white/10 border border-white/20"
-              onClick={() => handleListingClick(currentListing)}
-            >
-              Voir cette annonce
-            </Button>
-          </motion.div>
 
         </div>
       </div>
