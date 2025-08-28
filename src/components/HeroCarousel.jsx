@@ -21,7 +21,7 @@ const heroStyles = `
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0 1rem 8rem;
+    padding: 0 1rem 4rem;
   }
   
   .hero-badges {
