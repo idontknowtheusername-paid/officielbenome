@@ -224,12 +224,14 @@ const MessagingPageContent = () => {
     };
   }, [user, refetch]);
 
-  // Subscription en temps réel pour les nouveaux messages
+  // Subscription en temps réel pour les nouveaux messages (CORRIGÉ)
   useEffect(() => {
     if (!user) return;
 
+    // Créer un channel unique pour éviter les conflits
+    const channelName = `messaging-page-${user.id}-${Date.now()}`;
     const channel = supabase
-      .channel('messages')
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -238,13 +240,19 @@ const MessagingPageContent = () => {
       }, (payload) => {
         console.log('💬 Nouveau message reçu:', payload);
         
-        // Si c'est dans la conversation active, l'ajouter
+        // Si c'est dans la conversation active, l'ajouter (éviter les doublons)
         if (selectedConversation && payload.new.conversation_id === selectedConversation.id) {
-          setMessages(prev => [...prev, payload.new]);
+          setMessages(prev => {
+            const exists = prev.some(msg => msg.id === payload.new.id);
+            if (exists) return prev;
+            return [...prev, payload.new];
+          });
         }
         
         // Rafraîchir les conversations pour mettre à jour last_message_at
-        refetch();
+        setTimeout(() => {
+          refetch();
+        }, 100);
         
         // Notification toast pour les nouveaux messages
         if (payload.new.sender_id !== user.id) {
@@ -254,9 +262,17 @@ const MessagingPageContent = () => {
           });
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔌 Statut de la subscription messagerie:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscription messagerie active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Erreur de subscription messagerie');
+        }
+      });
 
     return () => {
+      console.log('🔌 Désabonnement de la subscription messagerie:', channelName);
       supabase.removeChannel(channel);
     };
   }, [user, selectedConversation, refetch, toast]);

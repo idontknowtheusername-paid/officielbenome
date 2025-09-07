@@ -114,15 +114,16 @@ export const useRealTimeMessaging = (conversationId = null) => {
     }
   }, [conversationId, refreshConversations, syncConversation]);
 
-  // Écouter les changements en temps réel avec Supabase
+  // Écouter les changements en temps réel avec Supabase (CORRIGÉ)
   useEffect(() => {
     if (!conversationId) return;
 
     console.log('🔌 Configuration de l\'écoute en temps réel pour la conversation:', conversationId);
 
-    // Écouter les nouveaux messages
+    // Créer un channel unique pour éviter les conflits
+    const channelName = `messages-${conversationId}-${Date.now()}`;
     const messagesSubscription = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -132,10 +133,17 @@ export const useRealTimeMessaging = (conversationId = null) => {
         console.log('🆕 Nouveau message reçu en temps réel:', payload.new);
         
         // Mettre à jour immédiatement l'interface
-        setMessages(prev => [...prev, payload.new]);
+        setMessages(prev => {
+          // Éviter les doublons
+          const exists = prev.some(msg => msg.id === payload.new.id);
+          if (exists) return prev;
+          return [...prev, payload.new];
+        });
         
-        // Actualiser les conversations
-        refreshConversations();
+        // Actualiser les conversations avec un délai pour éviter les conflits
+        setTimeout(() => {
+          refreshConversations();
+        }, 100);
       })
       .on('postgres_changes', {
         event: 'UPDATE',
@@ -150,10 +158,17 @@ export const useRealTimeMessaging = (conversationId = null) => {
           msg.id === payload.new.id ? payload.new : msg
         ));
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔌 Statut de la subscription:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscription temps réel active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Erreur de subscription temps réel');
+        }
+      });
 
     return () => {
-      console.log('🔌 Désabonnement de l\'écoute en temps réel');
+      console.log('🔌 Désabonnement de l\'écoute en temps réel:', channelName);
       supabase.removeChannel(messagesSubscription);
     };
   }, [conversationId, refreshConversations]);

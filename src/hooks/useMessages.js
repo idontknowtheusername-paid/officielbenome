@@ -145,17 +145,19 @@ export const useSendMessage = () => {
       }
     },
 
-    // Succes - invalider et refetch
+    // Succes - mise à jour optimisée du cache (sans invalidation excessive)
     onSettled: (data, error, variables) => {
-      console.log('🔄 Invalidation du cache après envoi de message...');
+      if (error) {
+        console.log('❌ Erreur lors de l\'envoi, invalidation du cache...');
+        // En cas d'erreur, invalider pour recharger
+        queryClient.invalidateQueries({ queryKey: ['conversation-messages', variables.conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        return;
+      }
+
+      console.log('✅ Message envoyé, mise à jour optimisée du cache...');
       
-      // Invalider les messages de la conversation
-      queryClient.invalidateQueries({ queryKey: ['conversation-messages', variables.conversationId] });
-      
-      // Invalider la liste des conversations pour mettre à jour l'ordre
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      
-      // Mettre à jour immédiatement le cache des conversations
+      // Mise à jour optimiste du cache des conversations (sans invalidation)
       queryClient.setQueryData(['conversations'], (old) => {
         if (!old) return old;
         
@@ -168,6 +170,21 @@ export const useSendMessage = () => {
               }
             : conv
         );
+      });
+
+      // Mise à jour optimiste du cache des messages
+      queryClient.setQueryData(['conversation-messages', variables.conversationId], (old) => {
+        if (!old) return old;
+        
+        const newPages = [...old.pages];
+        if (newPages.length > 0) {
+          newPages[newPages.length - 1] = [...newPages[newPages.length - 1], data];
+        }
+        
+        return {
+          ...old,
+          pages: newPages
+        };
       });
     },
   });

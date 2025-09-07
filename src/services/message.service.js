@@ -139,15 +139,15 @@ Besoin d'aide ? Je suis là pour vous accompagner !`,
 };
 
 export const messageService = {
-  // Recuperer les conversations d'un utilisateur
+  // Recuperer les conversations d'un utilisateur (OPTIMISÉ - Élimine les requêtes N+1)
   getUserConversations: async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Récupération des conversations pour l\'utilisateur:', user.id);
+      console.log('🔍 Récupération optimisée des conversations pour l\'utilisateur:', user.id);
 
-      // D'abord, recuperer les conversations existantes avec une requête simplifiée
+      // REQUÊTE OPTIMISÉE : Récupérer tout en une seule requête avec JOINs
       const { data: conversations, error: convError } = await supabase
         .from('conversations')
         .select(`
@@ -156,9 +156,37 @@ export const messageService = {
           participant1_id,
           participant2_id,
           is_active,
+          is_archived,
+          starred,
           last_message_at,
           created_at,
-          updated_at
+          updated_at,
+          participant1:users!participant1_id(
+            id,
+            first_name,
+            last_name,
+            profile_image
+          ),
+          participant2:users!participant2_id(
+            id,
+            first_name,
+            last_name,
+            profile_image
+          ),
+          listing:listings(
+            id,
+            title,
+            price,
+            images
+          ),
+          messages:messages(
+            id,
+            content,
+            created_at,
+            is_read,
+            sender_id,
+            message_type
+          )
         `)
         .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
         .order('last_message_at', { ascending: false, nullsLast: true })
@@ -169,286 +197,80 @@ export const messageService = {
         throw convError;
       }
 
-      console.log('🔍 Conversations trouvées:', conversations?.length || 0);
+      console.log('🔍 Conversations trouvées (optimisées):', conversations?.length || 0);
 
-      // TOUJOURS vérifier et créer/récupérer la conversation de l'assistant
-      console.log('🔍 Vérification de la conversation de l\'assistant...');
-      
-      // Vérifier si l'utilisateur a déjà une conversation avec l'assistant
+      // Gestion de l'assistant AIDA (simplifiée)
       const assistantId = '00000000-0000-0000-0000-000000000000';
-      const { data: existingAssistantConv, error: assistantConvError } = await supabase
-        .from('conversations')
-        .select(`
-          id,
-          participant1_id,
-          participant2_id,
-          is_active,
-          last_message_at,
-          created_at,
-          updated_at
-        `)
-        .or(`participant1_id.eq.${assistantId},participant2_id.eq.${user.id}`)
-        .or(`participant1_id.eq.${user.id},participant2_id.eq.${assistantId}`)
-        .maybeSingle();
-
       let assistantConversation = null;
 
-      if (assistantConvError || !existingAssistantConv) {
+      // Vérifier si l'assistant est déjà dans les conversations
+      const existingAssistant = conversations?.find(conv => 
+        conv.participant1_id === assistantId || conv.participant2_id === assistantId
+      );
+
+      if (!existingAssistant) {
         // Créer la conversation de l'assistant si elle n'existe pas
-        console.log('Création de la conversation de l\'assistant pour l\'utilisateur:', user.id);
+        console.log('🔍 Création de la conversation de l\'assistant pour l\'utilisateur:', user.id);
         assistantConversation = await addWelcomeMessage(user.id);
-        
-        if (!assistantConversation) {
-          console.error('❌ Impossible de créer la conversation de l\'assistant');
-        }
-      } else {
-        // Récupérer la conversation existante
-        console.log('Conversation de l\'assistant existante trouvée:', existingAssistantConv.id);
-        assistantConversation = existingAssistantConv;
-      }
-
-      // Préparer la conversation de l'assistant pour l'affichage
-      let formattedAssistantConversation = null;
-      if (assistantConversation) {
-        // Récupérer le message de bienvenue
-        const { data: welcomeMsg, error: msgError } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('conversation_id', assistantConversation.id)
-          .eq('sender_id', '00000000-0000-0000-0000-000000000000')
-          .single();
-
-        if (!msgError && welcomeMsg) {
-          formattedAssistantConversation = {
-            ...assistantConversation,
-            messages: [welcomeMsg],
-            participant1: {
-              id: '00000000-0000-0000-0000-000000000000',
-              first_name: 'AIDA',
-              last_name: 'Assistant',
-              profile_image: null
-            },
-            participant2: {
-              id: user.id,
-              first_name: user.user_metadata?.first_name || '',
-              last_name: user.user_metadata?.last_name || '',
-              profile_image: user.user_metadata?.profile_image || null
-            },
-            listing: null
-          };
-        }
       }
 
       // Si aucune conversation normale ET pas de conversation d'assistant, retourner seulement l'assistant
-      if ((!conversations || conversations.length === 0) && !formattedAssistantConversation) {
+      if ((!conversations || conversations.length === 0) && !assistantConversation) {
         console.log('Aucune conversation trouvée, impossible de créer l\'assistant');
         return [];
       }
 
-      // Pour chaque conversation, recuperer les détails des participants et du listing
-      const conversationsWithDetails = await Promise.all(
-        conversations.map(async (conversation) => {
-          try {
-            console.log(`🔍 Traitement de la conversation: ${conversation.id}`);
-            
-            // Récupérer les détails du listing si il existe
-            let listingDetails = null;
-            if (conversation.listing_id) {
-              const { data: listing, error: listingError } = await supabase
-                .from('listings')
-                .select('id, title, price, images')
-                .eq('id', conversation.listing_id)
-                .single();
-              
-              if (!listingError && listing) {
-                listingDetails = listing;
-                console.log(`✅ Listing récupéré pour la conversation ${conversation.id}:`, listing.title);
-              } else {
-                console.warn(`⚠️ Listing non trouvé pour la conversation ${conversation.id}:`, listingError);
-              }
-            }
+      // OPTIMISATION : Les données sont déjà récupérées avec les JOINs
+      // Plus besoin de requêtes N+1 !
+      const conversationsWithDetails = conversations?.map(conversation => {
+        console.log(`✅ Conversation ${conversation.id} traitée (optimisée):`, {
+          participant1: conversation.participant1 ? `${conversation.participant1.first_name || 'N/A'} ${conversation.participant1.last_name || 'N/A'}` : 'N/A',
+          participant2: conversation.participant2 ? `${conversation.participant2.first_name || 'N/A'} ${conversation.participant2.last_name || 'N/A'}` : 'N/A',
+          messages: conversation.messages?.length || 0,
+          listing: conversation.listing?.title || 'N/A'
+        });
 
-            // Récupérer les détails des participants
-            const participant1Id = conversation.participant1_id;
-            const participant2Id = conversation.participant2_id;
-            
-            console.log(`🔍 Récupération des participants pour la conversation ${conversation.id}:`);
-            console.log(`🔍 Participant 1 ID: ${participant1Id}`);
-            console.log(`🔍 Participant 2 ID: ${participant2Id}`);
-            
-            let participant1 = null;
-            let participant2 = null;
-
-            if (participant1Id) {
-              try {
-                console.log(`🔍 Récupération des détails du participant 1: ${participant1Id}`);
-                const { data: user1, error: user1Error } = await supabase
-                  .from('users')
-                  .select('id, first_name, last_name, profile_image')
-                  .eq('id', participant1Id)
-                  .single();
-                
-                console.log(`🔍 Résultat participant 1 - data:`, user1);
-                console.log(`🔍 Résultat participant 1 - error:`, user1Error);
-                
-                if (!user1Error && user1) {
-                  participant1 = user1;
-                  console.log(`✅ Participant 1 récupéré pour la conversation ${conversation.id}:`, {
-                    id: user1.id,
-                    name: `${user1.first_name || 'N/A'} ${user1.last_name || 'N/A'}`,
-                    avatar: user1.profile_image || user1.profile_image
-                  });
-                } else {
-                  console.warn(`❌ Utilisateur 1 non trouvé pour la conversation ${conversation.id}:`, participant1Id, user1Error);
-                  // Créer un utilisateur par défaut pour éviter les erreurs
-                  participant1 = {
-                    id: participant1Id,
-                    first_name: 'Utilisateur',
-                    last_name: 'Inconnu',
-                    profile_image: null,
-                    profile_image: null
-                  };
-                }
-              } catch (error) {
-                console.error(`❌ Erreur lors de la récupération de l'utilisateur 1 pour la conversation ${conversation.id}:`, error);
-                participant1 = {
-                  id: participant1Id,
-                  first_name: 'Utilisateur',
-                  last_name: 'Inconnu',
-                  profile_image: null,
-                  profile_image: null
-                };
-              }
-            }
-
-            if (participant2Id) {
-              try {
-                console.log(`🔍 Récupération des détails du participant 2: ${participant2Id}`);
-                const { data: user2, error: user2Error } = await supabase
-                  .from('users')
-                  .select('id, first_name, last_name, profile_image')
-                  .eq('id', participant2Id)
-                  .single();
-                
-                console.log(`🔍 Résultat participant 2 - data:`, user2);
-                console.log(`🔍 Résultat participant 2 - error:`, user2Error);
-                
-                if (!user2Error && user2) {
-                  participant2 = user2;
-                  console.log(`✅ Participant 2 récupéré pour la conversation ${conversation.id}:`, {
-                    id: user2.id,
-                    name: `${user2.first_name || 'N/A'} ${user2.last_name || 'N/A'}`,
-                    avatar: user2.profile_image || user2.profile_image
-                  });
-                } else {
-                  console.warn(`❌ Utilisateur 2 non trouvé pour la conversation ${conversation.id}:`, participant2Id, user2Error);
-                  // Créer un utilisateur par défaut pour éviter les erreurs
-                  participant2 = {
-                    id: participant2Id,
-                    first_name: 'Utilisateur',
-                    last_name: 'Inconnu',
-                    profile_image: null,
-                    profile_image: null
-                  };
-                }
-              } catch (error) {
-                console.error(`❌ Erreur lors de la récupération de l'utilisateur 2 pour la conversation ${conversation.id}:`, error);
-                participant2 = {
-                  id: participant2Id,
-                  first_name: 'Utilisateur',
-                  last_name: 'Inconnu',
-                  profile_image: null,
-                  profile_image: null
-                };
-              }
-            }
-
-            // Récupérer les messages de la conversation
-            const { data: messages, error: msgError } = await supabase
-              .from('messages')
-              .select(`
-                id,
-                content,
-                created_at,
-                is_read,
-                sender_id,
-                conversation_id
-              `)
-              .eq('conversation_id', conversation.id)
-              .order('created_at', { ascending: true });
-
-            if (msgError) {
-              console.error(`❌ Erreur récupération messages pour la conversation ${conversation.id}:`, msgError);
-              return { 
-                ...conversation, 
-                messages: [],
-                listing: listingDetails,
-                participant1,
-                participant2
-              };
-            }
-
-            console.log(`✅ Messages récupérés pour la conversation ${conversation.id}:`, messages?.length || 0);
-
-            // Récupérer les détails des expéditeurs pour chaque message
-            const messagesWithUsers = await Promise.all(
-              (messages || []).map(async (message) => {
-                try {
-                  let sender = null;
-
-                  if (message.sender_id) {
-                    console.log(`🔍 Récupération de l'expéditeur pour le message ${message.id}: ${message.sender_id}`);
-                                      const { data: senderData, error: senderError } = await supabase
-                    .from('users')
-                    .select('id, first_name, last_name, profile_image')
-                    .eq('id', message.sender_id)
-                    .single();
-                    
-                    if (!senderError && senderData) {
-                      sender = senderData;
-                      console.log(`✅ Expéditeur récupéré pour le message ${message.id}:`, {
-                        id: senderData.id,
-                        name: `${senderData.first_name || 'N/A'} ${senderData.last_name || 'N/A'}`
-                      });
-                    } else {
-                      console.warn(`⚠️ Expéditeur non trouvé pour le message ${message.id}:`, message.sender_id, senderError);
-                    }
-                  }
-
-                  return {
-                    ...message,
-                    sender
-                  };
-                } catch (error) {
-                  console.error(`❌ Erreur lors de la récupération des détails de l'expéditeur pour le message ${message.id}:`, error);
-                  return message;
-                }
-              })
-            );
-
-            console.log(`✅ Conversation ${conversation.id} traitée avec succès:`, {
-              participant1: participant1 ? `${participant1.first_name || 'N/A'} ${participant1.last_name || 'N/A'}` : 'N/A',
-              participant2: participant2 ? `${participant2.first_name || 'N/A'} ${participant2.last_name || 'N/A'}` : 'N/A',
-              messages: messagesWithUsers?.length || 0,
-              listing: listingDetails?.title || 'N/A'
-            });
-
-            return { 
-              ...conversation, 
-              messages: messagesWithUsers || [],
-              listing: listingDetails,
-              participant1,
-              participant2
-            };
-          } catch (error) {
-            console.error(`❌ Erreur lors du traitement de la conversation ${conversation.id}:`, error);
-            return { ...conversation, messages: [], listing: null, participant1: null, participant2: null };
-          }
-        })
-      );
+        return {
+          ...conversation,
+          // Les données sont déjà présentes grâce aux JOINs
+          participant1: conversation.participant1 || {
+            id: conversation.participant1_id,
+            first_name: 'Utilisateur',
+            last_name: 'Inconnu',
+            profile_image: null
+          },
+          participant2: conversation.participant2 || {
+            id: conversation.participant2_id,
+            first_name: 'Utilisateur',
+            last_name: 'Inconnu',
+            profile_image: null
+          },
+          listing: conversation.listing || null,
+          messages: conversation.messages || []
+        };
+      }) || [];
 
       // Ajouter la conversation de l'assistant à la liste si elle existe
-      if (formattedAssistantConversation) {
+      if (assistantConversation) {
+        // Formater la conversation de l'assistant
+        const formattedAssistantConversation = {
+          ...assistantConversation,
+          participant1: {
+            id: assistantId,
+            first_name: 'AIDA',
+            last_name: 'Assistant',
+            profile_image: null
+          },
+          participant2: {
+            id: user.id,
+            first_name: user.user_metadata?.first_name || '',
+            last_name: user.user_metadata?.last_name || '',
+            profile_image: user.user_metadata?.profile_image || null
+          },
+          listing: null,
+          messages: []
+        };
+        
         conversationsWithDetails.unshift(formattedAssistantConversation);
         console.log('✅ Conversation de l\'assistant ajoutée à la liste');
       }
@@ -550,12 +372,36 @@ export const messageService = {
     }
   },
 
-  // Envoyer un message
+  // Envoyer un message (avec validation)
   sendMessage: async (conversationId, content, messageType = 'text') => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
-    console.log('📤 Envoi de message dans la conversation:', conversationId);
+    // VALIDATION DES DONNÉES
+    if (!conversationId || typeof conversationId !== 'string') {
+      throw new Error('ID de conversation invalide');
+    }
+    
+    if (!content || typeof content !== 'string') {
+      throw new Error('Le contenu du message est requis');
+    }
+    
+    const trimmedContent = content.trim();
+    if (trimmedContent.length === 0) {
+      throw new Error('Le message ne peut pas être vide');
+    }
+    
+    if (trimmedContent.length > 1000) {
+      throw new Error('Le message est trop long (maximum 1000 caractères)');
+    }
+    
+    // Validation du type de message
+    const validMessageTypes = ['text', 'image', 'video', 'audio', 'file', 'location', 'system'];
+    if (!validMessageTypes.includes(messageType)) {
+      throw new Error('Type de message invalide');
+    }
+
+    console.log('📤 Envoi de message validé dans la conversation:', conversationId);
 
     // Recuperer la conversation pour determiner le destinataire
     const { data: conversation, error: convError } = await supabase
@@ -572,14 +418,14 @@ export const messageService = {
 
     const currentTime = new Date().toISOString();
 
-    // Inserer le message
+    // Inserer le message (avec contenu validé)
     const { data: message, error: msgError } = await supabase
       .from('messages')
       .insert([{
         sender_id: user.id,
         receiver_id: receiverId,
         conversation_id: conversationId,
-        content,
+        content: trimmedContent, // Utiliser le contenu validé
         message_type: messageType,
         created_at: currentTime
       }])
