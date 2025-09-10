@@ -58,7 +58,7 @@ const heroStyles = `
   
   .hero-search {
     position: absolute;
-    bottom: 5rem;
+    bottom: 8rem;
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
@@ -69,7 +69,7 @@ const heroStyles = `
   
   @media (max-width: 768px) {
     .hero-content {
-      padding: 0 1rem 6rem;
+      padding: 0 1rem 8rem;
     }
     
     .hero-badges {
@@ -79,14 +79,49 @@ const heroStyles = `
     
     .hero-title {
       margin-bottom: 1rem;
+      font-size: clamp(2rem, 8vw, 3rem);
     }
     
     .hero-subtitle {
       margin-bottom: 2rem;
+      font-size: clamp(1rem, 4vw, 1.25rem);
     }
     
     .hero-search {
-      bottom: 4rem;
+      bottom: 6rem;
+      max-width: 90%;
+    }
+    
+    .hero-navigation {
+      bottom: 2rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .hero-content {
+      padding: 0 0.75rem 7rem;
+    }
+    
+    .hero-badges {
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .hero-title {
+      margin-bottom: 0.75rem;
+      font-size: clamp(1.75rem, 10vw, 2.5rem);
+    }
+    
+    .hero-subtitle {
+      margin-bottom: 1.5rem;
+      font-size: clamp(0.9rem, 5vw, 1.1rem);
+    }
+    
+    .hero-search {
+      bottom: 5rem;
+      max-width: 95%;
+      padding: 0 0.5rem;
     }
     
     .hero-navigation {

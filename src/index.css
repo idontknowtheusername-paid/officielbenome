@@ -241,6 +241,25 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Hero section responsive improvements */
+@media (max-width: 640px) {
+  .hero-search input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .hero-search button {
+    min-height: 44px; /* Touch target size */
+    min-width: 44px;
+  }
+}
+
+/* Safe area handling for mobile devices */
+@supports (padding: max(0px)) {
+  .hero-container {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
 /* Custom scrollbar (optional, for a more futuristic feel) */
 ::-webkit-scrollbar {
   width: 8px;

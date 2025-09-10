@@ -121,14 +121,14 @@ const HomePage = () => {
                   name="q"
                   type="search"
                   placeholder="Que recherchez-vous sur MaxiMarket ?"
-                  className="w-full py-4 px-6 pr-16 rounded-full text-lg bg-white/20 text-white placeholder-gray-300 border-2 border-white/30 focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-16 shadow-xl"
+                  className="w-full py-3 px-4 sm:py-4 sm:px-6 pr-12 sm:pr-16 rounded-full text-base sm:text-lg bg-white/20 text-white placeholder-gray-300 border-2 border-white/30 focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-12 sm:h-16 shadow-xl"
                 />
                 <Button
                   type="submit"
                   size="lg"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-12 w-12 p-0"
+                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-10 w-10 sm:h-12 sm:w-12 p-0"
                 >
-                  <SearchIcon className="h-6 w-6 text-white" />
+                  <SearchIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </Button>
               </form>
             </motion.div>
