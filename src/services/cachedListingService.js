@@ -1,12 +1,15 @@
 import { listingService } from './index.js';
 import { localCache } from '@/lib/localCache';
 
-// Configuration des TTL par type de données
+// Configuration des TTL par type de données (optimisée)
 const CACHE_TTL = {
-  listings: 2 * 60 * 1000, // 2 minutes
-  categories: 10 * 60 * 1000, // 10 minutes
-  userListings: 1 * 60 * 1000, // 1 minute
-  searchResults: 5 * 60 * 1000, // 5 minutes
+  listings: 10 * 60 * 1000, // 10 minutes (au lieu de 2)
+  categories: 60 * 60 * 1000, // 1 heure (au lieu de 10 min)
+  userListings: 5 * 60 * 1000, // 5 minutes (au lieu de 1)
+  searchResults: 15 * 60 * 1000, // 15 minutes (au lieu de 5)
+  heroListings: 30 * 60 * 1000, // 30 minutes pour les hero listings
+  popularListings: 20 * 60 * 1000, // 20 minutes pour les populaires
+  premiumListings: 25 * 60 * 1000, // 25 minutes pour les premium
 };
 
 export const cachedListingService = {
@@ -232,6 +235,81 @@ export const cachedListingService = {
   clearCache() {
     localCache.clear();
     console.log('🗑️ Cache complètement vidé');
+  },
+
+  /**
+   * Récupère les hero listings avec cache optimisé
+   */
+  async getHeroListings(limit = 6) {
+    const cacheKey = `hero-listings:${limit}`;
+    
+    const cached = localCache.get(cacheKey);
+    if (cached) {
+      console.log('📦 Hero listings récupérés du cache local');
+      return cached;
+    }
+
+    try {
+      console.log('🌐 Appel API pour récupérer les hero listings');
+      const data = await listingService.getHeroListings(limit);
+      
+      localCache.set(cacheKey, data, CACHE_TTL.heroListings);
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des hero listings:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Récupère les listings populaires avec cache optimisé
+   */
+  async getTopViewedListings(limit = 6) {
+    const cacheKey = `popular-listings:${limit}`;
+    
+    const cached = localCache.get(cacheKey);
+    if (cached) {
+      console.log('📦 Listings populaires récupérés du cache local');
+      return cached;
+    }
+
+    try {
+      console.log('🌐 Appel API pour récupérer les listings populaires');
+      const data = await listingService.getTopViewedListings(limit);
+      
+      localCache.set(cacheKey, data, CACHE_TTL.popularListings);
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des listings populaires:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Récupère les listings premium avec cache optimisé
+   */
+  async getPremiumListings(limit = 10) {
+    const cacheKey = `premium-listings:${limit}`;
+    
+    const cached = localCache.get(cacheKey);
+    if (cached) {
+      console.log('📦 Listings premium récupérés du cache local');
+      return cached;
+    }
+
+    try {
+      console.log('🌐 Appel API pour récupérer les listings premium');
+      const data = await listingService.getPremiumListings(limit);
+      
+      localCache.set(cacheKey, data, CACHE_TTL.premiumListings);
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des listings premium:', error);
+      throw error;
+    }
   },
 
   /**

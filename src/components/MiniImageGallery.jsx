@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import OptimizedImage from '@/components/OptimizedImage';
+import OptimizedListingImage from '@/components/ui/OptimizedListingImage';
 
 const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", className = "" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -90,13 +90,13 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
           transition={{ duration: 0.3 }}
           className="w-full h-full"
         >
-          <OptimizedImage
+          <OptimizedListingImage
             src={currentImage}
             alt={`${title} - Image ${currentIndex + 1}`}
             className="w-full h-full object-cover"
-            context="card"
-            quality="medium"
+            priority="medium"
             showSkeleton={true}
+            enableAnimations={true}
           />
         </motion.div>
       </AnimatePresence>

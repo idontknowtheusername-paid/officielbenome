@@ -1,114 +1,219 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-export const useImagePreloader = (images, currentIndex) => {
-  const [preloadedImages, setPreloadedImages] = useState(new Set());
-  const [loadingStates, setLoadingStates] = useState(new Map());
-  const abortControllers = useRef(new Map());
+/**
+ * Hook pour précharger des images en batch
+ * @param {Array} imageUrls - URLs des images à précharger
+ * @param {Object} options - Options de préchargement
+ * @returns {Object} - État du préchargement
+ */
+export const useImagePreloader = (imageUrls = [], options = {}) => {
+  const {
+    batchSize = 3, // Nombre d'images à charger simultanément
+    delay = 100, // Délai entre les batches (ms)
+    priority = 'medium', // 'low', 'medium', 'high'
+    onProgress = null,
+    onComplete = null,
+    onError = null
+  } = options;
 
-  // Nettoyer les contrôleurs d'abort lors du démontage
-  useEffect(() => {
-    return () => {
-      abortControllers.current.forEach(controller => controller.abort());
-      abortControllers.current.clear();
-    };
+  const [preloadState, setPreloadState] = useState({
+    loaded: new Set(),
+    loading: new Set(),
+    errors: new Set(),
+    progress: 0,
+    isComplete: false
+  });
+
+  const batchRef = useRef(0);
+  const timeoutRef = useRef(null);
+
+  // Fonction pour charger une image
+  const loadImage = useCallback((url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        setPreloadState(prev => ({
+          ...prev,
+          loaded: new Set([...prev.loaded, url]),
+          loading: new Set([...prev.loading].filter(u => u !== url))
+        }));
+        resolve(url);
+      };
+      
+      img.onerror = () => {
+        setPreloadState(prev => ({
+          ...prev,
+          errors: new Set([...prev.errors, url]),
+          loading: new Set([...prev.loading].filter(u => u !== url))
+        }));
+        reject(new Error(`Failed to load image: ${url}`));
+      };
+      
+      img.src = url;
+    });
   }, []);
 
-  // Précharger les images intelligemment
-  useEffect(() => {
-    if (!images || images.length === 0) return;
+  // Fonction pour charger un batch d'images
+  const loadBatch = useCallback(async (urls) => {
+    setPreloadState(prev => ({
+      ...prev,
+      loading: new Set([...prev.loading, ...urls])
+    }));
 
-    // Déterminer quelles images précharger
-    const imagesToPreload = [
-      images[currentIndex], // Image actuelle
-      images[(currentIndex + 1) % images.length], // Image suivante
-      images[(currentIndex - 1 + images.length) % images.length], // Image précédente
-      images[(currentIndex + 2) % images.length], // Image suivante + 1
-      images[(currentIndex - 2 + images.length) % images.length] // Image précédente - 1
-    ].filter(Boolean);
+    try {
+      await Promise.allSettled(urls.map(loadImage));
+    } catch (error) {
+      console.warn('Batch loading error:', error);
+    }
+  }, [loadImage]);
 
-    imagesToPreload.forEach((src, index) => {
-      if (src && !preloadedImages.has(src) && !loadingStates.has(src)) {
-        // Annuler le préchargement précédent si existant
-        if (abortControllers.current.has(src)) {
-          abortControllers.current.get(src).abort();
+  // Fonction pour démarrer le préchargement
+  const startPreloading = useCallback(() => {
+    if (imageUrls.length === 0) return;
+
+    setPreloadState({
+      loaded: new Set(),
+      loading: new Set(),
+      errors: new Set(),
+      progress: 0,
+      isComplete: false
+    });
+
+    batchRef.current = 0;
+
+    const processBatches = async () => {
+      const batches = [];
+      for (let i = 0; i < imageUrls.length; i += batchSize) {
+        batches.push(imageUrls.slice(i, i + batchSize));
+      }
+
+      for (const batch of batches) {
+        await loadBatch(batch);
+        
+        // Mettre à jour le progrès
+        const currentLoaded = preloadState.loaded.size + batch.length;
+        const progress = Math.min((currentLoaded / imageUrls.length) * 100, 100);
+        
+        setPreloadState(prev => ({
+          ...prev,
+          progress
+        }));
+
+        if (onProgress) {
+          onProgress(progress, currentLoaded, imageUrls.length);
         }
 
-        // Créer un nouveau contrôleur d'abort
-        const controller = new AbortController();
-        abortControllers.current.set(src, controller);
-
-        // Marquer comme en cours de chargement
-        setLoadingStates(prev => new Map(prev).set(src, 'loading'));
-
-        // Précharger l'image
-        const img = new Image();
-        img.onload = () => {
-          setPreloadedImages(prev => new Set([...prev, src]));
-          setLoadingStates(prev => {
-            const newMap = new Map(prev);
-            newMap.set(src, 'loaded');
-            return newMap;
+        // Délai entre les batches (sauf pour le dernier)
+        if (batch !== batches[batches.length - 1]) {
+          await new Promise(resolve => {
+            timeoutRef.current = setTimeout(resolve, delay);
           });
-          abortControllers.current.delete(src);
-        };
-        img.onerror = () => {
-          setLoadingStates(prev => {
-            const newMap = new Map(prev);
-            newMap.set(src, 'error');
-            return newMap;
-          });
-          abortControllers.current.delete(src);
-        };
-        img.src = src;
+        }
       }
-    });
-  }, [currentIndex, images]);
 
-  // Vérifier si une image est préchargée
-  const isImagePreloaded = useCallback((src) => {
-    return preloadedImages.has(src);
-  }, [preloadedImages]);
+      // Préchargement terminé
+      setPreloadState(prev => ({
+        ...prev,
+        isComplete: true
+      }));
 
-  // Obtenir l'état de chargement d'une image
-  const getImageLoadingState = useCallback((src) => {
-    return loadingStates.get(src) || 'idle';
-  }, [loadingStates]);
+      if (onComplete) {
+        onComplete(preloadState.loaded.size, preloadState.errors.size);
+      }
+    };
 
-  // Précharger une image spécifique
-  const preloadImage = useCallback((src) => {
-    if (src && !preloadedImages.has(src) && !loadingStates.has(src)) {
-      const controller = new AbortController();
-      abortControllers.current.set(src, controller);
+    processBatches();
+  }, [imageUrls, batchSize, delay, loadBatch, onProgress, onComplete, preloadState.loaded.size, preloadState.errors.size]);
 
-      setLoadingStates(prev => new Map(prev).set(src, 'loading'));
-
-      const img = new Image();
-      img.onload = () => {
-        setPreloadedImages(prev => new Set([...prev, src]));
-        setLoadingStates(prev => {
-          const newMap = new Map(prev);
-          newMap.set(src, 'loaded');
-          return newMap;
-        });
-        abortControllers.current.delete(src);
-      };
-      img.onerror = () => {
-        setLoadingStates(prev => {
-          const newMap = new Map(prev);
-          newMap.set(src, 'error');
-          return newMap;
-        });
-        abortControllers.current.delete(src);
-      };
-      img.src = src;
+  // Démarrer le préchargement automatiquement
+  useEffect(() => {
+    if (imageUrls.length > 0) {
+      startPreloading();
     }
-  }, [preloadedImages, loadingStates]);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [imageUrls, startPreloading]);
+
+  // Fonctions utilitaires
+  const isImageLoaded = useCallback((url) => {
+    return preloadState.loaded.has(url);
+  }, [preloadState.loaded]);
+
+  const isImageLoading = useCallback((url) => {
+    return preloadState.loading.has(url);
+  }, [preloadState.loading]);
+
+  const isImageError = useCallback((url) => {
+    return preloadState.errors.has(url);
+  }, [preloadState.errors]);
+
+  const retryFailedImages = useCallback(() => {
+    const failedUrls = Array.from(preloadState.errors);
+    if (failedUrls.length > 0) {
+      loadBatch(failedUrls);
+    }
+  }, [preloadState.errors, loadBatch]);
 
   return {
-    preloadedImages,
-    loadingStates,
-    isImagePreloaded,
-    getImageLoadingState,
-    preloadImage
+    ...preloadState,
+    isImageLoaded,
+    isImageLoading,
+    isImageError,
+    retryFailedImages,
+    startPreloading
   };
-}; 
+};
+
+/**
+ * Hook pour précharger les images d'une liste d'annonces
+ * @param {Array} listings - Liste des annonces
+ * @param {Object} options - Options de préchargement
+ * @returns {Object} - État du préchargement
+ */
+export const useListingsImagePreloader = (listings = [], options = {}) => {
+  const {
+    maxImages = 20, // Nombre maximum d'images à précharger
+    priority = 'medium',
+    ...preloaderOptions
+  } = options;
+
+  // Extraire les URLs d'images des annonces
+  const imageUrls = listings
+    .slice(0, maxImages)
+    .flatMap(listing => {
+      if (!listing.images || !Array.isArray(listing.images)) return [];
+      
+      return listing.images
+        .map(img => {
+          if (typeof img === 'string') return img;
+          if (img?.url) return img.url;
+          if (img?.src) return img.src;
+          return null;
+        })
+        .filter(Boolean);
+    });
+
+  return useImagePreloader(imageUrls, {
+    ...preloaderOptions,
+    priority
+  });
+};
+
+/**
+ * Hook pour précharger les images hero
+ * @param {Array} heroListings - Liste des annonces hero
+ * @returns {Object} - État du préchargement
+ */
+export const useHeroImagePreloader = (heroListings = []) => {
+  return useListingsImagePreloader(heroListings, {
+    maxImages: 6,
+    priority: 'high',
+    batchSize: 2,
+    delay: 50
+  });
+};

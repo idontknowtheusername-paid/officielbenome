@@ -12,73 +12,24 @@ import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
 import HeroCarousel from '@/components/HeroCarousel';
 
-import { useHeroListings } from '@/hooks/useHeroListings';
+import { useHomePageData } from '@/hooks/useHomePageData';
 
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [popularListings, setPopularListings] = useState([]);
-  const [loadingPopular, setLoadingPopular] = useState(true);
-  const [errorPopular, setErrorPopular] = useState(null);
-  
-  // État pour les annonces premium
-  const [premiumListings, setPremiumListings] = useState([]);
-  const [loadingPremium, setLoadingPremium] = useState(true);
-  const [errorPremium, setErrorPremium] = useState(null);
-  
-  // Utiliser le hook optimisé pour les annonces hero
+  // Utiliser le hook optimisé pour toutes les données de la HomePage
   const { 
-    heroListings, 
-    heroInfo, 
-    loading: loadingHero, 
-    error: errorHero,
-    lastUpdate,
-    forceRefresh: forceRefreshHero,
+    heroListings,
+    popularListings,
+    premiumListings,
+    loading,
+    error,
+    forceRefresh,
     isCacheValid,
     cacheStats
-  } = useHeroListings(6);
-
-  useEffect(() => {
-    let timerId;
-    
-    const loadPopular = async () => {
-      try {
-        setLoadingPopular(true);
-        const data = await listingService.getTopViewedListings(6);
-        setPopularListings(data || []);
-      } catch (e) {
-        setErrorPopular(e?.message || 'Erreur lors du chargement des annonces populaires');
-      } finally {
-        setLoadingPopular(false);
-      }
-    };
-
-    const loadPremium = async () => {
-      try {
-        setLoadingPremium(true);
-        const data = await listingService.getPremiumListings(10);
-        setPremiumListings(data?.data || []);
-      } catch (e) {
-        setErrorPremium(e?.message || 'Erreur lors du chargement des annonces premium');
-      } finally {
-        setLoadingPremium(false);
-      }
-    };
-
-    // Charger les annonces populaires et premium
-    loadPopular();
-    loadPremium();
-    
-    // Rafraichissement periodique toutes les 30 minutes (sauf hero qui a son propre cache)
-    timerId = setInterval(() => {
-      loadPopular();
-      loadPremium();
-    }, 1800000);
-    
-    return () => clearInterval(timerId);
-  }, []);
+  } = useHomePageData();
   
   // This page is now a redirect or placeholder as MarketplaceHomePage is the main entry.
   // For a portfolio site, this would be the main landing page.
@@ -112,7 +63,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
       {/* Hero Carousel Section */}
-      {loadingHero ? (
+      {loading.hero ? (
         <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -120,23 +71,23 @@ const HomePage = () => {
             <p className="text-gray-300">Préparation de votre expérience personnalisée</p>
           </div>
         </div>
-      ) : errorHero ? (
+      ) : error.hero ? (
         <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">⚠️</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">Erreur de chargement</h2>
-            <p className="text-gray-300">{errorHero}</p>
+            <p className="text-gray-300">{error.hero}</p>
           </div>
         </div>
       ) : (
         <>
           <HeroCarousel
             listings={heroListings}
-            category={heroInfo.category}
-            hour={heroInfo.hour}
-            timeSlot={heroInfo.timeSlot}
+            category=""
+            hour={0}
+            timeSlot=""
           />
           
           {/* Barre de recherche flottante - Utilise les nouvelles classes */}
@@ -236,12 +187,12 @@ const HomePage = () => {
             ⭐ Annonces <span className="gradient-text">Premium</span>
           </motion.h2>
 
-          {errorPremium && (
-            <p className="text-center text-destructive mb-8">{errorPremium}</p>
+          {error.premium && (
+            <p className="text-center text-destructive mb-8">{error.premium}</p>
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {loadingPremium &&
+            {loading.premium &&
               !premiumListings.length &&
               Array.from({ length: 10 }).map((_, idx) => (
                 <div
@@ -257,7 +208,7 @@ const HomePage = () => {
                 </div>
               ))}
 
-            {!loadingPremium && premiumListings.length === 0 && (
+            {!loading.premium && premiumListings.length === 0 && (
               <div className="col-span-full text-center py-16">
                 <div className="text-6xl mb-4">⭐</div>
                 <h3 className="text-2xl font-semibold mb-2">
@@ -306,11 +257,11 @@ const HomePage = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
             🔥 <span className="gradient-text">Annonces Populaires</span>
           </h2>
-          {errorPopular && (
-            <p className="text-center text-destructive mb-8">{errorPopular}</p>
+          {error.popular && (
+            <p className="text-center text-destructive mb-8">{error.popular}</p>
           )}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {loadingPopular &&
+            {loading.popular &&
               !popularListings.length &&
               Array.from({ length: 6 }).map((_, idx) => (
                 <div
@@ -326,7 +277,7 @@ const HomePage = () => {
                 </div>
               ))}
 
-            {!loadingPopular && popularListings.length === 0 && (
+            {!loading.popular && popularListings.length === 0 && (
               <p className="col-span-full text-center text-muted-foreground">
                 Aucune annonce populaire pour le moment.
               </p>

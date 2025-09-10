@@ -437,9 +437,26 @@ export const listingService = {
       
       // Requete simple sans timeout complexe
       console.log('🔍 Construction de la requête Supabase...');
+    // Requête optimisée avec jointures pour éviter les N+1
     let query = supabase
       .from('listings')
-        .select('*')
+      .select(`
+        *,
+        users!inner(
+          id,
+          first_name,
+          last_name,
+          email,
+          phone_number,
+          profile_image,
+          created_at
+        ),
+        favorites!left(
+          id,
+          user_id,
+          created_at
+        )
+      `)
       .order(sort === 'popular' ? 'views_count' : 'created_at', { ascending: false })
       .range(from, to);
       
