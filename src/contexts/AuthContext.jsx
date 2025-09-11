@@ -309,18 +309,36 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      console.log('🚪 Déconnexion en cours...');
+      
+      // Forcer la déconnexion côté Supabase
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Nettoyer les données de session
+      // Nettoyer TOUTES les données de session
+      setUser(null);
+      setUserProfile(null);
+      setSession(null);
       setSessionExpiry(null);
       setIsRememberMe(false);
+      
+      // Nettoyer le localStorage complètement
       localStorage.removeItem('maximarket-remember-me');
       localStorage.removeItem('maximarket-remember-date');
+      localStorage.removeItem('sb-' + supabase.supabaseUrl.split('//')[1].split('.')[0] + '-auth-token');
       
+      // Nettoyer sessionStorage
+      sessionStorage.clear();
+      
+      // Forcer le rechargement de la page pour s'assurer de la déconnexion
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
+      console.log('✅ Déconnexion réussie');
       return true;
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ Logout error:', error);
       toast({
         title: "Erreur de déconnexion",
         description: error.message,

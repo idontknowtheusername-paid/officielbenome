@@ -27,14 +27,14 @@ if (!isSupabaseConfigured) {
 const SECURITY_CONFIG = {
   // Session active : 30 minutes
   sessionTimeout: 30 * 60 * 1000, // 30 minutes en millisecondes
-  // Option "Se souvenir" : 7 jours
-  rememberMeDays: 7,
+  // Option "Se souvenir" : 1 jour (au lieu de 7)
+  rememberMeDays: 1,
   // Renouvellement automatique des tokens
   autoRefresh: true,
   // Détection de session dans l'URL
   detectSessionInUrl: true,
-  // Persistance des sessions
-  persistSession: true
+  // Persistance des sessions (désactivée pour forcer la reconnexion)
+  persistSession: false
 }
 
 export const supabase = createClient(

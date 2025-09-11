@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, Search, Zap, MessageSquare } from 'lucide-react';
+import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, Search, Zap, MessageSquare, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { personalData } from '@/lib/personalData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +11,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
 
   // Optimisation : Mémoriser les éléments de navigation pour éviter les re-renders
@@ -31,6 +31,16 @@ const Navbar = () => {
   // Optimisation : Mémoriser les classes CSS
   const navLinkClasses = useMemo(() => "text-muted-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium flex items-center", []);
   const activeNavLinkClasses = useMemo(() => "text-primary bg-primary/10", []);
+
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -234,6 +244,13 @@ const Navbar = () => {
                 >
                   <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Mon Compte
                 </NavLink>
+                <button
+                  onClick={handleLogout}
+                  className={`${navLinkClasses} text-base w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50`}
+                  aria-label="Se déconnecter"
+                >
+                  <LogOut className="mr-2 h-4 w-4" aria-hidden="true" /> Déconnexion
+                </button>
               </>
             )}
           </motion.nav>
