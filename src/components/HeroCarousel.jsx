@@ -209,6 +209,17 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
     }
   };
 
+  // Libellé de catégorie
+  const getCategoryLabel = (category) => {
+    switch (category) {
+      case 'real_estate': return 'Immobilier';
+      case 'automobile': return 'Automobile';
+      case 'services': return 'Services';
+      case 'marketplace': return 'Marketplace';
+      default: return 'Annonces';
+    }
+  };
+
   if (!listings || listings.length === 0) {
     return (
       <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
@@ -222,6 +233,7 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
   }
 
   const currentListing = listings[currentIndex];
+  const currentCategory = currentListing?.category || category;
 
   return (
     <>
@@ -268,12 +280,9 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="hero-badges"
           >
-            <Badge className={cn("text-white/90 border-0 text-sm px-4 py-2", getCategoryColor(category))}>
-              <span className="mr-2">{getCategoryIcon(category)}</span>
-              {category === 'real_estate' && 'Immobilier'}
-              {category === 'automobile' && 'Automobile'}
-              {category === 'services' && 'Services'}
-              {category === 'marketplace' && 'Marketplace'}
+            <Badge className={cn("text-white/90 border-0 text-sm px-4 py-2", getCategoryColor(currentCategory))}>
+              <span className="mr-2">{getCategoryIcon(currentCategory)}</span>
+              {getCategoryLabel(currentCategory)}
             </Badge>
             <Badge variant="outline" className="text-white/90 border-white/30 text-sm px-4 py-2">
               <Clock className="h-4 w-4 mr-2" />

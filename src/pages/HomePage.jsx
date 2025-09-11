@@ -21,7 +21,7 @@ const HomePage = () => {
 
   // Utiliser le hook optimisé pour toutes les données de la HomePage
   const { 
-    heroListings,
+    heroListings, 
     popularListings,
     premiumListings,
     loading,
@@ -85,7 +85,7 @@ const HomePage = () => {
         <>
           <HeroCarousel
             listings={heroListings}
-            category=""
+            category="marketplace"
             hour={0}
             timeSlot=""
           />
