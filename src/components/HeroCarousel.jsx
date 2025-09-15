@@ -2,9 +2,40 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useListingImages } from '@/hooks';
 import OptimizedImage from '@/components/OptimizedImage';
 import { cn } from '@/lib/utils';
+
+// Images statiques pour le hero
+const heroImages = [
+  { 
+    id: 1, 
+    src: '/hero/hero-1.jpg', 
+    category: 'real_estate',
+    title: 'Immobilier de prestige',
+    alt: 'Belle maison moderne avec jardin'
+  },
+  { 
+    id: 2, 
+    src: '/hero/hero-2.jpg', 
+    category: 'automobile',
+    title: 'Véhicules d\'exception',
+    alt: 'Voiture de luxe dans un garage moderne'
+  },
+  { 
+    id: 3, 
+    src: '/hero/hero-3.jpg', 
+    category: 'services',
+    title: 'Services professionnels',
+    alt: 'Professionnel au travail dans un bureau moderne'
+  },
+  { 
+    id: 4, 
+    src: '/hero/hero-4.jpg', 
+    category: 'marketplace',
+    title: 'Marketplace diversifiée',
+    alt: 'Produits variés dans un marché coloré'
+  }
+];
 
 // Styles CSS personnalisés pour le hero
 const heroStyles = `
@@ -130,7 +161,7 @@ const heroStyles = `
   }
 `;
 
-const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
+const HeroCarousel = ({ category, hour, timeSlot }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState({ hour: hour, timeSlot: timeSlot });
@@ -164,28 +195,22 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
 
   // Auto-play toutes les 8 secondes
   useEffect(() => {
-    if (!isAutoPlaying || listings.length <= 1) return;
+    if (!isAutoPlaying || heroImages.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % listings.length);
+      setCurrentIndex((prev) => (prev + 1) % heroImages.length);
     }, 8000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, listings.length]);
+  }, [isAutoPlaying]);
 
   // Pause auto-play au survol
   const handleMouseEnter = useCallback(() => setIsAutoPlaying(false), []);
   const handleMouseLeave = useCallback(() => setIsAutoPlaying(true), []);
 
-
-
   const goToSlide = useCallback((index) => {
     setCurrentIndex(index);
   }, []);
-
-
-
-
 
   // Icône de catégorie
   const getCategoryIcon = (category) => {
@@ -220,20 +245,8 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
     }
   };
 
-  if (!listings || listings.length === 0) {
-    return (
-      <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <Clock className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <h2 className="text-2xl font-bold mb-2">Aucune annonce disponible</h2>
-          <p className="text-gray-300">Revenez plus tard pour découvrir de nouvelles annonces</p>
-        </div>
-      </div>
-    );
-  }
-
-  const currentListing = listings[currentIndex];
-  const currentCategory = currentListing?.category || category;
+  const currentImage = heroImages[currentIndex];
+  const currentCategory = currentImage?.category || category;
 
   return (
     <>
@@ -243,93 +256,93 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-      {/* Image de fond */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentListing.id}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="absolute inset-0"
-        >
-          <OptimizedImage
-            src={currentListing.images?.[0] || currentListing.image_url}
-            alt={currentListing.title}
-            className="w-full h-full object-cover"
-            context="hero"
-            quality="high"
-            priority="high"
-            showSkeleton={true}
-            enableHeroAnimations={true}
-            showOverlay={false}
-          />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Overlay sombre */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-
-      {/* Contenu principal - Utilise les nouvelles classes CSS */}
-      <div className="hero-content">
-        <div className="text-center relative z-10">
-          {/* Badge de catégorie et heure - Utilise les nouvelles classes */}
+        {/* Image de fond */}
+        <AnimatePresence mode="wait">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="hero-badges"
+            key={currentImage.id}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="absolute inset-0"
           >
-            <Badge className={cn("text-white/90 border-0 text-sm px-4 py-2", getCategoryColor(currentCategory))}>
-              <span className="mr-2">{getCategoryIcon(currentCategory)}</span>
-              {getCategoryLabel(currentCategory)}
-            </Badge>
-            <Badge variant="outline" className="text-white/90 border-white/30 text-sm px-4 py-2">
-              <Clock className="h-4 w-4 mr-2" />
-              {currentTime.timeSlot} • {currentTime.hour}h
-            </Badge>
-          </motion.div>
-
-          {/* Titre principal du site - Utilise les nouvelles classes */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="hero-title text-white"
-          >
-            Bienvenue sur{" "}
-            <span className="gradient-text">MaxiMarket</span>
-          </motion.h1>
-
-          {/* Sous-titre - Utilise les nouvelles classes */}
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.6 }}
-            className="hero-subtitle text-gray-200"
-          >
-            Explorez, découvrez, connectez. Votre marketplace de confiance.
-          </motion.p>
-        </div>
-      </div>
-
-      {/* Indicateurs de navigation - Utilise les nouvelles classes */}
-      {listings.length > 1 && (
-        <div className="hero-navigation">
-          {listings.map((_, index) => (
-            <button
-              key={index}
-              className={cn(
-                "w-3 h-3 rounded-full transition-all duration-300 cursor-pointer",
-                index === currentIndex 
-                  ? "bg-white scale-110 shadow-lg" 
-                  : "bg-white/40 hover:bg-white/60 hover:scale-105"
-              )}
-              onClick={() => goToSlide(index)}
+            <OptimizedImage
+              src={currentImage.src}
+              alt={currentImage.alt}
+              className="w-full h-full object-cover"
+              context="hero"
+              quality="high"
+              priority="high"
+              showSkeleton={true}
+              enableHeroAnimations={true}
+              showOverlay={false}
             />
-          ))}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Overlay sombre */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+        {/* Contenu principal - Utilise les nouvelles classes CSS */}
+        <div className="hero-content">
+          <div className="text-center relative z-10">
+            {/* Badge de catégorie et heure - Utilise les nouvelles classes */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="hero-badges"
+            >
+              <Badge className={cn("text-white/90 border-0 text-sm px-4 py-2", getCategoryColor(currentCategory))}>
+                <span className="mr-2">{getCategoryIcon(currentCategory)}</span>
+                {getCategoryLabel(currentCategory)}
+              </Badge>
+              <Badge variant="outline" className="text-white/90 border-white/30 text-sm px-4 py-2">
+                <Clock className="h-4 w-4 mr-2" />
+                {currentTime.timeSlot} • {currentTime.hour}h
+              </Badge>
+            </motion.div>
+
+            {/* Titre principal du site - Utilise les nouvelles classes */}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="hero-title text-white"
+            >
+              Bienvenue sur{" "}
+              <span className="gradient-text">MaxiMarket</span>
+            </motion.h1>
+
+            {/* Sous-titre - Utilise les nouvelles classes */}
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.6 }}
+              className="hero-subtitle text-gray-200"
+            >
+              Explorez, découvrez, connectez. Votre marketplace de confiance.
+            </motion.p>
+          </div>
         </div>
-      )}
+
+        {/* Indicateurs de navigation - Utilise les nouvelles classes */}
+        {heroImages.length > 1 && (
+          <div className="hero-navigation">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                className={cn(
+                  "w-3 h-3 rounded-full transition-all duration-300 cursor-pointer",
+                  index === currentIndex 
+                    ? "bg-white scale-110 shadow-lg" 
+                    : "bg-white/40 hover:bg-white/60 hover:scale-105"
+                )}
+                onClick={() => goToSlide(index)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
