@@ -33,6 +33,7 @@ import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import ProfilePage from '@/pages/auth/ProfilePage';
 import AuthCallbackPage from '@/pages/auth/AuthCallbackPage';
 const MessagingPage = lazy(() => import('@/pages/MessagingPage'));
+const DiagnosticPage = lazy(() => import('@/pages/DiagnosticPage'));
 
 // Pages principales (chargées immédiatement)
 import HomePage from '@/pages/HomePage'; 
@@ -209,6 +210,13 @@ function App() {
                   
                   {/* Tests Mobile */}
                   <Route path="mobile-tests" element={<MobileTestPage />} />
+                  
+                  {/* Route de diagnostic temporaire */}
+                  <Route path="diagnostic" element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <DiagnosticPage />
+                    </Suspense>
+                  } />
                   
                   {/* Modifier une annonce */}
                   <Route 
