@@ -232,14 +232,14 @@ const MessagingPageContent = () => {
     };
   }, [user, refetch]);
 
-  // Subscription en temps réel pour les nouveaux messages (CORRIGÉ)
+  // Subscription globale pour les notifications (sans conflit avec useRealtimeMessages)
   useEffect(() => {
     if (!user) return;
 
-    // Créer un channel unique pour éviter les conflits
-    const channelName = `messaging-page-${user.id}-${Date.now()}`;
+    console.log('🔌 Initialisation notifications globales');
+
     const channel = supabase
-      .channel(channelName)
+      .channel(`notifications-${user.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -247,25 +247,17 @@ const MessagingPageContent = () => {
         filter: `receiver_id=eq.${user.id}`
       }, (payload) => {
         if (import.meta.env.DEV) {
-          console.log('💬 Nouveau message reçu:', payload);
+          console.log('🔔 Notification globale reçue:', payload);
         }
         
-        // Si c'est dans la conversation active, l'ajouter (éviter les doublons)
-        if (selectedConversation && payload.new.conversation_id === selectedConversation.id) {
-          setMessages(prev => {
-            const exists = prev.some(msg => msg.id === payload.new.id);
-            if (exists) return prev;
-            return [...prev, payload.new];
-          });
-        }
-        
-        // Rafraîchir les conversations pour mettre à jour last_message_at
+        // Rafraîchir les conversations pour mettre à jour les compteurs
         setTimeout(() => {
           refetch();
         }, 100);
         
-        // Notification toast pour les nouveaux messages
-        if (payload.new.sender_id !== user.id) {
+        // Notification toast pour les nouveaux messages (seulement si pas dans la conversation active)
+        if (payload.new.sender_id !== user.id && 
+            (!selectedConversation || payload.new.conversation_id !== selectedConversation.id)) {
           toast({
             title: "Nouveau message",
             description: "Vous avez reçu un nouveau message",
@@ -274,18 +266,18 @@ const MessagingPageContent = () => {
       })
       .subscribe((status) => {
         if (import.meta.env.DEV) {
-          console.log('🔌 Statut de la subscription messagerie:', status);
+          console.log('🔌 Statut notifications globales:', status);
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Subscription messagerie active');
+            console.log('✅ Notifications globales actives');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Erreur de subscription messagerie');
+            console.error('❌ Erreur notifications globales');
           }
         }
       });
 
     return () => {
       if (import.meta.env.DEV) {
-        console.log('🔌 Désabonnement de la subscription messagerie:', channelName);
+        console.log('🔌 Désabonnement notifications globales');
       }
       supabase.removeChannel(channel);
     };

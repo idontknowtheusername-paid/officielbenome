@@ -370,7 +370,7 @@ export const useMessageStats = () => {
   });
 };
 
-// Hook pour la synchronisation temps reel
+// Hook pour la synchronisation temps réel CORRIGÉ
 export const useRealtimeMessages = (conversationId) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -378,20 +378,34 @@ export const useRealtimeMessages = (conversationId) => {
   useEffect(() => {
     if (!conversationId || !user) return;
 
+    console.log('🔌 Initialisation subscription temps réel pour conversation:', conversationId);
+
     const channel = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(`messages-${conversationId}-${user.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `conversation_id=eq.${conversationId}`
       }, (payload) => {
-        // Mettre a jour le cache avec le nouveau message
+        console.log('💬 Nouveau message reçu en temps réel:', payload.new);
+
+        // Mettre à jour le cache des messages de la conversation
         queryClient.setQueryData(['conversation-messages', conversationId], (old) => {
           if (!old) return old;
           
           const newMessage = payload.new;
           const newPages = [...old.pages];
+          
+          // Vérifier si le message existe déjà (éviter les doublons)
+          const exists = newPages.some(page => 
+            page.some(msg => msg.id === newMessage.id)
+          );
+          
+          if (exists) {
+            console.log('⚠️ Message déjà présent, ignoré');
+            return old;
+          }
           
           if (newPages.length > 0) {
             newPages[newPages.length - 1] = [...newPages[newPages.length - 1], newMessage];
@@ -403,7 +417,7 @@ export const useRealtimeMessages = (conversationId) => {
           };
         });
 
-        // Mettre a jour les conversations
+        // Mettre à jour le cache des conversations
         queryClient.setQueryData(['conversations'], (old) => {
           if (!old) return old;
           
@@ -411,16 +425,51 @@ export const useRealtimeMessages = (conversationId) => {
             conv.id === conversationId 
               ? {
                   ...conv,
-                  last_message_at: newMessage.created_at,
-                  messages: [...(conv.messages || []), newMessage]
+                  last_message_at: payload.new.created_at,
+                  updated_at: new Date().toISOString(),
+                  messages: [...(conv.messages || []), payload.new]
                 }
               : conv
           );
         });
+
+        console.log('✅ Cache mis à jour en temps réel');
       })
-      .subscribe();
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        console.log('🔄 Message mis à jour en temps réel:', payload.new);
+
+        // Mettre à jour le message dans le cache
+        queryClient.setQueryData(['conversation-messages', conversationId], (old) => {
+          if (!old) return old;
+          
+          const newPages = old.pages.map(page =>
+            page.map(msg => 
+              msg.id === payload.new.id ? payload.new : msg
+            )
+          );
+          
+          return {
+            ...old,
+            pages: newPages
+          };
+        });
+      })
+      .subscribe((status) => {
+        console.log('🔌 Statut subscription temps réel:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscription temps réel active pour conversation:', conversationId);
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Erreur subscription temps réel');
+        }
+      });
 
     return () => {
+      console.log('🔌 Désabonnement subscription temps réel pour conversation:', conversationId);
       supabase.removeChannel(channel);
     };
   }, [conversationId, user, queryClient]);
