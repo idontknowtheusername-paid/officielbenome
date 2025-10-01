@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -131,17 +131,17 @@ const MessagingPageContent = () => {
   const [audioCallTarget, setAudioCallTarget] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Détecter si on est sur mobile
+  // Détecter si on est sur mobile - Optimisé avec useCallback
+  const checkMobile = useCallback(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [checkMobile]);
 
   // Utiliser le hook de chat en temps réel
   useRealtimeMessages(selectedConversation?.id);
@@ -176,7 +176,9 @@ const MessagingPageContent = () => {
       // Trouver la conversation dans la liste
       const conversation = conversations.find(c => c.id === conversationId);
       if (conversation) {
-        console.log('🔍 Ouverture automatique de la conversation:', conversationId);
+        if (import.meta.env.DEV) {
+          console.log('🔍 Ouverture automatique de la conversation:', conversationId);
+        }
         setSelectedConversation(conversation);
         loadMessages(conversation.id);
       }
@@ -184,7 +186,9 @@ const MessagingPageContent = () => {
       // Trouver une conversation liée à cette annonce
       const conversation = conversations.find(c => c.listing_id === listingId);
       if (conversation) {
-        console.log('🔍 Ouverture automatique de la conversation pour l\'annonce:', listingId);
+        if (import.meta.env.DEV) {
+          console.log('🔍 Ouverture automatique de la conversation pour l\'annonce:', listingId);
+        }
         setSelectedConversation(conversation);
         loadMessages(conversation.id);
       }
@@ -203,7 +207,9 @@ const MessagingPageContent = () => {
         table: 'conversations',
         filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
       }, (payload) => {
-        console.log('🆕 Nouvelle conversation reçue:', payload);
+        if (import.meta.env.DEV) {
+          console.log('🆕 Nouvelle conversation reçue:', payload);
+        }
         // Rafraîchir les conversations
         refetch();
       })
@@ -213,7 +219,9 @@ const MessagingPageContent = () => {
         table: 'conversations',
         filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
       }, (payload) => {
-        console.log('🔄 Conversation mise à jour:', payload);
+        if (import.meta.env.DEV) {
+          console.log('🔄 Conversation mise à jour:', payload);
+        }
         // Rafraîchir les conversations
         refetch();
       })
@@ -238,7 +246,9 @@ const MessagingPageContent = () => {
         table: 'messages',
         filter: `receiver_id=eq.${user.id}`
       }, (payload) => {
-        console.log('💬 Nouveau message reçu:', payload);
+        if (import.meta.env.DEV) {
+          console.log('💬 Nouveau message reçu:', payload);
+        }
         
         // Si c'est dans la conversation active, l'ajouter (éviter les doublons)
         if (selectedConversation && payload.new.conversation_id === selectedConversation.id) {
@@ -263,22 +273,26 @@ const MessagingPageContent = () => {
         }
       })
       .subscribe((status) => {
-        console.log('🔌 Statut de la subscription messagerie:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Subscription messagerie active');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Erreur de subscription messagerie');
+        if (import.meta.env.DEV) {
+          console.log('🔌 Statut de la subscription messagerie:', status);
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Subscription messagerie active');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Erreur de subscription messagerie');
+          }
         }
       });
 
     return () => {
-      console.log('🔌 Désabonnement de la subscription messagerie:', channelName);
+      if (import.meta.env.DEV) {
+        console.log('🔌 Désabonnement de la subscription messagerie:', channelName);
+      }
       supabase.removeChannel(channel);
     };
   }, [user, selectedConversation, refetch, toast]);
 
-  // Charger les messages d'une conversation
-  const loadMessages = async (conversationId) => {
+  // Charger les messages d'une conversation - Optimisé avec useCallback
+  const loadMessages = useCallback(async (conversationId) => {
     if (!conversationId) return;
     
     setIsLoadingMessages(true);
@@ -292,7 +306,9 @@ const MessagingPageContent = () => {
       // Rafraîchir les conversations pour mettre à jour les stats
       refetch();
     } catch (error) {
-      console.error('Erreur chargement messages:', error);
+      if (import.meta.env.DEV) {
+        console.error('Erreur chargement messages:', error);
+      }
       toast({
         title: "Erreur",
         description: "Impossible de charger les messages",
@@ -301,10 +317,10 @@ const MessagingPageContent = () => {
     } finally {
       setIsLoadingMessages(false);
     }
-  };
+  }, [refetch, toast]);
 
-  // Sélectionner une conversation
-  const handleSelectConversation = async (conversation) => {
+  // Sélectionner une conversation - Optimisé avec useCallback
+  const handleSelectConversation = useCallback(async (conversation) => {
     setSelectedConversation(conversation);
     loadMessages(conversation.id);
     setShowMobileMenu(false); // Fermer le menu mobile
@@ -315,12 +331,14 @@ const MessagingPageContent = () => {
       // Rafraîchir les conversations pour mettre à jour le statut
       refetch();
     } catch (error) {
-      console.error('Erreur lors du marquage des messages comme lus:', error);
+      if (import.meta.env.DEV) {
+        console.error('Erreur lors du marquage des messages comme lus:', error);
+      }
     }
-  };
+  }, [loadMessages, refetch]);
 
-  // Envoyer un message
-  const handleSendMessage = async (messageContent) => {
+  // Envoyer un message - Optimisé avec useCallback
+  const handleSendMessage = useCallback(async (messageContent) => {
     if (!messageContent.trim() || !selectedConversation) return;
 
     try {
@@ -335,28 +353,32 @@ const MessagingPageContent = () => {
       
       // Pas de notification toast pour les messages envoyés par l'utilisateur
     } catch (error) {
-      console.error('Erreur envoi message:', error);
+      if (import.meta.env.DEV) {
+        console.error('Erreur envoi message:', error);
+      }
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer le message",
         variant: "destructive",
       });
     }
-  };
+  }, [selectedConversation, refetch, toast]);
 
-  // Gérer les pièces jointes
-  const handleAttachment = (files) => {
-    console.log('Fichiers sélectionnés:', files);
+  // Gérer les pièces jointes - Optimisé avec useCallback
+  const handleAttachment = useCallback((files) => {
+    if (import.meta.env.DEV) {
+      console.log('Fichiers sélectionnés:', files);
+    }
     // Pas de notification toast pour les pièces jointes sélectionnées
-  };
+  }, []);
 
-  // Gérer les emojis
-  const handleEmoji = () => {
+  // Gérer les emojis - Optimisé avec useCallback
+  const handleEmoji = useCallback(() => {
     // Pas de notification toast pour les emojis
-  };
+  }, []);
 
-  // Gérer l'appel audio
-  const handleCall = () => {
+  // Gérer l'appel audio - Optimisé avec useCallback
+  const handleCall = useCallback(() => {
     if (!selectedConversation || !user) {
       toast({
         title: "Erreur",
@@ -379,11 +401,13 @@ const MessagingPageContent = () => {
       return;
     }
     
-    console.log('🔍 Initialisation appel avec:', {
-      user: user.id,
-      target: otherParticipant.id,
-      targetName: otherParticipant.first_name || otherParticipant.last_name || 'Utilisateur'
-    });
+    if (import.meta.env.DEV) {
+      console.log('🔍 Initialisation appel avec:', {
+        user: user.id,
+        target: otherParticipant.id,
+        targetName: otherParticipant.first_name || otherParticipant.last_name || 'Utilisateur'
+      });
+    }
     
     setAudioCallTarget(otherParticipant);
     setShowAudioCall(true);
@@ -392,87 +416,95 @@ const MessagingPageContent = () => {
       title: "Appel audio",
       description: `Initialisation de l'appel avec ${otherParticipant.first_name || otherParticipant.last_name || 'l\'utilisateur'}`,
     });
-  };
+  }, [selectedConversation, user, toast]);
 
-  // Fermer l'interface d'appel
-  const handleCloseAudioCall = () => {
+  // Fermer l'interface d'appel - Optimisé avec useCallback
+  const handleCloseAudioCall = useCallback(() => {
     setShowAudioCall(false);
     setAudioCallTarget(null);
-  };
+  }, []);
 
-  // Filtrer les conversations
-  const filteredConversations = conversations?.filter(conv => {
-    if (filterType === 'unread') {
-      return conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id);
-    }
-    if (filterType === 'starred') {
-      return conv.starred;
-    }
-    if (filterType === 'archived') {
-      return conv.is_archived;
-    }
-    return true;
-  }) || [];
-
-  // Rechercher dans les conversations
-  const searchedConversations = filteredConversations.filter(conv => {
-    if (!searchTerm) return true;
-    
-    const searchLower = searchTerm.toLowerCase();
-    
-    // Rechercher dans le nom des participants
-    const participant1Name = `${conv.participant1?.first_name || ''} ${conv.participant1?.last_name || ''}`.toLowerCase();
-    const participant2Name = `${conv.participant2?.first_name || ''} ${conv.participant2?.last_name || ''}`.toLowerCase();
-    
-    if (participant1Name.includes(searchLower) || participant2Name.includes(searchLower)) {
+  // Filtrer les conversations - Optimisé avec useMemo
+  const filteredConversations = useMemo(() => {
+    return conversations?.filter(conv => {
+      if (filterType === 'unread') {
+        return conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id);
+      }
+      if (filterType === 'starred') {
+        return conv.starred;
+      }
+      if (filterType === 'archived') {
+        return conv.is_archived;
+      }
       return true;
-    }
-    
-    // Rechercher dans le titre de l'annonce
-    if (conv.listing?.title?.toLowerCase().includes(searchLower)) {
-      return true;
-    }
-    
-    // Rechercher dans le contenu des messages
-    if (conv.messages?.some(msg => msg.content?.toLowerCase().includes(searchLower))) {
-      return true;
-    }
-    
-    return false;
-  });
+    }) || [];
+  }, [conversations, filterType, user?.id]);
 
-  // Trier les conversations par date du dernier message (plus récent en premier)
-  const sortedConversations = [...searchedConversations].sort((a, b) => {
-    const aLastMessage = a.messages?.[a.messages.length - 1]?.created_at || a.created_at;
-    const bLastMessage = b.messages?.[b.messages.length - 1]?.created_at || b.created_at;
-    
-    if (!aLastMessage && !bLastMessage) return 0;
-    if (!aLastMessage) return 1;
-    if (!bLastMessage) return -1;
-    
-    return new Date(bLastMessage) - new Date(aLastMessage);
-  });
+  // Rechercher dans les conversations - Optimisé avec useMemo
+  const searchedConversations = useMemo(() => {
+    return filteredConversations.filter(conv => {
+      if (!searchTerm) return true;
+      
+      const searchLower = searchTerm.toLowerCase();
+      
+      // Rechercher dans le nom des participants
+      const participant1Name = `${conv.participant1?.first_name || ''} ${conv.participant1?.last_name || ''}`.toLowerCase();
+      const participant2Name = `${conv.participant2?.first_name || ''} ${conv.participant2?.last_name || ''}`.toLowerCase();
+      
+      if (participant1Name.includes(searchLower) || participant2Name.includes(searchLower)) {
+        return true;
+      }
+      
+      // Rechercher dans le titre de l'annonce
+      if (conv.listing?.title?.toLowerCase().includes(searchLower)) {
+        return true;
+      }
+      
+      // Rechercher dans le contenu des messages
+      if (conv.messages?.some(msg => msg.content?.toLowerCase().includes(searchLower))) {
+        return true;
+      }
+      
+      return false;
+    });
+  }, [filteredConversations, searchTerm]);
 
-  // Log pour déboguer l'ordre des conversations
-  console.log('🔍 Conversations triées:', sortedConversations.map(conv => ({
-    id: conv.id,
-    title: conv.listing?.title || 'Sans titre',
-    lastMessage: conv.messages?.[conv.messages.length - 1]?.created_at || conv.created_at,
-    hasUnread: conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id)
-  })));
+  // Trier les conversations par date du dernier message - Optimisé avec useMemo
+  const sortedConversations = useMemo(() => {
+    return [...searchedConversations].sort((a, b) => {
+      const aLastMessage = a.messages?.[a.messages.length - 1]?.created_at || a.created_at;
+      const bLastMessage = b.messages?.[b.messages.length - 1]?.created_at || b.created_at;
+      
+      if (!aLastMessage && !bLastMessage) return 0;
+      if (!aLastMessage) return 1;
+      if (!bLastMessage) return -1;
+      
+      return new Date(bLastMessage) - new Date(aLastMessage);
+    });
+  }, [searchedConversations]);
 
-  // Calculer les statistiques
-  const stats = {
+  // Log pour déboguer l'ordre des conversations - Conditionné pour DEV
+  if (import.meta.env.DEV) {
+    console.log('🔍 Conversations triées:', sortedConversations.map(conv => ({
+      id: conv.id,
+      title: conv.listing?.title || 'Sans titre',
+      lastMessage: conv.messages?.[conv.messages.length - 1]?.created_at || conv.created_at,
+      hasUnread: conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id)
+    })));
+  }
+
+  // Calculer les statistiques - Optimisé avec useMemo
+  const stats = useMemo(() => ({
     total: conversations?.length || 0,
     unread: conversations?.filter(conv => 
       conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id)
     ).length || 0,
     starred: conversations?.filter(conv => conv.starred).length || 0,
     archived: conversations?.filter(conv => conv.is_archived).length || 0
-  };
+  }), [conversations, user?.id]);
 
-  // Actions sur les conversations
-  const handleMarkAsRead = async (conversation) => {
+  // Actions sur les conversations - Optimisées avec useCallback
+  const handleMarkAsRead = useCallback(async (conversation) => {
     try {
       await messageService.markMessagesAsRead(conversation.id);
       refetch();
@@ -484,9 +516,9 @@ const MessagingPageContent = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [refetch, toast]);
 
-  const handleToggleStar = async (conversation) => {
+  const handleToggleStar = useCallback(async (conversation) => {
     try {
       const newStarredState = !conversation.starred;
       await messageService.toggleConversationStar(conversation.id, newStarredState);
@@ -499,9 +531,9 @@ const MessagingPageContent = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [refetch, toast]);
 
-  const handleArchive = async (conversation) => {
+  const handleArchive = useCallback(async (conversation) => {
     try {
       await messageService.archiveConversation(conversation.id);
       refetch();
@@ -513,7 +545,7 @@ const MessagingPageContent = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [refetch, toast]);
 
   // Supprimer une conversation
   const handleDeleteConversation = (conversation) => {
@@ -641,70 +673,75 @@ const MessagingPageContent = () => {
             onFilter={() => setShowMobileMenu(false)}
             onMore={() => setShowNavigation(!showNavigation)}
             onCall={handleCall}
-            onVideo={() => console.log('Video')}
+            onVideo={() => {
+              if (import.meta.env.DEV) {
+                console.log('Video');
+              }
+            }}
             unreadCount={stats.unread}
           />
         )}
 
-        {/* Header Desktop - Afficher seulement si pas de conversation sélectionnée ET sur desktop */}
+        {/* Header Desktop - Responsive amélioré */}
         {!selectedConversation && (
-          <div className="bg-card border-b border-border px-6 py-4 hidden md:block flex-shrink-0">
+          <div className="bg-card border-b border-border px-4 sm:px-6 py-4 hidden sm:block flex-shrink-0">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
               <Link to="/" className="hover:text-primary transition-colors">Accueil</Link>
               <span>/</span>
               <span className="text-foreground font-medium">Messages</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-card-foreground">Centre de Messages</h1>
-                <p className="text-muted-foreground">
+                <h1 className="text-xl sm:text-2xl font-bold text-card-foreground">Centre de Messages</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Gérez vos conversations et échangez avec d'autres utilisateurs
                 </p>
               </div>
-              <div className="flex items-center space-x-3">
-                {/* Navigation vers les autres parties du site */}
-                <div className="flex items-center space-x-2 mr-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                {/* Navigation vers les autres parties du site - Responsive amélioré */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2 mr-0 sm:mr-4">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => navigate('/')}
-                    className="text-xs"
+                    className="text-xs flex-shrink-0"
                   >
                     <Home className="h-3 w-3 mr-1" />
-                    Accueil
+                    <span className="hidden sm:inline">Accueil</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => navigate('/immobilier')}
-                    className="text-xs"
+                    className="text-xs flex-shrink-0"
                   >
                     <Home className="h-3 w-3 mr-1" />
-                    Immobilier
+                    <span className="hidden sm:inline">Immobilier</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => navigate('/automobile')}
-                    className="text-xs"
+                    className="text-xs flex-shrink-0"
                   >
                     <Car className="h-3 w-3 mr-1" />
-                    Auto
+                    <span className="hidden sm:inline">Auto</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => navigate('/marketplace')}
-                    className="text-xs"
+                    className="text-xs flex-shrink-0"
                   >
                     <ShoppingBag className="h-3 w-3 mr-1" />
-                    Marketplace
+                    <span className="hidden sm:inline">Marketplace</span>
                   </Button>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">
+                <Button className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
-                  Nouvelle Conversation
+                  <span className="hidden sm:inline">Nouvelle Conversation</span>
+                  <span className="sm:hidden">Nouveau</span>
                 </Button>
               </div>
             </div>
@@ -718,10 +755,10 @@ const MessagingPageContent = () => {
 
       {/* Contenu Principal */}
       <div className="flex flex-1 overflow-hidden min-h-0">
-        {/* Sidebar des conversations - cachée sur mobile si conversation sélectionnée */}
+        {/* Sidebar des conversations - Responsive amélioré avec breakpoints */}
         <div className={`
-          ${selectedConversation ? 'hidden md:block' : 'block'} 
-          w-full md:w-80 lg:w-96 
+          ${selectedConversation ? 'hidden sm:block' : 'block'} 
+          w-full sm:w-64 md:w-80 lg:w-96 xl:w-[28rem] 2xl:w-[32rem]
           bg-card border-r border-border 
           flex flex-col
         `}>
@@ -791,12 +828,12 @@ const MessagingPageContent = () => {
             <div className="border-b border-border p-4 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  {/* Bouton retour - visible seulement sur mobile */}
+                  {/* Bouton retour - Responsive amélioré */}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setSelectedConversation(null)}
-                    className="p-2 -ml-2 md:hidden"
+                    className="p-2 -ml-2 sm:hidden"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
@@ -950,16 +987,24 @@ const MessagingPageContent = () => {
                 onSend={handleSendMessage}
                 onAttachment={handleAttachment}
                 onEmoji={handleEmoji}
-                onVoice={() => console.log('Voice message')}
-                onCamera={() => console.log('Camera')}
+                onVoice={() => {
+                  if (import.meta.env.DEV) {
+                    console.log('Voice message');
+                  }
+                }}
+                onCamera={() => {
+                  if (import.meta.env.DEV) {
+                    console.log('Camera');
+                  }
+                }}
                 placeholder="Tapez votre message..."
                 disabled={isLoadingMessages}
               />
             </div>
           </div>
         ) : (
-          /* Écran d'accueil quand aucune conversation n'est sélectionnée */
-          <div className="hidden md:flex flex-1 items-center justify-center bg-muted/50">
+          /* Écran d'accueil - Responsive amélioré */
+          <div className="hidden sm:flex flex-1 items-center justify-center bg-muted/50">
             <div className="text-center">
                               <MessageSquare className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-medium text-card-foreground mb-2">
@@ -1050,8 +1095,8 @@ const MessagingPageContent = () => {
   );
 };
 
-// Composant pour afficher un élément de conversation
-const ConversationItem = ({ 
+// Composant pour afficher un élément de conversation - Optimisé avec React.memo
+const ConversationItem = memo(({ 
   conversation, 
   isSelected, 
   onSelect, 
@@ -1202,10 +1247,10 @@ const ConversationItem = ({
       </div>
     </div>
   );
-};
+});
 
-// Composant pour afficher une bulle de message
-const MessageBubble = ({ 
+// Composant pour afficher une bulle de message - Optimisé avec React.memo
+const MessageBubble = memo(({ 
   message, 
   isOwn, 
   participant1, 
@@ -1282,7 +1327,7 @@ const MessageBubble = ({
       )}
       
       <div className={`
-        relative max-w-xs lg:max-w-md px-4 py-2 rounded-lg cursor-pointer
+        relative max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl px-4 py-2 rounded-lg cursor-pointer
         transition-all duration-200
         ${isOwn 
           ? 'bg-primary text-primary-foreground' 
@@ -1323,7 +1368,7 @@ const MessageBubble = ({
       )}
     </div>
   );
-};
+});
 
 // Composant principal avec QueryClient
 const MessagingPage = () => {

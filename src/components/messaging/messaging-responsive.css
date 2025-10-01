@@ -1,0 +1,318 @@
+/* ========================================
+   MESSAGING RESPONSIVE ENHANCEMENTS
+   Améliorations responsive pour l'interface de messagerie
+   ======================================== */
+
+/* ========================================
+   BREAKPOINTS RESPONSIVE
+   ======================================== */
+
+/* Mobile First - Base styles */
+.messaging-container {
+  @apply h-screen bg-background flex flex-col overflow-hidden;
+}
+
+.messaging-sidebar {
+  @apply w-full sm:w-64 md:w-80 lg:w-96 xl:w-[28rem] 2xl:w-[32rem];
+}
+
+.messaging-conversation {
+  @apply flex-1 flex flex-col bg-card min-h-0;
+}
+
+/* ========================================
+   MESSAGE BUBBLES RESPONSIVE
+   ======================================== */
+
+.message-bubble {
+  @apply relative max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl;
+  @apply px-4 py-2 rounded-lg cursor-pointer transition-all duration-200;
+}
+
+.message-bubble.own {
+  @apply bg-primary text-primary-foreground;
+}
+
+.message-bubble.assistant {
+  @apply bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800 border border-blue-200;
+}
+
+.message-bubble.other {
+  @apply bg-muted text-muted-foreground;
+}
+
+/* ========================================
+   CONVERSATION LIST RESPONSIVE
+   ======================================== */
+
+.conversation-item {
+  @apply group p-4 cursor-pointer transition-colors hover:bg-accent relative;
+}
+
+.conversation-item.selected {
+  @apply bg-primary/10 border-r-2 border-primary;
+}
+
+.conversation-item.unread {
+  @apply bg-primary/10;
+}
+
+.conversation-item.assistant {
+  @apply bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500;
+}
+
+/* ========================================
+   HEADER RESPONSIVE
+   ======================================== */
+
+.messaging-header {
+  @apply bg-card border-b border-border px-4 sm:px-6 py-4 flex-shrink-0;
+}
+
+.messaging-header-mobile {
+  @apply bg-card border-b border-border px-4 py-3 flex items-center justify-between;
+}
+
+.messaging-header-desktop {
+  @apply hidden sm:block;
+}
+
+/* ========================================
+   NAVIGATION RESPONSIVE
+   ======================================== */
+
+.nav-buttons {
+  @apply flex flex-wrap items-center gap-2 sm:gap-2;
+}
+
+.nav-button {
+  @apply text-xs flex-shrink-0;
+}
+
+.nav-button-text {
+  @apply hidden sm:inline;
+}
+
+.nav-button-icon {
+  @apply h-3 w-3 mr-1;
+}
+
+/* ========================================
+   MESSAGE INPUT RESPONSIVE
+   ======================================== */
+
+.message-input-container {
+  @apply bg-background border-t border-border p-4;
+}
+
+.message-input-wrapper {
+  @apply flex items-end space-x-2;
+}
+
+.message-input-field {
+  @apply flex-1 relative;
+}
+
+.message-input-actions {
+  @apply absolute right-2 bottom-2 flex items-center space-x-1;
+}
+
+.message-send-button {
+  @apply bg-primary hover:bg-primary/90 flex-shrink-0 px-4;
+}
+
+/* ========================================
+   QUICK ACTIONS RESPONSIVE
+   ======================================== */
+
+.quick-actions {
+  @apply mb-3 p-3 bg-muted/50 rounded-lg;
+}
+
+.quick-actions-grid {
+  @apply grid grid-cols-4 gap-2;
+}
+
+.quick-action-button {
+  @apply flex flex-col items-center space-y-1 p-2 h-auto;
+}
+
+.quick-action-icon {
+  @apply h-5 w-5 text-muted-foreground;
+}
+
+.quick-action-label {
+  @apply text-xs text-muted-foreground;
+}
+
+/* ========================================
+   MOBILE SPECIFIC STYLES
+   ======================================== */
+
+@media (max-width: 640px) {
+  .messaging-sidebar {
+    @apply w-full;
+  }
+  
+  .message-bubble {
+    @apply max-w-xs;
+  }
+  
+  .conversation-item {
+    @apply p-3;
+  }
+  
+  .messaging-header {
+    @apply px-3 py-3;
+  }
+  
+  .nav-buttons {
+    @apply flex-col space-y-2;
+  }
+  
+  .nav-button {
+    @apply w-full justify-center;
+  }
+}
+
+/* ========================================
+   TABLET SPECIFIC STYLES
+   ======================================== */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .messaging-sidebar {
+    @apply w-80;
+  }
+  
+  .message-bubble {
+    @apply max-w-md;
+  }
+  
+  .conversation-item {
+    @apply p-4;
+  }
+}
+
+/* ========================================
+   DESKTOP SPECIFIC STYLES
+   ======================================== */
+
+@media (min-width: 1025px) {
+  .messaging-sidebar {
+    @apply w-96;
+  }
+  
+  .message-bubble {
+    @apply max-w-lg;
+  }
+  
+  .conversation-item {
+    @apply p-4;
+  }
+}
+
+/* ========================================
+   LARGE DESKTOP SPECIFIC STYLES
+   ======================================== */
+
+@media (min-width: 1280px) {
+  .messaging-sidebar {
+    @apply w-[28rem];
+  }
+  
+  .message-bubble {
+    @apply max-w-xl;
+  }
+}
+
+/* ========================================
+   EXTRA LARGE DESKTOP SPECIFIC STYLES
+   ======================================== */
+
+@media (min-width: 1536px) {
+  .messaging-sidebar {
+    @apply w-[32rem];
+  }
+  
+  .message-bubble {
+    @apply max-w-2xl;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY ENHANCEMENTS
+   ======================================== */
+
+.messaging-container:focus-within {
+  @apply outline-none;
+}
+
+.conversation-item:focus {
+  @apply outline-2 outline-primary outline-offset-2;
+}
+
+.message-bubble:focus {
+  @apply outline-2 outline-primary outline-offset-2;
+}
+
+/* ========================================
+   ANIMATIONS RESPONSIVE
+   ======================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  .conversation-item {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .message-bubble {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .messaging-sidebar {
+    @apply transition-all duration-300 ease-in-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conversation-item,
+  .message-bubble,
+  .messaging-sidebar {
+    @apply transition-none;
+  }
+}
+
+/* ========================================
+   DARK MODE RESPONSIVE
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  .conversation-item.assistant {
+    @apply bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-l-4 border-blue-400;
+  }
+  
+  .message-bubble.assistant {
+    @apply bg-gradient-to-r from-blue-900/30 to-purple-900/30 text-blue-100 border border-blue-400;
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  .messaging-container {
+    @apply h-auto overflow-visible;
+  }
+  
+  .messaging-sidebar {
+    @apply w-full block;
+  }
+  
+  .message-bubble {
+    @apply max-w-none break-inside-avoid;
+  }
+  
+  .conversation-item {
+    @apply break-inside-avoid;
+  }
+}
