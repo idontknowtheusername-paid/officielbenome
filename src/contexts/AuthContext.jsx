@@ -14,31 +14,9 @@ export const AuthProvider = ({ children }) => {
   const [isRememberMe, setIsRememberMe] = useState(false);
   const { toast } = useToast();
 
-  // Gestion intelligente des sessions
-  const handleSessionExpiry = useCallback(() => {
-    if (session && !isRememberMe) {
-      const now = Date.now();
-      const sessionAge = now - (session.created_at ? new Date(session.created_at).getTime() : now);
-      
-      if (sessionAge > SECURITY_CONFIG.sessionTimeout) {
-        console.log('🕐 Session expirée, déconnexion automatique');
-        logout();
-        toast({
-          title: "Session expirée",
-          description: "Votre session a expiré. Veuillez vous reconnecter.",
-          variant: "destructive",
-        });
-      }
-    }
-  }, [session, isRememberMe, toast]);
-
-  // Vérifier l'expiration de session périodiquement
-  useEffect(() => {
-    if (!session) return;
-
-    const interval = setInterval(handleSessionExpiry, 60000); // Vérifier toutes les minutes
-    return () => clearInterval(interval);
-  }, [session, handleSessionExpiry]);
+  // Note: La gestion de l'expiration des sessions est automatiquement gérée par Supabase
+  // via autoRefreshToken: true. Pas besoin de vérification manuelle.
+  // Supabase renouvelle les tokens automatiquement avant expiration.
 
   // Gestion de l'option "Se souvenir de moi"
   const handleRememberMe = useCallback((remember) => {
@@ -311,31 +289,23 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('🚪 Déconnexion en cours...');
       
-      // Forcer la déconnexion côté Supabase
+      // Supabase gère automatiquement :
+      // - La suppression des tokens
+      // - Le nettoyage du localStorage (auth tokens)
+      // - La propagation de l'événement SIGNED_OUT
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Nettoyer TOUTES les données de session
-      setUser(null);
-      setUserProfile(null);
-      setSession(null);
-      setSessionExpiry(null);
-      setIsRememberMe(false);
-      
-      // Nettoyer le localStorage complètement
-      localStorage.removeItem('maximarket-remember-me');
-      localStorage.removeItem('maximarket-remember-date');
-      localStorage.removeItem('sb-' + supabase.supabaseUrl.split('//')[1].split('.')[0] + '-auth-token');
-      
-      // Nettoyer sessionStorage
-      sessionStorage.clear();
-      
-      // Forcer le rechargement de la page pour s'assurer de la déconnexion
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      // Le listener onAuthStateChange (ligne 117) va automatiquement :
+      // - Nettoyer user, userProfile, session, sessionExpiry
+      // - Nettoyer les préférences "remember me"
+      // via l'événement SIGNED_OUT
       
       console.log('✅ Déconnexion réussie');
+      
+      // Navigation React Router (pas de rechargement forcé)
+      // Le composant va se recharger automatiquement avec user = null
+      
       return true;
     } catch (error) {
       console.error('❌ Logout error:', error);

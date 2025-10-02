@@ -23,18 +23,18 @@ if (!isSupabaseConfigured) {
   console.error('Supabase non configuré: VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY manquants')
 }
 
-// Configuration de sécurité professionnelle
+// Configuration de sécurité professionnelle (Standards E-commerce)
 const SECURITY_CONFIG = {
-  // Session active : 30 minutes
-  sessionTimeout: 30 * 60 * 1000, // 30 minutes en millisecondes
-  // Option "Se souvenir" : 1 jour (au lieu de 7)
-  rememberMeDays: 1,
+  // Session active : 24 heures (standard Amazon, eBay, Shopify)
+  sessionTimeout: 24 * 60 * 60 * 1000, // 24 heures en millisecondes
+  // Option "Se souvenir" : 30 jours (standard industrie)
+  rememberMeDays: 30,
   // Renouvellement automatique des tokens
   autoRefresh: true,
   // Détection de session dans l'URL
   detectSessionInUrl: true,
-  // Persistance des sessions (désactivée pour forcer la reconnexion)
-  persistSession: false
+  // ✅ Persistance des sessions ACTIVÉE (fix déconnexion au refresh)
+  persistSession: true
 }
 
 export const supabase = createClient(
