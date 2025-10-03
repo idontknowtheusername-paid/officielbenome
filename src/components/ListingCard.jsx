@@ -183,17 +183,17 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         )}
       </div>
 
-      {/* Content - Padding responsive */}
-      <div className="p-1.5 sm:p-3 md:p-5">
-        {/* Title - Taille responsive */}
-        <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 truncate group-hover:text-primary transition-colors">
+      {/* Content - Padding réduit et compact */}
+      <div className="p-2 sm:p-2.5 md:p-3">
+        {/* Title - Taille réduite */}
+        <h3 className="text-base sm:text-lg font-semibold mb-1 truncate group-hover:text-primary transition-colors">
           {listing.title}
         </h3>
         
-        {/* Location - Icône et texte adaptés */}
-        <div className="flex items-center text-muted-foreground mb-1 sm:mb-3">
-          <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-          <span className="truncate text-sm sm:text-base">
+        {/* Location - Compact */}
+        <div className="flex items-center text-muted-foreground mb-1 sm:mb-1.5">
+          <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+          <span className="truncate text-xs sm:text-sm">
             {listing.location && typeof listing.location === 'object' && listing.location.city && listing.location.country 
               ? `${listing.location.city}, ${listing.location.country}`
               : listing.location?.city || listing.location?.country || 'Localisation non spécifiée'
@@ -201,51 +201,51 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           </span>
         </div>
         
-        {/* Price - Taille responsive */}
+        {/* Price - Taille réduite */}
         <div className={cn(
-          "text-xl sm:text-2xl font-bold mb-1 sm:mb-3",
+          "text-lg sm:text-xl font-bold mb-1 sm:mb-1.5",
           isPremium 
-            ? "text-slate-800" // Prix premium en couleur sombre pour un meilleur contraste
-            : "text-primary" // Prix normal en bleu
+            ? "text-slate-800"
+            : "text-primary"
         )}>
           {listing.price ? formatPrice(listing.price) : 'Prix sur demande'}
         </div>
         
-        {/* Description - Ligne limitée sur mobile */}
-        <p className="text-muted-foreground mb-2 sm:mb-4 text-sm sm:text-base line-clamp-2 sm:line-clamp-2">
+        {/* Description - Réduite à 1 ligne */}
+        <p className="text-muted-foreground mb-1.5 sm:mb-2 text-xs sm:text-sm line-clamp-1">
           {listing.description || 'Aucune description disponible'}
         </p>
         
-        {/* Badge Premium Simple - Affiché seulement si l'annonce est premium */}
+        {/* Badge Premium Simple - Compact */}
         {isPremium && (
-          <div className="mb-2 sm:mb-3">
-            <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium">
+          <div className="mb-1.5">
+            <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium py-0.5 px-2">
               ⭐ Premium
             </Badge>
           </div>
         )}
         
-        {/* Footer - Plus compact sur mobile */}
-        <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground">
+        {/* Footer - Très compact */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center">
-            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
-            <span className="text-xs sm:text-sm">
+            <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+            <span className="text-xs">
               {listing.created_at ? formatListingDate(listing.created_at) : 'Date inconnue'}
             </span>
           </div>
           
-          <div className="flex items-center space-x-1 sm:space-x-2">
+          <div className="flex items-center space-x-1.5">
             {listing.views_count > 0 && (
               <div className="flex items-center">
-                <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
-                <span className="text-xs sm:text-sm">{listing.views_count}</span>
+                <Eye className="h-3 w-3 mr-0.5 flex-shrink-0" />
+                <span className="text-xs">{listing.views_count}</span>
               </div>
             )}
             
             {listing.favorites_count > 0 && (
               <div className="flex items-center">
-                <Heart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
-                <span className="text-xs sm:text-sm">{listing.favorites_count}</span>
+                <Heart className="h-3 w-3 mr-0.5 flex-shrink-0" />
+                <span className="text-xs">{listing.favorites_count}</span>
               </div>
             )}
           </div>
@@ -253,13 +253,13 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         
 
         
-        {/* Boost Status - Affiché seulement pour le propriétaire de l'annonce */}
+        {/* Boost Status - Plus compact */}
         <BoostStatus 
           listingId={listing.id}
           listing={listing}
           size="small"
           showActions={showActions}
-          className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/20"
+          className="mt-1.5 pt-1.5 border-t border-border/20"
         />
       </div>
     </motion.div>
