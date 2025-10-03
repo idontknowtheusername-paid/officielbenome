@@ -186,12 +186,12 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
       {/* Content - Padding réduit et compact */}
       <div className="p-2 sm:p-2.5 md:p-3">
         {/* Title - Taille réduite */}
-        <h3 className="text-base sm:text-lg font-semibold mb-1 truncate group-hover:text-primary transition-colors">
+        <h3 className="text-base sm:text-lg font-semibold mb-0.5 truncate group-hover:text-primary transition-colors">
           {listing.title}
         </h3>
         
         {/* Location - Compact */}
-        <div className="flex items-center text-muted-foreground mb-1 sm:mb-1.5">
+        <div className="flex items-center text-muted-foreground mb-0.5 sm:mb-1">
           <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
           <span className="truncate text-xs sm:text-sm">
             {listing.location && typeof listing.location === 'object' && listing.location.city && listing.location.country 
@@ -203,7 +203,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         
         {/* Price - Taille réduite */}
         <div className={cn(
-          "text-lg sm:text-xl font-bold mb-1 sm:mb-1.5",
+          "text-lg sm:text-xl font-bold mb-0.5 sm:mb-1",
           isPremium 
             ? "text-slate-800"
             : "text-primary"
@@ -211,14 +211,14 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           {listing.price ? formatPrice(listing.price) : 'Prix sur demande'}
         </div>
         
-        {/* Description - Réduite à 1 ligne */}
-        <p className="text-muted-foreground mb-1.5 sm:mb-2 text-xs sm:text-sm line-clamp-1">
+        {/* Description - 2 lignes */}
+        <p className="text-muted-foreground mb-1 sm:mb-1.5 text-xs sm:text-sm line-clamp-2">
           {listing.description || 'Aucune description disponible'}
         </p>
         
         {/* Badge Premium Simple - Compact */}
         {isPremium && (
-          <div className="mb-1.5">
+          <div className="mb-1">
             <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium py-0.5 px-2">
               ⭐ Premium
             </Badge>
@@ -226,7 +226,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         )}
         
         {/* Footer - Très compact */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
           <div className="flex items-center">
             <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
             <span className="text-xs">
@@ -259,7 +259,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
           listing={listing}
           size="small"
           showActions={showActions}
-          className="mt-1.5 pt-1.5 border-t border-border/20"
+          className="mt-1 pt-1 border-t border-border/20"
         />
       </div>
     </motion.div>
