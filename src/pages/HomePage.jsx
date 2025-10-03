@@ -83,52 +83,7 @@ const HomePage = () => {
         </div>
       ) : (
         <>
-          <HeroCarousel
-          />
-          
-          {/* Barre de recherche flottante - Utilise les nouvelles classes */}
-          <div className="hero-search">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.2 }}
-            >
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.currentTarget;
-                  const input = form.querySelector('input[name="q"]');
-                  const q = input?.value || "";
-                  const { section, params } = resolveSearchIntent(q);
-                  const usp = new URLSearchParams(params);
-                  const path =
-                    section === "immobilier"
-                      ? "/immobilier"
-                      : section === "automobile"
-                      ? "/automobile"
-                      : section === "services"
-                      ? "/services"
-                      : "/marketplace";
-                  navigate(`${path}?${usp.toString()}`);
-                }}
-                className="relative"
-              >
-                <Input
-                  name="q"
-                  type="search"
-                  placeholder="Que recherchez-vous sur MaxiMarket ?"
-                  className="w-full py-3 px-4 sm:py-4 sm:px-6 pr-12 sm:pr-16 rounded-full text-base sm:text-lg bg-white/20 text-white placeholder-gray-300 border-2 border-white/30 focus:border-primary focus:ring-primary focus:outline-none backdrop-blur-md h-12 sm:h-16 shadow-xl"
-                />
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 h-10 w-10 sm:h-12 sm:w-12 p-0"
-                >
-                  <SearchIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                </Button>
-              </form>
-            </motion.div>
-          </div>
+          <HeroCarousel />
         </>
       )}
 

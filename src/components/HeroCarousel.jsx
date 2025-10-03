@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, Search as SearchIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import HeroMockup from '@/components/HeroMockup';
 import { cn } from '@/lib/utils';
 import { HERO_SLIDES, CAROUSEL_CONFIG, getCategoryColor } from '@/data/heroSlides';
 import { useNavigate } from 'react-router-dom';
+import { resolveSearchIntent } from '@/lib/search-intent';
 
 // Styles CSS personnalisés pour le hero
 const heroStyles = `
@@ -349,22 +351,50 @@ const HeroCarousel = () => {
               {currentSlide.subtitle}
             </motion.p>
 
-            {/* CTA Button */}
+            {/* Barre de recherche */}
             <motion.div
-              key={`cta-${currentSlide.id}`}
+              key={`search-${currentSlide.id}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.7 }}
-              className="hero-cta"
+              className="w-full max-w-2xl px-4"
             >
-              <Button
-                size="lg"
-                onClick={() => handleCTA(currentSlide.ctaLink)}
-                className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/30 backdrop-blur-md text-lg px-8 py-6 h-auto font-semibold shadow-2xl hover:scale-105 transition-all duration-300"
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  const input = form.querySelector('input[name="q"]');
+                  const q = input?.value || "";
+                  const { section, params } = resolveSearchIntent(q);
+                  const usp = new URLSearchParams(params);
+                  const path =
+                    section === "immobilier"
+                      ? "/immobilier"
+                      : section === "automobile"
+                      ? "/automobile"
+                      : section === "services"
+                      ? "/services"
+                      : "/marketplace";
+                  navigate(`${path}?${usp.toString()}`);
+                }}
+                className="relative"
               >
-                {currentSlide.ctaText}
-              </Button>
+                <Input
+                  name="q"
+                  type="search"
+                  placeholder="Que recherchez-vous sur MaxiMarket ?"
+                  className="w-full py-3 px-4 sm:py-4 sm:px-6 pr-12 sm:pr-16 rounded-full text-base sm:text-lg bg-white/20 text-white placeholder-gray-300 border-2 border-white/30 focus:border-white focus:ring-2 focus:ring-white/50 focus:outline-none backdrop-blur-md h-12 sm:h-16 shadow-xl"
+                />
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-white/20 hover:bg-white/30 h-10 w-10 sm:h-12 sm:w-12 p-0 backdrop-blur-md border border-white/30"
+                >
+                  <SearchIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                </Button>
+              </form>
             </motion.div>
+
           </div>
         </div>
 
