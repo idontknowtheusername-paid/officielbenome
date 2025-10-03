@@ -1,6 +1,6 @@
 /**
  * Configuration des slides du Hero Carousel
- * Images statiques pour performance optimale (0 requête DB)
+ * Mockups CSS/SVG intégrés (aucune image externe nécessaire)
  */
 
 export const HERO_SLIDES = [
@@ -11,9 +11,9 @@ export const HERO_SLIDES = [
     category: 'real_estate',
     categoryLabel: 'Immobilier',
     categoryIcon: '🏠',
-    image: '/hero-slides/slide-1.jpg',
-    // Fallback: gradient si l'image n'est pas encore uploadée
+    mockupType: 'gradient-pattern', // Type de mockup CSS
     gradient: 'from-blue-600 via-blue-500 to-cyan-500',
+    pattern: 'dots', // Motif de fond
     ctaText: 'Voir les annonces',
     ctaLink: '/marketplace/real-estate'
   },
@@ -24,8 +24,9 @@ export const HERO_SLIDES = [
     category: 'automobile',
     categoryLabel: 'Automobile',
     categoryIcon: '🚗',
-    image: '/hero-slides/slide-2.jpg',
+    mockupType: 'gradient-pattern',
     gradient: 'from-green-600 via-green-500 to-emerald-500',
+    pattern: 'grid',
     ctaText: 'Découvrir',
     ctaLink: '/marketplace/automobile'
   },
@@ -36,8 +37,9 @@ export const HERO_SLIDES = [
     category: 'services',
     categoryLabel: 'Services',
     categoryIcon: '🔧',
-    image: '/hero-slides/slide-3.jpg',
+    mockupType: 'gradient-pattern',
     gradient: 'from-purple-600 via-purple-500 to-pink-500',
+    pattern: 'diagonal',
     ctaText: 'Explorer',
     ctaLink: '/marketplace/services'
   },
@@ -48,8 +50,9 @@ export const HERO_SLIDES = [
     category: 'marketplace',
     categoryLabel: 'Marketplace',
     categoryIcon: '🛍️',
-    image: '/hero-slides/slide-4.jpg',
+    mockupType: 'gradient-pattern',
     gradient: 'from-orange-600 via-orange-500 to-yellow-500',
+    pattern: 'waves',
     ctaText: 'Parcourir',
     ctaLink: '/marketplace'
   },
@@ -60,8 +63,9 @@ export const HERO_SLIDES = [
     category: 'general',
     categoryLabel: 'Vendre',
     categoryIcon: '💼',
-    image: '/hero-slides/slide-5.jpg',
+    mockupType: 'gradient-pattern',
     gradient: 'from-indigo-600 via-indigo-500 to-blue-500',
+    pattern: 'circles',
     ctaText: 'Créer une annonce',
     ctaLink: '/creer-annonce'
   },
@@ -72,8 +76,9 @@ export const HERO_SLIDES = [
     category: 'general',
     categoryLabel: 'À propos',
     categoryIcon: '⭐',
-    image: '/hero-slides/slide-6.jpg',
+    mockupType: 'gradient-pattern',
     gradient: 'from-pink-600 via-rose-500 to-red-500',
+    pattern: 'mesh',
     ctaText: 'En savoir plus',
     ctaLink: '/a-propos'
   }

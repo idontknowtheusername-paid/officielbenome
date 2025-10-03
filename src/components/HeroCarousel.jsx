@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import OptimizedImage from '@/components/OptimizedImage';
+import HeroMockup from '@/components/HeroMockup';
 import { cn } from '@/lib/utils';
 import { HERO_SLIDES, CAROUSEL_CONFIG, getCategoryColor } from '@/data/heroSlides';
 import { useNavigate } from 'react-router-dom';
@@ -266,7 +266,7 @@ const HeroCarousel = () => {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {/* Image de fond ou gradient */}
+        {/* Mockup visuel CSS */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide.id}
@@ -276,24 +276,10 @@ const HeroCarousel = () => {
             transition={{ duration: CAROUSEL_CONFIG.transitionDuration / 1000, ease: "easeInOut" }}
             className="absolute inset-0"
           >
-            {currentSlide.image ? (
-              <OptimizedImage
-                src={currentSlide.image}
-                alt={currentSlide.title}
-                className="w-full h-full object-cover"
-                context="hero"
-                quality="high"
-                priority="high"
-                showSkeleton={true}
-                enableHeroAnimations={false}
-                showOverlay={false}
-                fallback={
-                  <div className={cn("w-full h-full bg-gradient-to-br", currentSlide.gradient)} />
-                }
-              />
-            ) : (
-              <div className={cn("w-full h-full bg-gradient-to-br", currentSlide.gradient)} />
-            )}
+            <HeroMockup 
+              gradient={currentSlide.gradient} 
+              pattern={currentSlide.pattern}
+            />
           </motion.div>
         </AnimatePresence>
 
