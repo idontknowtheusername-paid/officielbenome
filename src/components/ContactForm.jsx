@@ -23,18 +23,38 @@ const ContactForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      // In a real app, you would send the form data to your backend or a form service
-      console.log('Form submitted:', formData);
+    try {
+      // Importer le service email dynamiquement
+      const { emailService } = await import('@/services/email.service.js');
+      const { personalData } = await import('@/lib/personalData');
+      
+      // Envoyer l'email de contact
+      await emailService.sendEmail(
+        personalData.contactEmail || 'contact@maximarket.com',
+        `[Contact MaxiMarket] ${formData.subject}`,
+        `
+          Nouveau message de contact reçu:
+          
+          De: ${formData.name}
+          Email: ${formData.email}
+          Sujet: ${formData.subject}
+          
+          Message:
+          ${formData.message}
+          
+          ---
+          Envoyé depuis MaxiMarket Contact Form
+        `,
+        false
+      );
       
       toast({
         title: "Message envoyé !",
-        description: "Merci pour votre message. Je vous répondrai dès que possible.",
+        description: "Merci pour votre message. Nous vous répondrons dans les plus brefs délais.",
         duration: 5000,
       });
       
@@ -46,8 +66,17 @@ const ContactForm = () => {
         message: ''
       });
       
+    } catch (error) {
+      console.error('Erreur envoi message:', error);
+      toast({
+        title: "Erreur d'envoi",
+        description: "Une erreur est survenue. Veuillez réessayer ou nous contacter directement par email.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (

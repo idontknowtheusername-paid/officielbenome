@@ -1,18 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { HelpCircle } from 'lucide-react';
-import { personalData } from '@/lib/personalData'; // Assurez-vous que ce chemin est correct et que personalData contient siteName
+import { HelpCircle, Search as SearchIcon } from 'lucide-react';
+import { personalData } from '@/lib/personalData';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Link } from 'react-router-dom'; // Importez Link
+import { Link, useSearchParams } from 'react-router-dom';
 
 const FAQPage = () => {
-  const siteName = personalData.siteName || "MaxiMarket"; // Fallback au cas ou siteName n'est pas defini
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [filteredFaqs, setFilteredFaqs] = useState([]);
+  const siteName = personalData.siteName || "MaxiMarket";
   const faqs = [
     {
       id: "general-1",
@@ -64,7 +68,33 @@ const FAQPage = () => {
     }
   ];
 
-  const faqCategories = [...new Set(faqs.map(faq => faq.category))];
+  // Filtrer les FAQs selon le terme de recherche
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      const filtered = faqs.filter(faq => 
+        faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faq.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredFaqs(filtered);
+    } else {
+      setFilteredFaqs(faqs);
+    }
+  }, [searchTerm]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // La recherche est déjà réactive via useEffect
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchParams({});
+  };
+
+  const faqsToDisplay = searchTerm.trim() ? filteredFaqs : faqs;
+  const faqCategories = [...new Set(faqsToDisplay.map(faq => faq.category))];
+  const hasResults = faqsToDisplay.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -81,7 +111,64 @@ const FAQPage = () => {
         <p className="text-xl text-muted-foreground">Trouvez des réponses rapides à vos questions sur {siteName}.</p>
       </motion.div>
 
-      {faqCategories.map((category, index) => (
+      {/* Barre de recherche */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="max-w-2xl mx-auto mb-12"
+      >
+        <form onSubmit={handleSearch} className="relative">
+          <Input
+            type="search"
+            placeholder="Rechercher dans les FAQ..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-24 py-6 text-lg rounded-full border-2 border-border focus:border-primary"
+          />
+          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          {searchTerm && (
+            <Button
+              type="button"
+              onClick={clearSearch}
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2"
+            >
+              Effacer
+            </Button>
+          )}
+        </form>
+        
+        {searchTerm && (
+          <p className="text-sm text-muted-foreground mt-3 text-center">
+            {hasResults 
+              ? `${faqsToDisplay.length} résultat${faqsToDisplay.length > 1 ? 's' : ''} trouvé${faqsToDisplay.length > 1 ? 's' : ''}`
+              : 'Aucun résultat trouvé'
+            }
+          </p>
+        )}
+      </motion.div>
+
+      {!hasResults ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-12"
+        >
+          <p className="text-lg text-muted-foreground mb-4">
+            Aucun résultat ne correspond à votre recherche "{searchTerm}"
+          </p>
+          <Button onClick={clearSearch} variant="outline">
+            Voir toutes les questions
+          </Button>
+        </motion.div>
+      ) : (
+        faqCategories.map((category, index) => {
+          const categoryFaqs = faqsToDisplay.filter(faq => faq.category === category);
+          if (categoryFaqs.length === 0) return null;
+          
+          return (
         <motion.section
           key={category}
           id={`cat-${category.toLowerCase().replace(/\s+/g, '-')}`}
@@ -92,8 +179,13 @@ const FAQPage = () => {
         >
           <h2 className="text-2xl font-bold mb-6 border-l-4 border-primary pl-4 text-foreground">{category}</h2>
           <Accordion type="single" collapsible className="w-full space-y-3">
-            {faqs.filter(faq => faq.category === category).map((faqItem) => (
-              <AccordionItem key={faqItem.id} value={faqItem.id} className="bg-card border border-border rounded-lg shadow-sm hover:border-primary/50 transition-colors">
+            {categoryFaqs.map((faqItem) => (
+              <AccordionItem 
+                key={faqItem.id} 
+                value={faqItem.id} 
+                id={faqItem.id}
+                className="bg-card border border-border rounded-lg shadow-sm hover:border-primary/50 transition-colors"
+              >
                 <AccordionTrigger className="p-6 text-left font-semibold hover:no-underline text-foreground">
                   {faqItem.question}
                 </AccordionTrigger>
@@ -104,7 +196,9 @@ const FAQPage = () => {
             ))}
           </Accordion>
         </motion.section>
-      ))}
+          );
+        })
+      )}
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -4,9 +4,10 @@ import { HelpCircle, Search, BookOpen, MessageSquare, ArrowRight, Users, Shoppin
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { personalData } from '@/lib/personalData';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const HelpCenterPage = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   const popularTopics = [
@@ -26,8 +27,11 @@ const HelpCenterPage = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Implement search logic or redirect to a search results page
-    console.log("Searching for:", searchTerm);
+    
+    if (!searchTerm.trim()) return;
+    
+    // Rediriger vers la page FAQ avec le terme de recherche
+    navigate(`/faq?search=${encodeURIComponent(searchTerm.trim())}`);
   };
 
   return (
