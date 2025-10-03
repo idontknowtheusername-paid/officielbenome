@@ -18,6 +18,8 @@ export { transactionService } from './transaction.service.js';
 // 💬 SERVICES DE COMMUNICATION (Phase 3)
 export { notificationService } from './notification.service.js';
 export { messageService, addWelcomeMessage } from './message.service.js';
+export { encryptedMessageService } from './encryptedMessage.service.js';
+export { encryptionService } from './encryption.service.js';
 export { commentService } from './comment.service.js';
 
 // 📊 SERVICES DE DONNÉES (Phase 2)

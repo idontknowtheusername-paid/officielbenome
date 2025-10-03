@@ -13,6 +13,7 @@ import {
   Camera,
   MessageSquare
 } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import { messageService } from '../services';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -357,18 +358,43 @@ const MessageComposer = ({
         </motion.button>
       </div>
 
-      {/* Emoji picker (placeholder pour l'instant) */}
+      {/* Emoji Picker */}
       <AnimatePresence>
         {showEmojiPicker && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+            className="absolute bottom-full mb-2 left-0 z-50 shadow-2xl rounded-lg overflow-hidden"
           >
-            <p className="text-sm text-gray-500 text-center">
-              Sélecteur d'emojis à implémenter
-            </p>
+            <EmojiPicker
+              onEmojiClick={(emojiObject) => {
+                // Insérer l'emoji à la position du curseur
+                const textarea = textareaRef.current;
+                if (textarea) {
+                  const start = textarea.selectionStart;
+                  const end = textarea.selectionEnd;
+                  const newMessage = message.substring(0, start) + emojiObject.emoji + message.substring(end);
+                  setMessage(newMessage);
+                  
+                  // Repositionner le curseur après l'emoji
+                  setTimeout(() => {
+                    textarea.focus();
+                    textarea.setSelectionRange(start + emojiObject.emoji.length, start + emojiObject.emoji.length);
+                  }, 0);
+                }
+                
+                // Fermer le picker après sélection
+                setShowEmojiPicker(false);
+              }}
+              width="100%"
+              height={400}
+              searchPlaceholder="Rechercher un emoji..."
+              previewConfig={{
+                showPreview: false
+              }}
+              theme="auto"
+            />
           </motion.div>
         )}
       </AnimatePresence>

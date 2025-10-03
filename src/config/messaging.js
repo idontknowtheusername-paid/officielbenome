@@ -82,8 +82,8 @@ export const MESSAGING_CONFIG = {
 
   // Configuration de la sécurité
   SECURITY: {
-    ENABLE_ENCRYPTION: false, // À implémenter plus tard
-    ENABLE_END_TO_END: false, // À implémenter plus tard
+    ENABLE_ENCRYPTION: true, // ✅ Encryption activée
+    ENABLE_END_TO_END: true, // ✅ End-to-End encryption activée
     ENABLE_MESSAGE_VERIFICATION: true,
     BLOCKED_WORDS: [], // Mots interdits
     MAX_MESSAGES_PER_MINUTE: 10,
