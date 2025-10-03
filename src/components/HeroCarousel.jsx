@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useListingImages } from '@/hooks';
+import { Button } from '@/components/ui/button';
 import OptimizedImage from '@/components/OptimizedImage';
 import { cn } from '@/lib/utils';
+import { HERO_SLIDES, CAROUSEL_CONFIG, getCategoryColor } from '@/data/heroSlides';
+import { useNavigate } from 'react-router-dom';
 
 // Styles CSS personnalisés pour le hero
 const heroStyles = `
@@ -55,16 +57,42 @@ const heroStyles = `
     gap: 0.75rem;
     z-index: 50;
   }
-  
-  .hero-search {
+
+  .hero-arrows {
     position: absolute;
-    bottom: 8rem;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 50%;
+    transform: translateY(-50%);
     width: 100%;
-    max-width: 42rem;
-    padding: 0 1rem;
-    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2rem;
+    z-index: 40;
+    pointer-events: none;
+  }
+
+  .hero-arrow-btn {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+  }
+
+  .hero-arrow-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+
+  .hero-cta {
+    margin-top: 2rem;
   }
   
   @media (max-width: 768px) {
@@ -87,13 +115,17 @@ const heroStyles = `
       font-size: clamp(1rem, 4vw, 1.25rem);
     }
     
-    .hero-search {
-      bottom: 6rem;
-      max-width: 90%;
-    }
-    
     .hero-navigation {
       bottom: 2rem;
+    }
+
+    .hero-arrows {
+      padding: 0 1rem;
+    }
+
+    .hero-arrow-btn {
+      width: 2.5rem;
+      height: 2.5rem;
     }
   }
   
@@ -118,22 +150,22 @@ const heroStyles = `
       font-size: clamp(0.9rem, 5vw, 1.1rem);
     }
     
-    .hero-search {
-      bottom: 5rem;
-      max-width: 95%;
-      padding: 0 0.5rem;
-    }
-    
     .hero-navigation {
       bottom: 1.5rem;
+    }
+
+    .hero-arrow-btn {
+      width: 2rem;
+      height: 2rem;
     }
   }
 `;
 
-const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
+const HeroCarousel = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [currentTime, setCurrentTime] = useState({ hour: hour, timeSlot: timeSlot });
+  const [isAutoPlaying, setIsAutoPlaying] = useState(CAROUSEL_CONFIG.pauseOnHover);
+  const [currentTime, setCurrentTime] = useState({ hour: new Date().getHours(), timeSlot: '' });
 
   // Mise à jour de l'heure en temps réel
   useEffect(() => {
@@ -153,87 +185,78 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
       });
     };
 
-    // Mise à jour immédiate
     updateTime();
-
-    // Mise à jour chaque minute
     const timeInterval = setInterval(updateTime, 60000);
 
     return () => clearInterval(timeInterval);
   }, []);
 
-  // Auto-play toutes les 8 secondes
+  // Auto-play
   useEffect(() => {
-    if (!isAutoPlaying || listings.length <= 1) return;
+    if (!isAutoPlaying || !CAROUSEL_CONFIG.loop) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % listings.length);
-    }, 8000);
+      setCurrentIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, CAROUSEL_CONFIG.autoPlayInterval);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, listings.length]);
+  }, [isAutoPlaying]);
 
   // Pause auto-play au survol
-  const handleMouseEnter = useCallback(() => setIsAutoPlaying(false), []);
-  const handleMouseLeave = useCallback(() => setIsAutoPlaying(true), []);
-
-
-
-  const goToSlide = useCallback((index) => {
-    setCurrentIndex(index);
+  const handleMouseEnter = useCallback(() => {
+    if (CAROUSEL_CONFIG.pauseOnHover) {
+      setIsAutoPlaying(false);
+    }
   }, []);
 
-
-
-
-
-  // Icône de catégorie
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case 'real_estate': return '🏠';
-      case 'automobile': return '🚗';
-      case 'services': return '🔧';
-      case 'marketplace': return '🛍️';
-      default: return '📋';
+  const handleMouseLeave = useCallback(() => {
+    if (CAROUSEL_CONFIG.pauseOnHover) {
+      setIsAutoPlaying(true);
     }
-  };
+  }, []);
 
-  // Couleur de catégorie
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case 'real_estate': return 'bg-blue-500';
-      case 'automobile': return 'bg-green-500';
-      case 'services': return 'bg-purple-500';
-      case 'marketplace': return 'bg-orange-500';
-      default: return 'bg-gray-500';
+  // Navigation
+  const goToSlide = useCallback((index) => {
+    setCurrentIndex(index);
+    if (CAROUSEL_CONFIG.pauseOnHover) {
+      setIsAutoPlaying(false);
+      setTimeout(() => setIsAutoPlaying(true), 3000);
     }
-  };
+  }, []);
 
-  // Libellé de catégorie
-  const getCategoryLabel = (category) => {
-    switch (category) {
-      case 'real_estate': return 'Immobilier';
-      case 'automobile': return 'Automobile';
-      case 'services': return 'Services';
-      case 'marketplace': return 'Marketplace';
-      default: return 'Annonces';
+  const goToPrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    if (CAROUSEL_CONFIG.pauseOnHover) {
+      setIsAutoPlaying(false);
+      setTimeout(() => setIsAutoPlaying(true), 3000);
     }
-  };
+  }, []);
 
-  if (!listings || listings.length === 0) {
-    return (
-      <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <Clock className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <h2 className="text-2xl font-bold mb-2">Aucune annonce disponible</h2>
-          <p className="text-gray-300">Revenez plus tard pour découvrir de nouvelles annonces</p>
-        </div>
-      </div>
-    );
-  }
+  const goToNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    if (CAROUSEL_CONFIG.pauseOnHover) {
+      setIsAutoPlaying(false);
+      setTimeout(() => setIsAutoPlaying(true), 3000);
+    }
+  }, []);
 
-  const currentListing = listings[currentIndex];
-  const currentCategory = currentListing?.category || category;
+  // Navigation par clavier
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') goToPrevious();
+      if (e.key === 'ArrowRight') goToNext();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goToPrevious, goToNext]);
+
+  // Handler CTA
+  const handleCTA = useCallback((link) => {
+    navigate(link);
+  }, [navigate]);
+
+  const currentSlide = HERO_SLIDES[currentIndex];
 
   return (
     <>
@@ -243,93 +266,140 @@ const HeroCarousel = ({ listings = [], category, hour, timeSlot }) => {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-      {/* Image de fond */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentListing.id}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="absolute inset-0"
-        >
-          <OptimizedImage
-            src={currentListing.images?.[0] || currentListing.image_url}
-            alt={currentListing.title}
-            className="w-full h-full object-cover"
-            context="hero"
-            quality="high"
-            priority="high"
-            showSkeleton={true}
-            enableHeroAnimations={true}
-            showOverlay={false}
-          />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Overlay sombre */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-
-      {/* Contenu principal - Utilise les nouvelles classes CSS */}
-      <div className="hero-content">
-        <div className="text-center relative z-10">
-          {/* Badge de catégorie et heure - Utilise les nouvelles classes */}
+        {/* Image de fond ou gradient */}
+        <AnimatePresence mode="wait">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="hero-badges"
+            key={currentSlide.id}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: CAROUSEL_CONFIG.transitionDuration / 1000, ease: "easeInOut" }}
+            className="absolute inset-0"
           >
-            <Badge className={cn("text-white/90 border-0 text-sm px-4 py-2", getCategoryColor(currentCategory))}>
-              <span className="mr-2">{getCategoryIcon(currentCategory)}</span>
-              {getCategoryLabel(currentCategory)}
-            </Badge>
-            <Badge variant="outline" className="text-white/90 border-white/30 text-sm px-4 py-2">
-              <Clock className="h-4 w-4 mr-2" />
-              {currentTime.timeSlot} • {currentTime.hour}h
-            </Badge>
+            {currentSlide.image ? (
+              <OptimizedImage
+                src={currentSlide.image}
+                alt={currentSlide.title}
+                className="w-full h-full object-cover"
+                context="hero"
+                quality="high"
+                priority="high"
+                showSkeleton={true}
+                enableHeroAnimations={false}
+                showOverlay={false}
+                fallback={
+                  <div className={cn("w-full h-full bg-gradient-to-br", currentSlide.gradient)} />
+                }
+              />
+            ) : (
+              <div className={cn("w-full h-full bg-gradient-to-br", currentSlide.gradient)} />
+            )}
           </motion.div>
+        </AnimatePresence>
 
-          {/* Titre principal du site - Utilise les nouvelles classes */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="hero-title text-white"
-          >
-            Bienvenue sur{" "}
-            <span className="gradient-text">MaxiMarket</span>
-          </motion.h1>
+        {/* Overlay sombre */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
 
-          {/* Sous-titre - Utilise les nouvelles classes */}
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.6 }}
-            className="hero-subtitle text-gray-200"
-          >
-            Explorez, découvrez, connectez. Votre marketplace de confiance.
-          </motion.p>
-        </div>
-      </div>
-
-      {/* Indicateurs de navigation - Utilise les nouvelles classes */}
-      {listings.length > 1 && (
-        <div className="hero-navigation">
-          {listings.map((_, index) => (
+        {/* Flèches de navigation */}
+        {CAROUSEL_CONFIG.showNavigation && HERO_SLIDES.length > 1 && (
+          <div className="hero-arrows">
             <button
-              key={index}
-              className={cn(
-                "w-3 h-3 rounded-full transition-all duration-300 cursor-pointer",
-                index === currentIndex 
-                  ? "bg-white scale-110 shadow-lg" 
-                  : "bg-white/40 hover:bg-white/60 hover:scale-105"
-              )}
-              onClick={() => goToSlide(index)}
-            />
-          ))}
+              onClick={goToPrevious}
+              className="hero-arrow-btn"
+              aria-label="Slide précédent"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button
+              onClick={goToNext}
+              className="hero-arrow-btn"
+              aria-label="Slide suivant"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </div>
+        )}
+
+        {/* Contenu principal */}
+        <div className="hero-content">
+          <div className="text-center relative z-10">
+            {/* Badge de catégorie et heure */}
+            <motion.div
+              key={`badges-${currentSlide.id}`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="hero-badges"
+            >
+              <Badge className={cn("text-white/90 border-0 text-sm px-4 py-2", getCategoryColor(currentSlide.category))}>
+                <span className="mr-2">{currentSlide.categoryIcon}</span>
+                {currentSlide.categoryLabel}
+              </Badge>
+              <Badge variant="outline" className="text-white/90 border-white/30 text-sm px-4 py-2">
+                <Clock className="h-4 w-4 mr-2" />
+                {currentTime.timeSlot} • {currentTime.hour}h
+              </Badge>
+            </motion.div>
+
+            {/* Titre dynamique du slide */}
+            <motion.h1
+              key={`title-${currentSlide.id}`}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="hero-title text-white"
+            >
+              {currentSlide.title}
+            </motion.h1>
+
+            {/* Sous-titre dynamique */}
+            <motion.p
+              key={`subtitle-${currentSlide.id}`}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.5 }}
+              className="hero-subtitle text-gray-100"
+            >
+              {currentSlide.subtitle}
+            </motion.p>
+
+            {/* CTA Button */}
+            <motion.div
+              key={`cta-${currentSlide.id}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.7 }}
+              className="hero-cta"
+            >
+              <Button
+                size="lg"
+                onClick={() => handleCTA(currentSlide.ctaLink)}
+                className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/30 backdrop-blur-md text-lg px-8 py-6 h-auto font-semibold shadow-2xl hover:scale-105 transition-all duration-300"
+              >
+                {currentSlide.ctaText}
+              </Button>
+            </motion.div>
+          </div>
         </div>
-      )}
+
+        {/* Indicateurs de navigation */}
+        {CAROUSEL_CONFIG.showIndicators && HERO_SLIDES.length > 1 && (
+          <div className="hero-navigation">
+            {HERO_SLIDES.map((_, index) => (
+              <button
+                key={index}
+                className={cn(
+                  "w-3 h-3 rounded-full transition-all duration-300 cursor-pointer",
+                  index === currentIndex 
+                    ? "bg-white scale-110 shadow-lg" 
+                    : "bg-white/40 hover:bg-white/60 hover:scale-105"
+                )}
+                onClick={() => goToSlide(index)}
+                aria-label={`Aller au slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

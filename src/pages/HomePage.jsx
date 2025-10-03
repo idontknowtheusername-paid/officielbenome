@@ -84,10 +84,6 @@ const HomePage = () => {
       ) : (
         <>
           <HeroCarousel
-            listings={heroListings}
-            category="marketplace"
-            hour={0}
-            timeSlot=""
           />
           
           {/* Barre de recherche flottante - Utilise les nouvelles classes */}
