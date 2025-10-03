@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, ChevronLeft, ChevronRight, Search as SearchIcon } from 'lucide-react';
+import { Clock, Search as SearchIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,38 +60,6 @@ const heroStyles = `
     z-index: 50;
   }
 
-  .hero-arrows {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 2rem;
-    z-index: 40;
-    pointer-events: none;
-  }
-
-  .hero-arrow-btn {
-    pointer-events: auto;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: white;
-  }
-
-  .hero-arrow-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-  }
 
   .hero-cta {
     margin-top: 2rem;
@@ -120,15 +88,6 @@ const heroStyles = `
     .hero-navigation {
       bottom: 2rem;
     }
-
-    .hero-arrows {
-      padding: 0 1rem;
-    }
-
-    .hero-arrow-btn {
-      width: 2.5rem;
-      height: 2.5rem;
-    }
   }
   
   @media (max-width: 480px) {
@@ -154,11 +113,6 @@ const heroStyles = `
     
     .hero-navigation {
       bottom: 1.5rem;
-    }
-
-    .hero-arrow-btn {
-      width: 2rem;
-      height: 2rem;
     }
   }
 `;
@@ -226,32 +180,6 @@ const HeroCarousel = () => {
     }
   }, []);
 
-  const goToPrevious = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
-    if (CAROUSEL_CONFIG.pauseOnHover) {
-      setIsAutoPlaying(false);
-      setTimeout(() => setIsAutoPlaying(true), 3000);
-    }
-  }, []);
-
-  const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % HERO_SLIDES.length);
-    if (CAROUSEL_CONFIG.pauseOnHover) {
-      setIsAutoPlaying(false);
-      setTimeout(() => setIsAutoPlaying(true), 3000);
-    }
-  }, []);
-
-  // Navigation par clavier
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowLeft') goToPrevious();
-      if (e.key === 'ArrowRight') goToNext();
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goToPrevious, goToNext]);
 
   // Handler CTA
   const handleCTA = useCallback((link) => {
@@ -287,26 +215,6 @@ const HeroCarousel = () => {
 
         {/* Overlay sombre */}
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
-
-        {/* Flèches de navigation */}
-        {CAROUSEL_CONFIG.showNavigation && HERO_SLIDES.length > 1 && (
-          <div className="hero-arrows">
-            <button
-              onClick={goToPrevious}
-              className="hero-arrow-btn"
-              aria-label="Slide précédent"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button
-              onClick={goToNext}
-              className="hero-arrow-btn"
-              aria-label="Slide suivant"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          </div>
-        )}
 
         {/* Contenu principal */}
         <div className="hero-content">
@@ -351,13 +259,13 @@ const HeroCarousel = () => {
               {currentSlide.subtitle}
             </motion.p>
 
-            {/* Barre de recherche */}
+            {/* Barre de recherche - Positionnée plus bas */}
             <motion.div
               key={`search-${currentSlide.id}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.7 }}
-              className="w-full max-w-2xl px-4"
+              className="w-full max-w-2xl px-4 mt-8 sm:mt-12"
             >
               <form
                 onSubmit={(e) => {
