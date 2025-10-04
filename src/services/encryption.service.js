@@ -3,6 +3,8 @@
  * Utilise Web Crypto API (natif navigateur)
  */
 
+import { logger } from '@/utils/logger';
+
 class EncryptionService {
   constructor() {
     this.algorithm = 'AES-GCM';
@@ -26,7 +28,7 @@ class EncryptionService {
       );
       return key;
     } catch (error) {
-      console.error('Erreur génération clé:', error);
+      logger.error('Erreur génération clé:', error);
       throw error;
     }
   }
@@ -42,7 +44,7 @@ class EncryptionService {
       const exportedKeyBuffer = new Uint8Array(exported);
       return this.arrayBufferToBase64(exportedKeyBuffer);
     } catch (error) {
-      console.error('Erreur export clé:', error);
+      logger.error('Erreur export clé:', error);
       throw error;
     }
   }
@@ -67,7 +69,7 @@ class EncryptionService {
       );
       return key;
     } catch (error) {
-      console.error('Erreur import clé:', error);
+      logger.error('Erreur import clé:', error);
       throw error;
     }
   }
@@ -103,7 +105,7 @@ class EncryptionService {
         iv: this.arrayBufferToBase64(iv)
       };
     } catch (error) {
-      console.error('Erreur chiffrement:', error);
+      logger.error('Erreur chiffrement:', error);
       throw error;
     }
   }
@@ -135,7 +137,7 @@ class EncryptionService {
       const decoder = new TextDecoder();
       return decoder.decode(decrypted);
     } catch (error) {
-      console.error('Erreur déchiffrement:', error);
+      logger.error('Erreur déchiffrement:', error);
       throw error;
     }
   }
@@ -163,7 +165,7 @@ class EncryptionService {
       
       return key;
     } catch (error) {
-      console.error('Erreur clé conversation:', error);
+      logger.error('Erreur clé conversation:', error);
       throw error;
     }
   }

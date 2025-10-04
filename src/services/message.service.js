@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/utils/logger';
 
 // ============================================================================
 // SERVICE MESSAGERIE CORRIGÉ - SANS RELATIONS COMPLEXES
@@ -11,7 +12,7 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Récupération des conversations pour l\'utilisateur:', user.id);
+      logger.log('🔍 Récupération des conversations pour l\'utilisateur:', user.id);
 
       // ÉTAPE 1: Récupérer les conversations de base
       const { data: conversations, error: convError } = await supabase
@@ -33,12 +34,12 @@ export const messageService = {
         .order('created_at', { ascending: false });
 
       if (convError) {
-        console.error('❌ Erreur récupération conversations:', convError);
+        logger.error('❌ Erreur récupération conversations:', convError);
         throw convError;
       }
 
       if (!conversations || conversations.length === 0) {
-        console.log('✅ Aucune conversation trouvée');
+        logger.log('✅ Aucune conversation trouvée');
         return [];
       }
 
@@ -79,7 +80,7 @@ export const messageService = {
               messages: messages || []
             };
           } catch (error) {
-            console.error('❌ Erreur enrichissement conversation:', conv.id, error);
+            logger.error('❌ Erreur enrichissement conversation:', conv.id, error);
             // Retourner la conversation de base en cas d'erreur
             return {
               ...conv,
@@ -92,10 +93,10 @@ export const messageService = {
         })
       );
 
-      console.log('✅ Conversations enrichies récupérées:', enrichedConversations.length);
+      logger.log('✅ Conversations enrichies récupérées:', enrichedConversations.length);
       return enrichedConversations;
     } catch (error) {
-      console.error('❌ Erreur dans getUserConversations:', error);
+      logger.error('❌ Erreur dans getUserConversations:', error);
       throw error;
     }
   },
@@ -106,7 +107,7 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Récupération des messages pour la conversation:', conversationId);
+      logger.log('🔍 Récupération des messages pour la conversation:', conversationId);
 
       const { data, error } = await supabase
         .from('messages')
@@ -123,14 +124,14 @@ export const messageService = {
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('❌ Erreur récupération messages:', error);
+        logger.error('❌ Erreur récupération messages:', error);
         throw error;
       }
 
-      console.log('✅ Messages récupérés:', data?.length || 0);
+      logger.log('✅ Messages récupérés:', data?.length || 0);
       return data || [];
     } catch (error) {
-      console.error('❌ Erreur dans getConversationMessages:', error);
+      logger.error('❌ Erreur dans getConversationMessages:', error);
       throw error;
     }
   },
@@ -141,7 +142,7 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Envoi de message:', { conversationId, content, messageType });
+      logger.log('🔍 Envoi de message:', { conversationId, content, messageType });
 
       // Récupérer la conversation pour obtenir le receiver_id
       const { data: conversation, error: convError } = await supabase
@@ -151,7 +152,7 @@ export const messageService = {
         .single();
 
       if (convError) {
-        console.error('❌ Erreur récupération conversation:', convError);
+        logger.error('❌ Erreur récupération conversation:', convError);
         throw convError;
       }
 
@@ -174,7 +175,7 @@ export const messageService = {
         .single();
 
       if (error) {
-        console.error('❌ Erreur envoi message:', error);
+        logger.error('❌ Erreur envoi message:', error);
         throw error;
       }
 
@@ -187,10 +188,10 @@ export const messageService = {
         })
         .eq('id', conversationId);
 
-      console.log('✅ Message envoyé:', data.id);
+      logger.log('✅ Message envoyé:', data.id);
       return data;
     } catch (error) {
-      console.error('❌ Erreur dans sendMessage:', error);
+      logger.error('❌ Erreur dans sendMessage:', error);
       throw error;
     }
   },
@@ -201,7 +202,7 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Marquage des messages comme lus:', conversationId);
+      logger.log('🔍 Marquage des messages comme lus:', conversationId);
 
       const { error } = await supabase
         .from('messages')
@@ -210,14 +211,14 @@ export const messageService = {
         .neq('sender_id', user.id);
 
       if (error) {
-        console.error('❌ Erreur marquage messages:', error);
+        logger.error('❌ Erreur marquage messages:', error);
         throw error;
       }
 
-      console.log('✅ Messages marqués comme lus');
+      logger.log('✅ Messages marqués comme lus');
       return true;
     } catch (error) {
-      console.error('❌ Erreur dans markMessagesAsRead:', error);
+      logger.error('❌ Erreur dans markMessagesAsRead:', error);
       throw error;
     }
   },
@@ -228,7 +229,7 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Création de conversation:', { participantId, listingId });
+      logger.log('🔍 Création de conversation:', { participantId, listingId });
 
       // Vérifier si une conversation existe déjà
       const { data: existingConv } = await supabase
@@ -238,7 +239,7 @@ export const messageService = {
         .single();
 
       if (existingConv) {
-        console.log('✅ Conversation existante trouvée:', existingConv.id);
+        logger.log('✅ Conversation existante trouvée:', existingConv.id);
         return existingConv;
       }
 
@@ -256,14 +257,14 @@ export const messageService = {
         .single();
 
       if (error) {
-        console.error('❌ Erreur création conversation:', error);
+        logger.error('❌ Erreur création conversation:', error);
         throw error;
       }
 
-      console.log('✅ Conversation créée:', data.id);
+      logger.log('✅ Conversation créée:', data.id);
       return data;
     } catch (error) {
-      console.error('❌ Erreur dans createConversation:', error);
+      logger.error('❌ Erreur dans createConversation:', error);
       throw error;
     }
   },
@@ -274,7 +275,7 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Suppression de conversation:', conversationId);
+      logger.log('🔍 Suppression de conversation:', conversationId);
 
       const { error } = await supabase
         .from('conversations')
@@ -283,14 +284,14 @@ export const messageService = {
         .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`);
 
       if (error) {
-        console.error('❌ Erreur suppression conversation:', error);
+        logger.error('❌ Erreur suppression conversation:', error);
         throw error;
       }
 
-      console.log('✅ Conversation supprimée');
+      logger.log('✅ Conversation supprimée');
       return true;
     } catch (error) {
-      console.error('❌ Erreur dans deleteConversation:', error);
+      logger.error('❌ Erreur dans deleteConversation:', error);
       throw error;
     }
   },
@@ -301,7 +302,7 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      console.log('🔍 Suppression de message:', messageId);
+      logger.log('🔍 Suppression de message:', messageId);
 
       const { error } = await supabase
         .from('messages')
@@ -310,14 +311,14 @@ export const messageService = {
         .eq('sender_id', user.id);
 
       if (error) {
-        console.error('❌ Erreur suppression message:', error);
+        logger.error('❌ Erreur suppression message:', error);
         throw error;
       }
 
-      console.log('✅ Message supprimé');
+      logger.log('✅ Message supprimé');
       return true;
     } catch (error) {
-      console.error('❌ Erreur dans deleteMessage:', error);
+      logger.error('❌ Erreur dans deleteMessage:', error);
       throw error;
     }
   }

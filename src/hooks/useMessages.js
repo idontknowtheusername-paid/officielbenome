@@ -3,6 +3,7 @@ import { messageService } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { logger } from '@/utils/logger';
 
 // Hook pour les conversations
 export const useConversations = (filters = {}) => {
@@ -12,12 +13,12 @@ export const useConversations = (filters = {}) => {
     queryKey: ['conversations', user?.id, filters],
     queryFn: async () => {
       try {
-        console.log('🔍 Hook useConversations - Début de la récupération');
+        logger.log('🔍 Hook useConversations - Début de la récupération');
         const result = await messageService.getUserConversations();
-        console.log('🔍 Hook useConversations - Récupération réussie:', result?.length || 0);
+        logger.log('🔍 Hook useConversations - Récupération réussie:', result?.length || 0);
         return result;
       } catch (error) {
-        console.error('❌ Hook useConversations - Erreur lors de la récupération:', error);
+        logger.error('❌ Hook useConversations - Erreur lors de la récupération:', error);
         
         // Retourner un message d'erreur structuré
         if (error.code === 'PGRST116') {
@@ -148,14 +149,14 @@ export const useSendMessage = () => {
     // Succes - mise à jour optimisée du cache (sans invalidation excessive)
     onSettled: (data, error, variables) => {
       if (error) {
-        console.log('❌ Erreur lors de l\'envoi, invalidation du cache...');
+        logger.log('❌ Erreur lors de l\'envoi, invalidation du cache...');
         // En cas d'erreur, invalider pour recharger
         queryClient.invalidateQueries({ queryKey: ['conversation-messages', variables.conversationId] });
         queryClient.invalidateQueries({ queryKey: ['conversations'] });
         return;
       }
 
-      console.log('✅ Message envoyé, mise à jour optimisée du cache...');
+      logger.log('✅ Message envoyé, mise à jour optimisée du cache...');
       
       // Mise à jour optimiste du cache des conversations (sans invalidation)
       queryClient.setQueryData(['conversations'], (old) => {
@@ -379,17 +380,17 @@ export const useRealtimeMessages = (conversationId) => {
 
   useEffect(() => {
     if (!conversationId || !user) {
-      console.log('🔌 Pas de conversation ou utilisateur, pas de subscription');
+      logger.log('🔌 Pas de conversation ou utilisateur, pas de subscription');
       return;
     }
 
     // Éviter les subscriptions multiples
     if (isSubscribedRef.current) {
-      console.log('🔌 Déjà abonné, évitement de la double subscription');
+      logger.log('🔌 Déjà abonné, évitement de la double subscription');
       return;
     }
 
-    console.log('🔌 Initialisation subscription temps réel pour conversation:', conversationId);
+    logger.log('🔌 Initialisation subscription temps réel pour conversation:', conversationId);
 
     const channelName = `messages-${conversationId}-${user.id}-${Date.now()}`;
     const channel = supabase.channel(channelName);
@@ -401,7 +402,7 @@ export const useRealtimeMessages = (conversationId) => {
       table: 'messages',
       filter: `conversation_id=eq.${conversationId}`
     }, (payload) => {
-      console.log('💬 NOUVEAU MESSAGE REÇU:', payload.new);
+      logger.log('💬 NOUVEAU MESSAGE REÇU:', payload.new);
       
       // Mettre à jour le cache des messages de la conversation
       queryClient.setQueryData(['conversation-messages', conversationId], (old) => {
@@ -415,7 +416,7 @@ export const useRealtimeMessages = (conversationId) => {
         );
         
         if (exists) {
-          console.log('⚠️ Message déjà présent, ignoré');
+          logger.log('⚠️ Message déjà présent, ignoré');
           return old;
         }
         
@@ -449,7 +450,7 @@ export const useRealtimeMessages = (conversationId) => {
         );
       });
 
-      console.log('✅ Cache mis à jour avec le nouveau message');
+      logger.log('✅ Cache mis à jour avec le nouveau message');
     });
 
     // Événement UPDATE - Messages modifiés (lecture, etc.)
@@ -459,7 +460,7 @@ export const useRealtimeMessages = (conversationId) => {
       table: 'messages',
       filter: `conversation_id=eq.${conversationId}`
     }, (payload) => {
-      console.log('🔄 MESSAGE MODIFIÉ:', payload.new);
+      logger.log('🔄 MESSAGE MODIFIÉ:', payload.new);
 
       // Mettre à jour le message dans le cache
       queryClient.setQueryData(['conversation-messages', conversationId], (old) => {
@@ -480,19 +481,19 @@ export const useRealtimeMessages = (conversationId) => {
 
     // S'abonner avec gestion d'état
     channel.subscribe((status) => {
-      console.log('🔌 Statut subscription:', status);
+      logger.log('🔌 Statut subscription:', status);
       
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Subscription temps réel ACTIVE pour conversation:', conversationId);
+        logger.log('✅ Subscription temps réel ACTIVE pour conversation:', conversationId);
         isSubscribedRef.current = true;
       } else if (status === 'CHANNEL_ERROR') {
-        console.error('❌ Erreur subscription temps réel');
+        logger.error('❌ Erreur subscription temps réel');
         isSubscribedRef.current = false;
       } else if (status === 'TIMED_OUT') {
-        console.warn('⏰ Timeout subscription temps réel');
+        logger.warn('⏰ Timeout subscription temps réel');
         isSubscribedRef.current = false;
       } else if (status === 'CLOSED') {
-        console.log('🔌 Subscription fermée');
+        logger.log('🔌 Subscription fermée');
         isSubscribedRef.current = false;
       }
     });
@@ -500,7 +501,7 @@ export const useRealtimeMessages = (conversationId) => {
     channelRef.current = channel;
 
     return () => {
-      console.log('🔌 Désabonnement subscription temps réel pour conversation:', conversationId);
+      logger.log('🔌 Désabonnement subscription temps réel pour conversation:', conversationId);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         isSubscribedRef.current = false;

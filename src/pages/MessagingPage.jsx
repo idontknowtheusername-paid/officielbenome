@@ -4,9 +4,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations, useRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { messageService } from '@/services/message.service';
+import { encryptedMessageService as messageService } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/utils/logger';
 import { 
   MessageSquare, 
   Search, 
@@ -246,9 +247,7 @@ const MessagingPageContent = () => {
         table: 'messages',
         filter: `receiver_id=eq.${user.id}`
       }, (payload) => {
-        if (import.meta.env.DEV) {
-          console.log('🔔 Notification globale reçue:', payload);
-        }
+        logger.log('🔔 Notification globale reçue:', payload);
         
         // Rafraîchir les conversations pour mettre à jour les compteurs
         setTimeout(() => {
@@ -265,20 +264,16 @@ const MessagingPageContent = () => {
         }
       })
       .subscribe((status) => {
-        if (import.meta.env.DEV) {
-          console.log('🔌 Statut notifications globales:', status);
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Notifications globales actives');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Erreur notifications globales');
-          }
+        logger.log('🔌 Statut notifications globales:', status);
+        if (status === 'SUBSCRIBED') {
+          logger.log('✅ Notifications globales actives');
+        } else if (status === 'CHANNEL_ERROR') {
+          logger.error('❌ Erreur notifications globales');
         }
       });
 
     return () => {
-      if (import.meta.env.DEV) {
-        console.log('🔌 Désabonnement notifications globales');
-      }
+      logger.log('🔌 Désabonnement notifications globales');
       supabase.removeChannel(channel);
     };
   }, [user, selectedConversation, refetch, toast]);
@@ -298,9 +293,7 @@ const MessagingPageContent = () => {
       // Rafraîchir les conversations pour mettre à jour les stats
       refetch();
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Erreur chargement messages:', error);
-      }
+      logger.error('Erreur chargement messages:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les messages",
@@ -323,9 +316,7 @@ const MessagingPageContent = () => {
       // Rafraîchir les conversations pour mettre à jour le statut
       refetch();
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Erreur lors du marquage des messages comme lus:', error);
-      }
+      logger.error('Erreur lors du marquage des messages comme lus:', error);
     }
   }, [loadMessages, refetch]);
 

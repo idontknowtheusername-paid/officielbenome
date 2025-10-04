@@ -6,6 +6,7 @@
 import { messageService } from './message.service';
 import { encryptionService } from './encryption.service';
 import { MESSAGING_CONFIG } from '@/config/messaging';
+import { logger } from '@/utils/logger';
 
 class EncryptedMessageService {
   constructor() {
@@ -35,7 +36,7 @@ class EncryptedMessageService {
           algorithm: 'AES-GCM'
         };
         
-        console.log('🔐 Message chiffré E2E');
+        logger.log('🔐 Message chiffré E2E');
       }
 
       // Envoyer via service normal
@@ -49,7 +50,7 @@ class EncryptedMessageService {
         }
       );
     } catch (error) {
-      console.error('Erreur envoi message chiffré:', error);
+      logger.error('Erreur envoi message chiffré:', error);
       throw error;
     }
   }
@@ -86,7 +87,7 @@ class EncryptedMessageService {
                   }
                 };
               } catch (error) {
-                console.error('Erreur déchiffrement message:', error);
+                logger.error('Erreur déchiffrement message:', error);
                 // Retourner message avec indication d'erreur
                 return {
                   ...msg,
@@ -109,7 +110,7 @@ class EncryptedMessageService {
       
       return messages;
     } catch (error) {
-      console.error('Erreur récupération messages:', error);
+      logger.error('Erreur récupération messages:', error);
       throw error;
     }
   }
@@ -120,7 +121,7 @@ class EncryptedMessageService {
   deleteConversationKey(conversationId) {
     if (this.encryptionEnabled) {
       encryptionService.deleteConversationKey(conversationId);
-      console.log('🔐 Clé de conversation supprimée');
+      logger.log('🔐 Clé de conversation supprimée');
     }
   }
 
