@@ -147,19 +147,39 @@ export const usePushNotifications = () => {
     if (!user) return;
 
     try {
-      // Ici vous devriez envoyer la subscription à votre API
-      // const response = await fetch('/api/push-subscriptions', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     userId: user.id,
-      //     subscription: subscription.toJSON()
-      //   })
-      // });
+      const { supabase } = await import('../lib/supabase');
+      const subscriptionData = subscription.toJSON();
       
-      console.log('Subscription sauvegardée:', subscription.toJSON());
+      // Extraire les informations du navigateur
+      const userAgent = navigator.userAgent;
+      const deviceType = /Mobile|Android|iPhone|iPad/i.test(userAgent) ? 'mobile' : 'desktop';
+      
+      // Sauvegarder dans Supabase
+      const { data, error } = await supabase
+        .from('push_subscriptions')
+        .upsert({
+          user_id: user.id,
+          endpoint: subscriptionData.endpoint,
+          p256dh: subscriptionData.keys.p256dh,
+          auth: subscriptionData.keys.auth,
+          user_agent: userAgent,
+          device_type: deviceType,
+          last_used_at: new Date().toISOString(),
+          is_active: true
+        }, {
+          onConflict: 'user_id,endpoint'
+        });
+
+      if (error) {
+        console.error('Erreur sauvegarde subscription Supabase:', error);
+        throw error;
+      }
+
+      console.log('✅ Subscription sauvegardée avec succès dans Supabase');
+      return data;
     } catch (error) {
-      console.error('Erreur sauvegarde subscription:', error);
+      console.error('❌ Erreur sauvegarde subscription:', error);
+      throw error;
     }
   };
 
@@ -168,14 +188,25 @@ export const usePushNotifications = () => {
     if (!user) return;
 
     try {
-      // Ici vous devriez supprimer la subscription de votre API
-      // const response = await fetch(`/api/push-subscriptions/${user.id}`, {
-      //   method: 'DELETE'
-      // });
+      const { supabase } = await import('../lib/supabase');
+      const subscriptionData = subscription.toJSON();
       
-      console.log('Subscription supprimée du serveur');
+      // Supprimer de Supabase
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('endpoint', subscriptionData.endpoint);
+
+      if (error) {
+        console.error('Erreur suppression subscription Supabase:', error);
+        throw error;
+      }
+
+      console.log('✅ Subscription supprimée avec succès de Supabase');
     } catch (error) {
-      console.error('Erreur suppression subscription:', error);
+      console.error('❌ Erreur suppression subscription:', error);
+      throw error;
     }
   };
 
