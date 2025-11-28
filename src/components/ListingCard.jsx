@@ -203,19 +203,14 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         
         {/* Price - Taille réduite */}
         <div className={cn(
-          "text-lg sm:text-xl font-bold mb-0.5 sm:mb-1",
+          "text-lg sm:text-xl font-bold mb-1 sm:mb-1.5",
           isPremium 
             ? "text-slate-800"
             : "text-primary"
         )}>
           {listing.price ? formatPrice(listing.price) : 'Prix sur demande'}
         </div>
-        
-        {/* Description - 2 lignes */}
-        <p className="text-muted-foreground mb-1 sm:mb-1.5 text-xs sm:text-sm line-clamp-2">
-          {listing.description || 'Aucune description disponible'}
-        </p>
-        
+
         {/* Badge Premium Simple - Compact */}
         {isPremium && (
           <div className="mb-1">
