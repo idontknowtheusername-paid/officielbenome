@@ -221,6 +221,8 @@ logger.error = (msg, options) => {
 
 export default defineConfig({
 	customLogger: logger,
+  // Exclure les dossiers Capacitor du scan
+  exclude: ['**/android/**', '**/ios/**', '**/node_modules/**'],
   plugins: [
     react(),
     addTransformIndexHtml,
@@ -455,18 +457,27 @@ export default defineConfig({
   
   // Optimisation du serveur de développement
 	server: {
+		port: 30001,
 		cors: true,
 		headers: {
 			'Cross-Origin-Embedder-Policy': 'credentialless',
+			'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+			'Pragma': 'no-cache',
+			'Expires': '0',
 		},
 		allowedHosts: true,
     hmr: {
-      port: 5173,
+      port: 30001,
       host: 'localhost',
       protocol: 'ws',
-      clientPort: 5173,
+      clientPort: 30001,
       overlay: false,
       timeout: 30000
+    },
+    // Désactiver le cache en développement
+    watch: {
+      usePolling: true,
+      interval: 100
     },
     proxy: {
       // Chatbot local (ne pas proxy /api/chat)
@@ -493,6 +504,11 @@ export default defineConfig({
 		alias: {
 			'@': path.resolve(__dirname, './src'),
 		},
+	},
+	
+	// Polyfill pour emoji-picker-react
+	define: {
+		global: 'globalThis',
 	},
 	
 	// Optimisation du préchargement

@@ -14,7 +14,9 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext .js,.jsx --fix"
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "sitemap": "node scripts/generate-sitemap.js",
+    "sitemap:build": "npm run build && npm run sitemap"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -64,7 +66,7 @@
     "cors": "^2.8.5",
     "date-fns": "^3.3.1",
     "dotenv": "^17.2.1",
-    "emoji-picker-react": "^4.14.0",
+    "emoji-picker-react": "^4.16.1",
     "express": "^5.1.0",
     "framer-motion": "^11.0.8",
     "leaflet": "^1.9.4",
@@ -73,6 +75,7 @@
     "react": "^18.2.0",
     "react-day-picker": "^9.9.0",
     "react-dom": "^18.2.0",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.51.0",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^6.22.3",

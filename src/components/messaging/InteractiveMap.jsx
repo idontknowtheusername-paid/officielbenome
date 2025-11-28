@@ -94,7 +94,7 @@ const InteractiveMap = ({
     markerRef.current = L.marker([selectedLocation.latitude, selectedLocation.longitude], {
       icon: L.divIcon({
         className: 'custom-marker',
-        html: '<div class="w-6 h-6 bg-primary rounded-full border-2 border-white shadow-lg"></div>',
+        html: '<div class="w-6 h-6 bg-primary rounded-full border-2 border-background shadow-lg"></div>',
         iconSize: [24, 24],
         iconAnchor: [12, 12]
       })
@@ -139,7 +139,7 @@ const InteractiveMap = ({
       )}
 
       {/* Instructions */}
-      <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-muted-foreground shadow-sm">
+      <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-muted-foreground shadow-sm border border-border">
         Cliquez sur la carte pour sélectionner un point
       </div>
     </div>

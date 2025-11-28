@@ -1,11 +1,11 @@
 {
-  "name": "Officiel BenoMe - Marketplace",
-  "short_name": "BenoMe",
-  "description": "Marketplace officiel BenoMe - Immobilier, Automobile, Services",
+  "name": "MaxiMarket - Marketplace Afrique de l'Ouest",
+  "short_name": "MaxiMarket",
+  "description": "Marketplace leader en Afrique de l'Ouest pour l'immobilier, l'automobile, les services et plus",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0080FF",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "fr",
@@ -13,28 +13,43 @@
   "icons": [
     {
       "src": "/favicon.ico",
-      "sizes": "16x16 32x32",
+      "sizes": "16x16 32x32 48x48",
       "type": "image/x-icon"
     },
     {
-      "src": "/vite.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ],
   "screenshots": [
     {
-      "src": "/vite.svg",
-      "sizes": "1280x720",
-      "type": "image/svg+xml",
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
       "form_factor": "wide"
-    },
-    {
-      "src": "/vite.svg",
-      "sizes": "750x1334",
-      "type": "image/svg+xml",
-      "form_factor": "narrow"
     }
   ],
   "shortcuts": [
@@ -45,7 +60,7 @@
       "url": "/creer-annonce",
       "icons": [
         {
-          "src": "/vite.svg",
+          "src": "/icon-192x192.png",
           "sizes": "192x192"
         }
       ]
@@ -57,10 +72,22 @@
       "url": "/favorites",
       "icons": [
         {
-          "src": "/vite.svg",
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "description": "Accéder à ma messagerie",
+      "url": "/messages",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
           "sizes": "192x192"
         }
       ]
     }
   ]
-} 
+}

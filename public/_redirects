@@ -1,0 +1,10 @@
+# Redirects for MaxiMarket
+
+# Redirect old URLs if any
+# /old-page /new-page 301
+
+# SPA fallback - all routes go to index.html
+/*    /index.html   200
+
+# 404 handling
+/404  /index.html   404

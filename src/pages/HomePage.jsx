@@ -203,7 +203,7 @@ const HomePage = () => {
       </section>
 
       {/* Popular Listings */}
-      <section className="py-12 md:py-16 bg-background/30">
+      <section className="py-4 md:py-5 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
             🔥 <span className="gradient-text">Annonces Populaires</span>

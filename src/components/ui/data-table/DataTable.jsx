@@ -9,15 +9,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  ColumnResizeMode,
-  ColumnOrderState,
-  RowSelectionState,
-  ExpandedState,
-  PaginationState,
 } from '@tanstack/react-table';
 
 import {

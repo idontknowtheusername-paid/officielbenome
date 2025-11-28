@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations, useRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { encryptedMessageService as messageService } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/utils/logger';
@@ -33,8 +32,11 @@ import {
   Car,
   Briefcase,
   ShoppingBag,
-  Settings
+  Settings,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +54,7 @@ import {
   MessageInput,
   AudioCallInterface
 } from '@/components/messaging';
+import messageService from '@/services/message.service';
 import { UserAvatar } from '@/components/ui';
 import AssistantAvatar from '@/components/messaging/AssistantAvatar';
 
@@ -71,39 +74,48 @@ const MainNavigation = ({ onClose }) => {
   const navigate = useNavigate();
   
   const navItems = [
-    { name: 'Accueil', path: '/', icon: <Home className="h-4 w-4" /> },
-    { name: 'Immobilier', path: '/immobilier', icon: <Home className="h-4 w-4" /> },
-    { name: 'Automobile', path: '/automobile', icon: <Car className="h-4 w-4" /> },
-    { name: 'Services', path: '/services', icon: <Briefcase className="h-4 w-4" /> },
-    { name: 'Marketplace', path: '/marketplace', icon: <ShoppingBag className="h-4 w-4" /> },
-    { name: 'Mon Compte', path: '/profile', icon: <Settings className="h-4 w-4" /> },
+    { name: 'Accueil', path: '/' },
+    { name: 'Immobilier', path: '/immobilier' },
+    { name: 'Automobile', path: '/automobile' },
+    { name: 'Services', path: '/services' },
+    { name: 'Marketplace', path: '/marketplace' },
+    { name: 'Mon Compte', path: '/profile' },
   ];
 
   return (
-    <div className="bg-card border-b border-border p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Navigation</h2>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
+    <div className="md:hidden bg-card border-b border-border p-4">
+      <div className="flex flex-col space-y-2">
         {navItems.map((item) => (
-          <Button
+          <button
             key={item.path}
-            variant="outline"
-            className="justify-start h-auto p-3"
+            className="text-left px-4 py-2 hover:bg-accent rounded-md transition-colors"
             onClick={() => {
               navigate(item.path);
               onClose();
             }}
           >
-            <span className="mr-2">{item.icon}</span>
-            <span className="text-sm">{item.name}</span>
-          </Button>
+            {item.name}
+          </button>
         ))}
       </div>
     </div>
+  );
+};
+
+// Composant de bouton de thème
+const ThemeToggleButton = () => {
+  const { darkMode, toggleTheme } = useTheme();
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={toggleTheme}
+      className="flex-shrink-0"
+      aria-label="Changer de thème"
+    >
+      {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
   );
 };
 
@@ -122,6 +134,9 @@ const MessagingPageContent = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNavigation, setShowNavigation] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [messagesPage, setMessagesPage] = useState(0);
   const [newMessage, setNewMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState(null);
@@ -131,6 +146,7 @@ const MessagingPageContent = () => {
   const [showAudioCall, setShowAudioCall] = useState(false);
   const [audioCallTarget, setAudioCallTarget] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const messagesContainerRef = useRef(null);
 
   // Détecter si on est sur mobile - Optimisé avec useCallback
   const checkMobile = useCallback(() => {
@@ -177,9 +193,7 @@ const MessagingPageContent = () => {
       // Trouver la conversation dans la liste
       const conversation = conversations.find(c => c.id === conversationId);
       if (conversation) {
-        if (import.meta.env.DEV) {
-          console.log('🔍 Ouverture automatique de la conversation:', conversationId);
-        }
+        logger.log('🔍 Ouverture automatique de la conversation:', conversationId);
         setSelectedConversation(conversation);
         loadMessages(conversation.id);
       }
@@ -187,9 +201,7 @@ const MessagingPageContent = () => {
       // Trouver une conversation liée à cette annonce
       const conversation = conversations.find(c => c.listing_id === listingId);
       if (conversation) {
-        if (import.meta.env.DEV) {
-          console.log('🔍 Ouverture automatique de la conversation pour l\'annonce:', listingId);
-        }
+        logger.log('🔍 Ouverture automatique de la conversation pour l\'annonce:', listingId);
         setSelectedConversation(conversation);
         loadMessages(conversation.id);
       }
@@ -200,18 +212,18 @@ const MessagingPageContent = () => {
   useEffect(() => {
     if (!user) return;
 
+    logger.log('🔌 Initialisation subscription conversations');
+
     const channel = supabase
-      .channel('conversations')
+      .channel('conversations-updates')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'conversations',
         filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
       }, (payload) => {
-        if (import.meta.env.DEV) {
-          console.log('🆕 Nouvelle conversation reçue:', payload);
-        }
-        // Rafraîchir les conversations
+        logger.log('🆕 Nouvelle conversation reçue:', payload.new.id);
+        // Rafraîchir immédiatement pour synchroniser les stats
         refetch();
       })
       .on('postgres_changes', {
@@ -220,16 +232,47 @@ const MessagingPageContent = () => {
         table: 'conversations',
         filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
       }, (payload) => {
-        if (import.meta.env.DEV) {
-          console.log('🔄 Conversation mise à jour:', payload);
-        }
-        // Rafraîchir les conversations
+        logger.log('🔄 Conversation mise à jour:', payload.new.id);
+        // Rafraîchir immédiatement pour synchroniser les stats
         refetch();
       })
-      .subscribe();
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'conversations',
+        filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
+      }, (payload) => {
+        logger.log('🗑️ Conversation supprimée:', payload.old.id);
+        // Rafraîchir immédiatement pour synchroniser les stats
+        refetch();
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.log('✅ Subscription conversations active');
+        }
+      });
 
     return () => {
+      logger.log('🔌 Désabonnement conversations');
       supabase.removeChannel(channel);
+    };
+  }, [user, refetch]);
+
+  // Rafraîchissement périodique pour garantir synchronisation 100%
+  useEffect(() => {
+    if (!user) return;
+
+    logger.log('⏰ Activation rafraîchissement périodique (30s)');
+
+    // Rafraîchir toutes les 30 secondes pour garantir la synchronisation
+    const intervalId = setInterval(() => {
+      logger.log('🔄 Rafraîchissement périodique des conversations');
+      refetch();
+    }, 30000); // 30 secondes
+
+    return () => {
+      logger.log('⏰ Désactivation rafraîchissement périodique');
+      clearInterval(intervalId);
     };
   }, [user, refetch]);
 
@@ -237,7 +280,7 @@ const MessagingPageContent = () => {
   useEffect(() => {
     if (!user) return;
 
-    console.log('🔌 Initialisation notifications globales');
+    logger.log('🔌 Initialisation notifications globales');
 
     const channel = supabase
       .channel(`notifications-${user.id}`)
@@ -247,9 +290,9 @@ const MessagingPageContent = () => {
         table: 'messages',
         filter: `receiver_id=eq.${user.id}`
       }, (payload) => {
-        logger.log('🔔 Notification globale reçue:', payload);
+        logger.log('🔔 Nouveau message reçu:', payload.new.id);
         
-        // Rafraîchir les conversations pour mettre à jour les compteurs
+        // Rafraîchir immédiatement pour synchroniser les stats
         setTimeout(() => {
           refetch();
         }, 100);
@@ -263,10 +306,25 @@ const MessagingPageContent = () => {
           });
         }
       })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, (payload) => {
+        // Détecter si un message a été marqué comme lu
+        if (payload.old.is_read === false && payload.new.is_read === true) {
+          logger.log('✅ Message marqué comme lu:', payload.new.id);
+          // Rafraîchir immédiatement pour synchroniser les stats
+          setTimeout(() => {
+            refetch();
+          }, 100);
+        }
+      })
       .subscribe((status) => {
         logger.log('🔌 Statut notifications globales:', status);
         if (status === 'SUBSCRIBED') {
-          logger.log('✅ Notifications globales actives');
+          logger.log('✅ Notifications globales actives - Stats synchronisées en temps réel');
         } else if (status === 'CHANNEL_ERROR') {
           logger.error('❌ Erreur notifications globales');
         }
@@ -278,17 +336,42 @@ const MessagingPageContent = () => {
     };
   }, [user, selectedConversation, refetch, toast]);
 
-  // Charger les messages d'une conversation - Optimisé avec useCallback
-  const loadMessages = useCallback(async (conversationId) => {
+  // Charger les messages d'une conversation avec pagination
+  const loadMessages = useCallback(async (conversationId, page = 0, append = false) => {
     if (!conversationId) return;
     
-    setIsLoadingMessages(true);
+    if (!append) {
+      setIsLoadingMessages(true);
+      setMessagesPage(0);
+      setHasMoreMessages(true);
+    } else {
+      setIsLoadingMoreMessages(true);
+    }
+
     try {
-      const data = await messageService.getConversationMessages(conversationId);
-      setMessages(data);
+      const pageSize = 50;
+      const data = await messageService.getConversationMessages(conversationId, {
+        from: page * pageSize,
+        to: (page + 1) * pageSize - 1
+      });
+
+      if (append) {
+        setMessages(prev => [...data, ...prev]); // Ajouter au début
+      } else {
+        setMessages(data);
+      }
+
+      // Si moins de messages que la taille de page, on a tout chargé
+      if (data.length < pageSize) {
+        setHasMoreMessages(false);
+      }
+
+      setMessagesPage(page);
       
       // Marquer comme lus
-      await messageService.markMessagesAsRead(conversationId);
+      if (!append) {
+        await messageService.markMessagesAsRead(conversationId);
+      }
       
       // Rafraîchir les conversations pour mettre à jour les stats
       refetch();
@@ -301,32 +384,66 @@ const MessagingPageContent = () => {
       });
     } finally {
       setIsLoadingMessages(false);
+      setIsLoadingMoreMessages(false);
     }
   }, [refetch, toast]);
 
+  // Charger plus de messages (scroll infini)
+  const loadMoreMessages = useCallback(() => {
+    if (!selectedConversation || isLoadingMoreMessages || !hasMoreMessages) return;
+
+    logger.log('📜 Chargement de plus de messages, page:', messagesPage + 1);
+    loadMessages(selectedConversation.id, messagesPage + 1, true);
+  }, [selectedConversation, isLoadingMoreMessages, hasMoreMessages, messagesPage, loadMessages]);
+
+  // Détecter le scroll vers le haut pour charger plus de messages
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop < 100 && hasMoreMessages && !isLoadingMoreMessages) {
+        loadMoreMessages();
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [hasMoreMessages, isLoadingMoreMessages, loadMoreMessages]);
+
   // Sélectionner une conversation - Optimisé avec useCallback
   const handleSelectConversation = useCallback(async (conversation) => {
+    logger.log('📖 Ouverture de la conversation:', conversation.id);
+
     setSelectedConversation(conversation);
     loadMessages(conversation.id);
     setShowMobileMenu(false); // Fermer le menu mobile
-    
-    // Marquer automatiquement les messages comme lus
+
+    // Marquer automatiquement les messages comme lus pour faire disparaître le badge
     try {
       await messageService.markMessagesAsRead(conversation.id);
-      // Rafraîchir les conversations pour mettre à jour le statut
-      refetch();
+      logger.log('✅ Messages marqués comme lus - Badge "Nouveau" va disparaître');
+
+      // Rafraîchir les conversations pour mettre à jour le statut et retirer le badge
+      await refetch();
     } catch (error) {
-      logger.error('Erreur lors du marquage des messages comme lus:', error);
+      logger.error('❌ Erreur lors du marquage des messages comme lus:', error);
     }
   }, [loadMessages, refetch]);
 
-  // Envoyer un message - Optimisé avec useCallback
-  const handleSendMessage = useCallback(async (messageContent) => {
-    if (!messageContent.trim() || !selectedConversation) return;
+  // Envoyer un message avec retry automatique
+  const handleSendMessage = useCallback(async (messageContent, retryCount = 0) => {
+    if (!messageContent.trim() || !selectedConversation) {
+      logger.log('❌ Envoi annulé - message vide ou pas de conversation');
+      return;
+    }
+
+    const maxRetries = 2;
 
     try {
+      logger.log('📤 Envoi du message:', messageContent.substring(0, 50));
       const newMessage = await messageService.sendMessage(selectedConversation.id, messageContent.trim());
-      setNewMessage('');
+      logger.log('✅ Message envoyé avec succès:', newMessage.id);
       
       // Ajouter le message localement pour une mise à jour immédiate
       setMessages(prev => [...prev, newMessage]);
@@ -334,24 +451,48 @@ const MessagingPageContent = () => {
       // Rafraîchir les conversations pour mettre à jour last_message_at
       refetch();
       
-      // Pas de notification toast pour les messages envoyés par l'utilisateur
+      return true; // Succès
+
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Erreur envoi message:', error);
+      logger.error('Erreur envoi message:', error, 'Tentative:', retryCount + 1);
+
+      // Retry automatique pour erreurs réseau
+      if (retryCount < maxRetries &&
+        (error.message?.includes('network') ||
+          error.message?.includes('timeout') ||
+          error.code === 'ECONNABORTED')) {
+
+        logger.log('🔄 Nouvelle tentative d\'envoi dans 2s...');
+
+        toast({
+          title: "Nouvelle tentative...",
+          description: `Tentative ${retryCount + 2}/${maxRetries + 1}`,
+        });
+
+        setTimeout(() => {
+          handleSendMessage(messageContent, retryCount + 1);
+        }, 2000);
+
+      } else {
+        // Erreur finale avec message personnalisé
+        const errorMessage = error.message?.includes('Session expirée')
+          ? "Votre session a expiré. Veuillez vous reconnecter."
+          : error.message?.includes('Permission')
+            ? "Vous n'avez pas la permission d'envoyer ce message."
+            : "Impossible d'envoyer le message. Vérifiez votre connexion.";
+
+        toast({
+          title: "Erreur d'envoi",
+          description: errorMessage,
+          variant: "destructive",
+        });
       }
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer le message",
-        variant: "destructive",
-      });
     }
   }, [selectedConversation, refetch, toast]);
 
   // Gérer les pièces jointes - Optimisé avec useCallback
   const handleAttachment = useCallback((files) => {
-    if (import.meta.env.DEV) {
-      console.log('Fichiers sélectionnés:', files);
-    }
+    logger.log('Fichiers sélectionnés:', files);
     // Pas de notification toast pour les pièces jointes sélectionnées
   }, []);
 
@@ -384,13 +525,11 @@ const MessagingPageContent = () => {
       return;
     }
     
-    if (import.meta.env.DEV) {
-      console.log('🔍 Initialisation appel avec:', {
-        user: user.id,
-        target: otherParticipant.id,
-        targetName: otherParticipant.first_name || otherParticipant.last_name || 'Utilisateur'
-      });
-    }
+    logger.log('🔍 Initialisation appel avec:', {
+      user: user.id,
+      target: otherParticipant.id,
+      targetName: otherParticipant.first_name || otherParticipant.last_name || 'Utilisateur'
+    });
     
     setAudioCallTarget(otherParticipant);
     setShowAudioCall(true);
@@ -407,20 +546,27 @@ const MessagingPageContent = () => {
     setAudioCallTarget(null);
   }, []);
 
-  // Filtrer les conversations - Optimisé avec useMemo
+  // Filtrer les conversations - Optimisé avec useMemo et SYNCHRONISÉ 100%
   const filteredConversations = useMemo(() => {
-    return conversations?.filter(conv => {
+    if (!conversations) return [];
+
+    const filtered = conversations.filter(conv => {
       if (filterType === 'unread') {
-        return conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id);
+        // CORRECTION: Utiliser receiver_id pour filtrer les messages NON LUS REÇUS
+        return conv.messages?.some(msg => !msg.is_read && msg.receiver_id === user?.id);
       }
       if (filterType === 'starred') {
-        return conv.starred;
+        return conv.starred === true;
       }
       if (filterType === 'archived') {
-        return conv.is_archived;
+        return conv.is_archived === true;
       }
-      return true;
-    }) || [];
+      // 'all' - retourner toutes les conversations NON archivées
+      return !conv.is_archived;
+    });
+
+    logger.log(`🔍 Filtre "${filterType}": ${filtered.length} conversation(s)`);
+    return filtered;
   }, [conversations, filterType, user?.id]);
 
   // Rechercher dans les conversations - Optimisé avec useMemo
@@ -466,25 +612,38 @@ const MessagingPageContent = () => {
     });
   }, [searchedConversations]);
 
-  // Log pour déboguer l'ordre des conversations - Conditionné pour DEV
-  if (import.meta.env.DEV) {
-    console.log('🔍 Conversations triées:', sortedConversations.map(conv => ({
-      id: conv.id,
-      title: conv.listing?.title || 'Sans titre',
-      lastMessage: conv.messages?.[conv.messages.length - 1]?.created_at || conv.created_at,
-      hasUnread: conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id)
-    })));
-  }
+  // Log pour déboguer l'ordre des conversations
+  logger.log('🔍 Conversations triées:', sortedConversations.map(conv => ({
+    id: conv.id,
+    title: conv.listing?.title || 'Sans titre',
+    lastMessage: conv.messages?.[conv.messages.length - 1]?.created_at || conv.created_at,
+    hasUnread: conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id)
+  })));
 
-  // Calculer les statistiques - Optimisé avec useMemo
-  const stats = useMemo(() => ({
-    total: conversations?.length || 0,
-    unread: conversations?.filter(conv => 
-      conv.messages?.some(msg => !msg.is_read && msg.sender_id !== user?.id)
-    ).length || 0,
-    starred: conversations?.filter(conv => conv.starred).length || 0,
-    archived: conversations?.filter(conv => conv.is_archived).length || 0
-  }), [conversations, user?.id]);
+  // Calculer les statistiques - Optimisé avec useMemo et SYNCHRONISÉ 100%
+  const stats = useMemo(() => {
+    if (!conversations || !user?.id) {
+      return { total: 0, unread: 0, starred: 0, archived: 0 };
+    }
+
+    // CORRECTION: Utiliser receiver_id pour compter les messages NON LUS REÇUS
+    const unreadConversations = conversations.filter(conv =>
+      conv.messages?.some(msg => !msg.is_read && msg.receiver_id === user.id)
+    );
+
+    const starredConversations = conversations.filter(conv => conv.starred);
+    const archivedConversations = conversations.filter(conv => conv.is_archived);
+
+    const stats = {
+      total: conversations.length,
+      unread: unreadConversations.length,
+      starred: starredConversations.length,
+      archived: archivedConversations.length
+    };
+
+    logger.log('📊 Stats synchronisées:', stats);
+    return stats;
+  }, [conversations, user?.id]);
 
   // Actions sur les conversations - Optimisées avec useCallback
   const handleMarkAsRead = useCallback(async (conversation) => {
@@ -624,21 +783,57 @@ const MessagingPageContent = () => {
     // La modal de confirmation s'affichera automatiquement
   };
 
-  // Gestion des erreurs
+  // Gestion des erreurs avec messages personnalisés
   if (error) {
+    const isAuthError = error.message?.includes('Session expirée') ||
+      error.message?.includes('Utilisateur non connecté');
+    const isNetworkError = error.message?.includes('network') ||
+      error.message?.includes('Failed to fetch');
+    const isPermissionError = error.message?.includes('Permission') ||
+      error.message?.includes('RLS');
+
+    let errorTitle = "Erreur de chargement";
+    let errorDescription = error.message || "Impossible de charger les conversations";
+    let actionButton = "Réessayer";
+
+    if (isAuthError) {
+      errorTitle = "Session expirée";
+      errorDescription = "Votre session a expiré. Veuillez vous reconnecter.";
+      actionButton = "Se reconnecter";
+    } else if (isNetworkError) {
+      errorTitle = "Problème de connexion";
+      errorDescription = "Impossible de se connecter au serveur. Vérifiez votre connexion internet.";
+    } else if (isPermissionError) {
+      errorTitle = "Accès refusé";
+      errorDescription = "Vous n'avez pas les permissions nécessaires pour accéder à la messagerie.";
+    }
+
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto p-6">
           <MessageSquare className="mx-auto h-12 w-12 text-destructive mb-4" />
           <h3 className="text-lg font-medium text-card-foreground mb-2">
-            Erreur de chargement
+            {errorTitle}
           </h3>
           <p className="text-muted-foreground mb-4">
-            {error.message || "Impossible de charger les conversations"}
+            {errorDescription}
           </p>
-          <Button onClick={() => refetch()} className="bg-blue-600 hover:bg-blue-700">
-            Réessayer
-          </Button>
+          <div className="flex gap-2 justify-center">
+            <Button
+              onClick={() => isAuthError ? navigate('/login') : refetch()}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {actionButton}
+            </Button>
+            {!isAuthError && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/')}
+              >
+                Retour à l'accueil
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -651,15 +846,11 @@ const MessagingPageContent = () => {
           <MobileMessagingNav
             selectedConversation={selectedConversation}
             onBack={() => setSelectedConversation(null)}
-            onMenuToggle={() => setShowMobileMenu(!showMobileMenu)}
-            onSearch={() => setShowMobileMenu(false)}
-            onFilter={() => setShowMobileMenu(false)}
+            onMenuToggle={() => setShowNavigation(!showNavigation)}
             onMore={() => setShowNavigation(!showNavigation)}
             onCall={handleCall}
             onVideo={() => {
-              if (import.meta.env.DEV) {
-                console.log('Video');
-              }
+              logger.log('Video');
             }}
             unreadCount={stats.unread}
           />
@@ -721,6 +912,7 @@ const MessagingPageContent = () => {
                     <span className="hidden sm:inline">Marketplace</span>
                   </Button>
                 </div>
+                <ThemeToggleButton />
                 <Button className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Nouvelle Conversation</span>
@@ -878,7 +1070,23 @@ const MessagingPageContent = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+                {/* Indicateur de chargement de plus de messages */}
+                {isLoadingMoreMessages && (
+                  <div className="flex justify-center py-2">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span>Chargement des messages précédents...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Indicateur qu'il n'y a plus de messages */}
+                {!hasMoreMessages && messages.length > 50 && (
+                  <div className="text-center py-2 text-xs text-muted-foreground">
+                    📜 Début de la conversation
+                  </div>
+                )}
               {/* Barre d'actions pour la sélection multiple */}
               {isMessageSelectionMode && (
                 <div className="sticky top-0 bg-card border border-border rounded-lg p-3 mb-4 shadow-sm z-10">
@@ -962,26 +1170,21 @@ const MessagingPageContent = () => {
               )}
               </div>
 
-            {/* Zone de saisie optimisée */}
+              {/* Zone de saisie */}
             <div className="flex-shrink-0 relative z-10">
-              <MessageInput
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onSend={handleSendMessage}
-                onAttachment={handleAttachment}
-                onEmoji={handleEmoji}
-                onVoice={() => {
-                  if (import.meta.env.DEV) {
-                    console.log('Voice message');
-                  }
-                }}
-                onCamera={() => {
-                  if (import.meta.env.DEV) {
-                    console.log('Camera');
-                  }
-                }}
-                placeholder="Tapez votre message..."
-                disabled={isLoadingMessages}
+                <MessageInput
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onSend={async (content) => {
+                    await handleSendMessage(content);
+                    setNewMessage('');
+                  }}
+                  onAttachment={handleAttachment}
+                  onEmoji={handleEmoji}
+                  onVoice={() => logger.log('Voice message')}
+                  onCamera={() => logger.log('Camera')}
+                  placeholder="Tapez votre message..."
+                  disabled={isLoadingMessages}
               />
             </div>
           </div>
@@ -1090,7 +1293,16 @@ const ConversationItem = memo(({
   currentUserId 
 }) => {
   const lastMessage = conversation.messages?.[conversation.messages.length - 1];
-  const hasUnreadMessages = conversation.messages?.some(msg => !msg.is_read && msg.sender_id !== currentUserId);
+
+  // CORRECTION: Badge "Nouveau" n'apparaît que pour les messages NON LUS reçus (pas envoyés)
+  const hasUnreadMessages = conversation.messages?.some(msg =>
+    !msg.is_read && msg.receiver_id === currentUserId
+  );
+
+  // Compter le nombre de messages non lus
+  const unreadCount = conversation.messages?.filter(msg =>
+    !msg.is_read && msg.receiver_id === currentUserId
+  ).length || 0;
   
   // Déterminer l'autre participant
   const otherParticipant = conversation.participant1_id === currentUserId 
@@ -1123,103 +1335,136 @@ const ConversationItem = memo(({
     }
   };
 
+  // Gestion du clic sur le menu trois points
+  const handleMenuClick = (e) => {
+    e.stopPropagation(); // Empêcher l'ouverture de la conversation
+  };
+
+  // Gestion des actions du menu avec propagation arrêtée
+  const handleMarkAsReadClick = (e) => {
+    e.stopPropagation();
+    onMarkAsRead?.(conversation);
+  };
+
+  const handleToggleStarClick = (e) => {
+    e.stopPropagation();
+    onToggleStar?.(conversation);
+  };
+
+  const handleArchiveClick = (e) => {
+    e.stopPropagation();
+    onArchive?.(conversation);
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    onDelete?.(conversation);
+  };
+
   return (
     <div
       className={`
-        group p-4 cursor-pointer transition-colors hover:bg-accent relative
-        ${isSelected ? 'bg-primary/10 border-r-2 border-primary' : ''}
-        ${hasUnreadMessages ? 'bg-primary/10' : ''}
-        ${isAssistantConversation ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500' : ''}
+        group p-4 cursor-pointer transition-all duration-200 hover:bg-accent relative
+        border-b border-border last:border-b-0
+        ${isSelected ? 'bg-primary/10 border-l-4 border-primary' : ''}
+        ${hasUnreadMessages && !isSelected ? 'bg-primary/5' : ''}
+        ${isAssistantConversation ? 'bg-gradient-to-r from-primary/10 to-secondary/10 border-l-4 border-primary' : ''}
       `}
       onClick={onSelect}
     >
       {/* Badge spécial pour l'assistant */}
       {isAssistantConversation && (
-        <div className="absolute top-2 right-2">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">
+        <div className="absolute top-2 right-2 z-10">
+          <div className="bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium shadow-sm">
             🤖 Assistant
           </div>
         </div>
       )}
 
       <div className="flex items-start space-x-3">
-        <div className="relative">
-          {/* Utiliser l'avatar spécial pour l'assistant */}
+        <div className="relative flex-shrink-0">
+          {/* Avatar avec indicateur de non lu */}
           {isAssistantConversation ? (
-            <AssistantAvatar size="default" className="flex-shrink-0" />
+            <AssistantAvatar size="default" />
           ) : (
-            <UserAvatar 
-              user={otherParticipant} 
-              size="default"
-              className="flex-shrink-0"
-            />
+              <UserAvatar user={otherParticipant} size="default" />
           )}
           {hasUnreadMessages && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full"></div>
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full border-2 border-background flex items-center justify-center">
+              <span className="text-destructive-foreground text-xs font-bold">{unreadCount > 9 ? '9+' : unreadCount}</span>
+            </div>
           )}
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <h4 className="font-medium text-sm truncate">
+            <h4 className={`font-medium text-sm truncate ${hasUnreadMessages ? 'font-bold text-foreground' : 'text-foreground'}`}>
               {isAssistantConversation 
                 ? 'AIDA' 
                 : (otherParticipant ? `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() || 'Utilisateur' : 'Utilisateur')
               }
             </h4>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
               {conversation.starred && (
-                <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                <Star className="h-3.5 w-3.5 text-yellow-500 fill-current" />
               )}
-              <span className="text-xs text-muted-foreground">
+              <span className={`text-xs whitespace-nowrap ${hasUnreadMessages ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                 {lastMessage?.created_at ? formatTime(lastMessage.created_at) : 'À l\'instant'}
               </span>
             </div>
           </div>
           
-          <p className="text-sm text-muted-foreground truncate mb-1">
+          <p className={`text-sm truncate mb-1.5 ${hasUnreadMessages ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
             {lastMessage?.content || 'Aucun message'}
           </p>
           
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-muted-foreground truncate flex-1">
               {isAssistantConversation ? 'Support et assistance' : (conversation.listing?.title || 'Conversation')}
             </span>
-            <div className="flex items-center space-x-1">
-              {hasUnreadMessages && (
-                <Badge variant="destructive" className="h-5 px-2 text-xs">
-                  Nouveau
-                </Badge>
-              )}
-            </div>
+            {hasUnreadMessages && (
+              <Badge variant="destructive" className="h-5 px-2 text-xs font-bold flex-shrink-0 animate-pulse">
+                Nouveau
+              </Badge>
+            )}
           </div>
         </div>
 
-        {/* Menu contextuel des actions */}
-        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        {/* Menu contextuel des actions - visible au hover */}
+        <div className="flex-shrink-0" onClick={handleMenuClick}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 md:opacity-100 transition-opacity hover:bg-accent"
+                onClick={handleMenuClick}
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => onMarkAsRead?.(conversation)}>
-                <Eye className="h-4 w-4 mr-2" />
-                Marquer comme lu
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStar?.(conversation)}>
-                <Star className="h-4 w-4 mr-2" />
+              {hasUnreadMessages && (
+                <>
+                  <DropdownMenuItem onClick={handleMarkAsReadClick}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Marquer comme lu
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem onClick={handleToggleStarClick}>
+                <Star className={`h-4 w-4 mr-2 ${conversation.starred ? 'fill-current text-yellow-500' : ''}`} />
                 {conversation.starred ? 'Retirer des favoris' : 'Ajouter aux favoris'}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onArchive?.(conversation)}>
+              <DropdownMenuItem onClick={handleArchiveClick}>
                 <Archive className="h-4 w-4 mr-2" />
                 {conversation.is_archived ? 'Désarchiver' : 'Archiver'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={() => onDelete?.(conversation)}
-                className="text-destructive focus:text-destructive"
+                onClick={handleDeleteClick}
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Supprimer
@@ -1315,10 +1560,10 @@ const MessageBubble = memo(({
         ${isOwn 
           ? 'bg-primary text-primary-foreground' 
           : isAssistantMessage
-            ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800 border border-blue-200'
+          ? 'bg-gradient-to-r from-primary/20 to-secondary/20 text-foreground border border-primary/30'
             : 'bg-muted text-muted-foreground'
         }
-        ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
+        ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}
         ${isSelectionMode ? 'hover:ring-2 hover:ring-primary/50' : ''}
       `}>
         {/* Indicateur de sélection */}
@@ -1330,7 +1575,7 @@ const MessageBubble = memo(({
         
         <div className="flex items-center space-x-2 mb-1">
           {!isOwn && isAssistantMessage && (
-            <span className="text-xs font-medium text-blue-600">
+            <span className="text-xs font-medium text-primary">
               🤖 AIDA
             </span>
           )}

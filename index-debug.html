@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - MaxiMarket</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .error { color: #ff0000; }
+        .success { color: #00ff00; }
+        .info { color: #00aaff; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnostic MaxiMarket</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            output.appendChild(div);
+            console.log(message);
+        }
+        
+        log('✓ HTML chargé', 'success');
+        log('✓ JavaScript exécuté', 'success');
+        
+        // Test 1: Vérifier que React peut se charger
+        log('\n--- Test 1: Chargement de React ---', 'info');
+        import('http://localhost:5173/node_modules/.vite/deps/react.js?v=f5a76c19')
+            .then(() => {
+                log('✓ React chargé', 'success');
+                
+                // Test 2: Vérifier le main.jsx
+                log('\n--- Test 2: Chargement de main.jsx ---', 'info');
+                return import('http://localhost:5173/src/main.jsx');
+            })
+            .then(() => {
+                log('✓ main.jsx chargé', 'success');
+                log('\n✅ Tous les tests passés !', 'success');
+                log('Le problème doit être dans le rendu React.', 'info');
+            })
+            .catch(error => {
+                log('\n❌ ERREUR DÉTECTÉE:', 'error');
+                log(error.toString(), 'error');
+                log('\nStack trace:', 'error');
+                log(error.stack || 'Pas de stack trace', 'error');
+            });
+        
+        // Capturer toutes les erreurs
+        window.addEventListener('error', (e) => {
+            log('\n❌ Erreur globale:', 'error');
+            log(e.message, 'error');
+            log('Fichier: ' + e.filename, 'error');
+            log('Ligne: ' + e.lineno + ':' + e.colno, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            log('\n❌ Promise rejetée:', 'error');
+            log(e.reason, 'error');
+        });
+    </script>
+</body>
+</html>

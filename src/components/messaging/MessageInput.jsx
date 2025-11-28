@@ -15,6 +15,7 @@ import {
   Phone,
   Video
 } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import CameraCapture from './CameraCapture';
 import FileUpload from './FileUpload';
 import LocationPicker from './LocationPicker';
@@ -34,6 +35,7 @@ const MessageInput = ({
   showActions = true
 }) => {
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
@@ -59,6 +61,13 @@ const MessageInput = ({
     if (files.length > 0) {
       onAttachment(files);
     }
+  };
+
+  const handleEmojiClick = (emojiData) => {
+    const emoji = emojiData.emoji;
+    const newValue = value + emoji;
+    onChange({ target: { value: newValue } });
+    setShowEmojiPicker(false);
   };
 
   // Gérer la capture de photo
@@ -124,7 +133,14 @@ const MessageInput = ({
   ];
 
   return (
-    <div className="bg-background border-t border-border p-4">
+    <div className="bg-background border-t border-border p-4 relative">
+      {/* Overlay pour fermer le emoji picker */}
+      {showEmojiPicker && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowEmojiPicker(false)}
+        />
+      )}
       {/* Actions rapides */}
       {showQuickActions && (
         <div className="mb-3 p-3 bg-muted/50 rounded-lg">
@@ -175,7 +191,7 @@ const MessageInput = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onEmoji}
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               className="p-1 h-6 w-6"
             >
               <Smile className="h-4 w-4" />
@@ -184,12 +200,25 @@ const MessageInput = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onAttachment}
+              onClick={() => fileInputRef.current?.click()}
               className="p-1 h-6 w-6"
             >
               <Paperclip className="h-4 w-4" />
             </Button>
           </div>
+
+          {/* Emoji Picker */}
+          {showEmojiPicker && (
+            <div className="absolute bottom-full right-0 mb-2 z-50">
+              <EmojiPicker
+                onEmojiClick={handleEmojiClick}
+                width={320}
+                height={400}
+                searchPlaceholder="Rechercher un emoji..."
+                previewConfig={{ showPreview: false }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Bouton d'envoi */}

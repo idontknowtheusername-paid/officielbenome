@@ -43,55 +43,100 @@ export const messageService = {
         return [];
       }
 
-      // ÉTAPE 2: Enrichir chaque conversation
-      const enrichedConversations = await Promise.all(
-        conversations.map(async (conv) => {
-          try {
-            // Récupérer les données des participants
-            const [participant1, participant2] = await Promise.all([
-              supabase.from('users').select('id, first_name, last_name, profile_image').eq('id', conv.participant1_id).single(),
-              supabase.from('users').select('id, first_name, last_name, profile_image').eq('id', conv.participant2_id).single()
-            ]);
+      // ÉTAPE 2: Collecter tous les IDs pour batch queries (optimisation N+1)
+      const userIds = new Set();
+      const listingIds = new Set();
+      const conversationIds = [];
 
-            // Récupérer les données de l'annonce si elle existe
-            let listing = null;
-            if (conv.listing_id) {
-              const { data: listingData } = await supabase
-                .from('listings')
-                .select('id, title, price, images')
-                .eq('id', conv.listing_id)
-                .single();
-              listing = listingData;
-            }
+      conversations.forEach(conv => {
+        userIds.add(conv.participant1_id);
+        userIds.add(conv.participant2_id);
+        if (conv.listing_id) listingIds.add(conv.listing_id);
+        conversationIds.push(conv.id);
+      });
 
-            // Récupérer les derniers messages
-            const { data: messages } = await supabase
-              .from('messages')
-              .select('id, content, created_at, is_read, sender_id, message_type')
-              .eq('conversation_id', conv.id)
-              .order('created_at', { ascending: false })
-              .limit(10);
+      logger.log('🔍 Batch queries - Users:', userIds.size, 'Listings:', listingIds.size, 'Conversations:', conversationIds.length);
 
-            return {
-              ...conv,
-              participant1: participant1.data,
-              participant2: participant2.data,
-              listing: listing,
-              messages: messages || []
-            };
-          } catch (error) {
-            logger.error('❌ Erreur enrichissement conversation:', conv.id, error);
-            // Retourner la conversation de base en cas d'erreur
-            return {
-              ...conv,
-              participant1: { id: conv.participant1_id, first_name: 'Utilisateur', last_name: 'Inconnu' },
-              participant2: { id: conv.participant2_id, first_name: 'Utilisateur', last_name: 'Inconnu' },
-              listing: null,
-              messages: []
-            };
-          }
-        })
-      );
+      // ÉTAPE 3: Exécuter les batch queries (4 requêtes au lieu de 30-40)
+      const [usersResult, listingsResult, messagesResult] = await Promise.all([
+        // Récupérer tous les utilisateurs en une seule requête
+        supabase
+          .from('users')
+          .select('id, first_name, last_name, profile_image')
+          .in('id', Array.from(userIds)),
+        
+        // Récupérer tous les listings en une seule requête
+        listingIds.size > 0 
+          ? supabase
+              .from('listings')
+              .select('id, title, price, images')
+              .in('id', Array.from(listingIds))
+          : Promise.resolve({ data: [], error: null }),
+        
+        // Récupérer tous les messages en une seule requête
+        supabase
+          .from('messages')
+          .select('id, content, created_at, is_read, sender_id, message_type, conversation_id')
+          .in('conversation_id', conversationIds)
+          .order('created_at', { ascending: false })
+      ]);
+
+      if (usersResult.error) {
+        logger.error('❌ Erreur récupération users:', usersResult.error);
+      }
+      if (listingsResult.error) {
+        logger.error('❌ Erreur récupération listings:', listingsResult.error);
+      }
+      if (messagesResult.error) {
+        logger.error('❌ Erreur récupération messages:', messagesResult.error);
+      }
+
+      const users = usersResult.data || [];
+      const listings = listingsResult.data || [];
+      const allMessages = messagesResult.data || [];
+
+      logger.log('✅ Batch queries réussies - Users:', users.length, 'Listings:', listings.length, 'Messages:', allMessages.length);
+
+      // ÉTAPE 4: Mapper les données (optimisé avec Map pour O(1) lookup)
+      const usersMap = new Map(users.map(u => [u.id, u]));
+      const listingsMap = new Map(listings.map(l => [l.id, l]));
+      
+      // Grouper les messages par conversation
+      const messagesByConv = new Map();
+      allMessages.forEach(msg => {
+        if (!messagesByConv.has(msg.conversation_id)) {
+          messagesByConv.set(msg.conversation_id, []);
+        }
+        messagesByConv.get(msg.conversation_id).push(msg);
+      });
+
+      // ÉTAPE 5: Enrichir les conversations (une seule boucle, pas de requêtes)
+      const enrichedConversations = conversations.map(conv => {
+        const participant1 = usersMap.get(conv.participant1_id) || {
+          id: conv.participant1_id,
+          first_name: 'Utilisateur',
+          last_name: 'Inconnu',
+          profile_image: null
+        };
+
+        const participant2 = usersMap.get(conv.participant2_id) || {
+          id: conv.participant2_id,
+          first_name: 'Utilisateur',
+          last_name: 'Inconnu',
+          profile_image: null
+        };
+
+        const listing = conv.listing_id ? listingsMap.get(conv.listing_id) : null;
+        const messages = (messagesByConv.get(conv.id) || []).slice(0, 10); // Limiter à 10 derniers messages
+
+        return {
+          ...conv,
+          participant1,
+          participant2,
+          listing,
+          messages
+        };
+      });
 
       logger.log('✅ Conversations enrichies récupérées:', enrichedConversations.length);
       return enrichedConversations;
@@ -101,15 +146,17 @@ export const messageService = {
     }
   },
 
-  // Récupérer les messages d'une conversation
-  getConversationMessages: async (conversationId) => {
+  // Récupérer les messages d'une conversation avec pagination
+  getConversationMessages: async (conversationId, options = {}) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      logger.log('🔍 Récupération des messages pour la conversation:', conversationId);
+      const { from = 0, to = 49 } = options; // Par défaut, 50 messages
 
-      const { data, error } = await supabase
+      logger.log('🔍 Récupération des messages pour la conversation:', conversationId, 'Range:', from, '-', to);
+
+      let query = supabase
         .from('messages')
         .select(`
           id,
@@ -123,12 +170,19 @@ export const messageService = {
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
+      // Appliquer la pagination si spécifiée
+      if (from !== undefined && to !== undefined) {
+        query = query.range(from, to);
+      }
+
+      const { data, error } = await query;
+
       if (error) {
         logger.error('❌ Erreur récupération messages:', error);
         throw error;
       }
 
-      logger.log('✅ Messages récupérés:', data?.length || 0);
+      logger.log('✅ Messages récupérés:', data?.length || 0, 'sur range', from, '-', to);
       return data || [];
     } catch (error) {
       logger.error('❌ Erreur dans getConversationMessages:', error);
@@ -202,20 +256,24 @@ export const messageService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      logger.log('🔍 Marquage des messages comme lus:', conversationId);
+      logger.log('🔍 Marquage des messages comme lus pour conversation:', conversationId);
 
-      const { error } = await supabase
+      // CORRECTION: Marquer comme lus uniquement les messages REÇUS (receiver_id = user.id)
+      const { data, error } = await supabase
         .from('messages')
         .update({ is_read: true })
         .eq('conversation_id', conversationId)
-        .neq('sender_id', user.id);
+        .eq('receiver_id', user.id)
+        .eq('is_read', false)
+        .select('id');
 
       if (error) {
         logger.error('❌ Erreur marquage messages:', error);
         throw error;
       }
 
-      logger.log('✅ Messages marqués comme lus');
+      const markedCount = data?.length || 0;
+      logger.log(`✅ ${markedCount} message(s) marqué(s) comme lu(s) - Badge "Nouveau" va disparaître`);
       return true;
     } catch (error) {
       logger.error('❌ Erreur dans markMessagesAsRead:', error);
@@ -319,6 +377,66 @@ export const messageService = {
       return true;
     } catch (error) {
       logger.error('❌ Erreur dans deleteMessage:', error);
+      throw error;
+    }
+  },
+
+  // Basculer le statut favori d'une conversation
+  toggleConversationStar: async (conversationId, starred) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
+
+      logger.log('🔍 Basculer favori conversation:', conversationId, 'vers', starred);
+
+      const { error } = await supabase
+        .from('conversations')
+        .update({ 
+          starred: starred,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', conversationId)
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`);
+
+      if (error) {
+        logger.error('❌ Erreur basculer favori:', error);
+        throw error;
+      }
+
+      logger.log('✅ Statut favori mis à jour:', starred ? 'Ajouté' : 'Retiré');
+      return true;
+    } catch (error) {
+      logger.error('❌ Erreur dans toggleConversationStar:', error);
+      throw error;
+    }
+  },
+
+  // Archiver/Désarchiver une conversation
+  archiveConversation: async (conversationId, archived = true) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilisateur non connecté');
+
+      logger.log('🔍 Archiver conversation:', conversationId, 'vers', archived);
+
+      const { error } = await supabase
+        .from('conversations')
+        .update({ 
+          is_archived: archived,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', conversationId)
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`);
+
+      if (error) {
+        logger.error('❌ Erreur archiver conversation:', error);
+        throw error;
+      }
+
+      logger.log('✅ Conversation archivée:', archived ? 'Oui' : 'Non');
+      return true;
+    } catch (error) {
+      logger.error('❌ Erreur dans archiveConversation:', error);
       throw error;
     }
   }

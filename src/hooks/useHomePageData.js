@@ -94,7 +94,11 @@ export const useHomePageData = () => {
       return listings;
     } catch (error) {
       console.error('❌ Erreur lors du chargement des annonces hero:', error);
-      setError(prev => ({ ...prev, hero: error?.message || 'Erreur lors du chargement des annonces hero' }));
+      const errorMessage = typeof error === 'string' ? error : 
+                          error?.message || 
+                          error?.error?.message ||
+                          'Erreur lors du chargement des annonces hero';
+      setError(prev => ({ ...prev, hero: errorMessage }));
       return [];
     } finally {
       setLoading(prev => ({ ...prev, hero: false }));
@@ -116,7 +120,11 @@ export const useHomePageData = () => {
       return data || [];
     } catch (error) {
       console.error('❌ Erreur lors du chargement des annonces populaires:', error);
-      setError(prev => ({ ...prev, popular: error?.message || 'Erreur lors du chargement des annonces populaires' }));
+      const errorMessage = typeof error === 'string' ? error : 
+                          error?.message || 
+                          error?.error?.message ||
+                          'Erreur lors du chargement des annonces populaires';
+      setError(prev => ({ ...prev, popular: errorMessage }));
       return [];
     } finally {
       setLoading(prev => ({ ...prev, popular: false }));
@@ -138,7 +146,11 @@ export const useHomePageData = () => {
       return data?.data || [];
     } catch (error) {
       console.error('❌ Erreur lors du chargement des annonces premium:', error);
-      setError(prev => ({ ...prev, premium: error?.message || 'Erreur lors du chargement des annonces premium' }));
+      const errorMessage = typeof error === 'string' ? error : 
+                          error?.message || 
+                          error?.error?.message ||
+                          'Erreur lors du chargement des annonces premium';
+      setError(prev => ({ ...prev, premium: errorMessage }));
       return [];
     } finally {
       setLoading(prev => ({ ...prev, premium: false }));

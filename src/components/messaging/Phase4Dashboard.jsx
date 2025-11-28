@@ -20,7 +20,6 @@ import { useToast } from '@/components/ui/use-toast';
 // Import des composants de la Phase 4
 import AccessibilityEnhancer from './AccessibilityEnhancer';
 import PerformanceOptimizer from './PerformanceOptimizer';
-import PerformanceTester from './PerformanceTester';
 import DeploymentManager from './DeploymentManager';
 
 /**
@@ -384,7 +383,9 @@ const Phase4Dashboard = ({
           
           <PerformanceOptimizer>
             <div className="optimization-content">
-              <PerformanceTester onTestComplete={handlePerformanceTestComplete} />
+              <div className="p-4 text-center text-muted-foreground">
+                <p>Tests de performance disponibles via les outils de développement du navigateur</p>
+              </div>
             </div>
           </PerformanceOptimizer>
           

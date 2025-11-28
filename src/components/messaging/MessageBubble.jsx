@@ -107,10 +107,10 @@ const MessageBubble = memo(({
         ${isOwn 
           ? 'bg-primary text-primary-foreground' 
           : isAssistantMessage
-            ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800 border border-blue-200'
+          ? 'bg-gradient-to-r from-primary/20 to-secondary/20 text-foreground border border-primary/30'
             : 'bg-muted text-muted-foreground'
         }
-        ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
+        ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}
         ${isSelectionMode ? 'hover:ring-2 hover:ring-primary/50' : ''}
       `}>
         {/* Indicateur de sélection */}
@@ -123,7 +123,7 @@ const MessageBubble = memo(({
         {/* En-tête du message */}
         <div className="flex items-center space-x-2 mb-1">
           {!isOwn && isAssistantMessage && (
-            <span className="text-xs font-medium text-blue-600">
+            <span className="text-xs font-medium text-primary">
               🤖 AIDA
             </span>
           )}

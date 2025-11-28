@@ -1,17 +1,30 @@
+# MaxiMarket - Robots.txt
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /profile/
+Disallow: /messages/
+Disallow: /*.json$
 
-# Sitemap
+# Sitemaps
 Sitemap: https://maxiimarket.com/sitemap.xml
 
-# Disallow admin areas
+# Crawl-delay
+Crawl-delay: 1
+
+# Specific bots
+User-agent: Googlebot
+Allow: /
 Disallow: /admin/
-Disallow: /auth/
 Disallow: /api/
 
-# Allow important pages
-Allow: /marketplace/
-Allow: /contact
-Allow: /about
-Allow: /terms
-Allow: /privacy
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Slurp
+Allow: /
+Disallow: /admin/
+Disallow: /api/

@@ -3,6 +3,33 @@
   "installCommand": "npm install --legacy-peer-deps --force",
   "framework": "vite",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/marketplace/automobile",
+      "destination": "/automobile",
+      "permanent": true
+    },
+    {
+      "source": "/marketplace/immobilier",
+      "destination": "/immobilier",
+      "permanent": true
+    },
+    {
+      "source": "/marketplace/services",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/about",
+      "destination": "/a-propos",
+      "permanent": true
+    },
+    {
+      "source": "/terms",
+      "destination": "/conditions-utilisation",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ],

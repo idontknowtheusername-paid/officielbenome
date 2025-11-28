@@ -235,7 +235,9 @@ const AutomobilePage = () => {
           >
             <AlertCircle className="h-12 w-12 text-destructive mb-4" />
             <p className="text-lg text-destructive mb-2">Erreur lors du chargement</p>
-            <p className="text-muted-foreground mb-4">{error}</p>
+            <p className="text-muted-foreground mb-4">
+              {typeof error === 'string' ? error : error?.message || 'Une erreur est survenue'}
+            </p>
             <div className="flex gap-3">
               <Button onClick={() => window.location.reload()} className="mt-4">
                 Recharger la page

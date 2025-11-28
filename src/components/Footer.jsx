@@ -100,8 +100,12 @@ const Footer = () => {
         <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 pt-8 pb-6">
           {/* Logo & Newsletter */}
           <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 pr-4">
-            <Link to="/" className="flex items-center space-x-2 mb-4">
-              <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
+            <Link to="/" className="flex items-center mb-4">
+              <img
+                src="/logo.png"
+                alt="MaxiMarket Logo"
+                className="h-16 md:h-20 w-auto object-contain transition-all duration-300"
+              />
             </Link>
             <p className="text-muted-foreground text-sm mb-4">
               La plateforme N°1 en Afrique de l'Ouest pour l'immobilier, l'automobile, les services et bien plus.
@@ -156,8 +160,12 @@ const Footer = () => {
         <div className="md:hidden">
           {/* Logo et description - Mobile */}
           <div className="pt-6 pb-4 text-center">
-            <Link to="/" className="flex items-center justify-center space-x-2 mb-3">
-              <span className="text-xl font-bold gradient-text">{personalData.siteName}</span>
+            <Link to="/" className="flex items-center justify-center mb-3">
+              <img
+                src="/logo.png"
+                alt="MaxiMarket Logo"
+                className="h-14 w-auto object-contain transition-all duration-300"
+              />
             </Link>
             <p className="text-muted-foreground text-sm mb-3">
               La plateforme N°1 en Afrique de l'Ouest

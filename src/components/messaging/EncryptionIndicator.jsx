@@ -7,16 +7,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { encryptionService } from '@/services';
+// import { encryptionService } from '@/services'; // Désactivé temporairement
 import { MESSAGING_CONFIG } from '@/config/messaging';
 
 /**
  * Indicateur de statut d'encryption pour les conversations
+ * TEMPORAIREMENT DÉSACTIVÉ - Encryption en cours de correction
  */
 const EncryptionIndicator = ({ conversationId, variant = 'badge' }) => {
-  const isEncryptionEnabled = MESSAGING_CONFIG.SECURITY.ENABLE_ENCRYPTION;
-  const isSupported = encryptionService.isSupported();
-  const isActive = isEncryptionEnabled && isSupported;
+  const isEncryptionEnabled = false; // MESSAGING_CONFIG.SECURITY.ENABLE_ENCRYPTION;
+  const isSupported = false; // encryptionService.isSupported();
+  const isActive = false; // isEncryptionEnabled && isSupported;
 
   // Variante inline (petit icône)
   if (variant === 'inline') {

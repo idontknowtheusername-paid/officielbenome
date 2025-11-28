@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, Search, Zap, MessageSquare, LogOut } from 'lucide-react';
+import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, MessageSquare, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { personalData } from '@/lib/personalData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,7 +29,7 @@ const Navbar = () => {
   }), []);
 
   // Optimisation : Mémoriser les classes CSS
-  const navLinkClasses = useMemo(() => "text-muted-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium flex items-center", []);
+  const navLinkClasses = useMemo(() => "text-muted-foreground hover:text-primary transition-colors px-2 lg:px-3 py-2 rounded-md text-sm lg:text-base font-medium flex items-center", []);
   const activeNavLinkClasses = useMemo(() => "text-primary bg-primary/10", []);
 
   // Fonction de déconnexion
@@ -64,20 +64,27 @@ const Navbar = () => {
 
   // Optimisation : Mémoriser le logo pour éviter les re-renders
   const Logo = useMemo(() => (
-    <Link to="/" className="flex items-center space-x-2" aria-label="Accueil MaxiMarket">
-      <span className="text-2xl font-bold gradient-text">{personalData.siteName}</span>
+    <Link to="/" className="flex items-center" aria-label="Accueil MaxiMarket">
+      <img
+        src={`/logo.png?v=${Date.now()}`}
+        alt="MaxiMarket Logo"
+        className="h-16 md:h-20 w-auto object-contain transition-all duration-300"
+      />
     </Link>
   ), []);
 
   return (
     <header role="banner" aria-label="Navigation principale">
       <nav 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isOpen ? 'bg-background/95 shadow-lg backdrop-blur-md' : 'bg-transparent'}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isOpen
+          ? 'bg-gray-900/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-lg border-b border-gray-700/50'
+          : 'bg-gray-900/60 dark:bg-gray-800/60 backdrop-blur-md'
+          }`}
         role="navigation"
         aria-label="Menu principal"
       >
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-20 md:h-24">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -87,7 +94,7 @@ const Navbar = () => {
             </motion.div>
 
             {/* Desktop Navigation */}
-            <nav role="navigation" aria-label="Navigation desktop" className="hidden md:flex items-center space-x-2 lg:space-x-4">
+            <nav role="navigation" aria-label="Navigation desktop" className="hidden md:flex items-center space-x-1 lg:space-x-3">
               {navItems.map((item) => (
                 <NavLink
                   key={item.name}
@@ -101,7 +108,7 @@ const Navbar = () => {
               ))}
             </nav>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 lg:space-x-3">
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -110,15 +117,6 @@ const Navbar = () => {
                 type="button"
               >
                 {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="md:hidden" 
-                aria-label="Rechercher"
-                type="button"
-              >
-                 <Search className="h-5 w-5" />
               </Button>
               {!user && (
                 <>
@@ -179,7 +177,7 @@ const Navbar = () => {
             initial="closed"
             animate="open"
             exit="closed"
-            className="md:hidden fixed inset-0 top-20 bg-background/95 backdrop-blur-md z-40 p-4 space-y-3 border-t border-border"
+            className="md:hidden fixed inset-0 top-20 md:top-24 bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-lg z-40 p-4 space-y-3 border-t border-gray-700/50"
             role="navigation"
             aria-label="Menu mobile"
           >

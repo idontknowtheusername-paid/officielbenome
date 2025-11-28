@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+  
+  <!-- Page principale du blog -->
+  <url>
+    <loc>https://maxiimarket.com/blog</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- 
+    Articles de blog (à générer dynamiquement)
+    
+    Exemple de structure pour un article :
+    <url>
+      <loc>https://maxiimarket.com/blog/[slug]</loc>
+      <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.6</priority>
+      <mobile:mobile/>
+      <news:news>
+        <news:publication>
+          <news:name>MaxiMarket Blog</news:name>
+          <news:language>fr</news:language>
+        </news:publication>
+        <news:publication_date>2025-11-28T00:00:00+00:00</news:publication_date>
+        <news:title>Titre de l'article</news:title>
+        <news:keywords>immobilier, afrique, marketplace</news:keywords>
+      </news:news>
+    </url>
+  -->
+  
+  <!-- Catégories de blog -->
+  <url>
+    <loc>https://maxiimarket.com/blog?category=immobilier</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/blog?category=automobile</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/blog?category=conseils</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+  </url>
+
+</urlset>
