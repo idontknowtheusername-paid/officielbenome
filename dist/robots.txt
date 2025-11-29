@@ -8,6 +8,7 @@ Disallow: /messages/
 Disallow: /*.json$
 
 # Sitemaps
+Sitemap: https://maxiimarket.com/sitemap-index.xml
 Sitemap: https://maxiimarket.com/sitemap.xml
 
 # Crawl-delay

@@ -12,6 +12,12 @@ const MainLayout = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
+  // Vérifier si on est sur une page de profil, boost ou transactions
+  const isProfilePage = location.pathname.startsWith('/profile');
+  const isBoostPage = location.pathname.startsWith('/boost');
+  const isTransactionsPage = location.pathname.startsWith('/transactions');
+  const shouldHideFooter = isProfilePage || isBoostPage || isTransactionsPage;
+
   // Optimisation : Mémoriser la fonction de scroll pour éviter les re-créations
   const handleScroll = useCallback(() => {
     setScrolled(window.scrollY > 20);
@@ -71,7 +77,7 @@ const MainLayout = () => {
         </MobilePaddingAdjuster>
       </main>
       
-      <Footer />
+      {!shouldHideFooter && <Footer />}
       <BottomNavigation />
     </div>
   );

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+  
+  <!-- 
+    Ce fichier devrait être généré dynamiquement par un script
+    qui récupère toutes les annonces actives de la base de données
+    
+    Exemple de structure pour chaque annonce :
+  -->
+  
+  <!-- Exemple d'annonce avec images -->
+  <!--
+  <url>
+    <loc>https://maxiimarket.com/annonce/[ID]</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+    <image:image>
+      <image:loc>https://maxiimarket.com/images/listing-[ID]-1.jpg</image:loc>
+      <image:title>Titre de l'annonce</image:title>
+      <image:caption>Description de l'image</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://maxiimarket.com/images/listing-[ID]-2.jpg</image:loc>
+      <image:title>Titre de l'annonce</image:title>
+    </image:image>
+  </url>
+  -->
+  
+  <!-- 
+    IMPORTANT : Ce fichier doit être généré automatiquement
+    Voir le script : scripts/generate-sitemap.js
+    
+    Limite : 50,000 URLs par fichier
+    Si plus de 50,000 annonces, créer plusieurs fichiers :
+    - sitemap-listings-1.xml
+    - sitemap-listings-2.xml
+    - etc.
+  -->
+
+</urlset>

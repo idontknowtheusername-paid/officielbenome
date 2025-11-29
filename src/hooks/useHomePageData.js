@@ -112,7 +112,7 @@ export const useHomePageData = () => {
       setError(prev => ({ ...prev, popular: null }));
       
       console.log('🔄 Chargement des annonces populaires...');
-      const data = await cachedListingService.getTopViewedListings(6);
+      const data = await cachedListingService.getTopViewedListings(10);
       
       setPopularListings(data || []);
       console.log('✅ Annonces populaires chargées');

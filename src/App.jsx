@@ -48,6 +48,8 @@ import FavoritesPage from '@/pages/FavoritesPage';
 import BoostListingPage from '@/pages/BoostListingPage';
 import PaymentProcessPage from '@/pages/PaymentProcessPage';
 import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
+import BoostPage from '@/pages/BoostPage';
+import UserTransactionsPage from '@/pages/UserTransactionsPage';
 import FedaPayTestPage from '@/pages/FedaPayTestPage';
 import MobileTestPage from '@/pages/MobileTestPage';
 
@@ -238,6 +240,26 @@ function App() {
                     } 
                   />
                   
+                  {/* Boost - Liste des annonces à booster */}
+                  <Route
+                    path="boost"
+                    element={
+                      <ProtectedRoute>
+                        <BoostPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Transactions utilisateur */}
+                  <Route
+                    path="transactions"
+                    element={
+                      <ProtectedRoute>
+                        <UserTransactionsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Protected Admin Routes - Lazy Loading */}
                   <Route path="admin" element={
                     <Suspense fallback={<AdminLoadingSpinner />}>

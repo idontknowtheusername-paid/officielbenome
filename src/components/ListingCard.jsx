@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Heart, Eye, Phone, Mail, Calendar } from 'lucide-react';
+import { MapPin, Heart, Eye, Phone, Mail, Calendar, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +11,7 @@ import BoostStatus from '@/components/BoostStatus';
 import { cn } from '@/lib/utils';
 
 
-const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
+const ListingCard = ({ listing, onToggleFavorite, showActions = true, showNewBadge = false }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { images } = useListingImages(listing);
@@ -140,11 +140,18 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true }) => {
         {/* Badges - Plus compacts sur mobile */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 sm:flex-row sm:gap-2 items-start">
           <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="bg-black/70 text-white text-xs px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 inline-flex items-center whitespace-nowrap">
-              <span className="inline-flex items-center">
-                {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
-              </span>
-            </Badge>
+            {showNewBadge ? (
+              <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0 text-xs px-2 py-1 inline-flex items-center whitespace-nowrap shadow-lg shadow-cyan-500/50 animate-pulse">
+                <Clock className="h-3 w-3 mr-1" />
+                Nouveau
+              </Badge>
+            ) : (
+                <Badge variant="secondary" className="bg-black/70 text-white text-xs px-1 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 inline-flex items-center whitespace-nowrap">
+                  <span className="inline-flex items-center">
+                    {getCategoryIcon(listing.category)} {listing.category === 'real_estate' ? 'Immobilier' : listing.category === 'automobile' ? 'Automobile' : listing.category === 'services' ? 'Services' : 'Marketplace'}
+                  </span>
+                </Badge>
+            )}
             {/*
               Masquer le badge "Approuvé" sur mobile uniquement pour les annonces premium.
               Sur mobile (taille < sm) : si l'annonce est premium et le status est 'approved', ne pas afficher le badge.

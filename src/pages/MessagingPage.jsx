@@ -464,10 +464,7 @@ const MessagingPageContent = () => {
 
         logger.log('🔄 Nouvelle tentative d\'envoi dans 2s...');
 
-        toast({
-          title: "Nouvelle tentative...",
-          description: `Tentative ${retryCount + 2}/${maxRetries + 1}`,
-        });
+        // Retry silencieux - pas de notification
 
         setTimeout(() => {
           handleSendMessage(messageContent, retryCount + 1);
@@ -534,10 +531,7 @@ const MessagingPageContent = () => {
     setAudioCallTarget(otherParticipant);
     setShowAudioCall(true);
     
-    toast({
-      title: "Appel audio",
-      description: `Initialisation de l'appel avec ${otherParticipant.first_name || otherParticipant.last_name || 'l\'utilisateur'}`,
-    });
+    // Interface d'appel s'affiche - pas de notification nécessaire
   }, [selectedConversation, user, toast]);
 
   // Fermer l'interface d'appel - Optimisé avec useCallback
@@ -765,8 +759,9 @@ const MessagingPageContent = () => {
       clearMessageSelection();
       
       toast({
+        variant: "success",
         title: "Messages supprimés",
-        description: `${selectedMessages.size} message(s) supprimé(s) avec succès`,
+        description: `${selectedMessages.size} message${selectedMessages.size > 1 ? 's' : ''} supprimé${selectedMessages.size > 1 ? 's' : ''}`,
       });
     } catch (error) {
       toast({

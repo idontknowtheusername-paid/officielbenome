@@ -60,10 +60,6 @@ const CreateListingPage = () => {
         };
         
         setFormData(preparedData);
-        toast({
-          title: "Annonce chargée",
-          description: "Les données de l'annonce ont été chargées avec succès.",
-        });
       }
     } catch (error) {
       console.error('Erreur lors du chargement de l\'annonce:', error);
@@ -82,6 +78,9 @@ const CreateListingPage = () => {
     if (id) {
       setIsEditing(true);
       loadExistingListing(id);
+    } else {
+      setIsEditing(false);
+      setFormData({});
     }
   }, [id]);
 
@@ -330,6 +329,7 @@ const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=$
                       onDataChange={handleFormDataChange}
                       currentStep={currentStep}
                       onStepChange={setCurrentStep}
+                      initialData={isEditing ? formData : null}
                     />
                   </CardContent>
                 </Card>

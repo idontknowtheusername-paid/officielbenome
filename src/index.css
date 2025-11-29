@@ -310,3 +310,12 @@ html {
   border-left-color: hsl(var(--primary));
   color: hsl(var(--muted-foreground));
 }
+
+/* Hide scrollbar for mobile tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -212,10 +212,7 @@ const PaymentProcessPage = () => {
         link.click();
         document.body.removeChild(link);
         
-        toast({
-          title: 'Reçu téléchargé',
-          description: 'Le reçu a été téléchargé avec succès.',
-        });
+        // Téléchargement évident - pas de notification
       }
     } catch (err) {
       toast({

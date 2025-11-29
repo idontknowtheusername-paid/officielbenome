@@ -28,12 +28,38 @@ export const userService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Utilisateur non connecté');
 
+    // Mise à jour dans la table users
     const { data, error } = await supabase
       .from('users')
-      .update(updates)
+      .update({
+        first_name: updates.firstName,
+        last_name: updates.lastName,
+        phone_number: updates.phoneNumber,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', user.id)
       .select()
       .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Mettre à jour le mot de passe
+  updatePassword: async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Mettre à jour l'email
+  updateEmail: async (newEmail) => {
+    const { data, error } = await supabase.auth.updateUser({
+      email: newEmail
+    });
 
     if (error) throw error;
     return data;

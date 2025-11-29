@@ -34,29 +34,34 @@ const RegisterForm = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-auto p-4"
       >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <CardTitle>Inscription réussie</CardTitle>
-            </div>
-            <CardDescription>
+        <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
+          <CardHeader className="text-center space-y-2">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+              className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/50"
+            >
+              <CheckCircle2 className="h-8 w-8 text-white" />
+            </motion.div>
+            <CardTitle className="text-2xl font-bold text-white">Inscription réussie</CardTitle>
+            <CardDescription className="text-gray-300">
               Vérifiez votre email pour confirmer votre compte.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-gray-300 bg-white/5 p-4 rounded-lg border border-white/10">
               Nous avons envoyé un lien de confirmation à:
-              <div className="mt-1 font-medium text-foreground">{confirmation.email}</div>
+              <div className="mt-2 font-medium text-white text-base">{confirmation.email}</div>
             </div>
 
             {resendMessage && (
-              <div className="text-sm">
+              <div className="text-sm text-green-400 bg-green-500/10 p-3 rounded-lg border border-green-500/20">
                 {resendMessage}
               </div>
             )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               <Button
                 type="button"
                 onClick={async () => {
@@ -79,7 +84,7 @@ const RegisterForm = () => {
                   }
                 }}
                 disabled={isResending}
-                className="inline-flex items-center"
+                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg shadow-green-500/50"
               >
                 {isResending ? (
                   <>
@@ -98,16 +103,17 @@ const RegisterForm = () => {
                 type="button"
                 variant="outline"
                 onClick={() => setConfirmation({ shown: false, email: '' })}
+                className="w-full sm:w-auto bg-white/5 border-white/20 text-white hover:bg-white/10"
               >
                 Utiliser une autre adresse
               </Button>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col items-start gap-2">
-            <p className="text-sm text-muted-foreground">
+          <CardFooter className="flex flex-col items-start gap-2 border-t border-white/10 pt-6">
+            <p className="text-sm text-gray-300">
               Déjà confirmé ?
             </p>
-            <Link to="/connexion" className="text-primary hover:underline text-sm">
+            <Link to="/connexion" className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors">
               Se connecter
             </Link>
           </CardFooter>
@@ -123,22 +129,30 @@ const RegisterForm = () => {
       transition={{ duration: 0.5 }}
       className="w-full max-w-md mx-auto p-4"
     >
-      <Card>
-        <CardHeader>
-          <CardTitle>Inscription</CardTitle>
-          <CardDescription>Créez votre compte MaxiMarket</CardDescription>
+      <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
+        <CardHeader className="text-center space-y-2">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring" }}
+            className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/50"
+          >
+            <User className="h-8 w-8 text-white" />
+          </motion.div>
+          <CardTitle className="text-2xl font-bold text-white">Inscription</CardTitle>
+          <CardDescription className="text-gray-300">Créez votre compte MaxiMarket</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">Prénom</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="firstName" className="text-white font-medium">Prénom</Label>
+              <div className="relative group">
+                <User className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="firstName"
                   type="text"
                   placeholder="John"
-                  className="pl-10"
+                  className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:bg-white/10 focus:border-blue-400/50 transition-all"
                   {...register('firstName', {
                     required: 'Le prénom est requis',
                     minLength: {
@@ -149,19 +163,19 @@ const RegisterForm = () => {
                 />
               </div>
               {errors.firstName && (
-                <p className="text-sm text-destructive">{errors.firstName.message}</p>
+                <p className="text-sm text-red-400">{errors.firstName.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastName">Nom</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="lastName" className="text-white font-medium">Nom</Label>
+              <div className="relative group">
+                <User className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="lastName"
                   type="text"
                   placeholder="Doe"
-                  className="pl-10"
+                  className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:bg-white/10 focus:border-blue-400/50 transition-all"
                   {...register('lastName', {
                     required: 'Le nom est requis',
                     minLength: {
@@ -172,19 +186,19 @@ const RegisterForm = () => {
                 />
               </div>
               {errors.lastName && (
-                <p className="text-sm text-destructive">{errors.lastName.message}</p>
+                <p className="text-sm text-red-400">{errors.lastName.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="email" className="text-white font-medium">Email</Label>
+              <div className="relative group">
+                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="votre@email.com"
-                  className="pl-10"
+                  className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:bg-white/10 focus:border-blue-400/50 transition-all"
                   {...register('email', {
                     required: 'L\'email est requis',
                     pattern: {
@@ -195,19 +209,19 @@ const RegisterForm = () => {
                 />
               </div>
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p className="text-sm text-red-400">{errors.email.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Téléphone</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="phoneNumber" className="text-white font-medium">Téléphone</Label>
+              <div className="relative group">
+                <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="phoneNumber"
                   type="tel"
                   placeholder="+221 77 123 45 67"
-                  className="pl-10"
+                  className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:bg-white/10 focus:border-blue-400/50 transition-all"
                   {...register('phoneNumber', {
                     required: 'Le numéro de téléphone est requis',
                     pattern: {
@@ -218,19 +232,19 @@ const RegisterForm = () => {
                 />
               </div>
               {errors.phoneNumber && (
-                <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>
+                <p className="text-sm text-red-400">{errors.phoneNumber.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="password" className="text-white font-medium">Mot de passe</Label>
+              <div className="relative group">
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
-                  className="pl-10"
+                  className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:bg-white/10 focus:border-blue-400/50 transition-all"
                   {...register('password', {
                     required: 'Le mot de passe est requis',
                     minLength: {
@@ -245,19 +259,19 @@ const RegisterForm = () => {
                 />
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-sm text-red-400">{errors.password.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="confirmPassword" className="text-white font-medium">Confirmer le mot de passe</Label>
+              <div className="relative group">
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="confirmPassword"
                   type="password"
                   placeholder="••••••••"
-                  className="pl-10"
+                  className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:bg-white/10 focus:border-blue-400/50 transition-all"
                   {...register('confirmPassword', {
                     required: 'Veuillez confirmer votre mot de passe',
                     validate: value =>
@@ -266,18 +280,18 @@ const RegisterForm = () => {
                 />
               </div>
               {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+                <p className="text-sm text-red-400">{errors.confirmPassword.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-12 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold shadow-lg shadow-blue-500/50 transition-all mt-6"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Inscription en cours...
                 </>
               ) : (
@@ -286,10 +300,10 @@ const RegisterForm = () => {
             </Button>
           </form>
         </CardContent>
-        <CardFooter>
-          <p className="text-sm text-muted-foreground">
+        <CardFooter className="border-t border-white/10 pt-6">
+          <p className="text-sm text-gray-300">
             Déjà un compte ?{' '}
-            <Link to="/connexion" className="text-primary hover:underline">
+            <Link to="/connexion" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
               Se connecter
             </Link>
           </p>

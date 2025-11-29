@@ -159,44 +159,43 @@ const ListingCard = ({
           </div>
 
           {showActions && (
-            <div className="flex space-x-2 pt-2 border-t">
+            <div className="flex flex-wrap gap-2 pt-2 border-t">
               <Button 
-                size="sm" 
                 variant="outline" 
-                className="flex-1"
+                className="flex-1 min-w-[120px] min-h-[44px]"
                 onClick={() => onEdit?.(listing)}
               >
-                <Edit className="h-4 w-4 mr-1" />
-                Modifier
+                <Edit className="h-5 w-5 sm:h-4 sm:w-4 mr-1" />
+                <span className="text-sm">Modifier</span>
               </Button>
               
               {listing.status === 'active' && (
                 <Button 
-                  size="sm" 
                   variant="outline"
                   onClick={() => onBoost?.(listing)}
-                  className="flex-1"
+                  className="flex-1 min-w-[120px] min-h-[44px]"
                 >
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  Booster
+                  <TrendingUp className="h-5 w-5 sm:h-4 sm:w-4 mr-1" />
+                  <span className="text-sm">Booster</span>
                 </Button>
               )}
               
               <Button 
-                size="sm" 
                 variant="outline"
                 onClick={() => onRefresh?.(listing)}
+                className="min-h-[44px] min-w-[44px]"
+                aria-label="Actualiser"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="h-5 w-5 sm:h-4 sm:w-4" />
               </Button>
               
               <Button 
-                size="sm" 
                 variant="outline"
                 onClick={() => onDelete?.(listing)}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-600 hover:text-red-700 min-h-[44px] min-w-[44px]"
+                aria-label="Supprimer"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
               </Button>
             </div>
           )}

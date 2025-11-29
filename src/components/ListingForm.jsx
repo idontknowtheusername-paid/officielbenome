@@ -38,12 +38,14 @@ const getCategoryValue = (cat) => {
   return categoryMap[cat] || '';
 };
 
-const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onStepChange }) => {
+const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onStepChange, initialData = null }) => {
   const { toast } = useToast();
-  const [form, setForm] = useState({
-    ...DEFAULT_FORM,
-    category: category ? getCategoryValue(category) : ''
-  });
+  const [form, setForm] = useState(
+    initialData || {
+      ...DEFAULT_FORM,
+      category: category ? getCategoryValue(category) : ''
+    }
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
@@ -53,6 +55,16 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   useEffect(() => {
     setActiveStep(currentStep);
   }, [currentStep]);
+
+  // Charger les données initiales en mode édition
+  useEffect(() => {
+    if (initialData) {
+      setForm(prevForm => ({
+        ...prevForm,
+        ...initialData
+      }));
+    }
+  }, [initialData]);
 
   // Ajout des donnees pays/villes
   const COUNTRY_CITY_OPTIONS = [

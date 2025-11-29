@@ -8,12 +8,14 @@ export const personalData = {
   contactEmail: "contact@maxiimarket.com",
   supportEmail: "support@maxiimarket.com",
   infoEmail: "info@maxiimarket.com",
-  phone: "+221 77 123 4567",
-  address: "Dakar, Sénégal",
+  phone: "+2290152185813",
+  address: "Parakou, Benin",
   socials: {
     facebook: "https://facebook.com/MaxiMarketAfrique",
     instagram: "https://instagram.com/maximarket_afrique",
     tiktok: "https://tiktok.com/@maximarket_afrique",
+    twitter: "https://twitter.com/maximarket",
+    whatsapp: "https://wa.me/2290152185813",
   },
   skills: [
     // You can repurpose this for something else if needed, or remove

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+  
+  <!-- Page d'accueil -->
+  <url>
+    <loc>https://maxiimarket.com/</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- Pages statiques importantes -->
+  <url>
+    <loc>https://maxiimarket.com/a-propos</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/contact</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/aide</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/faq</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/carrieres</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/presse</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- Pages légales -->
+  <url>
+    <loc>https://maxiimarket.com/politique-confidentialite</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/conditions-utilisation</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Authentification -->
+  <url>
+    <loc>https://maxiimarket.com/connexion</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <url>
+    <loc>https://maxiimarket.com/inscription</loc>
+    <lastmod>2025-11-28T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
+
+</urlset>

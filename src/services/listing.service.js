@@ -650,7 +650,7 @@ export const listingService = {
 
   // Recuperer le top N des annonces les plus vues (populaires)
   // EXCLUT les annonces premium (is_featured et is_boosted) pour éviter le double affichage
-  getTopViewedListings: async (limit = 6) => {
+  getTopViewedListings: async (limit = 10) => {
     console.log('🔍 getTopViewedListings appelé avec limit:', limit);
     console.log('🔍 isSupabaseConfigured:', isSupabaseConfigured);
     

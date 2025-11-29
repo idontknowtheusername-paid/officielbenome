@@ -7,15 +7,14 @@ import {
   Plus, 
   MessageSquare, 
   Heart, 
-  Settings, 
-  TrendingUp,
+  Zap,
+  CreditCard,
   Eye,
+  Star,
   Users,
   Bell,
-  Star,
   Calendar,
   MapPin,
-  CreditCard,
   Shield,
   HelpCircle
 } from 'lucide-react';
@@ -50,21 +49,21 @@ const QuickActions = ({ stats = {} }) => {
       badge: stats.totalFavorites || 0
     },
     {
-      id: 'analytics',
-      title: 'Analytics',
-      description: 'Voir vos statistiques',
-      icon: TrendingUp,
-      color: 'from-purple-500 to-purple-600',
-      href: '/admin/analytics', // Redirige vers admin analytics
+      id: 'boost',
+      title: 'Booster',
+      description: 'Booster vos annonces',
+      icon: Zap,
+      color: 'from-yellow-500 to-orange-600',
+      href: '/boost',
       badge: null
     },
     {
-      id: 'settings',
-      title: 'Paramètres',
-      description: 'Configurer votre compte',
-      icon: Settings,
-      color: 'from-gray-500 to-gray-600',
-      href: '/profile',
+      id: 'transactions',
+      title: 'Transactions',
+      description: 'Historique des paiements',
+      icon: CreditCard,
+      color: 'from-purple-500 to-purple-600',
+      href: '/transactions',
       badge: null
     },
     {

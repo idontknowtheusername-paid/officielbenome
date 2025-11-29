@@ -265,7 +265,7 @@ export const cachedListingService = {
   /**
    * Récupère les listings populaires avec cache optimisé
    */
-  async getTopViewedListings(limit = 6) {
+  async getTopViewedListings(limit = 10) {
     const cacheKey = `popular-listings:${limit}`;
     
     const cached = localCache.get(cacheKey);

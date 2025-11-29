@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
 import HeroCarousel from '@/components/HeroCarousel';
+import NewListingsSection from '@/components/NewListingsSection';
 
 import { useHomePageData } from '@/hooks/useHomePageData';
 
@@ -211,10 +212,10 @@ const HomePage = () => {
           {error.popular && (
             <p className="text-center text-destructive mb-8">{error.popular}</p>
           )}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {loading.popular &&
               !popularListings.length &&
-              Array.from({ length: 6 }).map((_, idx) => (
+              Array.from({ length: 10 }).map((_, idx) => (
                 <div
                   key={idx}
                   className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent"
@@ -234,7 +235,7 @@ const HomePage = () => {
               </p>
             )}
 
-            {popularListings.slice(0, 6).map((listing) => (
+            {popularListings.slice(0, 10).map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
@@ -255,6 +256,9 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* New Listings Section */}
+      <NewListingsSection />
+
       {/* Call to Action */}
       <section className="py-20 md:py-32">
         <div className="container mx-auto px-4 md:px-6 text-center">
@@ -264,7 +268,11 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Prêt à <span className="gradient-text">Rejoindre MaxiMarket</span> ?
+            {user ? (
+              <>Prêt à <span className="gradient-text">Publier</span> ?</>
+            ) : (
+              <>Prêt à <span className="gradient-text">Rejoindre MaxiMarket</span> ?</>
+            )}
           </motion.h2>
           <motion.p
             className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto"
@@ -272,8 +280,11 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Créez un compte, publiez votre première annonce ou trouvez l'affaire
-            parfaite en quelques clics.
+            {user ? (
+              "Publiez votre annonce et touchez des milliers d'acheteurs potentiels en quelques clics."
+            ) : (
+              "Créez un compte, publiez votre première annonce ou trouvez l'affaire parfaite en quelques clics."
+            )}
           </motion.p>
           <motion.div
             className="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4"
@@ -294,14 +305,26 @@ const HomePage = () => {
             >
               Publier une Annonce
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={() => navigate("/inscription")}
-            >
-              Créer un Compte
-            </Button>
+            {!user && (
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => navigate("/inscription")}
+              >
+                Créer un Compte
+              </Button>
+            )}
+            {user && (
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => navigate("/marketplace")}
+              >
+                Explorer les Annonces
+              </Button>
+            )}
           </motion.div>
         </div>
       </section>
