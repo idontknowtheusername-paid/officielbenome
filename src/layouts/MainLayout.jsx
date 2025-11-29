@@ -12,11 +12,12 @@ const MainLayout = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
-  // Vérifier si on est sur une page de profil, boost ou transactions
+  // Vérifier si on est sur une page de profil, boost, transactions ou admin
   const isProfilePage = location.pathname.startsWith('/profile');
   const isBoostPage = location.pathname.startsWith('/boost');
   const isTransactionsPage = location.pathname.startsWith('/transactions');
-  const shouldHideFooter = isProfilePage || isBoostPage || isTransactionsPage;
+  const isAdminPage = location.pathname.startsWith('/admin');
+  const shouldHideFooter = isProfilePage || isBoostPage || isTransactionsPage || isAdminPage;
 
   // Optimisation : Mémoriser la fonction de scroll pour éviter les re-créations
   const handleScroll = useCallback(() => {

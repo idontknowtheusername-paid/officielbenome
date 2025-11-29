@@ -12,6 +12,7 @@ import { usePreload } from '@/hooks/usePreload';
 import { useMobileOptimization } from '@/hooks/useMobileOptimization';
 import { swManager } from '@/lib/swManager';
 import { initializePushNotifications } from '@/services/pushNotifications.service';
+import { Analytics } from '@vercel/analytics/react';
 
 import { QueryErrorBoundary } from '@/components/QueryErrorBoundary';
 import InactivityDetector from '@/components/InactivityDetector';
@@ -306,15 +307,15 @@ function App() {
                         </AdminRoute>
                       } 
                     />
-                    <Route 
-                      path="analytics" 
+                    <Route
+                      path="analytics"
                       element={
                         <AdminRoute>
                           <Suspense fallback={<AdminLoadingSpinner />}>
                             <AdminAnalyticsPage />
                           </Suspense>
                         </AdminRoute>
-                      } 
+                      }
                     />
                     <Route 
                       path="newsletter" 
@@ -386,6 +387,7 @@ function App() {
         </AppWrapper>
       </QueryErrorBoundary>
       {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen={false} />}
+      <Analytics />
     </QueryClientProvider>
   );
 }

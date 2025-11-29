@@ -89,8 +89,18 @@ const AdminDashboardPage = () => {
       try {
         users = await userService.getAllUsers();
         console.log('🔍 Utilisateurs récupérés:', users.length);
+
+        // Filtrer les utilisateurs avec des données valides
+        users = users.filter(user =>
+          user &&
+          user.email &&
+          user.first_name &&
+          user.last_name
+        );
+        console.log('🔍 Utilisateurs valides:', users.length);
       } catch (error) {
         console.error('❌ Erreur lors du chargement des utilisateurs:', error);
+        console.error('Détails:', error.message, error.details);
         users = [];
       }
       

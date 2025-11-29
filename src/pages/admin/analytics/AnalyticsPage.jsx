@@ -33,7 +33,8 @@ import {
 import { 
   Bar, 
   BarChart, 
-  Line, 
+  Line,
+  LineChart as RechartsLineChart,
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -41,6 +42,7 @@ import {
   Legend, 
   ResponsiveContainer,
   Pie,
+  PieChart as RechartsPieChart,
   Cell
 } from 'recharts';
 import { format, subDays, subMonths, subYears, parseISO } from 'date-fns';
@@ -588,7 +590,7 @@ function AnalyticsPage() {
           <CardContent className="pl-2">
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+                <RechartsLineChart
                   data={revenueData?.revenueByDate || []}
                   margin={{
                     top: 5,
@@ -621,7 +623,7 @@ function AnalyticsPage() {
                     dot={false}
                     activeDot={{ r: 6 }}
                   />
-                </LineChart>
+                </RechartsLineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -638,7 +640,7 @@ function AnalyticsPage() {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <RechartsPieChart>
                   <Pie
                     data={formattedTrafficData}
                     cx="50%"
@@ -659,7 +661,7 @@ function AnalyticsPage() {
                     ]}
                   />
                   <Legend />
-                </PieChart>
+                </RechartsPieChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 space-y-2">
@@ -779,7 +781,7 @@ function AnalyticsPage() {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={growthTrends?.listings?.daily || []}>
+                <RechartsLineChart data={growthTrends?.listings?.daily || []}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis 
                     dataKey="date" 
@@ -803,7 +805,7 @@ function AnalyticsPage() {
                     dot={false}
                     activeDot={{ r: 6 }}
                   />
-                </LineChart>
+                </RechartsLineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -819,7 +821,7 @@ function AnalyticsPage() {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <RechartsPieChart>
                   <Pie
                     data={Object.entries(revenueData?.revenueByCategory || {}).map(([name, value]) => ({
                       name: name === 'real_estate' ? 'Immobilier' : 
@@ -843,7 +845,7 @@ function AnalyticsPage() {
                   <Tooltip 
                     formatter={(value) => [`${value.toLocaleString()} FCFA`, 'Revenus']}
                   />
-                </PieChart>
+                </RechartsPieChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
