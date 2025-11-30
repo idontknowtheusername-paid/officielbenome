@@ -71,7 +71,7 @@ const Navbar = () => {
       <img
         src={`/logo.png?v=${Date.now()}`}
         alt="MaxiMarket Logo"
-        className="h-16 md:h-20 w-auto object-contain transition-all duration-300"
+        className="h-20 md:h-24 w-auto object-contain transition-all duration-300"
       />
     </Link>
   ), []);
