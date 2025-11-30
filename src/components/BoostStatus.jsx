@@ -51,61 +51,10 @@ const BoostStatus = ({
     }
   };
 
-  const handleRenewBoost = async () => {
-    if (!boostStatus?.currentBoost) return;
+  // Fonction retirée - Le renouvellement gratuit n'est plus disponible pour les utilisateurs
+  // Les utilisateurs doivent acheter un nouveau boost via la page de paiement
 
-    try {
-      setActionLoading(true);
-      const result = await boostService.renewBoost(boostStatus.currentBoost.id, user.id);
-      
-      if (result.success) {
-        toast({
-          title: 'Boost renouvelé !',
-          description: 'Votre boost a été prolongé avec succès.',
-        });
-        
-        // Recharger le statut
-        loadBoostStatus();
-      }
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: error.message || 'Erreur lors du renouvellement',
-        variant: 'destructive',
-      });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleCancelBoost = async () => {
-    if (!boostStatus?.currentBoost) return;
-
-    if (!confirm('Êtes-vous sûr de vouloir annuler ce boost ?')) return;
-
-    try {
-      setActionLoading(true);
-      const result = await boostService.cancelBoost(boostStatus.currentBoost.id, user.id);
-      
-      if (result.success) {
-        toast({
-          title: 'Boost annulé',
-          description: 'Votre boost a été annulé avec succès.',
-        });
-        
-        // Recharger le statut
-        loadBoostStatus();
-      }
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: error.message || 'Erreur lors de l\'annulation',
-        variant: 'destructive',
-      });
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  // Fonctions d'annulation retirées - Gestion admin uniquement
 
   const getStatusConfig = () => {
     if (!boostStatus?.hasActiveBoost) {
@@ -219,63 +168,7 @@ const BoostStatus = ({
           </TooltipContent>
         </Tooltip>
 
-        {/* Actions rapides */}
-        {showActions && boostStatus?.hasActiveBoost && boostStatus.currentBoost && (
-          <div className="flex items-center gap-1">
-            {/* Bouton renouveler */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={handleRenewBoost}
-                  disabled={actionLoading}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 hover:bg-primary/10"
-                >
-                  <RefreshCw className={`${iconSize} text-primary`} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Renouveler le boost</p>
-              </TooltipContent>
-            </Tooltip>
 
-            {/* Bouton annuler */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={handleCancelBoost}
-                  disabled={actionLoading}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 hover:bg-destructive/10"
-                >
-                  <XCircle className={`${iconSize} text-destructive`} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Annuler le boost</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Bouton analytics */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => navigate(`/paiement/boost/${listingId}`)}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 hover:bg-blue-500/10"
-                >
-                  <BarChart3 className={`${iconSize} text-blue-500`} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Voir les détails et analytics</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
 
         {/* Bouton booster si pas de boost actif */}
         {showActions && !boostStatus?.hasActiveBoost && (

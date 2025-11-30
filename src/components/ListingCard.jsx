@@ -126,7 +126,7 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true, showNewBad
       className={cn(
         "group rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden",
         isPremium 
-          ? "bg-gradient-to-br from-amber-50/50 to-yellow-100/50 border-2 border-amber-300/50 shadow-amber-200/50" 
+          ? "bg-card border border-border/50 border-l-4 border-l-cyan-500" 
           : "bg-card border border-border/50"
       )}
       onClick={handleCardClick}
@@ -211,20 +211,15 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true, showNewBad
         </div>
         
         {/* Price - Taille réduite */}
-        <div className={cn(
-          "text-lg sm:text-xl font-bold mb-1 sm:mb-1.5",
-          isPremium 
-            ? "text-slate-800"
-            : "text-primary"
-        )}>
+        <div className="text-lg sm:text-xl font-bold mb-1 sm:mb-1.5 text-primary">
           {listing.price ? formatPrice(listing.price) : 'Prix sur demande'}
         </div>
 
         {/* Badge Premium Simple - Compact */}
         {isPremium && (
           <div className="mb-1">
-            <Badge variant="secondary" className="bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 text-xs font-medium py-0.5 px-2">
-              ⭐ Premium
+            <Badge variant="secondary" className="bg-gradient-to-r from-cyan-100 to-blue-100 text-cyan-800 border-cyan-300 text-xs font-medium py-0.5 px-2">
+              ⚡ Boosté
             </Badge>
           </div>
         )}

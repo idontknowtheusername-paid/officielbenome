@@ -71,9 +71,9 @@ const NewListingsSection = () => {
 
   if (loading) {
     return (
-      <section className="py-12 bg-gradient-to-b from-background to-muted/20">
+      <section className="py-4 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
+          <div className="text-center mb-4">
             <h2 className="text-3xl font-bold mb-2">✨ Nouvelles Annonces</h2>
             <p className="text-muted-foreground">Découvrez les dernières offres</p>
           </div>
@@ -92,14 +92,14 @@ const NewListingsSection = () => {
   }
 
   return (
-    <section className="py-12 bg-gradient-to-b from-background to-muted/20">
+    <section className="py-4 bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-8"
+          className="text-center mb-4"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-2">
             ✨ Nouvelles Annonces

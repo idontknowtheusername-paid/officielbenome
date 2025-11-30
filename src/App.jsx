@@ -64,6 +64,7 @@ const AdminAnalyticsPage = lazy(() => import('@/pages/admin/analytics/AnalyticsP
 const AdminModerationPage = lazy(() => import('@/pages/admin/moderation/ModerationPage'));
 const AdminCategoriesPage = lazy(() => import('@/pages/admin/categories/CategoriesPage'));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/settings/SettingsPage'));
+const AdminBoostsPage = lazy(() => import('@/pages/admin/boosts/BoostsManagementPage'));
 const NewsletterAdminPage = lazy(() => import('@/pages/admin/NewsletterAdminPage'));
 import NotFoundPage from '@/pages/NotFoundPage';
 
@@ -367,6 +368,16 @@ function App() {
                           </Suspense>
                         </AdminRoute>
                       } 
+                    />
+                    <Route
+                      path="boosts"
+                      element={
+                        <AdminRoute>
+                          <Suspense fallback={<AdminLoadingSpinner />}>
+                            <AdminBoostsPage />
+                          </Suspense>
+                        </AdminRoute>
+                      }
                     />
                   </Route>
                   

@@ -59,55 +59,9 @@ const BoostListingPage = () => {
     navigate(`/paiement/boost/${listingId}`);
   };
 
-  const handleRenewBoost = async () => {
-    if (!boostStatus?.currentBoost) return;
+  // Renouvellement retiré - Les utilisateurs doivent acheter un nouveau boost
 
-    try {
-      const result = await boostService.renewBoost(boostStatus.currentBoost.id, user.id);
-      
-      if (result.success) {
-        toast({
-          title: 'Boost renouvelé !',
-          description: 'Votre boost a été prolongé avec succès.',
-        });
-        
-        // Recharger les données
-        loadListingAndBoostStatus();
-      }
-    } catch (err) {
-      toast({
-        title: 'Erreur',
-        description: err.message || 'Erreur lors du renouvellement',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleCancelBoost = async () => {
-    if (!boostStatus?.currentBoost) return;
-
-    if (!confirm('Êtes-vous sûr de vouloir annuler ce boost ?')) return;
-
-    try {
-      const result = await boostService.cancelBoost(boostStatus.currentBoost.id, user.id);
-      
-      if (result.success) {
-        toast({
-          title: 'Boost annulé',
-          description: 'Votre boost a été annulé avec succès.',
-        });
-        
-        // Recharger les données
-        loadListingAndBoostStatus();
-      }
-    } catch (err) {
-      toast({
-        title: 'Erreur',
-        description: err.message || 'Erreur lors de l\'annulation',
-        variant: 'destructive',
-      });
-    }
-  };
+  // Annulation retirée - Gestion admin uniquement
 
   if (loading) {
     return (
@@ -236,23 +190,13 @@ const BoostListingPage = () => {
                           Actif
                         </Badge>
                       </div>
-                      
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={handleRenewBoost}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          🔄 Renouveler
-                        </Button>
-                        <Button
-                          onClick={handleCancelBoost}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          ❌ Annuler
-                        </Button>
-                      </div>
+
+                      <Button
+                        onClick={() => navigate(`/paiement/boost/${listingId}`)}
+                        className="w-full bg-gradient-to-r from-primary to-blue-600"
+                      >
+                        ⚡ Acheter un nouveau boost
+                      </Button>
                     </div>
                   ) : (
                     <div className="text-center py-8">

@@ -63,7 +63,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-blue-900/20 text-foreground">
-      {/* Hero Carousel Section */}
+      {/* Hero Carousel Section with Floating Categories */}
       {loading.hero ? (
         <div className="relative h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 flex items-center justify-center">
           <div className="text-center text-white">
@@ -83,55 +83,53 @@ const HomePage = () => {
           </div>
         </div>
       ) : (
-        <>
-          <HeroCarousel />
-        </>
-      )}
+            <div className="relative">
+              <HeroCarousel />
 
-      {/* Categories Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4 md:px-6">
-          <motion.h2
-            className="text-3xl md:text-4xl font-bold text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            Explorez nos <span className="gradient-text">Univers</span>
-          </motion.h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {categories.map((category, index) => (
-              <motion.div
-                key={category.name}
-                custom={index}
-                variants={categoryCardVariants}
-                initial="hidden"
-                animate="visible"
-                onClick={() => handleCategoryClick(category.path)}
-                className="bg-card p-6 rounded-xl shadow-2xl hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center glassmorphic-card border border-transparent hover:border-primary/50 cursor-pointer group"
-              >
-                {category.icon}
-                <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
-                  {category.name}
-                </h3>
-                <p className="text-muted-foreground text-sm mb-5 flex-grow group-hover:text-primary/80 transition-colors">
-                  {category.description}
-                </p>
-                <div className="w-full border border-primary/50 rounded-md px-3 py-2 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 flex items-center justify-center">
-                  <span className="text-sm">Découvrir</span>
-                  <ArrowRight className="ml-2 h-3 w-3 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+              {/* Floating Category Cards */}
+              <div className="absolute bottom-0 left-0 right-0 z-20 pb-4 md:pb-6">
+                <div className="container mx-auto px-4 md:px-6">
+                  {/* Titre */}
+                  <h2 className="text-white text-center text-lg md:text-xl font-bold mb-3 md:mb-4 drop-shadow-lg">
+                    Explorez nos catégories
+                  </h2>
+                  <div className="grid grid-cols-2 gap-2 md:gap-3 max-w-xl md:max-w-2xl mx-auto">
+                    {categories.map((category, index) => (
+                      <motion.div
+                        key={category.name}
+                        custom={index}
+                        variants={categoryCardVariants}
+                        initial="hidden"
+                        animate="visible"
+                        onClick={() => handleCategoryClick(category.path)}
+                        className="bg-white/40 dark:bg-card/40 backdrop-blur-md p-2 md:p-3 rounded-md shadow-lg hover:shadow-primary/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center border border-white/5 hover:border-primary/40 cursor-pointer group"
+                      >
+                        <div className="text-2xl md:text-3xl mb-1">{category.icon}</div>
+                        <h3 className="text-xs md:text-sm font-semibold mb-0.5 group-hover:text-primary transition-colors">
+                          {category.name}
+                        </h3>
+                        <p className="text-muted-foreground text-[10px] md:text-xs mb-2 flex-grow group-hover:text-primary/80 transition-colors line-clamp-1 hidden md:block">
+                          {category.description}
+                        </p>
+                        <div className="w-full text-primary group-hover:text-white transition-all duration-300 flex items-center justify-center">
+                          <span className="text-[10px] md:text-xs font-medium">Voir</span>
+                          <ArrowRight className="ml-0.5 md:ml-1 h-2.5 w-2.5 md:h-3 md:w-3 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-              </motion.div>
-            ))}
           </div>
         </div>
-      </section>
+      )}
+
+
 
       {/* Premium Listings */}
-      <section className="py-16 md:py-24 bg-background/30">
+      <section className="py-5 md:py-7 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
           <motion.h2
-            className="text-3xl md:text-4xl font-bold text-center mb-16"
+            className="text-3xl md:text-4xl font-bold text-center mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -204,9 +202,9 @@ const HomePage = () => {
       </section>
 
       {/* Popular Listings */}
-      <section className="py-4 md:py-5 bg-background/30">
+      <section className="py-5 md:py-7 bg-background/30">
         <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
             🔥 <span className="gradient-text">Annonces Populaires</span>
           </h2>
           {error.popular && (
@@ -243,7 +241,7 @@ const HomePage = () => {
               />
             ))}
           </div>
-          <div className="text-center mt-12">
+          <div className="text-center mt-6">
             <Button
               size="lg"
               variant="default"

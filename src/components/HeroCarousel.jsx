@@ -14,7 +14,7 @@ import { resolveSearchIntent } from '@/lib/search-intent';
 const heroStyles = `
   .hero-container {
     position: relative;
-    height: 100vh;
+    height: 85vh;
     overflow: hidden;
   }
   
@@ -259,71 +259,12 @@ const HeroCarousel = () => {
               {currentSlide.subtitle}
             </motion.p>
 
-            {/* Barre de recherche - Positionnée plus bas */}
-            <motion.div
-              key={`search-${currentSlide.id}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.7 }}
-              className="w-full max-w-2xl px-4 mt-8 sm:mt-12"
-            >
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.currentTarget;
-                  const input = form.querySelector('input[name="q"]');
-                  const q = input?.value || "";
-                  const { section, params } = resolveSearchIntent(q);
-                  const usp = new URLSearchParams(params);
-                  const path =
-                    section === "immobilier"
-                      ? "/immobilier"
-                      : section === "automobile"
-                      ? "/automobile"
-                      : section === "services"
-                      ? "/services"
-                      : "/marketplace";
-                  navigate(`${path}?${usp.toString()}`);
-                }}
-                className="relative"
-              >
-                <Input
-                  name="q"
-                  type="search"
-                  placeholder="Que recherchez-vous sur MaxiMarket ?"
-                  className="w-full py-3 px-4 sm:py-4 sm:px-6 pr-12 sm:pr-16 rounded-full text-base sm:text-lg bg-white/20 text-white placeholder-gray-300 border-2 border-white/30 focus:border-white focus:ring-2 focus:ring-white/50 focus:outline-none backdrop-blur-md h-12 sm:h-16 shadow-xl"
-                />
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 rounded-full bg-white/20 hover:bg-white/30 h-10 w-10 sm:h-12 sm:w-12 p-0 backdrop-blur-md border border-white/30"
-                >
-                  <SearchIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                </Button>
-              </form>
-            </motion.div>
+
 
           </div>
         </div>
 
-        {/* Indicateurs de navigation */}
-        {CAROUSEL_CONFIG.showIndicators && HERO_SLIDES.length > 1 && (
-          <div className="hero-navigation">
-            {HERO_SLIDES.map((_, index) => (
-              <button
-                key={index}
-                className={cn(
-                  "w-3 h-3 rounded-full transition-all duration-300 cursor-pointer",
-                  index === currentIndex 
-                    ? "bg-white scale-110 shadow-lg" 
-                    : "bg-white/40 hover:bg-white/60 hover:scale-105"
-                )}
-                onClick={() => goToSlide(index)}
-                aria-label={`Aller au slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
+
       </div>
     </>
   );

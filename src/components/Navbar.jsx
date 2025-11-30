@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, MessageSquare, LogOut } from 'lucide-react';
+import { Menu, X, Home, Car, Briefcase, ShoppingBag, UserCircle, Settings, Sun, Moon, MessageSquare, LogOut, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { personalData } from '@/lib/personalData';
 import { useAuth } from '@/contexts/AuthContext';
+import { resolveSearchIntent } from '@/lib/search-intent';
 
 
 const Navbar = () => {
@@ -12,6 +14,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
 
   // Optimisation : Mémoriser les éléments de navigation pour éviter les re-renders
@@ -94,7 +97,7 @@ const Navbar = () => {
             </motion.div>
 
             {/* Desktop Navigation */}
-            <nav role="navigation" aria-label="Navigation desktop" className="hidden md:flex items-center space-x-1 lg:space-x-3">
+            <nav role="navigation" aria-label="Navigation desktop" className="hidden lg:flex items-center space-x-1 lg:space-x-2">
               {navItems.map((item) => (
                 <NavLink
                   key={item.name}
@@ -107,6 +110,43 @@ const Navbar = () => {
                 </NavLink>
               ))}
             </nav>
+
+            {/* Search Bar - Desktop only */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const input = form.querySelector('input[name="q"]');
+                const q = input?.value || "";
+                const { section, params } = resolveSearchIntent(q);
+                const usp = new URLSearchParams(params);
+                const path =
+                  section === "immobilier"
+                    ? "/immobilier"
+                    : section === "automobile"
+                      ? "/automobile"
+                      : section === "services"
+                        ? "/services"
+                        : "/marketplace";
+                navigate(`${path}?${usp.toString()}`);
+              }}
+              className="hidden md:flex relative w-64 lg:w-80 mx-4"
+            >
+              <Input
+                name="q"
+                type="search"
+                placeholder="Rechercher..."
+                className="w-full pl-4 pr-10 py-2 rounded-full text-sm bg-white/10 text-white placeholder-gray-300 border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/30"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                variant="ghost"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-full h-8 w-8 p-0 hover:bg-white/10"
+              >
+                <Search className="h-4 w-4 text-white" />
+              </Button>
+            </form>
 
             <div className="flex items-center space-x-2 lg:space-x-3">
               <Button 

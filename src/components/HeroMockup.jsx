@@ -90,20 +90,26 @@ const HeroMockup = ({ gradient, pattern = 'dots', className }) => {
       {/* Gradient de base */}
       <div className={cn("absolute inset-0 bg-gradient-to-br", gradient)} />
       
+      {/* Glassmorphisme - Couches de verre */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-full h-1/3 bg-white/5 backdrop-blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-2/3 h-2/3 bg-white/3 backdrop-blur-2xl rounded-tl-[100px]"></div>
+      </div>
+
       {/* Pattern overlay */}
       <div className="absolute inset-0 text-white">
         {getPattern()}
       </div>
       
-      {/* Effet de profondeur avec cercles flous */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-10 left-10 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white/15 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      {/* Effet de profondeur avec cercles flous - Glassmorphisme */}
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl backdrop-blur-xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl backdrop-blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white/8 rounded-full blur-2xl backdrop-blur-lg animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
       
-      {/* Overlay subtil pour adoucir */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+      {/* Overlay glassmorphisme final */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-white/5 backdrop-blur-sm"></div>
     </div>
   );
 };

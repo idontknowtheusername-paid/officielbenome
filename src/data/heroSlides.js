@@ -11,9 +11,9 @@ export const HERO_SLIDES = [
     category: 'real_estate',
     categoryLabel: 'Immobilier',
     categoryIcon: '🏠',
-    mockupType: 'gradient-pattern', // Type de mockup CSS
-    gradient: 'from-blue-600 via-blue-500 to-cyan-500',
-    pattern: 'dots', // Motif de fond
+    mockupType: 'gradient-pattern',
+    gradient: 'from-gray-600 via-gray-500 to-slate-400',
+    pattern: 'dots',
     ctaText: 'Voir les annonces',
     ctaLink: '/marketplace/real-estate'
   },
@@ -25,7 +25,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Automobile',
     categoryIcon: '🚗',
     mockupType: 'gradient-pattern',
-    gradient: 'from-green-600 via-green-500 to-emerald-500',
+    gradient: 'from-blue-900 via-blue-800 to-black',
     pattern: 'grid',
     ctaText: 'Découvrir',
     ctaLink: '/marketplace/automobile'
@@ -38,7 +38,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Services',
     categoryIcon: '🔧',
     mockupType: 'gradient-pattern',
-    gradient: 'from-purple-600 via-purple-500 to-pink-500',
+    gradient: 'from-gray-600 via-gray-500 to-slate-400',
     pattern: 'diagonal',
     ctaText: 'Explorer',
     ctaLink: '/marketplace/services'
@@ -51,7 +51,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Marketplace',
     categoryIcon: '🛍️',
     mockupType: 'gradient-pattern',
-    gradient: 'from-orange-600 via-orange-500 to-yellow-500',
+    gradient: 'from-blue-900 via-blue-800 to-black',
     pattern: 'waves',
     ctaText: 'Parcourir',
     ctaLink: '/marketplace'
@@ -64,7 +64,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Vendre',
     categoryIcon: '💼',
     mockupType: 'gradient-pattern',
-    gradient: 'from-indigo-600 via-indigo-500 to-blue-500',
+    gradient: 'from-gray-600 via-gray-500 to-slate-400',
     pattern: 'circles',
     ctaText: 'Créer une annonce',
     ctaLink: '/creer-annonce'
@@ -77,7 +77,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'À propos',
     categoryIcon: '⭐',
     mockupType: 'gradient-pattern',
-    gradient: 'from-pink-600 via-rose-500 to-red-500',
+    gradient: 'from-blue-900 via-blue-800 to-black',
     pattern: 'mesh',
     ctaText: 'En savoir plus',
     ctaLink: '/a-propos'
