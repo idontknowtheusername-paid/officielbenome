@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured, SECURITY_CONFIG } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
+import { useIdleTimer } from '@/hooks/useIdleTimer';
+import { IdleWarningModal } from '@/components/IdleWarningModal';
 
 const AuthContext = createContext({});
 
@@ -285,9 +287,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (reason = 'manual') => {
     try {
-      console.log('🚪 Déconnexion en cours...');
+      console.log('🚪 Déconnexion en cours...', { reason });
       
       // Supabase gère automatiquement :
       // - La suppression des tokens
@@ -303,6 +305,15 @@ export const AuthProvider = ({ children }) => {
       
       console.log('✅ Déconnexion réussie');
       
+      // Afficher un message si déconnexion automatique
+      if (reason === 'idle') {
+        toast({
+          title: "Session expirée",
+          description: "Vous avez été déconnecté pour inactivité.",
+          variant: "default",
+        });
+      }
+
       // Navigation React Router (pas de rechargement forcé)
       // Le composant va se recharger automatiquement avec user = null
       
@@ -440,6 +451,28 @@ export const AuthProvider = ({ children }) => {
     return roles.includes(userRole);
   };
 
+  // Gestion de l'inactivité - uniquement si l'utilisateur est connecté et n'a pas coché "Se souvenir"
+  const handleIdleWarning = useCallback(() => {
+    console.log('⚠️ Avertissement d\'inactivité');
+  }, []);
+
+  const handleIdle = useCallback(() => {
+    console.log('💤 Utilisateur inactif - Déconnexion automatique');
+    logout('idle');
+  }, []);
+
+  const {
+    showWarning: showIdleWarning,
+    timeLeft: idleTimeLeft,
+    continueSession
+  } = useIdleTimer({
+    timeout: SECURITY_CONFIG.idleTimeout,
+    warningTime: SECURITY_CONFIG.idleWarningTime,
+    onIdle: handleIdle,
+    onWarning: handleIdleWarning,
+    enabled: !!user && !isRememberMe // Activer uniquement si connecté et sans "Se souvenir"
+  });
+
   const value = {
     user: userProfile || user, // Utiliser le profil complet si disponible
     userProfile,
@@ -463,6 +496,12 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
+      {/* Modal d'avertissement d'inactivité */}
+      <IdleWarningModal
+        open={showIdleWarning}
+        timeLeft={idleTimeLeft}
+        onContinue={continueSession}
+      />
     </AuthContext.Provider>
   );
 };

@@ -12,7 +12,10 @@ export {
   useDeleteMessage, 
   useSearchConversations, 
   useMessageStats, 
-  useRealtimeMessages 
+  useRealtimeMessages,
+  useGlobalRealtimeMessages,
+  useConversation, // Hook composé niveau expert
+  QUERY_KEYS as MESSAGING_QUERY_KEYS
 } from './useMessages';
 export { useNotifications } from './useNotifications';
 export { default as useAdminDashboard } from './useAdminDashboard';

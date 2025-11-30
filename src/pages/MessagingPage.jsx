@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from '
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { useConversations, useRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
+import { useConversations, useRealtimeMessages, useGlobalRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -160,7 +160,10 @@ const MessagingPageContent = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, [checkMobile]);
 
-  // Utiliser le hook de chat en temps réel
+  // Utiliser le hook GLOBAL de chat en temps réel (pour TOUS les messages)
+  useGlobalRealtimeMessages();
+
+  // Utiliser le hook de chat en temps réel pour la conversation active
   useRealtimeMessages(selectedConversation?.id);
 
   // Mutation pour supprimer une conversation
@@ -208,67 +211,19 @@ const MessagingPageContent = () => {
     }
   }, [conversations, searchParams, selectedConversation]);
 
-  // Subscription en temps réel pour les nouvelles conversations
+  // SUPPRIMÉ - Géré par useGlobalRealtimeMessages
+
+  // Rafraîchissement périodique RÉDUIT (fallback uniquement)
   useEffect(() => {
     if (!user) return;
 
-    logger.log('🔌 Initialisation subscription conversations');
+    logger.log('⏰ Activation rafraîchissement périodique (60s - fallback)');
 
-    const channel = supabase
-      .channel('conversations-updates')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'conversations',
-        filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
-      }, (payload) => {
-        logger.log('🆕 Nouvelle conversation reçue:', payload.new.id);
-        // Rafraîchir immédiatement pour synchroniser les stats
-        refetch();
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'conversations',
-        filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
-      }, (payload) => {
-        logger.log('🔄 Conversation mise à jour:', payload.new.id);
-        // Rafraîchir immédiatement pour synchroniser les stats
-        refetch();
-      })
-      .on('postgres_changes', {
-        event: 'DELETE',
-        schema: 'public',
-        table: 'conversations',
-        filter: `participant1_id=eq.${user.id} OR participant2_id=eq.${user.id}`
-      }, (payload) => {
-        logger.log('🗑️ Conversation supprimée:', payload.old.id);
-        // Rafraîchir immédiatement pour synchroniser les stats
-        refetch();
-      })
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          logger.log('✅ Subscription conversations active');
-        }
-      });
-
-    return () => {
-      logger.log('🔌 Désabonnement conversations');
-      supabase.removeChannel(channel);
-    };
-  }, [user, refetch]);
-
-  // Rafraîchissement périodique pour garantir synchronisation 100%
-  useEffect(() => {
-    if (!user) return;
-
-    logger.log('⏰ Activation rafraîchissement périodique (30s)');
-
-    // Rafraîchir toutes les 30 secondes pour garantir la synchronisation
+    // Rafraîchir toutes les 60 secondes comme fallback (le realtime gère le reste)
     const intervalId = setInterval(() => {
-      logger.log('🔄 Rafraîchissement périodique des conversations');
+      logger.log('🔄 Rafraîchissement périodique (fallback)');
       refetch();
-    }, 30000); // 30 secondes
+    }, 60000); // 60 secondes
 
     return () => {
       logger.log('⏰ Désactivation rafraîchissement périodique');
@@ -276,65 +231,41 @@ const MessagingPageContent = () => {
     };
   }, [user, refetch]);
 
-  // Subscription globale pour les notifications (sans conflit avec useRealtimeMessages)
+  // Notifications toast pour les nouveaux messages (géré séparément du realtime)
   useEffect(() => {
     if (!user) return;
 
-    logger.log('🔌 Initialisation notifications globales');
+    logger.log('🔔 Initialisation notifications toast');
 
     const channel = supabase
-      .channel(`notifications-${user.id}`)
+      .channel(`toast-notifications-${user.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `receiver_id=eq.${user.id}`
       }, (payload) => {
-        logger.log('🔔 Nouveau message reçu:', payload.new.id);
-        
-        // Rafraîchir immédiatement pour synchroniser les stats
-        setTimeout(() => {
-          refetch();
-        }, 100);
-        
-        // Notification toast pour les nouveaux messages (seulement si pas dans la conversation active)
+        // Notification toast UNIQUEMENT si pas dans la conversation active
         if (payload.new.sender_id !== user.id && 
             (!selectedConversation || payload.new.conversation_id !== selectedConversation.id)) {
+          logger.log('🔔 Affichage notification toast pour message:', payload.new.id);
           toast({
             title: "Nouveau message",
             description: "Vous avez reçu un nouveau message",
           });
         }
       })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, (payload) => {
-        // Détecter si un message a été marqué comme lu
-        if (payload.old.is_read === false && payload.new.is_read === true) {
-          logger.log('✅ Message marqué comme lu:', payload.new.id);
-          // Rafraîchir immédiatement pour synchroniser les stats
-          setTimeout(() => {
-            refetch();
-          }, 100);
-        }
-      })
       .subscribe((status) => {
-        logger.log('🔌 Statut notifications globales:', status);
         if (status === 'SUBSCRIBED') {
-          logger.log('✅ Notifications globales actives - Stats synchronisées en temps réel');
-        } else if (status === 'CHANNEL_ERROR') {
-          logger.error('❌ Erreur notifications globales');
+          logger.log('✅ Notifications toast actives');
         }
       });
 
     return () => {
-      logger.log('🔌 Désabonnement notifications globales');
+      logger.log('🔌 Désabonnement notifications toast');
       supabase.removeChannel(channel);
     };
-  }, [user, selectedConversation, refetch, toast]);
+  }, [user, selectedConversation, toast]);
 
   // Charger les messages d'une conversation avec pagination
   const loadMessages = useCallback(async (conversationId, page = 0, append = false) => {

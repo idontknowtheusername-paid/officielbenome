@@ -27,6 +27,10 @@ if (!isSupabaseConfigured) {
 const SECURITY_CONFIG = {
   // Session active : 24 heures (standard Amazon, eBay, Shopify)
   sessionTimeout: 24 * 60 * 60 * 1000, // 24 heures en millisecondes
+  // Déconnexion automatique après inactivité : 1 heure
+  idleTimeout: 60 * 60 * 1000, // 1 heure en millisecondes
+  // Avertissement avant déconnexion : 2 minutes
+  idleWarningTime: 2 * 60 * 1000, // 2 minutes en millisecondes
   // Option "Se souvenir" : 30 jours (standard industrie)
   rememberMeDays: 30,
   // Renouvellement automatique des tokens
