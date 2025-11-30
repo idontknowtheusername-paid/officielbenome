@@ -80,8 +80,8 @@ const Navbar = () => {
     <header role="banner" aria-label="Navigation principale">
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || isOpen
-          ? 'bg-gray-900/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-lg border-b border-gray-700/50'
-          : 'bg-gray-900/60 dark:bg-gray-800/60 backdrop-blur-md'
+          ? 'bg-gray-900/50 dark:bg-gray-800/50 shadow-lg backdrop-blur-lg border-b border-gray-700/30'
+          : 'bg-gray-900/30 dark:bg-gray-800/30 backdrop-blur-md'
           }`}
         role="navigation"
         aria-label="Menu principal"
