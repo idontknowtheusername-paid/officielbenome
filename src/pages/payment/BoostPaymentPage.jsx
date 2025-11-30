@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { listingService, boostService } from '@/services';
 import { lygosService } from '@/services/payment/lygos.service';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -74,9 +75,16 @@ function BoostPaymentPage() {
           description: 'Votre annonce a été boostée avec succès',
         });
 
-        // Activer le boost
+        // Activer le boost et mettre à jour la référence de paiement
         const boostId = result.data.metadata?.boostId;
         if (boostId) {
+          // Mettre à jour la référence de paiement dans le boost
+          await supabase
+            .from('listing_boosts')
+            .update({ payment_reference: ref })
+            .eq('id', boostId);
+
+          // Activer le boost
           await boostService.activateBoost(boostId);
         }
 
@@ -368,9 +376,67 @@ function BoostPaymentPage() {
 
                     {pkg.features && (
                       <ul className="space-y-2 mb-6">
-                        {(Array.isArray(pkg.features) ? pkg.features : 
-                          typeof pkg.features === 'string' ? JSON.parse(pkg.features) : 
-                          Object.values(pkg.features)).map((feature, index) => (
+                        {(() => {
+                          // Mapper les features techniques vers des descriptions lisibles
+                          const featureDescriptions = {
+                            'boosted': '⚡ Mise en avant dans les résultats',
+                            'priority': '🎯 Priorité d\'affichage',
+                            'highest': '👑 Visibilité maximale',
+                            'high': '⭐ Haute visibilité',
+                            'medium': '📈 Visibilité accrue',
+                            'premium': '💎 Badge Premium',
+                            'featured': '🌟 Annonce vedette',
+                            'analytics': '📊 Statistiques détaillées',
+                            'support': '🎧 Support prioritaire'
+                          };
+
+                          // Parser les features
+                          let features = [];
+                          if (Array.isArray(pkg.features)) {
+                            features = pkg.features;
+                          } else if (typeof pkg.features === 'string') {
+                            try {
+                              features = JSON.parse(pkg.features);
+                            } catch {
+                              features = [];
+                            }
+                          } else if (typeof pkg.features === 'object') {
+                            features = Object.values(pkg.features);
+                          }
+
+                          // Filtrer et mapper vers des descriptions lisibles
+                          const readableFeatures = features
+                            .filter(f => typeof f === 'string' && featureDescriptions[f])
+                            .map(f => featureDescriptions[f]);
+
+                          // Si aucune feature lisible, afficher des features par défaut basées sur le package
+                          if (readableFeatures.length === 0) {
+                            if (pkg.name.includes('VIP') || pkg.name.includes('Premium')) {
+                              return [
+                                '👑 Visibilité maximale',
+                                '⚡ Mise en avant prioritaire',
+                                '💎 Badge Premium',
+                                '📊 Statistiques détaillées',
+                                '🎧 Support prioritaire'
+                              ];
+                            } else if (pkg.name.includes('Standard')) {
+                              return [
+                                '⭐ Haute visibilité',
+                                '⚡ Mise en avant',
+                                '💎 Badge Premium',
+                                '📊 Statistiques basiques'
+                              ];
+                            } else {
+                              return [
+                                '📈 Visibilité accrue',
+                                '⚡ Mise en avant',
+                                '💎 Badge Premium'
+                              ];
+                            }
+                          }
+
+                          return readableFeatures;
+                        })().map((feature, index) => (
                           <li key={index} className="flex items-start text-sm">
                             <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
                             <span>{feature}</span>
@@ -400,39 +466,6 @@ function BoostPaymentPage() {
                 </Card>
               ))}
             </div>
-
-            {/* Payment Methods Info */}
-            <Card className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Smartphone className="h-5 w-5 text-primary" />
-                  Méthodes de paiement acceptées
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <div className="text-2xl mb-1">📱</div>
-                    <div className="text-sm font-medium">Mobile Money</div>
-                  </div>
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <div className="text-2xl mb-1">💳</div>
-                    <div className="text-sm font-medium">Carte bancaire</div>
-                  </div>
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <div className="text-2xl mb-1">🏦</div>
-                    <div className="text-sm font-medium">Virement</div>
-                  </div>
-                  <div className="text-center p-3 bg-white rounded-lg">
-                    <div className="text-2xl mb-1">🔒</div>
-                    <div className="text-sm font-medium">Sécurisé</div>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground mt-4 text-center">
-                  Paiement sécurisé par Lygos - Tous vos paiements sont protégés
-                </p>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

@@ -10,13 +10,16 @@ import RatingStars from '@/components/ui/RatingStars';
 import { Send, Star, CheckCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Schéma de validation (sans rating car géré séparément)
+// Schéma de validation - commentaire et rating optionnels
 const commentSchema = z.object({
   content: z.string()
-    .min(1, 'Le commentaire ne peut pas être vide')
-    .max(1000, 'Le commentaire ne peut pas dépasser 1000 caractères'),
+    .max(1000, 'Le commentaire ne peut pas dépasser 1000 caractères')
+    .optional(),
   parent_id: z.string().uuid().optional()
-});
+}).refine(
+  (data) => data.content && data.content.trim().length > 0,
+  { message: 'Le commentaire ne peut pas être vide', path: ['content'] }
+);
 
 const CommentForm = ({
   listingId,
@@ -50,41 +53,49 @@ const CommentForm = ({
   const isEditing = !!initialData;
 
   const handleFormSubmit = async (data) => {
-    console.log('🔍 [CommentForm] handleFormSubmit appelé avec:', { data, rating });
-    console.log('🔍 [CommentForm] Formulaire soumis !');
-    
-    // Rating optionnel maintenant
-    console.log('🔍 [CommentForm] Note fournie:', rating);
+    // Validation : au moins un commentaire OU un avis
+    if (!data.content?.trim() && !rating) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez ajouter un commentaire et/ou une note.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    console.log('🔍 [CommentForm] Début de la soumission...');
     setIsSubmitting(true);
 
     try {
-      console.log('🔍 [CommentForm] Préparation des données...');
       const commentData = {
         ...data,
-        rating: rating || null, // Rating optionnel
+        rating: rating || null,
         listing_id: listingId,
         parent_id: parentId || initialData?.parent_id
       };
 
-      console.log('🔍 [CommentForm] Données préparées:', commentData);
-      console.log('🔍 [CommentForm] Appel de onSubmit...');
       const result = await onSubmit(commentData);
-      console.log('🔍 [CommentForm] Résultat onSubmit:', result);
 
       if (result.error) {
         throw new Error(result.error);
       }
 
+      const hasComment = data.content?.trim();
+      const hasRating = rating > 0;
+
+      let successMessage = '';
+      if (hasComment && hasRating) {
+        successMessage = 'Votre commentaire et votre avis ont été ajoutés avec succès.';
+      } else if (hasComment) {
+        successMessage = 'Votre commentaire a été ajouté avec succès.';
+      } else {
+        successMessage = 'Votre avis a été ajouté avec succès.';
+      }
+
       toast({
-        title: isEditing ? "Commentaire modifié" : "Commentaire ajouté",
-        description: isEditing
-          ? "Votre commentaire a été modifié avec succès."
-          : "Votre commentaire a été ajouté avec succès.",
+        title: isEditing ? "Modifié" : "Ajouté",
+        description: successMessage,
       });
 
-      // Reset form if not editing
       if (!isEditing) {
         reset();
         setRating(0);
@@ -96,7 +107,7 @@ const CommentForm = ({
     } catch (error) {
       toast({
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de l'envoi du commentaire.",
+        description: error.message || "Une erreur est survenue lors de l'envoi.",
         variant: "destructive",
       });
     } finally {

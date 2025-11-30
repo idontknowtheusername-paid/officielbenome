@@ -370,71 +370,58 @@ const ListingDetailPage = () => {
             />
           </div>
 
-          {/* Informations principales */}
+          {/* En-tête optimisé */}
           <div className="mb-8">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-muted-foreground">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span className="text-sm">
-                      {listing.location && typeof listing.location === 'object' && listing.location.city 
-                        ? `${listing.location.city}, ${listing.location.country || ''}` 
-                        : 'Localisation non spécifiée'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span className="text-sm">Publié le {formatDate(listing.created_at)}</span>
-                  </div>
+            {/* Titre */}
+            <h1 className="text-2xl sm:text-3xl font-bold mb-3">{listing.title}</h1>
+
+            {/* Localisation */}
+            <div className="flex items-center text-muted-foreground mb-4">
+              <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="text-sm">
+                {listing.location && typeof listing.location === 'object' && listing.location.city
+                  ? `${listing.location.city}, ${listing.location.country || ''}`
+                  : 'Localisation non spécifiée'
+                }
+              </span>
+            </div>
+
+            {/* Prix, Badge Premium et Actions - Ligne responsive */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              {/* Prix et Badge Premium */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-2xl sm:text-3xl font-bold text-primary">
+                  {formatPrice(listing.price)}
                 </div>
+                {(listing.is_featured || listing.is_boosted || listing.is_premium) && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-amber-600">
+                    ⭐ Premium
+                  </Badge>
+                )}
+                {/* Boost Status pour le propriétaire */}
+                {user && listing.user_id === user.id && (
+                  <BoostStatus
+                    listingId={listing.id}
+                    listing={listing}
+                    size="default"
+                    showActions={true}
+                  />
+                )}
               </div>
-              
+
+              {/* Boutons d'action */}
               <div className="flex items-center gap-2">
-                  <ShareListing listing={listing} variant="compact" />
+                <ShareListing listing={listing} variant="compact" />
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleReport}
+                  className="flex-shrink-0"
                 >
-                  <Flag className="h-4 w-4 mr-1" />
-                  Signaler
+                  <Flag className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Signaler</span>
                 </Button>
               </div>
-            </div>
-
-            {/* Prix */}
-            <div className="text-3xl font-bold text-primary mb-4">
-              {formatPrice(listing.price)}
-              {/* Badge Premium si l'annonce est boostée - Visible pour tous */}
-              {(listing.is_featured || listing.is_boosted || listing.is_premium) && (
-                <Badge className="ml-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-amber-600">
-                  ⭐ Premium
-                </Badge>
-              )}
-            </div>
-
-            {/* Badges */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                {getCategoryIcon(listing.category)} {getCategoryName(listing.category)}
-              </Badge>
-              {listing.status === 'approved' && (
-                <Badge variant="default" className="badge-approved">Approuvé</Badge>
-              )}
-              
-              {/* Boost Status - Visible uniquement pour le propriétaire de l'annonce */}
-              {user && listing.user_id === user.id && (
-                <BoostStatus 
-                  listingId={listing.id}
-                  listing={listing}
-                  size="default"
-                  showActions={true}
-                  className="ml-auto"
-                />
-              )}
             </div>
           </div>
 
@@ -507,62 +494,64 @@ const ListingDetailPage = () => {
             </div>
           )}
 
-          {/* Carte de contact */}
+          {/* Carte de contact - Format 2x2 optimisé */}
           <div className="mt-12 mb-8">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Contacter le vendeur</h3>
-              
-              {listing.users && (
-                <div className="mb-4">
-                  <p className="text-sm text-muted-foreground">Vendeur</p>
-                  <p className="font-medium">
-                    {listing.users.first_name} {listing.users.last_name}
-                  </p>
-                </div>
-              )}
+            <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg sm:text-xl font-semibold">Contacter le vendeur</h3>
+                {listing.users && (
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Vendeur</p>
+                    <p className="font-medium text-sm">
+                      {listing.users.first_name} {listing.users.last_name}
+                    </p>
+                  </div>
+                )}
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              {/* Grille 2x2 pour les boutons */}
+              <div className="grid grid-cols-2 gap-3">
                 <Button 
-                  className="w-full bg-green-600 hover:bg-green-700" 
+                  className="w-full bg-green-600 hover:bg-green-700 h-12 sm:h-14" 
                   onClick={() => handleContact('whatsapp')}
                 >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  WhatsApp
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  <span className="text-sm sm:text-base">WhatsApp</span>
                 </Button>
                 
                 <Button 
-                  className="w-full" 
+                  className="w-full h-12 sm:h-14" 
                   onClick={() => handleContact('phone')}
                 >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Appeler
+                  <Phone className="h-5 w-5 mr-2" />
+                  <span className="text-sm sm:text-base">Appeler</span>
                 </Button>
                 
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full h-12 sm:h-14"
                   onClick={() => handleContact('message')}
                 >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Message
+                  <Mail className="h-5 w-5 mr-2" />
+                  <span className="text-sm sm:text-base">Message</span>
                 </Button>
                 
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full h-12 sm:h-14"
                   onClick={handleFavorite}
                 >
-                  <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                  {isFavorite ? 'Retirer' : 'Favoris'}
+                  <Heart className={`h-5 w-5 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                  <span className="text-sm sm:text-base">{isFavorite ? 'Retirer' : 'Favoris'}</span>
                 </Button>
               </div>
               
               {/* Indication pour les visiteurs non connectés */}
               {!user && (
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    💡 <strong>Conseil :</strong> Vous pouvez contacter le vendeur directement par WhatsApp ou téléphone sans créer de compte. 
-                    Connectez-vous uniquement si vous souhaitez utiliser la messagerie privée.
+                  <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">
+                    💡 <strong>Conseil :</strong> Contactez directement par WhatsApp ou téléphone sans compte.
+                    <span className="hidden sm:inline"> Connectez-vous pour la messagerie privée.</span>
                   </p>
                 </div>
               )}

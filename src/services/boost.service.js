@@ -77,6 +77,7 @@ export const boostService = {
           status: 'pending',
           start_date: new Date().toISOString(),
           end_date: endDate.toISOString(),
+          payment_reference: `BOOST-${Date.now()}-${listingId}`,
           metadata: {
             price: packageData.price,
             duration_days: packageData.duration_days,
@@ -93,6 +94,7 @@ export const boostService = {
         success: true,
         boostId: boost.id,
         boostData: boost,
+        packageData: packageData,
         message: 'Boost créé avec succès'
       };
     } catch (error) {
@@ -214,12 +216,17 @@ export const boostService = {
     }
 
     try {
-      // Récupérer le boost
+      // Récupérer le boost avec les infos du package
       const { data: boost, error: boostError } = await supabase
         .from('listing_boosts')
         .select(`
           *,
-          boost_packages (*)
+          boost_packages (*),
+          listings (
+            id,
+            title,
+            user_id
+          )
         `)
         .eq('id', boostId)
         .single();
@@ -229,7 +236,9 @@ export const boostService = {
       }
 
       // Calculer la date d'expiration
-      const expiresAt = new Date(Date.now() + boost.duration_days * 24 * 60 * 60 * 1000);
+      const packageData = boost.boost_packages;
+      const durationDays = packageData?.duration_days || boost.metadata?.duration_days || 7;
+      const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
 
       // Activer le boost
       const { error: updateError } = await supabase
@@ -254,6 +263,37 @@ export const boostService = {
 
       if (listingError) {
         console.warn('Erreur lors de la mise à jour de l\'annonce:', listingError);
+      }
+
+      // Créer une transaction pour l'historique
+      try {
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            sender_id: boost.user_id,
+            receiver_id: boost.user_id, // Transaction interne
+            listing_id: boost.listing_id,
+            type: 'boost',
+            amount: boost.metadata?.price || packageData?.price || 0,
+            currency: 'XOF',
+            status: 'completed',
+            payment_method: 'lygos',
+            payment_reference: boost.payment_reference || `BOOST-${boostId}`,
+            description: `Boost ${packageData?.name || 'Premium'} - ${boost.listings?.title || 'Annonce'}`,
+            metadata: {
+              boost_id: boostId,
+              package_id: boost.package_id,
+              package_name: packageData?.name,
+              duration_days: durationDays,
+              listing_title: boost.listings?.title
+            }
+          });
+
+        if (transactionError) {
+          console.warn('Erreur lors de la création de la transaction:', transactionError);
+        }
+      } catch (transactionErr) {
+        console.warn('Impossible de créer la transaction:', transactionErr);
       }
 
       return {

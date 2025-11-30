@@ -604,15 +604,36 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-              {favorites.map((favorite) => (
-                <ListingCard
-                  key={favorite.id}
-                  listing={favorite}
-                  showActions={false}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <ListingCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : favorites.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">💔</div>
+                <h3 className="text-xl font-semibold mb-2">Aucun favori</h3>
+                <p className="text-muted-foreground mb-6">
+                  Vous n'avez pas encore ajouté d'annonces à vos favoris
+                </p>
+                <Button asChild>
+                  <Link to="/">
+                    Découvrir des annonces
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+                    {favorites.map((favorite) => (
+                      <ListingCard
+                        key={favorite.id}
+                    listing={favorite.listings}
+                    showActions={false}
+                  />
+                ))}
+                  </div>
+            )}
           </TabsContent>
 
           {/* Profil */}

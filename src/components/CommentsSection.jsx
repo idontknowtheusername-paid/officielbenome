@@ -147,31 +147,69 @@ const CommentsSection = ({
     );
   }
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <div className={cn('space-y-6', className)}>
-      {/* En-tête */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <MessageSquare className="h-6 w-6 text-primary" />
-          <h2 className="text-xl sm:text-2xl font-bold">Commentaires et Avis</h2>
-        </div>
+      {/* En-tête pliable */}
+      <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setIsExpanded(!isExpanded)}>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <MessageSquare className="h-6 w-6 text-primary" />
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold">Commentaires et Avis</h2>
+                <p className="text-sm text-muted-foreground">
+                  {comments.length} {comments.length > 1 ? 'commentaires' : 'commentaire'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Plus className="h-6 w-6 text-primary" />
+              </motion.div>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
-        <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              console.log('🔄 [CommentsSection] Force refresh cliqué');
-              forceRefresh();
-            }}
-            disabled={loading}
-            className="flex items-center space-x-2"
+      {/* Contenu dépliable */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Actualiser</span>
-          </Button>
-        </div>
-      </div>
+            {/* Boutons d'action */}
+            <div className="flex items-center space-x-2">
+              {!showForm && user && (
+                <Button
+                  onClick={() => setShowForm(true)}
+                  className="bg-gradient-to-r from-primary to-blue-600"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un avis ou commentaire
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  forceRefresh();
+                }}
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline ml-2">Actualiser</span>
+              </Button>
+            </div>
 
 
 
@@ -211,78 +249,72 @@ const CommentsSection = ({
 
 
 
-      {/* Liste des commentaires dans une seule carte */}
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Chargement des commentaires...</p>
-            </div>
-          ) : comments.length === 0 ? (
-            <div className="p-8 text-center">
-              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <h3 className="text-lg font-semibold mb-2">Aucun commentaire</h3>
-              <p className="text-muted-foreground mb-4">
-                Soyez le premier à laisser un commentaire sur cette annonce !
-              </p>
-              {user && (
-                <Button onClick={() => {
-                  console.log('🔍 [CommentsSection] Bouton Ajouter (carte vide) cliqué');
-                  setShowForm(true);
-                }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un commentaire
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="max-h-96 overflow-y-auto">
-              <div className="divide-y divide-border">
-                {comments.map((comment, index) => (
-                  <div key={comment.id} className="p-4 hover:bg-muted/30 transition-colors">
-                    <CommentCard
-                      comment={comment}
-                      onUpdate={handleUpdateComment}
-                      onDelete={handleDeleteComment}
-                      onReply={handleReplyComment}
-                      onReport={handleReportComment}
-                      className="border-0 p-0 shadow-none"
-                    />
+            {/* Liste des commentaires */}
+            <Card>
+              <CardContent className="p-0">
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Chargement des commentaires...</p>
                   </div>
-                ))}
-              </div>
+                ) : comments.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <h3 className="text-lg font-semibold mb-2">Aucun commentaire</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Soyez le premier à laisser un commentaire sur cette annonce !
+                    </p>
+                    </div>
+                  ) : (
+                    <div className="max-h-96 overflow-y-auto">
+                      <div className="divide-y divide-border">
+                          {comments.map((comment) => (
+                            <div key={comment.id} className="p-4 hover:bg-muted/30 transition-colors">
+                              <CommentCard
+                                comment={comment}
+                                onUpdate={handleUpdateComment}
+                                onDelete={handleDeleteComment}
+                                onReply={handleReplyComment}
+                                onReport={handleReportComment}
+                                className="border-0 p-0 shadow-none"
+                              />
+                            </div>
+                          ))}
+                        </div>
 
-              {/* Pagination */}
-              {pagination && pagination.pages > 1 && (
-                <div className="flex items-center justify-center space-x-2 p-4 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => changePage(pagination.page - 1)}
-                    disabled={pagination.page <= 1}
-                  >
-                    Précédent
-                  </Button>
+                        {/* Pagination */}
+                        {pagination && pagination.pages > 1 && (
+                          <div className="flex items-center justify-center space-x-2 p-4 border-t">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => changePage(pagination.page - 1)}
+                              disabled={pagination.page <= 1}
+                            >
+                              Précédent
+                            </Button>
 
-                  <span className="text-sm text-muted-foreground">
-                    Page {pagination.page} sur {pagination.pages}
-                  </span>
+                            <span className="text-sm text-muted-foreground">
+                              Page {pagination.page} sur {pagination.pages}
+                            </span>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => changePage(pagination.page + 1)}
-                    disabled={pagination.page >= pagination.pages}
-                  >
-                    Suivant
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => changePage(pagination.page + 1)}
+                          disabled={pagination.page >= pagination.pages}
+                        >
+                          Suivant
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

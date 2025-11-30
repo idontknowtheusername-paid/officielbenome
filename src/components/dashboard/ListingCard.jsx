@@ -104,7 +104,7 @@ const ListingCard = ({
           >
             {getStatusText(listing.status)}
           </Badge>
-          {listing.featured && (
+          {(listing.featured || listing.is_featured || listing.boosted || listing.is_boosted) && (
             <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">
               ⭐ Premium
             </Badge>
@@ -150,7 +150,7 @@ const ListingCard = ({
                 {listing.contacts || listing.contacts_count || 0} contacts
               </span>
             </div>
-            {listing.boosted && (
+            {(listing.boosted || listing.is_boosted) && (
               <Badge variant="outline" className="text-xs">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 Boosté

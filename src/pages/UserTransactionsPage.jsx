@@ -27,14 +27,18 @@ function UserTransactionsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
 
-  // Fetch user transactions
-  const { data: transactions, isLoading, isError } = useQuery({
+  // Fetch user transactions avec rafraîchissement automatique
+  const { data: transactions, isLoading, isError, refetch } = useQuery({
     queryKey: ['userTransactions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      return await transactionService.getUserTransactions(user.id);
+      const data = await transactionService.getUserTransactions(user.id);
+      console.log('📊 Transactions chargées:', data?.length || 0);
+      return data;
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
+    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes
+    refetchOnWindowFocus: true // Rafraîchir quand l'utilisateur revient sur la page
   });
 
   // Format amount with currency
@@ -134,10 +138,21 @@ function UserTransactionsPage() {
                 Historique complet de vos paiements et transactions
               </p>
             </div>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Exporter
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                disabled={isLoading}
+              >
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Actualiser
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Exporter
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -249,53 +264,85 @@ function UserTransactionsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filterTransactions(activeTab).map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4 flex-1">
-                        <div className="rounded-full bg-primary/10 p-3">
-                          <CreditCard className="h-5 w-5 text-primary" />
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium">
-                              {transaction.description || 'Transaction'}
-                            </p>
-                            {getStatusBadge(transaction.status)}
-                          </div>
-                          
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>
-                              Réf: {transaction.payment_reference || transaction.id.slice(0, 8)}
-                            </span>
-                            <span>•</span>
-                            <span>
-                              {transaction.created_at 
-                                ? format(new Date(transaction.created_at), 'PPp', { locale: fr })
-                                : 'N/A'
-                              }
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                        {filterTransactions(activeTab).map((transaction) => {
+                          // Extraire les infos de l'annonce si disponible
+                          const listingTitle = transaction.listing?.title || transaction.metadata?.listing_title || 'Annonce';
+                          const transactionType = transaction.type === 'boost' ? '⚡ Boost' : '💳 Paiement';
 
-                      <div className="text-right">
-                        <p className="text-lg font-bold">
-                          {formatAmount(transaction.amount, transaction.currency)}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {/* TODO: Voir détails */}}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                          return (
+                            <div
+                              key={transaction.id}
+                              className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                            >
+                              <div className="flex items-center space-x-4 flex-1">
+                                <div className="rounded-full bg-primary/10 p-3">
+                            {transaction.type === 'boost' ? (
+                              <TrendingUp className="h-5 w-5 text-primary" />
+                            ) : (
+                                <CreditCard className="h-5 w-5 text-primary" />
+                            )}
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">
+                                {transaction.description || `${transactionType} - ${listingTitle}`}
+                              </p>
+                              {getStatusBadge(transaction.status)}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                              <span className="flex items-center">
+                                <span className="font-mono text-xs">
+                                  {transaction.payment_reference || transaction.id.slice(0, 8)}
+                                </span>
+                              </span>
+                              {transaction.payment_method && (
+                                <>
+                                  <span className="hidden sm:inline">•</span>
+                                  <span className="capitalize">{transaction.payment_method}</span>
+                                </>
+                              )}
+                              <span className="hidden sm:inline">•</span>
+                              <span className="text-xs sm:text-sm">
+                                {transaction.created_at
+                                  ? format(new Date(transaction.created_at), 'PPp', { locale: fr })
+                                  : 'N/A'
+                                }
+                              </span>
+                            </div>
+
+                            {/* Afficher les détails du package si c'est un boost */}
+                            {transaction.type === 'boost' && transaction.metadata?.package_name && (
+                              <div className="mt-1">
+                                <Badge variant="outline" className="text-xs">
+                                  {transaction.metadata.package_name}
+                                  {transaction.metadata.duration_days && ` - ${transaction.metadata.duration_days} jours`}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-lg font-bold">
+                            {formatAmount(transaction.amount, transaction.currency)}
+                          </p>
+                          {transaction.listing && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/annonce/${transaction.listing.id}`)}
+                              className="mt-1"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              <span className="text-xs">Voir l'annonce</span>
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </Tabs>

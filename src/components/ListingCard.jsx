@@ -115,8 +115,10 @@ const ListingCard = ({ listing, onToggleFavorite, showActions = true, showNewBad
     setIsFavorite(listing.is_favorite || false);
   }, [listing.is_favorite]);
 
-  // Vérifier si l'annonce est premium
-  const isPremium = listing.featured || listing.boosted || listing.is_premium || listing.premium;
+  // Vérifier si l'annonce est premium (supporter tous les formats de noms)
+  const isPremium = listing.featured || listing.is_featured ||
+    listing.boosted || listing.is_boosted ||
+    listing.is_premium || listing.premium;
   
   return (
     <motion.div

@@ -279,21 +279,14 @@ const BoostStatus = ({
 
         {/* Bouton booster si pas de boost actif */}
         {showActions && !boostStatus?.hasActiveBoost && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={() => navigate(`/paiement/boost/${listingId}`)}
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 hover:bg-primary/10"
-              >
-                <TrendingUp className={`${iconSize} text-primary`} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Booster cette annonce</p>
-            </TooltipContent>
-          </Tooltip>
+          <Button
+            onClick={() => navigate(`/paiement/boost/${listingId}`)}
+            size="sm"
+            className="h-8 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white text-sm px-3"
+          >
+            <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+            Booster
+          </Button>
         )}
 
         {/* Indicateur de chargement */}
