@@ -1,0 +1,69 @@
+name: Newsletter Automation
+
+on:
+  schedule:
+    # Newsletter hebdomadaire: Tous les lundis à 10h00 UTC
+    - cron: '0 17 * * 1'
+    # Newsletter mensuelle: Le 1er de chaque mois à 10h00 UTC
+    - cron: '0 10 1 * *'
+  
+  # Permet de déclencher manuellement
+  workflow_dispatch:
+    inputs:
+      newsletter_type:
+        description: 'Type de newsletter'
+        required: true
+        default: 'weekly'
+        type: choice
+        options:
+          - weekly
+          - monthly
+
+jobs:
+  send-newsletter:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Determine newsletter type
+        id: newsletter-type
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ github.event.inputs.newsletter_type }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%d)" = "01" ]; then
+            echo "type=monthly" >> $GITHUB_OUTPUT
+          else
+            echo "type=weekly" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Send Weekly Newsletter
+        if: steps.newsletter-type.outputs.type == 'weekly'
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_BREVO_API_KEY: ${{ secrets.VITE_BREVO_API_KEY }}
+        run: node scripts/send-weekly-newsletter.js
+      
+      - name: Send Monthly Newsletter
+        if: steps.newsletter-type.outputs.type == 'monthly'
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_BREVO_API_KEY: ${{ secrets.VITE_BREVO_API_KEY }}
+        run: node scripts/send-monthly-newsletter.js
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Newsletter automation failed!"
+          echo "Check the logs above for details"
