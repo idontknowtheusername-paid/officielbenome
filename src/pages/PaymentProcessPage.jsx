@@ -537,7 +537,7 @@ const PaymentProcessPage = () => {
                     </Button>
                     
                     <Button
-                      onClick={() => navigate(`/booster-annonce/${boostData?.listing_id}`)}
+                      onClick={() => navigate(`/paiement/boost/${boostData?.listing_id}`)}
                       className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg"
                     >
                       <TrendingUp className="h-4 w-4 mr-2" />

@@ -40,7 +40,7 @@ const BoostPackageSelector = ({ listingId, onPackageSelected, onClose }) => {
 
   const handlePurchase = async () => {
     if (!user) {
-      navigate('/connexion', { state: { from: '/booster-annonce' } });
+      navigate('/connexion', { state: { from: '/paiement/boost' } });
       return;
     }
 

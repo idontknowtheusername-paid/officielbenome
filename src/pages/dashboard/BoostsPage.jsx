@@ -328,7 +328,7 @@ const BoostsPage = () => {
             {status.status === 'expired' && (
               <div className="text-center py-2">
                 <Button
-                  onClick={() => navigate(`/booster-annonce/${boost.listing_id}`)}
+                  onClick={() => navigate(`/paiement/boost/${boost.listing_id}`)}
                   variant="outline"
                   size="sm"
                   className="w-full"

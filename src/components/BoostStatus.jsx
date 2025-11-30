@@ -262,7 +262,7 @@ const BoostStatus = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  onClick={() => navigate(`/booster-annonce/${listingId}`)}
+                  onClick={() => navigate(`/paiement/boost/${listingId}`)}
                   variant="ghost"
                   size="sm"
                   className="h-6 w-6 p-0 hover:bg-blue-500/10"
@@ -282,7 +282,7 @@ const BoostStatus = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                onClick={() => navigate(`/booster-annonce/${listingId}`)}
+                onClick={() => navigate(`/paiement/boost/${listingId}`)}
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 hover:bg-primary/10"

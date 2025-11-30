@@ -64,7 +64,7 @@ function BoostPage() {
   };
 
   const handleBoostListing = (listingId) => {
-    navigate(`/booster-annonce/${listingId}`);
+      navigate(`/paiement/boost/${listingId}`);
   };
 
   const filteredListings = listings?.filter(listing =>

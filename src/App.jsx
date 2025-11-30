@@ -50,6 +50,7 @@ import BoostListingPage from '@/pages/BoostListingPage';
 import PaymentProcessPage from '@/pages/PaymentProcessPage';
 import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
 import BoostPage from '@/pages/BoostPage';
+import BoostPaymentPage from '@/pages/payment/BoostPaymentPage';
 import UserTransactionsPage from '@/pages/UserTransactionsPage';
 import FedaPayTestPage from '@/pages/FedaPayTestPage';
 import MobileTestPage from '@/pages/MobileTestPage';
@@ -195,7 +196,17 @@ function App() {
                     } 
                   />
                   
-                  {/* Paiement pour boost */}
+                  {/* Paiement pour boost - Nouveau système Lygos */}
+                  <Route
+                    path="paiement/boost/:listingId"
+                    element={
+                      <ProtectedRoute>
+                        <BoostPaymentPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Paiement pour boost - Ancien système (à supprimer) */}
                   <Route 
                     path="paiement/:boostId" 
                     element={

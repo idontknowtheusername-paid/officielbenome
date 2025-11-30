@@ -55,16 +55,8 @@ const BoostListingPage = () => {
     setPurchaseResult(result);
     setShowPackageSelector(false);
     
-    // Rediriger vers la page de paiement
-    if (result.boostId) {
-      navigate(`/paiement/${result.boostId}`);
-    } else {
-      toast({
-        title: 'Erreur',
-        description: 'Erreur lors de la création du boost. Veuillez réessayer.',
-        variant: 'destructive',
-      });
-    }
+    // Rediriger vers la nouvelle page de paiement Lygos
+    navigate(`/paiement/boost/${listingId}`);
   };
 
   const handleRenewBoost = async () => {
@@ -270,7 +262,7 @@ const BoostListingPage = () => {
                         Votre annonce n'est actuellement pas boostée
                       </p>
                       <Button
-                        onClick={() => setShowPackageSelector(true)}
+                          onClick={() => navigate(`/paiement/boost/${listingId}`)}
                         className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
                       >
                         🚀 Booster maintenant
@@ -303,7 +295,7 @@ const BoostListingPage = () => {
                     Augmentez votre visibilité et obtenez plus de contacts
                   </p>
                   <Button
-                    onClick={() => setShowPackageSelector(true)}
+                    onClick={() => navigate(`/paiement/boost/${listingId}`)}
                     className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
                   >
                     Commencer maintenant
