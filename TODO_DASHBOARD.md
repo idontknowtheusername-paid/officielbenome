@@ -122,4 +122,4 @@ Une interface "Mon Compte" moderne et complète qui rivalise avec les meilleures
 
 ----
 
-*Dernière mise à jour : $(date)* 
+*Dernière mise à jour : $(date)* .
