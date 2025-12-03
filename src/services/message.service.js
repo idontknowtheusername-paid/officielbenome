@@ -168,7 +168,7 @@ export const messageService = {
           message_type
         `)
         .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false }); // Plus récents en premier pour pagination
 
       // Appliquer la pagination si spécifiée
       if (from !== undefined && to !== undefined) {

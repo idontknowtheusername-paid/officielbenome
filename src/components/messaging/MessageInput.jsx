@@ -108,8 +108,24 @@ const MessageInput = ({
 
   // Gérer la création de rendez-vous
   const handleAppointmentCreate = (appointment) => {
-    // Créer un message avec le rendez-vous
-    const appointmentMessage = `📅 Rendez-vous planifié\nTitre: ${appointment.title}\nDate: ${new Date(appointment.date).toLocaleDateString('fr-FR')}\nHeure: ${appointment.time}${appointment.location ? `\nLieu: ${appointment.location}` : ''}${appointment.description ? `\nDescription: ${appointment.description}` : ''}`;
+    // Formater la date en français
+    const dateObj = new Date(appointment.date);
+    const dateFormatted = dateObj.toLocaleDateString('fr-FR', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+
+    // Créer un message avec le rendez-vous (format simple)
+    const appointmentMessage = `📅 RENDEZ-VOUS
+
+Titre : ${appointment.title}
+Date  : ${dateFormatted}
+Heure : ${appointment.time}${appointment.location ? `
+Lieu  : ${appointment.location}` : ''}${appointment.description ? `
+
+📝 ${appointment.description}` : ''}`;
     
     if (onAttachment) {
       // Créer un objet de rendez-vous pour l'attachement
@@ -125,11 +141,9 @@ const MessageInput = ({
   const quickActions = [
     { icon: Image, label: 'Photo', action: () => setShowFileUpload(true) },
     { icon: Camera, label: 'Caméra', action: () => setShowCamera(true) },
-    { icon: File, label: 'Document', action: () => setShowFileUpload(true) },
     { icon: MapPin, label: 'Localisation', action: () => setShowLocationPicker(true) },
     { icon: Calendar, label: 'Rendez-vous', action: () => setShowAppointmentScheduler(true) },
-    { icon: Phone, label: 'Appel', action: () => setShowAudioCall(true) },
-    { icon: Video, label: 'Vidéo', action: () => console.log('Vidéo - Phase 3') }
+    { icon: Phone, label: 'Appel', action: () => setShowAudioCall(true) }
   ];
 
   return (
@@ -182,43 +196,11 @@ const MessageInput = ({
             onChange={onChange}
             onKeyPress={handleKeyPress}
             disabled={disabled}
-            className="pr-20 resize-none"
+            className="resize-none"
             style={{ minHeight: '44px' }}
           />
-          
-          {/* Actions dans la zone de saisie */}
-          <div className="absolute right-2 bottom-2 flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="p-1 h-6 w-6"
-            >
-              <Smile className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="p-1 h-6 w-6"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-          </div>
 
-          {/* Emoji Picker */}
-          {showEmojiPicker && (
-            <div className="absolute bottom-full right-0 mb-2 z-50">
-              <EmojiPicker
-                onEmojiClick={handleEmojiClick}
-                width={320}
-                height={400}
-                searchPlaceholder="Rechercher un emoji..."
-                previewConfig={{ showPreview: false }}
-              />
-            </div>
-          )}
+
         </div>
 
         {/* Bouton d'envoi */}

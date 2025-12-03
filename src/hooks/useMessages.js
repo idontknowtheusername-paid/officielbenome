@@ -803,8 +803,8 @@ export const useConversation = (conversationId) => {
   // Activer le realtime pour cette conversation
   useRealtimeMessages(conversationId);
 
-  // Aplatir les pages de messages
-  const messages = data?.pages.flat() || [];
+  // Aplatir les pages de messages et inverser pour affichage chronologique
+  const messages = data?.pages.flat().reverse() || [];
 
   // Fonction helper pour marquer comme lu
   const handleMarkAsRead = () => {

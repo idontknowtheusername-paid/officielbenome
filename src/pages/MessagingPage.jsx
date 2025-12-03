@@ -290,6 +290,12 @@ const MessagingPageContent = () => {
         setMessages(prev => [...data, ...prev]); // Ajouter au début
       } else {
         setMessages(data);
+        // Scroll vers le bas après le chargement initial
+        setTimeout(() => {
+          if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+          }
+        }, 100);
       }
 
       // Si moins de messages que la taille de page, on a tout chargé
@@ -419,10 +425,59 @@ const MessagingPageContent = () => {
   }, [selectedConversation, refetch, toast]);
 
   // Gérer les pièces jointes - Optimisé avec useCallback
-  const handleAttachment = useCallback((files) => {
-    logger.log('Fichiers sélectionnés:', files);
-    // Pas de notification toast pour les pièces jointes sélectionnées
-  }, []);
+  const handleAttachment = useCallback(async (files) => {
+    logger.log('Fichiers/Attachements reçus:', files);
+
+    if (!selectedConversation) {
+      toast({
+        title: "Erreur",
+        description: "Aucune conversation sélectionnée",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    for (const file of files) {
+      try {
+        // Si c'est une localisation
+        if (file.type === 'location') {
+          logger.log('📍 Envoi de localisation:', file.data);
+          await handleSendMessage(file.message);
+          toast({
+            title: "Localisation partagée",
+            description: "Votre position a été envoyée",
+          });
+        }
+
+        // Si c'est un rendez-vous
+        else if (file.type === 'appointment') {
+          logger.log('📅 Envoi de rendez-vous:', file.data);
+          await handleSendMessage(file.message);
+          toast({
+            title: "Rendez-vous créé",
+            description: `Rendez-vous "${file.data.title}" planifié`,
+          });
+        }
+
+        // Si c'est un fichier normal (photo, etc.)
+        else {
+          logger.log('📎 Upload de fichier:', file.name || 'fichier');
+          toast({
+            title: "Fichier sélectionné",
+            description: "Upload de fichiers en cours de développement",
+          });
+          // TODO: Implémenter l'upload vers Supabase Storage
+        }
+      } catch (error) {
+        logger.error('Erreur envoi attachement:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'envoyer l'attachement",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [selectedConversation, handleSendMessage, toast]);
 
   // Gérer les emojis - Optimisé avec useCallback
   const handleEmoji = useCallback(() => {

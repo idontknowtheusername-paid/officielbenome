@@ -6,6 +6,7 @@ export { default as MessageBubble } from './MessageBubble';
 export { default as CameraCapture } from './CameraCapture';
 export { default as FileUpload } from './FileUpload';
 export { default as LocationPicker } from './LocationPicker';
+export { default as LocationMessage } from './LocationMessage';
 export { default as AppointmentScheduler } from './AppointmentScheduler';
 export { default as InteractiveMap } from './InteractiveMap';
 export { default as AudioCallInterface } from './AudioCallInterface';

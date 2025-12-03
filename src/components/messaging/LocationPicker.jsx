@@ -292,7 +292,7 @@ const LocationPicker = ({
             </div>
 
             {/* Contenu principal */}
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]">
               {/* Barre de recherche */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -393,8 +393,8 @@ const LocationPicker = ({
                     <div className="flex-1">
                       <h4 className="font-medium text-primary mb-2">Localisation sélectionnée</h4>
                       <div className="space-y-1 text-sm">
-                        <p><strong>Latitude :</strong> {selectedLocation.latitude.toFixed(6)}</p>
-                        <p><strong>Longitude :</strong> {selectedLocation.longitude.toFixed(6)}</p>
+                        <p><strong>Latitude :</strong> {Number(selectedLocation.latitude).toFixed(6)}</p>
+                        <p><strong>Longitude :</strong> {Number(selectedLocation.longitude).toFixed(6)}</p>
                         {selectedLocation.name && (
                           <p><strong>Nom :</strong> {selectedLocation.name}</p>
                         )}
@@ -402,7 +402,7 @@ const LocationPicker = ({
                           <p><strong>Adresse :</strong> {selectedLocation.address}</p>
                         )}
                         {selectedLocation.accuracy && (
-                          <p><strong>Précision :</strong> {Math.round(selectedLocation.accuracy)} mètres</p>
+                          <p><strong>Précision :</strong> {Math.round(Number(selectedLocation.accuracy))} mètres</p>
                         )}
                         <p><strong>Source :</strong> {selectedLocation.source}</p>
                         <p><strong>Heure :</strong> {new Date(selectedLocation.timestamp).toLocaleTimeString()}</p>

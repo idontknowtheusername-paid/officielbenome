@@ -11,16 +11,16 @@ const SocialLinks = () => {
       name: 'Facebook',
       icon: Facebook,
       url: personalData.socials.facebook,
-      color: 'hover:bg-blue-600 hover:text-white',
-      bgColor: 'bg-blue-50 dark:bg-blue-950'
+      color: 'text-white hover:scale-105',
+      bgColor: 'bg-blue-600 hover:bg-blue-700'
     },
     {
       id: 'instagram',
       name: 'Instagram',
       icon: Instagram,
       url: personalData.socials.instagram,
-      color: 'hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600 hover:text-white',
-      bgColor: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950'
+      color: 'text-white hover:scale-105',
+      bgColor: 'bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 hover:from-purple-700 hover:via-pink-700 hover:to-orange-600'
     },
     {
       id: 'tiktok',
@@ -31,24 +31,36 @@ const SocialLinks = () => {
         </svg>
       ),
       url: personalData.socials.tiktok,
-      color: 'hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black',
-      bgColor: 'bg-gray-50 dark:bg-gray-900'
+      color: 'text-white hover:scale-105',
+      bgColor: 'bg-black hover:bg-gray-900'
     },
     {
       id: 'twitter',
       name: 'X (Twitter)',
       icon: Twitter,
       url: personalData.socials.twitter,
-      color: 'hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black',
-      bgColor: 'bg-gray-50 dark:bg-gray-900'
+      color: 'text-white hover:scale-105',
+      bgColor: 'bg-black hover:bg-gray-900'
     },
     {
       id: 'whatsapp',
       name: 'WhatsApp',
       icon: MessageCircle,
       url: personalData.socials.whatsapp,
-      color: 'hover:bg-green-600 hover:text-white',
-      bgColor: 'bg-green-50 dark:bg-green-950'
+      color: 'text-white hover:scale-105',
+      bgColor: 'bg-green-600 hover:bg-green-700'
+    },
+    {
+      id: 'threads',
+      name: 'Threads',
+      icon: () => (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+          <path d="M12.186 3.998a8.188 8.188 0 1 0 0 16.376 8.188 8.188 0 0 0 0-16.376zm4.606 11.531c-.315.325-.766.527-1.314.588-.549.061-1.176-.016-1.801-.231a6.277 6.277 0 0 1-1.138-.527 7.716 7.716 0 0 1-.748-.495 3.694 3.694 0 0 1-.748-.748 2.456 2.456 0 0 1-.495-1.138c-.061-.549-.016-1.176.231-1.801.247-.625.588-1.138 1.014-1.514.426-.376.927-.625 1.476-.748.549-.123 1.138-.123 1.726 0 .588.123 1.138.376 1.601.748.463.372.825.825 1.076 1.352.251.527.376 1.138.376 1.801 0 .663-.125 1.274-.376 1.801-.251.527-.613.98-1.076 1.352-.463.372-1.013.625-1.601.748-.588.123-1.177.123-1.726 0-.549-.123-1.05-.372-1.476-.748-.426-.376-.767-.889-1.014-1.514-.247-.625-.292-1.252-.231-1.801.061-.549.263-1.05.588-1.476.325-.426.748-.748 1.252-.964.504-.216 1.076-.325 1.676-.325.6 0 1.172.109 1.676.325.504.216.927.538 1.252.964.325.426.527.927.588 1.476.061.549.016 1.176-.231 1.801z" />
+        </svg>
+      ),
+      url: personalData.socials.threads,
+      color: 'text-white hover:scale-105',
+      bgColor: 'bg-black hover:bg-gray-900'
     }
   ].filter(network => network.url);
 
@@ -61,7 +73,7 @@ const SocialLinks = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {socialNetworks.map((network) => {
             const IconComponent = network.icon;
             return (

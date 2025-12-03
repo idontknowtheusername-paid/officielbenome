@@ -16,6 +16,7 @@ export const personalData = {
     tiktok: "https://tiktok.com/@maximarket_afrique",
     twitter: "https://twitter.com/maximarket",
     whatsapp: "https://wa.me/2290152185813",
+    threads: "https://threads.net/@maximarket_afrique",
   },
   skills: [
     // You can repurpose this for something else if needed, or remove

@@ -95,7 +95,8 @@ const MessageCenter = () => {
     try {
       console.log('🔄 Chargement des messages avec temps réel...');
       const data = await messageService.getConversationMessages(convId);
-      setMessages(data);
+      // Inverser pour affichage chronologique (anciens en haut, récents en bas)
+      setMessages(data.reverse());
       
       // Marquer comme lus
       await messageService.markMessagesAsRead(convId);
@@ -625,6 +626,23 @@ const MessageCenter = () => {
                 </motion.div>
               ) : (
                 <AnimatePresence>
+                      {/* Indicateur de début de conversation */}
+                      {messages.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center py-4"
+                        >
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-500">
+                            <span>📜</span>
+                            <span>Début de la conversation</span>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-2">
+                            💡 Appui long sur un message pour activer la sélection multiple
+                          </p>
+                        </motion.div>
+                      )}
+
                   {messages.map((message, index) => {
                     const isOwnMessage = message.sender_id === user?.id;
 

@@ -154,7 +154,7 @@ const AppointmentScheduler = ({
             </div>
 
             {/* Contenu principal */}
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]">
               <h4 className="font-medium">Sélectionnez une date et une heure</h4>
               
               {/* Sélection de date */}

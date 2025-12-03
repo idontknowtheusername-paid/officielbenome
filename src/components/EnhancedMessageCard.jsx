@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/button';
 import AttachmentPreview from './AttachmentPreview';
+import LocationMessage from './messaging/LocationMessage';
 
 const EnhancedMessageCard = ({ 
   message, 
@@ -124,13 +125,55 @@ const EnhancedMessageCard = ({
 
   // Déterminer le type de contenu
   const getContentType = () => {
+    // Détecter message de localisation
+    if (message.content && message.content.includes('📍 Localisation partagée')) {
+      return 'location';
+    }
     if (message.attachments && message.attachments.length > 0) {
+      const hasLocation = message.attachments.some(a => a.type === 'location');
+      if (hasLocation) return 'location';
       return 'with-attachments';
     }
     if (message.content_type === 'file') {
       return 'file';
     }
     return 'text';
+  };
+
+  // Parser les données de localisation depuis le message
+  const parseLocationData = () => {
+    if (!message.content) return null;
+
+    try {
+      // Extraire lat/lng du message texte
+      const latMatch = message.content.match(/Lat:\s*([-\d.]+)/);
+      const lngMatch = message.content.match(/Lng:\s*([-\d.]+)/);
+      const lieuMatch = message.content.match(/Lieu:\s*(.+)/);
+
+      if (latMatch && lngMatch) {
+        return {
+          lat: parseFloat(latMatch[1]),
+          lng: parseFloat(lngMatch[1]),
+          name: lieuMatch ? lieuMatch[1].trim() : null
+        };
+      }
+
+      // Ou depuis les attachments
+      if (message.attachments) {
+        const locationAttachment = message.attachments.find(a => a.type === 'location');
+        if (locationAttachment && locationAttachment.data) {
+          return {
+            lat: locationAttachment.data.latitude,
+            lng: locationAttachment.data.longitude,
+            name: locationAttachment.data.name
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Erreur parsing localisation:', error);
+    }
+
+    return null;
   };
 
   // Rendu du contenu texte
@@ -140,6 +183,26 @@ const EnhancedMessageCard = ({
     return (
       <div className="whitespace-pre-wrap break-words leading-relaxed">
         {message.content}
+      </div>
+    );
+  };
+
+  // Rendu du message de localisation
+  const renderLocationContent = () => {
+    if (getContentType() !== 'location') return null;
+
+    const locationData = parseLocationData();
+    if (!locationData) return null;
+
+    return (
+      <div className="mt-2 -mx-3 -mb-3">
+        <LocationMessage
+          initialLocation={locationData}
+          isLiveTracking={false}
+          sender={!isOwnMessage ? { name: message.sender_name || 'Utilisateur' } : null}
+          timestamp={message.created_at}
+          mode="view"
+        />
       </div>
     );
   };
@@ -306,6 +369,7 @@ const EnhancedMessageCard = ({
         >
           {/* Contenu du message */}
           {renderTextContent()}
+          {renderLocationContent()}
           {renderAttachments()}
           {renderFileContent()}
 
