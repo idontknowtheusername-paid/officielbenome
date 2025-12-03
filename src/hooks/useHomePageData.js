@@ -11,7 +11,7 @@ const CACHE_KEYS = {
   LAST_UPDATE: 'homepage-last-update'
 };
 
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes (réduit pour voir rapidement les changements)
 
 export const useHomePageData = () => {
   const [heroListings, setHeroListings] = useState([]);

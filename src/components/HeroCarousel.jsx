@@ -213,8 +213,8 @@ const HeroCarousel = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Overlay sombre */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+        {/* Overlay adaptatif */}
+        <div className="absolute inset-0 bg-white/20 dark:bg-black/40 backdrop-blur-[2px]"></div>
 
         {/* Contenu principal */}
         <div className="hero-content">
@@ -231,7 +231,7 @@ const HeroCarousel = () => {
                 <span className="mr-2">{currentSlide.categoryIcon}</span>
                 {currentSlide.categoryLabel}
               </Badge>
-              <Badge variant="outline" className="text-white/90 border-white/30 text-sm px-4 py-2">
+              <Badge variant="outline" className="text-slate-700 dark:text-white/90 border-slate-400/30 dark:border-white/30 text-sm px-4 py-2">
                 <Clock className="h-4 w-4 mr-2" />
                 {currentTime.timeSlot} • {currentTime.hour}h
               </Badge>
@@ -243,7 +243,7 @@ const HeroCarousel = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="hero-title text-white"
+              className="hero-title text-slate-900 dark:text-white"
             >
               {currentSlide.title}
             </motion.h1>
@@ -254,7 +254,7 @@ const HeroCarousel = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.5 }}
-              className="hero-subtitle text-gray-100"
+              className="hero-subtitle text-slate-700 dark:text-gray-100"
             >
               {currentSlide.subtitle}
             </motion.p>

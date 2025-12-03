@@ -12,7 +12,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Immobilier',
     categoryIcon: '🏠',
     mockupType: 'gradient-pattern',
-    gradient: 'from-gray-600 via-gray-500 to-slate-400',
+    gradient: 'from-gray-100 via-gray-200 to-slate-300 dark:from-gray-900 dark:via-slate-800 dark:to-black',
     pattern: 'dots',
     ctaText: 'Voir les annonces',
     ctaLink: '/marketplace/real-estate'
@@ -25,7 +25,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Automobile',
     categoryIcon: '🚗',
     mockupType: 'gradient-pattern',
-    gradient: 'from-blue-900 via-blue-800 to-black',
+    gradient: 'from-blue-50 via-blue-100 to-white dark:from-blue-900 dark:via-blue-950 dark:to-black',
     pattern: 'grid',
     ctaText: 'Découvrir',
     ctaLink: '/marketplace/automobile'
@@ -38,7 +38,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Services',
     categoryIcon: '🔧',
     mockupType: 'gradient-pattern',
-    gradient: 'from-gray-600 via-gray-500 to-slate-400',
+    gradient: 'from-gray-100 via-gray-200 to-slate-300 dark:from-gray-900 dark:via-slate-800 dark:to-black',
     pattern: 'diagonal',
     ctaText: 'Explorer',
     ctaLink: '/marketplace/services'
@@ -51,7 +51,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Marketplace',
     categoryIcon: '🛍️',
     mockupType: 'gradient-pattern',
-    gradient: 'from-blue-900 via-blue-800 to-black',
+    gradient: 'from-blue-50 via-blue-100 to-white dark:from-blue-900 dark:via-blue-950 dark:to-black',
     pattern: 'waves',
     ctaText: 'Parcourir',
     ctaLink: '/marketplace'
@@ -64,7 +64,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'Vendre',
     categoryIcon: '💼',
     mockupType: 'gradient-pattern',
-    gradient: 'from-gray-600 via-gray-500 to-slate-400',
+    gradient: 'from-gray-100 via-gray-200 to-slate-300 dark:from-gray-900 dark:via-slate-800 dark:to-black',
     pattern: 'circles',
     ctaText: 'Créer une annonce',
     ctaLink: '/creer-annonce'
@@ -77,7 +77,7 @@ export const HERO_SLIDES = [
     categoryLabel: 'À propos',
     categoryIcon: '⭐',
     mockupType: 'gradient-pattern',
-    gradient: 'from-blue-900 via-blue-800 to-black',
+    gradient: 'from-blue-50 via-blue-100 to-white dark:from-blue-900 dark:via-blue-950 dark:to-black',
     pattern: 'mesh',
     ctaText: 'En savoir plus',
     ctaLink: '/a-propos'

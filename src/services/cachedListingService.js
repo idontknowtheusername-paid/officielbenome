@@ -3,13 +3,13 @@ import { localCache } from '@/lib/localCache';
 
 // Configuration des TTL par type de données (optimisée)
 const CACHE_TTL = {
-  listings: 10 * 60 * 1000, // 10 minutes (au lieu de 2)
-  categories: 60 * 60 * 1000, // 1 heure (au lieu de 10 min)
-  userListings: 5 * 60 * 1000, // 5 minutes (au lieu de 1)
-  searchResults: 15 * 60 * 1000, // 15 minutes (au lieu de 5)
+  listings: 10 * 60 * 1000, // 10 minutes
+  categories: 60 * 60 * 1000, // 1 heure
+  userListings: 5 * 60 * 1000, // 5 minutes
+  searchResults: 15 * 60 * 1000, // 15 minutes
   heroListings: 30 * 60 * 1000, // 30 minutes pour les hero listings
-  popularListings: 20 * 60 * 1000, // 20 minutes pour les populaires
-  premiumListings: 25 * 60 * 1000, // 25 minutes pour les premium
+  popularListings: 10 * 60 * 1000, // 10 minutes pour les populaires
+  premiumListings: 5 * 60 * 1000, // 5 minutes pour les premium (réduit pour voir rapidement les nouveaux boosts)
 };
 
 export const cachedListingService = {

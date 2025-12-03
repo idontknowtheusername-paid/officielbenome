@@ -71,7 +71,7 @@ const HomePage = () => {
         <div className="absolute bottom-0 left-0 right-0 z-20 pb-4 md:hidden">
                 <div className="container mx-auto px-4 md:px-6">
                   {/* Titre */}
-                  <h2 className="text-white text-center text-lg md:text-xl font-bold mb-3 md:mb-4 drop-shadow-lg">
+            <h2 className="text-slate-900 dark:text-white text-center text-base md:text-lg font-bold mb-3 md:mb-4 drop-shadow-lg">
                     Explorez nos catégories
                   </h2>
                   <div className="grid grid-cols-2 gap-2 md:gap-3 max-w-xl md:max-w-2xl mx-auto">
@@ -83,9 +83,9 @@ const HomePage = () => {
                         initial="hidden"
                         animate="visible"
                         onClick={() => handleCategoryClick(category.path)}
-                        className="bg-white/40 dark:bg-card/40 backdrop-blur-md p-2 md:p-3 rounded-md shadow-lg hover:shadow-primary/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center border border-white/5 hover:border-primary/40 cursor-pointer group"
+                        className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2 md:p-3 rounded-md shadow-lg hover:shadow-primary/30 transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center text-center border border-white/20 dark:border-white/10 hover:border-primary/40 cursor-pointer group"
                       >
-                        <div className="text-2xl md:text-3xl mb-1">{category.icon}</div>
+                        <div className="text-2xl md:text-3xl mb-1 text-primary dark:text-white">{category.icon}</div>
                         <h3 className="text-xs md:text-sm font-semibold mb-0.5 group-hover:text-primary transition-colors">
                           {category.name}
                         </h3>
@@ -93,7 +93,7 @@ const HomePage = () => {
                           {category.description}
                         </p>
                         <div className="w-full text-primary group-hover:text-white transition-all duration-300 flex items-center justify-center">
-                          <span className="text-[10px] md:text-xs font-medium">Voir</span>
+                          <span className="text-[10px] md:text-xs font-semibold">Voir</span>
                           <ArrowRight className="ml-0.5 md:ml-1 h-2.5 w-2.5 md:h-3 md:w-3 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                         </div>
                       </motion.div>
@@ -103,81 +103,65 @@ const HomePage = () => {
           </div>
       </div>
 
-      {/* Premium Listings */}
-      <section className="py-8 md:py-12 bg-background/30">
-        <div className="container mx-auto px-4 md:px-6">
-          <motion.h2
-            className="text-3xl md:text-4xl font-bold text-center mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            ⭐ Annonces <span className="gradient-text">Premium</span>
-          </motion.h2>
+      {/* Premium Listings - Masquer si vide */}
+      {(loading.premium || premiumListings.length > 0) && (
+        <section className="py-8 md:py-12 bg-background/30">
+          <div className="container mx-auto px-4 md:px-6">
+            <motion.h2
+              className="text-3xl md:text-4xl font-bold text-center mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              ⭐ Annonces <span className="gradient-text">Premium</span>
+            </motion.h2>
 
-          {error.premium && (
-            <p className="text-center text-destructive mb-8">{error.premium}</p>
-          )}
+            {error.premium && (
+              <p className="text-center text-destructive mb-8">{error.premium}</p>
+            )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {loading.premium &&
-              !premiumListings.length &&
-              Array.from({ length: 10 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="bg-gradient-to-br from-amber-50/80 to-yellow-100/80 rounded-lg shadow-xl overflow-hidden glassmorphic-card border-2 border-amber-300/50"
-                >
-                  <div className="h-40 sm:h-48 md:h-56 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 animate-pulse" />
-                  <div className="p-3 sm:p-4 md:p-6">
-                    <div className="h-6 w-3/4 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 rounded mb-3 animate-pulse" />
-                    <div className="h-4 w-1/2 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 rounded mb-4 animate-pulse" />
-                    <div className="h-10 w-1/3 bg-gradient-to-r from-amber-300/50 to-yellow-300/50 rounded animate-pulse" />
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+              {loading.premium &&
+                !premiumListings.length &&
+                Array.from({ length: 10 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-gradient-to-br from-amber-50/80 to-yellow-100/80 rounded-lg shadow-xl overflow-hidden glassmorphic-card border-2 border-amber-300/50"
+                  >
+                    <div className="h-40 sm:h-48 md:h-56 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 animate-pulse" />
+                    <div className="p-3 sm:p-4 md:p-6">
+                      <div className="h-6 w-3/4 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 rounded mb-3 animate-pulse" />
+                      <div className="h-4 w-1/2 bg-gradient-to-r from-amber-200/50 to-yellow-200/50 rounded mb-4 animate-pulse" />
+                      <div className="h-10 w-1/3 bg-gradient-to-r from-amber-300/50 to-yellow-300/50 rounded animate-pulse" />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-            {!loading.premium && premiumListings.length === 0 && (
-              <div className="col-span-full text-center py-16">
-                <div className="text-6xl mb-4">⭐</div>
-                <h3 className="text-2xl font-semibold mb-2">
-                  Aucune annonce premium pour le moment
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  Soyez le premier à passer premium et boostez votre visibilité
-                  !
-                </p>
+              {premiumListings.slice(0, 10).map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  showActions={false}
+                />
+              ))}
+            </div>
+
+            {premiumListings.length > 0 && (
+              <div className="text-center mt-8">
                 <Button
-                  onClick={() => navigate("/creer-annonce")}
-                  variant="outline"
-                  className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                  size="lg"
+                  variant="default"
+                  className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-lg"
+                  onClick={() => navigate("/premium")}
                 >
-                  Créer une Annonce Premium
+                  Voir Toutes les Annonces Premium{" "}
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
             )}
-
-            {premiumListings.slice(0, 10).map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                showActions={false}
-              />
-            ))}
           </div>
-
-          <div className="text-center mt-8">
-            <Button
-              size="lg"
-              variant="default"
-              className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-lg"
-              onClick={() => navigate("/premium")}
-            >
-              Voir Toutes les Annonces Premium{" "}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Popular Listings */}
       <section className="py-5 md:py-7 bg-background/30">

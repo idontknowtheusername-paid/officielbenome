@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Clear Cache</title></head>
+<body>
+<h1>Vider le cache MaxiMarket</h1>
+<button onclick="clearCache()">Vider le cache</button>
+<div id="result"></div>
+<script>
+function clearCache() {
+  localStorage.clear();
+  sessionStorage.clear();
+  document.getElementById('result').innerHTML = '<p style="color:green">✅ Cache vidé ! Rechargez la page d\'accueil.</p>';
+}
+</script>
+</body>
+</html>

@@ -983,23 +983,35 @@ export const listingService = {
 
       if (allError) throw allError;
 
-      // Enrichir les données avec les métadonnées premium
-      const enrichedPremium = allPremium.map(listing => {
-        const boostData = listing.listing_boosts?.[0];
-        const packageFeatures = boostData?.boost_packages?.features;
-        
-        return {
-          ...listing,
-          premium_metadata: {
-            priority: packageFeatures?.priority || 'medium',
-            badge: packageFeatures?.badge || 'boosted',
-            featured: packageFeatures?.featured || false,
-            analytics: packageFeatures?.analytics || 'basic',
-            support: packageFeatures?.support || 'standard'
-          },
-          boost_expires_at: boostData?.end_date || null
-        };
-      });
+      // Filtrer les annonces expirées et enrichir les données
+      const now = new Date();
+      const enrichedPremium = allPremium
+        .map(listing => {
+          const boostData = listing.listing_boosts?.[0];
+          const packageFeatures = boostData?.boost_packages?.features;
+          const endDate = boostData?.end_date;
+          
+          return {
+            ...listing,
+            premium_metadata: {
+              priority: packageFeatures?.priority || 'medium',
+              badge: packageFeatures?.badge || 'boosted',
+              featured: packageFeatures?.featured || false,
+              analytics: packageFeatures?.analytics || 'basic',
+              support: packageFeatures?.support || 'standard'
+            },
+            boost_expires_at: endDate || null,
+            is_boost_active: endDate ? new Date(endDate) > now : listing.is_featured
+          };
+        })
+        .filter(listing => {
+          // Garder les annonces featured sans boost OU les annonces avec boost actif
+          if (listing.is_featured && !listing.is_boosted) return true;
+          if (listing.is_boosted && listing.is_boost_active) return true;
+          return false;
+        });
+
+      console.log(`✅ ${enrichedPremium.length} annonces premium actives (${allPremium.length - enrichedPremium.length} expirées filtrées)`);
 
       // Choisir la stratégie de tri selon le paramètre
       if (useScoreSorting) {
