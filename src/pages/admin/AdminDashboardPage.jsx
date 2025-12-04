@@ -76,6 +76,7 @@ const AdminDashboardPage = () => {
       let listings = [];
       let users = [];
       let notifications = [];
+      let transactionStats = null;
       
       try {
         const listingsResponse = await listingService.getAllListings();
@@ -111,7 +112,21 @@ const AdminDashboardPage = () => {
         console.error('❌ Erreur lors du chargement des notifications:', error);
         notifications = [];
       }
-      
+
+      // Recuperer les statistiques de transactions
+      try {
+        const { transactionService } = await import('@/services');
+        transactionStats = await transactionService.getGlobalStats();
+        console.log('🔍 Statistiques de transactions récupérées:', transactionStats);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des statistiques de transactions:', error);
+        transactionStats = {
+          revenue30Days: 0,
+          totalRevenue: 0,
+          totalTransactions: 0
+        };
+      }
+
       // Calculer les statistiques avec gestion des cas d'erreur
       const activeUsers = users.filter(user => user.status === 'active').length;
       const totalUsers = users.length;
@@ -124,7 +139,8 @@ const AdminDashboardPage = () => {
         totalUsers,
         pendingListings,
         totalListings,
-        recentNotifications: recentNotifications.length
+        recentNotifications: recentNotifications.length,
+        revenue30Days: transactionStats?.revenue30Days || 0
       });
       
       // Mettre a jour les statistiques
@@ -134,8 +150,13 @@ const AdminDashboardPage = () => {
         } else if (stat.key === 'pendingListings') {
           return { ...stat, value: pendingListings.toString(), trend: `Total: ${totalListings}` };
         } else if (stat.key === 'revenue') {
-          // Pour l'instant, on met 0 car les transactions ne sont pas encore implementees
-          return { ...stat, value: '0 FCFA', trend: 'Revenus du mois' };
+          const revenue = transactionStats?.revenue30Days || 0;
+          const formattedRevenue = new Intl.NumberFormat('fr-FR', {
+            style: 'decimal',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          }).format(revenue);
+          return { ...stat, value: `${formattedRevenue} XOF`, trend: 'Revenus des 30 derniers jours' };
         } else if (stat.key === 'recentActivities') {
           return { ...stat, value: recentNotifications.length.toString(), trend: 'Dernières activités' };
         }

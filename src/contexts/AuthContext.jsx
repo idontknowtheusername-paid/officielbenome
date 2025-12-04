@@ -129,13 +129,21 @@ export const AuthProvider = ({ children }) => {
         if (event === 'SIGNED_IN') {
           // Mettre a jour/Creer le profil dans public.users via upsert
           if (session?.user) {
+            // Vérifier si l'utilisateur existe déjà
+            const { data: existingUser } = await supabase
+              .from('users')
+              .select('id, role')
+              .eq('id', session.user.id)
+              .single();
+
             const profilePayload = {
               id: session.user.id,
               first_name: session.user.user_metadata?.first_name || '',
               last_name: session.user.user_metadata?.last_name || '',
               email: session.user.email,
               phone_number: session.user.user_metadata?.phone_number || '',
-              role: 'user'
+              // Préserver le rôle existant ou définir 'user' par défaut
+              role: existingUser?.role || 'user'
             };
 
             const { error: upsertError } = await supabase
@@ -244,6 +252,13 @@ export const AuthProvider = ({ children }) => {
       
        // Upsert du profil utilisateur dans la table public.users (assure la presence du telephone)
        if (data.user) {
+         // Vérifier si l'utilisateur existe déjà (cas rare lors de l'inscription)
+         const { data: existingUser } = await supabase
+           .from('users')
+           .select('id, role')
+           .eq('id', data.user.id)
+           .single();
+
          const { error: profileError } = await supabase
            .from('users')
            .upsert([
@@ -253,7 +268,8 @@ export const AuthProvider = ({ children }) => {
                last_name: userData.lastName,
                email: userData.email,
                phone_number: phoneRaw,
-               role: 'user'
+               // Préserver le rôle existant ou définir 'user' par défaut
+               role: existingUser?.role || 'user'
              }
            ], { onConflict: 'id' });
 

@@ -103,6 +103,8 @@ function TransactionsPage() {
         return <Badge variant="secondary">Abonnement</Badge>;
       case 'refund':
         return <Badge variant="outline">Remboursement</Badge>;
+      case 'boost':
+        return <Badge variant="default">Boost</Badge>;
       default:
         return <Badge variant="outline">{type}</Badge>;
     }
@@ -344,7 +346,7 @@ function TransactionsPage() {
                     {formatAmount(transaction.amount, transaction.currency)}
                   </TableCell>
                   <TableCell>
-                    {getTypeBadge(transaction.type)}
+                    {getTypeBadge(transaction.transaction_type)}
                   </TableCell>
                   <TableCell>
                     {getStatusBadge(transaction.status)}

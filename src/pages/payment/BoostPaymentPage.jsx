@@ -75,17 +75,39 @@ function BoostPaymentPage() {
           description: 'Votre annonce a été boostée avec succès',
         });
 
-        // Activer le boost et mettre à jour la référence de paiement
-        const boostId = result.data.metadata?.boostId;
-        if (boostId) {
-          // Mettre à jour la référence de paiement dans le boost
+        // Récupérer les infos du boost
+        const { data: boostData } = await supabase
+          .from('listing_boosts')
+          .select(`
+            *,
+            package:boost_packages(id, name, price)
+          `)
+          .eq('payment_reference', ref)
+          .single();
+
+        if (boostData) {
+        // Créer la transaction dans la base de données
           await supabase
-            .from('listing_boosts')
-            .update({ payment_reference: ref })
-            .eq('id', boostId);
+            .from('transactions')
+            .insert({
+              user_id: user.id,
+              listing_id: listingId,
+              amount: boostData.package.price,
+              currency: 'XOF',
+              transaction_type: 'boost',
+              status: 'completed',
+              payment_method: 'lygos',
+              payment_reference: ref,
+              description: `Boost ${boostData.package.name} pour "${listing?.title || 'Annonce'}"`,
+              metadata: {
+                boost_id: boostData.id,
+                package_id: boostData.package_id,
+                package_name: boostData.package.name
+              }
+            });
 
           // Activer le boost
-          await boostService.activateBoost(boostId);
+          await boostService.activateBoost(boostData.id);
         }
 
         // Rediriger après 3 secondes

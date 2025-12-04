@@ -269,6 +269,88 @@ class TransactionService {
       throw error;
     }
   }
+
+  // Recuperer toutes les transactions (pour les admins)
+  async getAllTransactions(filters = {}) {
+    try {
+      let query = supabase
+        .from('transactions')
+        .select(`
+          *,
+          users:user_id(id, first_name, last_name, email)
+        `)
+        .order('created_at', { ascending: false });
+
+      // Appliquer les filtres
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters.type) {
+        query = query.eq('transaction_type', filters.type);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erreur lors de la récupération de toutes les transactions:', error);
+      throw error;
+    }
+  }
+
+  // Recuperer les statistiques globales (pour les admins)
+  async getGlobalStats() {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('status, amount, currency, created_at');
+
+      if (error) throw error;
+
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const stats = {
+        totalRevenue: 0,
+        revenue30Days: 0,
+        totalTransactions: data?.length || 0,
+        completedTransactions: 0,
+        pendingTransactions: 0,
+        failedTransactions: 0
+      };
+
+      data?.forEach(transaction => {
+        const amount = transaction.amount || 0;
+        
+        if (transaction.status === 'completed') {
+          stats.totalRevenue += amount;
+          stats.completedTransactions++;
+          
+          const transactionDate = new Date(transaction.created_at);
+          if (transactionDate >= thirtyDaysAgo) {
+            stats.revenue30Days += amount;
+          }
+        } else if (transaction.status === 'pending') {
+          stats.pendingTransactions++;
+        } else if (transaction.status === 'failed') {
+          stats.failedTransactions++;
+        }
+      });
+
+      return stats;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des statistiques globales:', error);
+      return {
+        totalRevenue: 0,
+        revenue30Days: 0,
+        totalTransactions: 0,
+        completedTransactions: 0,
+        pendingTransactions: 0,
+        failedTransactions: 0
+      };
+    }
+  }
 }
 
 export const transactionService = new TransactionService(); 

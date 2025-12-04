@@ -9,13 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Mail, Lock, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 
 
 const LoginForm = () => {
   const { login } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
 
   const onSubmit = async (data) => {
@@ -73,9 +74,9 @@ const LoginForm = () => {
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="pl-11 h-12 bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary transition-all"
+                  className="pl-11 pr-11 h-12 bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary transition-all"
                   {...register('password', {
                     required: 'Le mot de passe est requis',
                     minLength: {
@@ -84,6 +85,14 @@ const LoginForm = () => {
                     }
                   })}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-primary transition-colors"
+                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
