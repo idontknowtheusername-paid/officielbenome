@@ -104,7 +104,7 @@ const Footer = () => {
           <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 pr-4">
             <Link to="/" className="flex items-center mb-4">
               <img
-                src="/logo.png"
+                src="/logo.png?v=2024"
                 alt="MaxiMarket Logo"
                 className="h-16 md:h-20 w-auto object-contain transition-all duration-300"
               />

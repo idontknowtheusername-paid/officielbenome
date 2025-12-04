@@ -11,10 +11,12 @@ export function AdminLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/connexion', { state: { from: '/admin' } });
-    } else if (!authLoading && user && !hasRole('admin')) {
-      navigate('/');
+    if (!authLoading) {
+      if (!user) {
+        navigate('/connexion', { state: { from: '/admin' }, replace: true });
+      } else if (!hasRole('admin')) {
+        navigate('/', { replace: true });
+      }
     }
   }, [user, authLoading, hasRole, navigate]);
 

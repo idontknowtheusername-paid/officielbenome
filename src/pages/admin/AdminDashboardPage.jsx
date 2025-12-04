@@ -45,34 +45,21 @@ const AdminDashboardPage = () => {
   ]);
 
   useEffect(() => {
-    // Verifier si l'utilisateur est connecte et a le role admin
-    const checkAuthorization = async () => {
+    // Le AdminLayout gère déjà l'autorisation, on charge juste les données
+    const loadData = async () => {
       try {
-        if (user) {
-          const hasAdminRole = hasRole('admin');
-          setIsAuthorized(hasAdminRole);
-          if (!hasAdminRole) {
-            toast.error('Accès non autorisé');
-            navigate('/');
-            return;
-          }
-          // Si l'utilisateur est admin, charger les donnees du tableau de bord
-          await fetchDashboardData();
-        } else {
-          // Rediriger vers la page de connexion si l'utilisateur n'est pas connecte
-          navigate('/connexion', { state: { from: '/admin' } });
-        }
+        setIsAuthorized(true);
+        await fetchDashboardData();
       } catch (error) {
-        console.error('Erreur de vérification des autorisations:', error);
-        toast.error('Erreur lors de la vérification des autorisations');
-        navigate('/');
+        console.error('Erreur lors du chargement des données:', error);
+        toast.error('Erreur lors du chargement des données');
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkAuthorization();
-  }, [user, hasRole, navigate]);
+    loadData();
+  }, []); // Exécuter une seule fois au montage
 
   const fetchDashboardData = async () => {
     try {
