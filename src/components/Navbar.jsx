@@ -69,7 +69,7 @@ const Navbar = () => {
   const Logo = useMemo(() => (
     <Link to="/" className="flex items-center" aria-label="Accueil MaxiMarket">
       <img
-        src={`/logo.png?v=${Date.now()}`}
+        src="/logo.png"
         alt="MaxiMarket Logo"
         className="h-20 md:h-24 w-auto object-contain transition-all duration-300"
       />

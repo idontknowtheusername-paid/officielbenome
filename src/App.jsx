@@ -19,8 +19,7 @@ import InactivityDetector from '@/components/InactivityDetector';
 import { MobileNavigation } from '@/components/MobileNavigation';
 
 import AppWrapper from '@/components/AppWrapper';
-// ChatWidget en lazy loading
-const ChatWidget = lazy(() => import('@/components/ChatWidget'));
+import ChatWidget from '@/components/ChatWidget';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -402,10 +401,8 @@ function App() {
             </AnimatePresence>
           </AuthProvider>
           <Toaster />
-          {/* ChatWidget en lazy loading */}
-          <Suspense fallback={<ChatLoadingSpinner />}>
-            <ChatWidget />
-          </Suspense>
+          {/* ChatWidget chargé immédiatement */}
+          <ChatWidget />
         </AppWrapper>
       </QueryErrorBoundary>
       {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen={false} />}

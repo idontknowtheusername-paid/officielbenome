@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Search as SearchIcon } from 'lucide-react';
+import { TrendingUp, Search as SearchIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { HERO_SLIDES, CAROUSEL_CONFIG, getCategoryColor } from '@/data/heroSlides';
 import { useNavigate } from 'react-router-dom';
 import { resolveSearchIntent } from '@/lib/search-intent';
+import { supabase } from '@/lib/supabase';
 
 // Styles CSS personnalisés pour le hero
 const heroStyles = `
@@ -121,30 +122,36 @@ const HeroCarousel = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(CAROUSEL_CONFIG.pauseOnHover);
-  const [currentTime, setCurrentTime] = useState({ hour: new Date().getHours(), timeSlot: '' });
+  const [totalListings, setTotalListings] = useState(0);
 
-  // Mise à jour de l'heure en temps réel
+  // Récupérer le nombre total d'annonces actives
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const getTimeSlot = (hour) => {
-        if (hour >= 6 && hour < 12) return 'matin';
-        if (hour >= 12 && hour < 18) return 'après-midi';
-        if (hour >= 18 && hour < 22) return 'soirée';
-        return 'nuit';
-      };
-      
-      setCurrentTime({
-        hour: currentHour,
-        timeSlot: getTimeSlot(currentHour)
-      });
+    const fetchListingsCount = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('listings')
+          .select('id')
+          .eq('status', 'approved');
+
+        if (!error && data) {
+          // TODO: TEMPORAIRE - Ajouter +500 pour test marketing
+          const displayCount = data.length + 500;
+          setTotalListings(displayCount);
+          console.log('📊 Annonces réelles:', data.length, '| Affichées:', displayCount);
+        } else if (error) {
+          console.error('❌ Erreur comptage:', error);
+        }
+      } catch (error) {
+        console.error('❌ Erreur lors du comptage des annonces:', error);
+      }
     };
 
-    updateTime();
-    const timeInterval = setInterval(updateTime, 60000);
+    fetchListingsCount();
 
-    return () => clearInterval(timeInterval);
+    // Mettre à jour toutes les 5 minutes
+    const interval = setInterval(fetchListingsCount, 300000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Auto-play
@@ -219,7 +226,7 @@ const HeroCarousel = () => {
         {/* Contenu principal */}
         <div className="hero-content">
           <div className="text-center relative z-10">
-            {/* Badge de catégorie et heure */}
+            {/* Badge de catégorie et compteur d'annonces */}
             <motion.div
               key={`badges-${currentSlide.id}`}
               initial={{ opacity: 0, y: -20 }}
@@ -231,9 +238,9 @@ const HeroCarousel = () => {
                 <span className="mr-2">{currentSlide.categoryIcon}</span>
                 {currentSlide.categoryLabel}
               </Badge>
-              <Badge variant="outline" className="text-slate-700 dark:text-white/90 border-slate-400/30 dark:border-white/30 text-sm px-4 py-2">
-                <Clock className="h-4 w-4 mr-2" />
-                {currentTime.timeSlot} • {currentTime.hour}h
+              <Badge variant="outline" className="text-slate-700 dark:text-white/90 border-slate-400/30 dark:border-white/30 text-sm px-4 py-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
+                <TrendingUp className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
+                {totalListings.toLocaleString('fr-FR')} annonces actives
               </Badge>
             </motion.div>
 

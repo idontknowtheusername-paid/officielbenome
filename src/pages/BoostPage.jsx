@@ -160,14 +160,14 @@ function BoostPage() {
         )}
 
         {/* User Listings */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Vos Annonces</CardTitle>
-            <p className="text-sm text-muted-foreground">
+        <div className="mb-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">Vos Annonces</h2>
+            <p className="text-muted-foreground">
               Sélectionnez une annonce à booster
             </p>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -290,8 +290,8 @@ function BoostPage() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* CTA */}
         <Card className="mt-8 bg-gradient-to-br from-primary/10 to-blue-500/10 border-primary/20">

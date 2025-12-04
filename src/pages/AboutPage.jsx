@@ -36,9 +36,9 @@ const AboutPage = () => {
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
+          className="mb-20"
         >
-          <div>
+          <div className="col-span-full">
             <h2 className="text-3xl font-bold mb-6 flex items-center">
               <Building className="h-8 w-8 mr-3 text-primary" />
               Notre Histoire
@@ -49,13 +49,6 @@ const AboutPage = () => {
             <p className="text-muted-foreground">
               Depuis nos débuts, nous avons travaillé sans relâche pour construire une marketplace qui non seulement répond aux besoins actuels, mais anticipe également les tendances futures du commerce électronique. Notre équipe est composée d'experts locaux et internationaux, tous unis par l'objectif de faire de {personalData.siteName} le leader incontesté du marché.
             </p>
-          </div>
-          <div className="relative aspect-square rounded-xl overflow-hidden shadow-2xl">
-             <img   
-              className="w-full h-full object-cover"
-              alt="Équipe MaxiMarket travaillant ensemble"
-             src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>
         </motion.section>
 

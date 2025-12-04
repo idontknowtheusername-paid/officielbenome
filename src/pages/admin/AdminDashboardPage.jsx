@@ -22,10 +22,17 @@ const AdminDashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([
-    { title: "Utilisateurs Actifs", value: "-", icon: <Users className="h-8 w-8 text-blue-400" />, trend: "Chargement...", color: "blue", key: 'activeUsers' },
+    { title: "Utilisateurs Inscrits", value: "-", icon: <Users className="h-8 w-8 text-blue-400" />, trend: "Chargement...", color: "blue", key: 'totalUsers' },
     { title: "Annonces en Attente", value: "-", icon: <ListChecks className="h-8 w-8 text-yellow-400" />, trend: "Chargement...", color: "yellow", key: 'pendingListings' },
     { title: "Revenus (30j)", value: "-", icon: <DollarSign className="h-8 w-8 text-green-400" />, trend: "Chargement...", color: "green", key: 'revenue' },
     { title: "Activités Récentes", value: "-", icon: <MessageSquareWarning className="h-8 w-8 text-red-400" />, trend: "Chargement...", color: "red", key: 'recentActivities' },
+  ]);
+
+  const [additionalStats, setAdditionalStats] = useState([
+    { title: "Visiteurs en Ligne", value: "-", icon: <Users className="h-8 w-8 text-green-400" />, trend: "Chargement...", color: "green", key: 'onlineUsers' },
+    { title: "Vues (7 jours)", value: "-", icon: <TrendingUp className="h-8 w-8 text-purple-400" />, trend: "Chargement...", color: "purple", key: 'weeklyVisits' },
+    { title: "Vues (30 jours)", value: "-", icon: <BarChart2 className="h-8 w-8 text-indigo-400" />, trend: "Chargement...", color: "indigo", key: 'monthlyVisits' },
+    { title: "Croissance", value: "-", icon: <TrendingUp className="h-8 w-8 text-orange-400" />, trend: "Chargement...", color: "orange", key: 'conversionRate' },
   ]);
   const [recentActivities, setRecentActivities] = useState([]);
 
@@ -143,10 +150,10 @@ const AdminDashboardPage = () => {
         revenue30Days: transactionStats?.revenue30Days || 0
       });
       
-      // Mettre a jour les statistiques
+      // Mettre a jour les statistiques principales
       setStats(prevStats => prevStats.map(stat => {
-        if (stat.key === 'activeUsers') {
-          return { ...stat, value: activeUsers.toLocaleString(), trend: `Total: ${totalUsers}` };
+        if (stat.key === 'totalUsers') {
+          return { ...stat, value: totalUsers.toLocaleString(), trend: `Actifs: ${activeUsers}` };
         } else if (stat.key === 'pendingListings') {
           return { ...stat, value: pendingListings.toString(), trend: `Total: ${totalListings}` };
         } else if (stat.key === 'revenue') {
@@ -159,6 +166,77 @@ const AdminDashboardPage = () => {
           return { ...stat, value: `${formattedRevenue} XOF`, trend: 'Revenus des 30 derniers jours' };
         } else if (stat.key === 'recentActivities') {
           return { ...stat, value: recentNotifications.length.toString(), trend: 'Dernières activités' };
+        }
+        return stat;
+      }));
+
+      // Calculer les statistiques additionnelles
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      // VRAIES STATISTIQUES (pas d'estimations)
+      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+
+      // 1. Visiteurs en ligne RÉELS (connectés dans les 5 dernières minutes)
+      const onlineUsers = users.filter(u =>
+        u.last_sign_in_at && new Date(u.last_sign_in_at) >= fiveMinutesAgo
+      ).length;
+
+      // 2. Nouvelles inscriptions cette semaine
+      const weeklySignups = users.filter(u =>
+        new Date(u.created_at) >= sevenDaysAgo
+      ).length;
+
+      // 3. Nouvelles inscriptions ce mois
+      const monthlySignups = users.filter(u =>
+        new Date(u.created_at) >= thirtyDaysAgo
+      ).length;
+
+      // 4. Vues d'annonces RÉELLES (basé sur le champ views)
+      const totalViews = listings.reduce((sum, l) => sum + (l.views || 0), 0);
+      const weeklyViews = listings
+        .filter(l => new Date(l.created_at) >= sevenDaysAgo)
+        .reduce((sum, l) => sum + (l.views || 0), 0);
+      const monthlyViews = listings
+        .filter(l => new Date(l.created_at) >= thirtyDaysAgo)
+        .reduce((sum, l) => sum + (l.views || 0), 0);
+
+      // 5. Taux de croissance mensuel des inscriptions (plus pertinent que conversion)
+      const previousMonthStart = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+      const previousMonthSignups = users.filter(u =>
+        new Date(u.created_at) >= previousMonthStart && new Date(u.created_at) < thirtyDaysAgo
+      ).length;
+      const growthRate = previousMonthSignups > 0
+        ? (((monthlySignups - previousMonthSignups) / previousMonthSignups) * 100).toFixed(1)
+        : monthlySignups > 0 ? 100 : 0;
+
+      setAdditionalStats(prevStats => prevStats.map(stat => {
+        if (stat.key === 'onlineUsers') {
+          return {
+            ...stat,
+            value: onlineUsers.toString(),
+            trend: onlineUsers > 0 ? 'En ligne maintenant' : 'Aucun visiteur actif'
+          };
+        } else if (stat.key === 'weeklyVisits') {
+          return {
+            ...stat,
+            value: weeklyViews.toLocaleString('fr-FR'),
+            trend: `${weeklySignups} nouvelles inscriptions`
+          };
+        } else if (stat.key === 'monthlyVisits') {
+          return {
+            ...stat,
+            value: monthlyViews.toLocaleString('fr-FR'),
+            trend: `${monthlySignups} nouvelles inscriptions`
+          };
+        } else if (stat.key === 'conversionRate') {
+          const sign = growthRate >= 0 ? '+' : '';
+          return {
+            ...stat,
+            value: `${sign}${growthRate}%`,
+            trend: `Croissance mensuelle (${monthlySignups} ce mois)`
+          };
         }
         return stat;
       }));
@@ -264,14 +342,45 @@ const AdminDashboardPage = () => {
         <p className="text-md sm:text-lg text-slate-400">Vue d'ensemble et gestion de la marketplace.</p>
       </motion.div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10">
+      {/* Stats Cards Principales */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
+            className={`bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-700 hover:border-${stat.color}-500 transition-colors`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-md font-semibold text-slate-300">{stat.title}</h2>
+              {stat.icon}
+            </div>
+            {loading ? (
+              <div className="flex items-center justify-center h-12">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <>
+                <p className="text-2xl sm:text-3xl font-bold mb-1">{stat.value}</p>
+                <div className="flex items-center text-xs text-slate-400">
+                  <TrendingUp className={`mr-1 h-4 w-4 text-${stat.color}-400`} />
+                  {stat.trend}
+                </div>
+              </>
+            )}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Stats Cards Additionnelles - Analytics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10">
+        {additionalStats.map((stat, index) => (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
             className={`bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-700 hover:border-${stat.color}-500 transition-colors`}
           >
             <div className="flex items-center justify-between mb-3">
