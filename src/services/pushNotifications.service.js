@@ -1,7 +1,14 @@
+import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { supabase } from '@/lib/supabase';
 
 export const initializePushNotifications = async () => {
+  // Ne rien faire si on n'est pas sur une plateforme native
+  if (!Capacitor.isNativePlatform()) {
+    console.log('🔔 Push notifications: Skipping - not on native platform');
+    return;
+  }
+
   try {
     console.log('🔔 Initializing push notifications...');
     
@@ -108,6 +115,12 @@ export const sendTestNotification = async () => {
 
 // Fonction pour désactiver les notifications
 export const disablePushNotifications = async () => {
+  // Ne rien faire si on n'est pas sur une plateforme native
+  if (!Capacitor.isNativePlatform()) {
+    console.log('🔕 Push notifications: Skipping disable - not on native platform');
+    return;
+  }
+
   try {
     console.log('🔕 Disabling push notifications...');
     

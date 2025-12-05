@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { emailService } from './email.service.js';
+import { emailProviderService as emailService } from './email/email-provider.service.js';
 
 // ============================================================================
 // SERVICE NEWSLETTER
@@ -178,15 +178,21 @@ export const newsletterService = {
 
       if (error) throw error;
 
-      if (subscribers.length === 0) {
+      if (!subscribers || subscribers.length === 0) {
         console.log('📧 Aucun abonné actif pour la newsletter hebdomadaire');
-        return { success: true, message: 'Aucun abonné à notifier' };
+        return { success: true, message: 'Aucun abonné à notifier', count: 0 };
       }
 
+      console.log(`📧 Envoi newsletter hebdomadaire à ${subscribers.length} abonnés...`);
       const result = await emailService.sendWeeklyNewsletter(subscribers, data);
       console.log('✅ Newsletter hebdomadaire envoyée à', subscribers.length, 'abonnés');
       
-      return result;
+      return { 
+        success: true, 
+        message: `Newsletter envoyée à ${subscribers.length} abonnés`,
+        count: subscribers.length,
+        result 
+      };
     } catch (error) {
       console.error('❌ Erreur envoi newsletter hebdomadaire:', error);
       throw error;
@@ -203,15 +209,21 @@ export const newsletterService = {
 
       if (error) throw error;
 
-      if (subscribers.length === 0) {
+      if (!subscribers || subscribers.length === 0) {
         console.log('📧 Aucun abonné actif pour la newsletter mensuelle');
-        return { success: true, message: 'Aucun abonné à notifier' };
+        return { success: true, message: 'Aucun abonné à notifier', count: 0 };
       }
 
+      console.log(`📧 Envoi newsletter mensuelle à ${subscribers.length} abonnés...`);
       const result = await emailService.sendMonthlyNewsletter(subscribers, data);
       console.log('✅ Newsletter mensuelle envoyée à', subscribers.length, 'abonnés');
       
-      return result;
+      return { 
+        success: true, 
+        message: `Newsletter envoyée à ${subscribers.length} abonnés`,
+        count: subscribers.length,
+        result 
+      };
     } catch (error) {
       console.error('❌ Erreur envoi newsletter mensuelle:', error);
       throw error;
@@ -228,15 +240,21 @@ export const newsletterService = {
 
       if (error) throw error;
 
-      if (subscribers.length === 0) {
+      if (!subscribers || subscribers.length === 0) {
         console.log('📧 Aucun abonné actif pour l\'offre spéciale');
-        return { success: true, message: 'Aucun abonné à notifier' };
+        return { success: true, message: 'Aucun abonné à notifier', count: 0 };
       }
 
+      console.log(`📧 Envoi offre spéciale à ${subscribers.length} abonnés...`);
       const result = await emailService.sendSpecialOffer(subscribers, data);
       console.log('✅ Offre spéciale envoyée à', subscribers.length, 'abonnés');
       
-      return result;
+      return { 
+        success: true, 
+        message: `Offre spéciale envoyée à ${subscribers.length} abonnés`,
+        count: subscribers.length,
+        result 
+      };
     } catch (error) {
       console.error('❌ Erreur envoi offre spéciale:', error);
       throw error;

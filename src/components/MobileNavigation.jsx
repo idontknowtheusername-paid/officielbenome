@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { StatusBar } from '@capacitor/status-bar';
 
@@ -7,6 +8,12 @@ export const MobileNavigation = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Ne rien faire si on n'est pas sur une plateforme native
+    if (!Capacitor.isNativePlatform()) {
+      console.log('📱 MobileNavigation: Skipping - not on native platform');
+      return;
+    }
+
     const initializeMobileNav = async () => {
       try {
         console.log('🚀 Initializing mobile navigation...');

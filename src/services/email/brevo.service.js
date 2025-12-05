@@ -35,28 +35,43 @@ export const brevoService = {
         return { success: true, message: 'Email simulé (Brevo non configuré)', messageId: 'sim-' + Date.now() };
       }
 
-      const sendSmtpEmail = new brevo.SendSmtpEmail();
-      sendSmtpEmail.sender = { name: FROM_NAME, email: FROM_EMAIL };
-      sendSmtpEmail.to = [{ email: to }];
-      sendSmtpEmail.subject = subject;
-      sendSmtpEmail.htmlContent = htmlContent;
-      
+      const payload = {
+        sender: { name: FROM_NAME, email: FROM_EMAIL },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: htmlContent
+      };
+
       if (textContent) {
-        sendSmtpEmail.textContent = textContent;
-      }
-      
-      if (Object.keys(params).length > 0) {
-        sendSmtpEmail.params = params;
+        payload.textContent = textContent;
       }
 
-      const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
-      
-      console.log('✅ Email Brevo envoyé avec succès:', response.messageId);
+      if (Object.keys(params).length > 0) {
+        payload.params = params;
+      }
+
+      const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Email Brevo envoyé avec succès:', data.messageId);
       
       return {
         success: true,
         message: 'Email envoyé avec succès',
-        messageId: response.messageId
+        messageId: data.messageId
       };
 
     } catch (error) {
@@ -131,35 +146,55 @@ export const brevoService = {
 
       const results = [];
       const batchSize = 50; // Limite Brevo
+      let successCount = 0;
+      let errorCount = 0;
 
       for (let i = 0; i < recipients.length; i += batchSize) {
         const batch = recipients.slice(i, i + batchSize);
         
-        const sendSmtpEmail = new brevo.SendSmtpEmail();
-        sendSmtpEmail.sender = { name: FROM_NAME, email: FROM_EMAIL };
-        sendSmtpEmail.to = batch.map(r => ({ 
-          email: r.email, 
-          name: r.name || '' 
-        }));
-        sendSmtpEmail.subject = subject;
-        sendSmtpEmail.htmlContent = htmlContent;
+        const payload = {
+          sender: { name: FROM_NAME, email: FROM_EMAIL },
+          to: batch.map(r => ({ 
+            email: r.email, 
+            name: r.name || '' 
+          })),
+          subject: subject,
+          htmlContent: htmlContent
+        };
 
         try {
-          const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
-          results.push({ success: true, batch: i / batchSize + 1, messageId: response.messageId });
+          const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
+            method: 'POST',
+            headers: {
+              'accept': 'application/json',
+              'api-key': BREVO_API_KEY,
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || `HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          results.push({ success: true, batch: i / batchSize + 1, messageId: data.messageId });
+          successCount += batch.length;
         } catch (error) {
           console.error(`❌ Erreur batch ${i / batchSize + 1}:`, error);
           results.push({ success: false, batch: i / batchSize + 1, error: error.message });
+          errorCount += batch.length;
         }
       }
 
-      const successCount = results.filter(r => r.success).length;
-      console.log(`✅ Batch email Brevo: ${successCount}/${results.length} batches envoyés`);
+      console.log(`✅ Batch email Brevo: ${successCount} succès, ${errorCount} erreurs`);
 
       return {
         success: true,
-        message: `${successCount}/${results.length} batches envoyés`,
-        sent: successCount * batchSize,
+        message: `${successCount} emails envoyés, ${errorCount} erreurs`,
+        sent: successCount,
+        errors: errorCount,
         results
       };
 
@@ -186,34 +221,33 @@ export const brevoService = {
         return { success: true, message: 'Contact simulé' };
       }
 
-      const createContact = new brevo.CreateContact();
-      createContact.email = email;
-      createContact.attributes = attributes;
+      const payload = {
+        email: email,
+        attributes: attributes,
+        updateEnabled: true
+      };
       
       if (listIds.length > 0) {
-        createContact.listIds = listIds;
+        payload.listIds = listIds;
       }
 
-      try {
-        await contactsApi.createContact(createContact);
-        console.log('✅ Contact Brevo créé:', email);
-        return { success: true, message: 'Contact créé', action: 'created' };
-      } catch (error) {
-        // Si le contact existe déjà, le mettre à jour
-        if (error.status === 400) {
-          const updateContact = new brevo.UpdateContact();
-          updateContact.attributes = attributes;
-          
-          if (listIds.length > 0) {
-            updateContact.listIds = listIds;
-          }
+      const response = await fetch(`${BREVO_API_URL}/contacts`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
-          await contactsApi.updateContact(email, updateContact);
-          console.log('✅ Contact Brevo mis à jour:', email);
-          return { success: true, message: 'Contact mis à jour', action: 'updated' };
-        }
-        throw error;
+      if (!response.ok && response.status !== 204) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
       }
+
+      console.log('✅ Contact Brevo créé/mis à jour:', email);
+      return { success: true, message: 'Contact créé/mis à jour' };
 
     } catch (error) {
       console.error('❌ Erreur gestion contact Brevo:', error);
@@ -232,18 +266,29 @@ export const brevoService = {
         return { success: true, contact: null };
       }
 
-      const contact = await contactsApi.getContactInfo(email);
-      console.log('✅ Contact Brevo récupéré:', email);
-      
-      return {
-        success: true,
-        contact: contact.body
-      };
+      const response = await fetch(`${BREVO_API_URL}/contacts/${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY
+        }
+      });
 
-    } catch (error) {
-      if (error.status === 404) {
+      if (response.status === 404) {
         return { success: true, contact: null };
       }
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
+      const contact = await response.json();
+      console.log('✅ Contact Brevo récupéré:', email);
+      
+      return { success: true, contact };
+
+    } catch (error) {
       console.error('❌ Erreur récupération contact Brevo:', error);
       throw error;
     }
@@ -260,13 +305,21 @@ export const brevoService = {
         return { success: true, message: 'Contact simulé supprimé' };
       }
 
-      await contactsApi.deleteContact(email);
+      const response = await fetch(`${BREVO_API_URL}/contacts/${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY
+        }
+      });
+
+      if (!response.ok && response.status !== 204) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
       console.log('✅ Contact Brevo supprimé:', email);
-      
-      return {
-        success: true,
-        message: 'Contact supprimé'
-      };
+      return { success: true, message: 'Contact supprimé' };
 
     } catch (error) {
       console.error('❌ Erreur suppression contact Brevo:', error);
@@ -286,16 +339,23 @@ export const brevoService = {
         return { success: true, message: 'Contacts simulés ajoutés' };
       }
 
-      const contactEmails = new brevo.AddContactToList();
-      contactEmails.emails = emails;
+      const response = await fetch(`${BREVO_API_URL}/contacts/lists/${listId}/contacts/add`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({ emails })
+      });
 
-      await contactsApi.addContactToList(listId, contactEmails);
+      if (!response.ok && response.status !== 204) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
       console.log(`✅ ${emails.length} contacts ajoutés à la liste ${listId}`);
-      
-      return {
-        success: true,
-        message: `${emails.length} contacts ajoutés à la liste`
-      };
+      return { success: true, message: `${emails.length} contacts ajoutés à la liste` };
 
     } catch (error) {
       console.error('❌ Erreur ajout contacts à la liste Brevo:', error);
@@ -315,16 +375,23 @@ export const brevoService = {
         return { success: true, message: 'Contacts simulés retirés' };
       }
 
-      const contactEmails = new brevo.RemoveContactFromList();
-      contactEmails.emails = emails;
+      const response = await fetch(`${BREVO_API_URL}/contacts/lists/${listId}/contacts/remove`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({ emails })
+      });
 
-      await contactsApi.removeContactFromList(listId, contactEmails);
+      if (!response.ok && response.status !== 204) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
       console.log(`✅ ${emails.length} contacts retirés de la liste ${listId}`);
-      
-      return {
-        success: true,
-        message: `${emails.length} contacts retirés de la liste`
-      };
+      return { success: true, message: `${emails.length} contacts retirés de la liste` };
 
     } catch (error) {
       console.error('❌ Erreur retrait contacts de la liste Brevo:', error);
@@ -343,8 +410,7 @@ export const brevoService = {
     const config = {
       brevoConfigured: !!BREVO_API_KEY,
       fromEmail: FROM_EMAIL,
-      fromName: FROM_NAME,
-      apiInitialized: !!apiInstance
+      fromName: FROM_NAME
     };
 
     console.log('🔧 Configuration Brevo:', config);
@@ -363,18 +429,23 @@ export const brevoService = {
         return { success: true, stats: null };
       }
 
-      const opts = {
-        startDate: startDate,
-        endDate: endDate
-      };
+      const response = await fetch(`${BREVO_API_URL}/smtp/statistics/events?startDate=${startDate}&endDate=${endDate}`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY
+        }
+      });
 
-      const stats = await apiInstance.getEmailEventReport(opts);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
+      const stats = await response.json();
       console.log('✅ Statistiques Brevo récupérées');
       
-      return {
-        success: true,
-        stats: stats.body
-      };
+      return { success: true, stats };
 
     } catch (error) {
       console.error('❌ Erreur récupération statistiques Brevo:', error);

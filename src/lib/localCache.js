@@ -3,8 +3,8 @@ import { ttlOptimizer } from './ttlOptimizer';
 export class LocalCache {
   constructor(prefix = 'benome') {
     this.prefix = prefix;
-    this.maxSize = 10 * 1024 * 1024; // 10MB max (réduit de 50MB)
-    this.cleanupInterval = 30 * 60 * 1000; // 30 minutes (au lieu de 5 minutes)
+    this.maxSize = 10 * 1024 * 1024; // 10MB max
+    this.cleanupInterval = 30 * 60 * 1000; // 30 minutes
   }
 
   /**
@@ -29,7 +29,7 @@ export class LocalCache {
   }
 
   /**
-   * Nettoie le cache pour libérer de l'espace
+   * Nettoie le cache pour libérer de l'espace (LRU - Least Recently Used)
    */
   _cleanup() {
     const keys = Object.keys(localStorage);
@@ -47,13 +47,12 @@ export class LocalCache {
       }
     }).sort((a, b) => a.timestamp - b.timestamp);
 
-    // Supprimer les éléments les plus anciens jusqu'à libérer assez d'espace
+    // Supprimer les éléments les plus anciens
     let currentSize = this._getCurrentCacheSize();
-    const targetSize = this.maxSize * 0.7; // Garder 70% du max (au lieu de 80%)
+    const targetSize = this.maxSize * 0.7; // Garder 70%
 
     for (const item of items) {
       if (currentSize <= targetSize) break;
-      
       localStorage.removeItem(item.key);
       currentSize -= item.size;
     }
@@ -91,19 +90,16 @@ export class LocalCache {
 
       const size = this._getSize(item);
       
-      // Vérifier si on a assez d'espace
-      if (size > this.maxSize) {
-        return false;
-      }
+      // Vérifier si on a assez d'espace (Fail-fast si l'objet est plus gros que tout le cache)
+      if (size > this.maxSize) return false;
 
-      // Nettoyer si nécessaire (seulement si vraiment nécessaire)
+      // Nettoyer si nécessaire
       if (this._getCurrentCacheSize() + size > this.maxSize) {
         this._cleanup();
       }
 
       localStorage.setItem(cacheKey, JSON.stringify(item));
       
-      // Enregistrer l'usage pour l'optimisation TTL (simplifié)
       if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
         ttlOptimizer.recordUsage(key, false, Date.now());
       }
@@ -123,7 +119,6 @@ export class LocalCache {
       const item = localStorage.getItem(cacheKey);
       
       if (!item) {
-        // Enregistrer un miss pour l'optimisation TTL (simplifié)
         if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
           ttlOptimizer.recordUsage(key, false, Date.now());
         }
@@ -132,24 +127,21 @@ export class LocalCache {
 
       const parsed = JSON.parse(item);
       
-      // Vérifier l'expiration
       if (this._isExpired(parsed.timestamp, parsed.ttl)) {
         this.delete(key);
-        // Enregistrer un miss pour l'optimisation TTL (simplifié)
         if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
           ttlOptimizer.recordUsage(key, false, Date.now());
         }
         return null;
       }
 
-      // Enregistrer un hit pour l'optimisation TTL (simplifié)
       if (ttlOptimizer && typeof ttlOptimizer.recordUsage === 'function') {
         ttlOptimizer.recordUsage(key, true, Date.now());
       }
       
       return parsed.data;
     } catch (error) {
-      this.delete(key); // Supprimer l'entrée corrompue
+      this.delete(key);
       return null;
     }
   }
@@ -168,7 +160,33 @@ export class LocalCache {
   }
 
   /**
-   * Vide tout le cache
+   * 🔥 NOUVELLE MÉTHODE CRITIQUE
+   * Supprime toutes les clés qui contiennent un motif spécifique.
+   * Ex: deleteByPattern('listings:') supprimera 'benome:listings:filters...'
+   */
+  deleteByPattern(pattern) {
+    try {
+      const keys = Object.keys(localStorage);
+      // On ne touche qu'aux clés de notre application
+      const appKeys = keys.filter(key => key.startsWith(`${this.prefix}:`));
+      
+      let deletedCount = 0;
+      appKeys.forEach(key => {
+        // Si la clé contient le motif (ex: 'hero-listings')
+        if (key.includes(pattern)) {
+          localStorage.removeItem(key);
+          deletedCount++;
+        }
+      });
+      return deletedCount;
+    } catch (error) {
+      console.error('Erreur deleteByPattern:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Vide tout le cache de l'application
    */
   clear() {
     try {
@@ -183,7 +201,7 @@ export class LocalCache {
   }
 
   /**
-   * Récupère les statistiques du cache
+   * Récupère les statistiques
    */
   getStats() {
     try {
@@ -197,17 +215,12 @@ export class LocalCache {
         usagePercentage: (this._getCurrentCacheSize() / this.maxSize) * 100
       };
 
-      // Compter les entrées expirées
       let expiredCount = 0;
       cacheKeys.forEach(key => {
         try {
           const item = JSON.parse(localStorage.getItem(key));
-          if (this._isExpired(item.timestamp, item.ttl)) {
-            expiredCount++;
-          }
-        } catch {
-          expiredCount++;
-        }
+          if (this._isExpired(item.timestamp, item.ttl)) expiredCount++;
+        } catch { expiredCount++; }
       });
 
       stats.expiredEntries = expiredCount;
@@ -218,7 +231,7 @@ export class LocalCache {
   }
 
   /**
-   * Nettoie les entrées expirées
+   * Nettoie les entrées expirées (Méthode publique)
    */
   cleanup() {
     try {
@@ -245,9 +258,7 @@ export class LocalCache {
     }
   }
 
-  /**
-   * Obtenir les recommandations d'optimisation TTL (simplifié)
-   */
+  // --- Méthodes TTL Optimizer (Passthrough) ---
   getTTLOptimizations() {
     if (ttlOptimizer && typeof ttlOptimizer.getOptimizationRecommendations === 'function') {
       return ttlOptimizer.getOptimizationRecommendations();
@@ -255,9 +266,6 @@ export class LocalCache {
     return [];
   }
 
-  /**
-   * Appliquer les optimisations TTL (simplifié)
-   */
   applyTTLOptimizations() {
     if (ttlOptimizer && typeof ttlOptimizer.applyOptimizations === 'function') {
       return ttlOptimizer.applyOptimizations();
@@ -269,7 +277,7 @@ export class LocalCache {
 // Instance singleton
 export const localCache = new LocalCache();
 
-// Nettoyage automatique toutes les 30 minutes (au lieu de 5 minutes)
+// Nettoyage automatique
 setInterval(() => {
   localCache.cleanup();
-}, 30 * 60 * 1000); 
+}, 30 * 60 * 1000);

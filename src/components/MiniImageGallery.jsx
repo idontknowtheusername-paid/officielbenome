@@ -1,36 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import OptimizedListingImage from '@/components/ui/OptimizedListingImage';
+
+// Détecter si on est sur mobile (une seule fois)
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
 const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", className = "" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Fonction pour extraire l'URL de l'image - CORRIGÉE
-  const extractImageUrl = (image) => {
+  // Fonction pour extraire l'URL de l'image - mémorisée
+  const extractImageUrl = useCallback((image) => {
     if (!image) return null;
-    
-    // Si c'est une chaîne (URL directe)
     if (typeof image === 'string') return image;
-    
-    // Si c'est un objet avec une URL
     if (image?.url) return image.url;
-    
-    // Si c'est un objet avec un fichier (preview)
     if (image?.file) return URL.createObjectURL(image.file);
-    
-    // Si c'est un objet avec une source
     if (image?.src) return image.src;
-    
-    // Si c'est un objet avec displayUrl
     if (image?.displayUrl) return image.displayUrl;
-    
     return null;
-  };
+  }, []);
 
-  // Filtrer les images valides
-  const validImages = images.filter(img => extractImageUrl(img) !== null);
+  // Filtrer les images valides - MÉMORISÉ
+  const validImages = useMemo(() =>
+    images.filter(img => extractImageUrl(img) !== null),
+    [images, extractImageUrl]
+  );
 
   // Auto-play au survol
   useEffect(() => {
@@ -80,26 +74,20 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image principale - CORRIGÉE */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.3 }}
-          className="w-full h-full"
-        >
-          <OptimizedListingImage
-            src={currentImage}
-            alt={`${title} - Image ${currentIndex + 1}`}
-            className="w-full h-full object-cover"
-            priority="medium"
-            showSkeleton={true}
-            enableAnimations={true}
-          />
-        </motion.div>
-      </AnimatePresence>
+      {/* Image principale - Optimisée (CSS sur mobile, pas de framer-motion) */}
+      <div
+        key={currentIndex}
+        className={`w-full h-full ${isMobile ? 'transition-opacity duration-200' : 'transition-all duration-300'}`}
+      >
+        <OptimizedListingImage
+          src={currentImage}
+          alt={`${title} - Image ${currentIndex + 1}`}
+          className="w-full h-full object-cover"
+          priority="medium"
+          showSkeleton={true}
+          enableAnimations={!isMobile}
+        />
+      </div>
 
       {/* Navigation arrows - Plus petits sur mobile */}
       {validImages.length > 1 && (
@@ -130,24 +118,31 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
         </>
       )}
 
-      {/* Image indicators - Plus compacts sur mobile */}
+      {/* Image indicators - Limité à 5 max pour performance */}
       {validImages.length > 1 && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-1.5">
-          {validImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={(e) => {
-                e.stopPropagation();
-                goToImage(index);
-              }}
-              className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 ${
-                index === currentIndex 
-                  ? 'bg-white' 
-                  : 'bg-white/50 hover:bg-white/75'
-              }`}
-              aria-label={`Aller à l'image ${index + 1}`}
-            />
-          ))}
+          {validImages.length <= 5 ? (
+            // Afficher tous les indicateurs si 5 ou moins
+            validImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToImage(index);
+                }}
+                className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 ${index === currentIndex
+                    ? 'bg-white'
+                    : 'bg-white/50 hover:bg-white/75'
+                  }`}
+                aria-label={`Aller à l'image ${index + 1}`}
+              />
+            ))
+          ) : (
+            // Plus de 5 images : afficher compteur simple
+            <span className="text-white text-xs bg-black/50 px-2 py-0.5 rounded-full">
+              {currentIndex + 1}/{validImages.length}
+            </span>
+          )}
         </div>
       )}
     </div>

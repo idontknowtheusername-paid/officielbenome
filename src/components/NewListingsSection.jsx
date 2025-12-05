@@ -77,7 +77,7 @@ const NewListingsSection = () => {
             <h2 className="text-3xl font-bold mb-2">✨ Nouvelles Annonces</h2>
             <p className="text-muted-foreground">Découvrez les dernières offres</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
             ))}
@@ -109,8 +109,8 @@ const NewListingsSection = () => {
           </p>
         </motion.div>
 
-        {/* Grid 2x2 mobile, 4 colonnes desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+        {/* Grid responsive: 2 mobile, 3 tablet, 4 desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
           {displayedListings.map((listing, index) => (
             <motion.div
               key={`${listing.id}-${currentIndex}`}

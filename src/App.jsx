@@ -19,40 +19,48 @@ import InactivityDetector from '@/components/InactivityDetector';
 import { MobileNavigation } from '@/components/MobileNavigation';
 
 import AppWrapper from '@/components/AppWrapper';
-import ChatWidget from '@/components/ChatWidget';
+
+// ChatWidget - Lazy Loading (chargé après le rendu initial)
+const ChatWidget = lazy(() => import('@/components/ChatWidget'));
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
 const AdminLayout = lazy(() => import('@/layouts/AdminLayout'));
 
-// Auth Pages
+// Auth Pages (chargées immédiatement - critiques pour le parcours utilisateur)
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
-import ProfilePage from '@/pages/auth/ProfilePage';
-import AuthCallbackPage from '@/pages/auth/AuthCallbackPage';
+
+// Auth Pages - Lazy Loading (rarement utilisées)
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
+const AuthCallbackPage = lazy(() => import('@/pages/auth/AuthCallbackPage'));
+const ProfilePage = lazy(() => import('@/pages/auth/ProfilePage'));
 const MessagingPage = lazy(() => import('@/pages/MessagingPage'));
 const DiagnosticPage = lazy(() => import('@/pages/DiagnosticPage'));
 
-// Pages principales (chargées immédiatement)
+// Pages principales (chargées immédiatement - navigation fréquente)
 import HomePage from '@/pages/HomePage'; 
 import RealEstatePage from '@/pages/marketplace/RealEstatePage';
 import AutomobilePage from '@/pages/marketplace/AutomobilePage';
 import ServicesPage from '@/pages/marketplace/ServicesPage';
 import GeneralMarketplacePage from '@/pages/marketplace/GeneralMarketplacePage';
 import PremiumPage from '@/pages/PremiumPage';
-import CreateListingPage from '@/pages/CreateListingPage';
 import ListingDetailPage from '@/pages/ListingDetailPage';
-import FavoritesPage from '@/pages/FavoritesPage';
-import BoostListingPage from '@/pages/BoostListingPage';
-import PaymentProcessPage from '@/pages/PaymentProcessPage';
 import PaymentCallbackPage from '@/pages/PaymentCallbackPage';
-import BoostPage from '@/pages/BoostPage';
-import BoostPaymentPage from '@/pages/payment/BoostPaymentPage';
-import UserTransactionsPage from '@/pages/UserTransactionsPage';
-import FedaPayTestPage from '@/pages/FedaPayTestPage';
-import MobileTestPage from '@/pages/MobileTestPage';
+
+// Pages protégées - Lazy Loading (après connexion)
+const CreateListingPage = lazy(() => import('@/pages/CreateListingPage'));
+const FavoritesPage = lazy(() => import('@/pages/FavoritesPage'));
+const BoostListingPage = lazy(() => import('@/pages/BoostListingPage'));
+const PaymentProcessPage = lazy(() => import('@/pages/PaymentProcessPage'));
+const BoostPage = lazy(() => import('@/pages/BoostPage'));
+const BoostPaymentPage = lazy(() => import('@/pages/payment/BoostPaymentPage'));
+const UserTransactionsPage = lazy(() => import('@/pages/UserTransactionsPage'));
+
+// Pages de test - Lazy Loading
+const FedaPayTestPage = lazy(() => import('@/pages/FedaPayTestPage'));
+const MobileTestPage = lazy(() => import('@/pages/MobileTestPage'));
 
 // Admin Pages - Lazy Loading
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
@@ -65,21 +73,21 @@ const AdminCategoriesPage = lazy(() => import('@/pages/admin/categories/Categori
 const AdminSettingsPage = lazy(() => import('@/pages/admin/settings/SettingsPage'));
 const AdminBoostsPage = lazy(() => import('@/pages/admin/boosts/BoostsManagementPage'));
 const NewsletterAdminPage = lazy(() => import('@/pages/admin/NewsletterAdminPage'));
-import NotFoundPage from '@/pages/NotFoundPage';
 
-// Static Pages
-import AboutPage from '@/pages/AboutPage'; 
-import ContactPage from '@/pages/ContactPage'; 
-import CareersPage from '@/pages/static/CareersPage';
-import PressPage from '@/pages/static/PressPage';
-import HelpCenterPage from '@/pages/static/HelpCenterPage';
-import FAQPage from '@/pages/static/FAQPage';
-import PrivacyPolicyPage from '@/pages/static/PrivacyPolicyPage';
-import TermsConditionsPage from '@/pages/static/TermsConditionsPage';
+// Pages utilitaires - Lazy Loading
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const AboutPage = lazy(() => import('@/pages/AboutPage'));
+const ContactPage = lazy(() => import('@/pages/ContactPage'));
+const CareersPage = lazy(() => import('@/pages/static/CareersPage'));
+const PressPage = lazy(() => import('@/pages/static/PressPage'));
+const HelpCenterPage = lazy(() => import('@/pages/static/HelpCenterPage'));
+const FAQPage = lazy(() => import('@/pages/static/FAQPage'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/static/PrivacyPolicyPage'));
+const TermsConditionsPage = lazy(() => import('@/pages/static/TermsConditionsPage'));
 
-// Blog/Content Pages
-import BlogPage from '@/pages/BlogPage'; 
-import BlogPostPage from '@/pages/BlogPostPage';
+// Blog/Content Pages - Lazy Loading
+const BlogPage = lazy(() => import('@/pages/BlogPage'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
 
 // Composant de chargement optimisé
 const LoadingSpinner = () => (
@@ -109,9 +117,6 @@ function App() {
   React.useEffect(() => {
     swManager.register();
   }, []);
-
-  // Optimisations mobile
-  useMobileOptimization();
 
   // Initialiser les notifications push
   React.useEffect(() => {
@@ -145,10 +150,14 @@ function App() {
                   {/* Auth Routes */}
                   <Route path="connexion" element={<LoginPage />} />
                   <Route path="inscription" element={<RegisterPage />} />
-                  <Route path="auth/callback" element={<AuthCallbackPage />} />
-                  <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
-                  <Route path="reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
-                  <Route path="profile" element={<ProfilePage />} />
+                  <Route path="auth/callback" element={<Suspense fallback={<LoadingSpinner />}><AuthCallbackPage /></Suspense>} />
+                  <Route path="mot-de-passe-oublie" element={<Suspense fallback={<LoadingSpinner />}><ForgotPasswordPage /></Suspense>} />
+                  <Route path="reinitialiser-mot-de-passe" element={<Suspense fallback={<LoadingSpinner />}><ResetPasswordPage /></Suspense>} />
+                  <Route path="profile" element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <ProfilePage />
+                    </Suspense>
+                  } />
                   
                   {/* Marketplace Sections */}
                   <Route path="immobilier" element={<RealEstatePage />} />
@@ -157,12 +166,14 @@ function App() {
                   <Route path="marketplace" element={<GeneralMarketplacePage />} />
                   <Route path="premium" element={<PremiumPage />} />
                   
-                  {/* Création d'annonce */}
+                  {/* Création d'annonce - Lazy */}
                   <Route 
                     path="creer-annonce" 
                     element={
                       <ProtectedRoute>
-                        <CreateListingPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <CreateListingPage />
+                        </Suspense>
                       </ProtectedRoute>
                     } 
                   />
@@ -170,7 +181,9 @@ function App() {
                     path="creer-annonce/:category" 
                     element={
                       <ProtectedRoute>
-                        <CreateListingPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <CreateListingPage />
+                        </Suspense>
                       </ProtectedRoute>
                     } 
                   />
@@ -178,7 +191,9 @@ function App() {
                     path="create-listing" 
                     element={
                       <ProtectedRoute>
-                        <CreateListingPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <CreateListingPage />
+                        </Suspense>
                       </ProtectedRoute>
                     } 
                   />
@@ -186,32 +201,38 @@ function App() {
                   {/* Détails d'annonce */}
                   <Route path="annonce/:id" element={<ListingDetailPage />} />
                   
-                  {/* Booster une annonce */}
+                  {/* Booster une annonce - Lazy */}
                   <Route 
                     path="booster-annonce/:id" 
                     element={
                       <ProtectedRoute>
-                        <BoostListingPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <BoostListingPage />
+                        </Suspense>
                       </ProtectedRoute>
                     } 
                   />
                   
-                  {/* Paiement pour boost - Nouveau système Lygos */}
+                  {/* Paiement pour boost - Nouveau système Lygos - Lazy */}
                   <Route
                     path="paiement/boost/:listingId"
                     element={
                       <ProtectedRoute>
-                        <BoostPaymentPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <BoostPaymentPage />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
 
-                  {/* Paiement pour boost - Ancien système (à supprimer) */}
+                  {/* Paiement pour boost - Ancien système - Lazy */}
                   <Route 
                     path="paiement/:boostId" 
                     element={
                       <ProtectedRoute>
-                        <PaymentProcessPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <PaymentProcessPage />
+                        </Suspense>
                       </ProtectedRoute>
                     } 
                   />
@@ -219,11 +240,19 @@ function App() {
                   {/* Callback de paiement */}
                   <Route path="payment-callback" element={<PaymentCallbackPage />} />
                   
-                  {/* Test FedaPay */}
-                  <Route path="fedapay-test" element={<FedaPayTestPage />} />
+                  {/* Test FedaPay - Lazy */}
+                  <Route path="fedapay-test" element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <FedaPayTestPage />
+                    </Suspense>
+                  } />
                   
-                  {/* Tests Mobile */}
-                  <Route path="mobile-tests" element={<MobileTestPage />} />
+                  {/* Tests Mobile - Lazy */}
+                  <Route path="mobile-tests" element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <MobileTestPage />
+                    </Suspense>
+                  } />
                   
                   {/* Route de diagnostic temporaire */}
                   <Route path="diagnostic" element={
@@ -232,42 +261,50 @@ function App() {
                     </Suspense>
                   } />
                   
-                  {/* Modifier une annonce */}
+                  {/* Modifier une annonce - Lazy */}
                   <Route 
                     path="annonce/:id/modifier" 
                     element={
                       <ProtectedRoute>
-                        <CreateListingPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <CreateListingPage />
+                        </Suspense>
                       </ProtectedRoute>
                     } 
                   />
                   
-                  {/* Favoris */}
+                  {/* Favoris - Lazy */}
                   <Route 
                     path="favorites" 
                     element={
                       <ProtectedRoute>
-                        <FavoritesPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <FavoritesPage />
+                        </Suspense>
                       </ProtectedRoute>
                     } 
                   />
                   
-                  {/* Boost - Liste des annonces à booster */}
+                  {/* Boost - Liste des annonces à booster - Lazy */}
                   <Route
                     path="boost"
                     element={
                       <ProtectedRoute>
-                        <BoostPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <BoostPage />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
 
-                  {/* Transactions utilisateur */}
+                  {/* Transactions utilisateur - Lazy */}
                   <Route
                     path="transactions"
                     element={
                       <ProtectedRoute>
-                        <UserTransactionsPage />
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <UserTransactionsPage />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -380,29 +417,31 @@ function App() {
                     />
                   </Route>
                   
-                  {/* Static Pages */}
-                  <Route path="a-propos" element={<AboutPage />} />
-                  <Route path="contact" element={<ContactPage />} />
-                  <Route path="carrieres" element={<CareersPage />} />
-                  <Route path="presse" element={<PressPage />} />
-                  <Route path="aide" element={<HelpCenterPage />} />
-                  <Route path="faq" element={<FAQPage />} />
-                  <Route path="politique-confidentialite" element={<PrivacyPolicyPage />} />
-                  <Route path="conditions-utilisation" element={<TermsConditionsPage />} />
+                  {/* Static Pages - Lazy */}
+                  <Route path="a-propos" element={<Suspense fallback={<LoadingSpinner />}><AboutPage /></Suspense>} />
+                  <Route path="contact" element={<Suspense fallback={<LoadingSpinner />}><ContactPage /></Suspense>} />
+                  <Route path="carrieres" element={<Suspense fallback={<LoadingSpinner />}><CareersPage /></Suspense>} />
+                  <Route path="presse" element={<Suspense fallback={<LoadingSpinner />}><PressPage /></Suspense>} />
+                  <Route path="aide" element={<Suspense fallback={<LoadingSpinner />}><HelpCenterPage /></Suspense>} />
+                  <Route path="faq" element={<Suspense fallback={<LoadingSpinner />}><FAQPage /></Suspense>} />
+                  <Route path="politique-confidentialite" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicyPage /></Suspense>} />
+                  <Route path="conditions-utilisation" element={<Suspense fallback={<LoadingSpinner />}><TermsConditionsPage /></Suspense>} />
                   
-                  {/* Blog Routes */}
-                  <Route path="blog" element={<BlogPage />} />
-                  <Route path="blog/:id" element={<BlogPostPage />} />
+                  {/* Blog Routes - Lazy */}
+                  <Route path="blog" element={<Suspense fallback={<LoadingSpinner />}><BlogPage /></Suspense>} />
+                  <Route path="blog/:id" element={<Suspense fallback={<LoadingSpinner />}><BlogPostPage /></Suspense>} />
                   
                   {/* 404 */}
-                  <Route path="*" element={<NotFoundPage />} />
+                  <Route path="*" element={<Suspense fallback={<LoadingSpinner />}><NotFoundPage /></Suspense>} />
                 </Route>
               </Routes>
             </AnimatePresence>
           </AuthProvider>
           <Toaster />
-          {/* ChatWidget chargé immédiatement */}
-          <ChatWidget />
+          {/* ChatWidget - Lazy Loading (ne bloque pas le rendu initial) */}
+          <Suspense fallback={null}>
+            <ChatWidget />
+          </Suspense>
         </AppWrapper>
       </QueryErrorBoundary>
       {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen={false} />}

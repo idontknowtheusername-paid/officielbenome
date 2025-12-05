@@ -1,15 +1,30 @@
 import { listingService } from './index.js';
 import { localCache } from '@/lib/localCache';
 
-// Configuration des TTL par type de données (optimisée)
+// Configuration des durées de vie du cache (TTL)
 const CACHE_TTL = {
-  listings: 10 * 60 * 1000, // 10 minutes
-  categories: 60 * 60 * 1000, // 1 heure
-  userListings: 5 * 60 * 1000, // 5 minutes
-  searchResults: 15 * 60 * 1000, // 15 minutes
-  heroListings: 30 * 60 * 1000, // 30 minutes pour les hero listings
-  popularListings: 10 * 60 * 1000, // 10 minutes pour les populaires
-  premiumListings: 5 * 60 * 1000, // 5 minutes pour les premium (réduit pour voir rapidement les nouveaux boosts)
+  listings: 10 * 60 * 1000,       // 10 minutes
+  categories: 60 * 60 * 1000,     // 1 heure
+  userListings: 5 * 60 * 1000,    // 5 minutes
+  searchResults: 15 * 60 * 1000,  // 15 minutes
+  heroListings: 30 * 60 * 1000,   // 30 minutes
+  popularListings: 10 * 60 * 1000,// 10 minutes
+  premiumListings: 5 * 60 * 1000, // 5 minutes
+};
+
+/**
+ * Génère une clé de cache stable indépendante de l'ordre des propriétés de l'objet
+ */
+const generateCacheKey = (prefix, obj = {}) => {
+  if (!obj) return `${prefix}:all`;
+  // Trie les clés pour garantir que {a:1, b:2} donne la même clé que {b:2, a:1}
+  const sortedStr = JSON.stringify(
+    Object.keys(obj).sort().reduce((acc, key) => {
+      acc[key] = obj[key];
+      return acc;
+    }, {})
+  );
+  return `${prefix}:${sortedStr}`;
 };
 
 export const cachedListingService = {
@@ -17,305 +32,232 @@ export const cachedListingService = {
    * Récupère tous les listings avec cache intelligent
    */
   async getAllListings(filters = {}) {
-    const cacheKey = `listings:${JSON.stringify(filters)}`;
+    const cacheKey = generateCacheKey('listings', filters);
     
-    // Essayer le cache local d'abord
     const cached = localCache.get(cacheKey);
     if (cached) {
-      console.log('📦 Données récupérées du cache local:', cacheKey);
+      console.log('📦 Listings (Cache Hit):', cacheKey);
       return cached;
     }
 
     try {
-      // Appel API si pas en cache
-      console.log('🌐 Appel API pour récupérer les listings');
+      console.log('🌐 Listings (API Call)');
       const data = await listingService.getAllListings(filters);
-      
-      // Mettre en cache
       localCache.set(cacheKey, data, CACHE_TTL.listings);
-      
       return data;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des listings:', error);
+      console.error('❌ Erreur getAllListings:', error);
       throw error;
     }
   },
 
   /**
-   * Récupère un listing par ID avec cache
+   * Récupère un listing par ID
    */
   async getListingById(id) {
     const cacheKey = `listing:${id}`;
     
-    // Essayer le cache local d'abord
     const cached = localCache.get(cacheKey);
     if (cached) {
-      console.log('📦 Listing récupéré du cache local:', id);
+      console.log('📦 Listing ID (Cache Hit):', id);
       return cached;
     }
 
     try {
-      // Appel API si pas en cache
-      console.log('🌐 Appel API pour récupérer le listing:', id);
+      console.log('🌐 Listing ID (API Call):', id);
       const data = await listingService.getListingById(id);
-      
-      // Mettre en cache
       localCache.set(cacheKey, data, CACHE_TTL.listings);
-      
       return data;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération du listing:', error);
+      console.error('❌ Erreur getListingById:', error);
       throw error;
     }
   },
 
   /**
-   * Crée un listing et invalide le cache
+   * Crée un listing et invalide les caches
    */
   async createListing(listingData) {
     try {
       const data = await listingService.createListing(listingData);
-      
-      // Invalider le cache des listings
-      this._invalidateListingsCache();
-      
+      this._invalidateAllLists(); // On vide toutes les listes car une nouvelle annonce est arrivée
       return data;
     } catch (error) {
-      console.error('❌ Erreur lors de la création du listing:', error);
+      console.error('❌ Erreur createListing:', error);
       throw error;
     }
   },
 
   /**
-   * Met à jour un listing et invalide le cache
+   * Met à jour un listing et invalide TOUT ce qui est concerné
    */
   async updateListing(id, updates) {
     try {
       const data = await listingService.updateListing(id, updates);
       
-      // Invalider le cache spécifique et général
+      // 1. Supprimer le cache de cet item spécifique
       localCache.delete(`listing:${id}`);
-      this._invalidateListingsCache();
+      
+      // 2. Vider les listes (Hero, Search, etc.) car les données (prix, image) ont changé
+      this._invalidateAllLists();
       
       return data;
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour du listing:', error);
+      console.error('❌ Erreur updateListing:', error);
       throw error;
     }
   },
 
   /**
-   * Supprime un listing et invalide le cache
+   * Supprime un listing
    */
   async deleteListing(id) {
     try {
       await listingService.deleteListing(id);
       
-      // Invalider le cache spécifique et général
       localCache.delete(`listing:${id}`);
-      this._invalidateListingsCache();
+      this._invalidateAllLists();
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur lors de la suppression du listing:', error);
+      console.error('❌ Erreur deleteListing:', error);
       throw error;
     }
   },
 
   /**
-   * Recherche de listings avec cache
+   * Recherche
    */
   async searchListings(query, filters = {}) {
-    const cacheKey = `search:${query}:${JSON.stringify(filters)}`;
+    const cacheKey = `search:${query}:${generateCacheKey('', filters)}`;
     
-    // Essayer le cache local d'abord
     const cached = localCache.get(cacheKey);
     if (cached) {
-      console.log('📦 Résultats de recherche récupérés du cache local');
+      console.log('📦 Search (Cache Hit)');
       return cached;
     }
 
     try {
-      // Appel API si pas en cache
-      console.log('🌐 Appel API pour la recherche:', query);
+      console.log('🌐 Search (API Call):', query);
       const data = await listingService.searchListings(query, filters);
-      
-      // Mettre en cache avec TTL plus court pour les recherches
       localCache.set(cacheKey, data, CACHE_TTL.searchResults);
-      
       return data;
     } catch (error) {
-      console.error('❌ Erreur lors de la recherche:', error);
+      console.error('❌ Erreur searchListings:', error);
       throw error;
     }
   },
 
   /**
-   * Récupère les listings d'un utilisateur avec cache
+   * Listings Utilisateur
    */
   async getUserListings(userId) {
     const cacheKey = `userListings:${userId}`;
     
-    // Essayer le cache local d'abord
     const cached = localCache.get(cacheKey);
     if (cached) {
-      console.log('📦 Listings utilisateur récupérés du cache local');
       return cached;
     }
 
     try {
-      // Appel API si pas en cache
-      console.log('🌐 Appel API pour les listings utilisateur:', userId);
       const data = await listingService.getUserListings(userId);
-      
-      // Mettre en cache avec TTL court pour les données utilisateur
       localCache.set(cacheKey, data, CACHE_TTL.userListings);
-      
       return data;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des listings utilisateur:', error);
+      console.error('❌ Erreur getUserListings:', error);
       throw error;
     }
   },
 
   /**
-   * Récupère les catégories avec cache long
+   * Catégories (Rarement modifiées, cache long)
    */
   async getCategories() {
     const cacheKey = 'categories';
-    
-    // Essayer le cache local d'abord
     const cached = localCache.get(cacheKey);
-    if (cached) {
-      console.log('📦 Catégories récupérées du cache local');
-      return cached;
-    }
+    if (cached) return cached;
 
     try {
-      // Appel API si pas en cache
-      console.log('🌐 Appel API pour récupérer les catégories');
       const data = await listingService.getCategories();
-      
-      // Mettre en cache avec TTL long pour les catégories
       localCache.set(cacheKey, data, CACHE_TTL.categories);
-      
       return data;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des catégories:', error);
+      console.error('❌ Erreur getCategories:', error);
       throw error;
     }
   },
 
-  /**
-   * Invalide le cache des listings
-   */
-  _invalidateListingsCache() {
-    try {
-      const keys = Object.keys(localStorage);
-      const listingKeys = keys.filter(key => 
-        key.startsWith('benome:listings:') || 
-        key.startsWith('benome:search:') ||
-        key.startsWith('benome:userListings:')
-      );
-      
-      listingKeys.forEach(key => {
-        const actualKey = key.replace('benome:', '');
-        localCache.delete(actualKey);
-      });
-      
-      console.log('🗑️ Cache des listings invalidé');
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'invalidation du cache:', error);
-    }
-  },
+  // --- SECTIONS SPÉCIALES (Hero, Popular, Premium) ---
 
-  /**
-   * Nettoie tout le cache
-   */
-  clearCache() {
-    localCache.clear();
-    console.log('🗑️ Cache complètement vidé');
-  },
-
-  /**
-   * Récupère les hero listings avec cache optimisé
-   */
   async getHeroListings(limit = 6) {
     const cacheKey = `hero-listings:${limit}`;
-    
     const cached = localCache.get(cacheKey);
-    if (cached) {
-      console.log('📦 Hero listings récupérés du cache local');
-      return cached;
-    }
+    if (cached) return cached;
 
     try {
-      console.log('🌐 Appel API pour récupérer les hero listings');
       const data = await listingService.getHeroListings(limit);
-      
       localCache.set(cacheKey, data, CACHE_TTL.heroListings);
-      
       return data;
-    } catch (error) {
-      console.error('❌ Erreur lors de la récupération des hero listings:', error);
-      throw error;
-    }
+    } catch (error) { throw error; }
   },
 
-  /**
-   * Récupère les listings populaires avec cache optimisé
-   */
   async getTopViewedListings(limit = 10) {
     const cacheKey = `popular-listings:${limit}`;
-    
     const cached = localCache.get(cacheKey);
-    if (cached) {
-      console.log('📦 Listings populaires récupérés du cache local');
-      return cached;
-    }
+    if (cached) return cached;
 
     try {
-      console.log('🌐 Appel API pour récupérer les listings populaires');
       const data = await listingService.getTopViewedListings(limit);
-      
       localCache.set(cacheKey, data, CACHE_TTL.popularListings);
-      
       return data;
-    } catch (error) {
-      console.error('❌ Erreur lors de la récupération des listings populaires:', error);
-      throw error;
-    }
+    } catch (error) { throw error; }
   },
 
-  /**
-   * Récupère les listings premium avec cache optimisé
-   */
   async getPremiumListings(limit = 10) {
     const cacheKey = `premium-listings:${limit}`;
-    
     const cached = localCache.get(cacheKey);
-    if (cached) {
-      console.log('📦 Listings premium récupérés du cache local');
-      return cached;
-    }
+    if (cached) return cached;
 
     try {
-      console.log('🌐 Appel API pour récupérer les listings premium');
       const data = await listingService.getPremiumListings(limit);
-      
       localCache.set(cacheKey, data, CACHE_TTL.premiumListings);
-      
       return data;
-    } catch (error) {
-      console.error('❌ Erreur lors de la récupération des listings premium:', error);
-      throw error;
-    }
+    } catch (error) { throw error; }
   },
 
   /**
-   * Récupère les statistiques du cache
+   * Invalide tous les caches de listes (utilisé après create/update/delete)
+   * Nettoie : Listings globaux, recherches, listings user, et sections accueil
    */
+  _invalidateAllLists() {
+    try {
+      console.log('🧹 Invalidation de toutes les listes...');
+      
+      // On demande au localCache de supprimer par motif (pattern)
+      // Note: Cela suppose que localCache.deleteByPattern existe (on l'ajoutera juste après)
+      if (typeof localCache.deleteByPattern === 'function') {
+        localCache.deleteByPattern('listings:');
+        localCache.deleteByPattern('search:');
+        localCache.deleteByPattern('userListings:');
+        localCache.deleteByPattern('hero-listings');
+        localCache.deleteByPattern('popular-listings');
+        localCache.deleteByPattern('premium-listings');
+      } else {
+        // Fallback si la méthode n'existe pas encore
+        console.warn('⚠️ localCache.deleteByPattern manquant, nettoyage partiel.');
+        localCache.clear(); // Solution radicale de secours
+      }
+    } catch (error) {
+      console.error('❌ Erreur invalidation cache:', error);
+    }
+  },
+
   getCacheStats() {
     return localCache.getStats();
+  },
+
+  clearCache() {
+    localCache.clear();
+    console.log('🗑️ Cache vidé manuellement');
   }
-}; 
+};

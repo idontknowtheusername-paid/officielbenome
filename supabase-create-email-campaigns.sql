@@ -31,9 +31,9 @@ CREATE POLICY "Admins can manage campaigns" ON email_campaigns
   FOR ALL
   USING (
     EXISTS (
-      SELECT 1 FROM auth.users
-      WHERE auth.users.id = auth.uid()
-      AND auth.users.role IN ('admin', 'superadmin')
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid()
+      AND users.role = 'admin'
     )
   );
 

@@ -6,15 +6,17 @@ import { emailTemplates, getTemplate } from './email-templates.service.js';
 // ============================================================================
 
 // Configuration SendGrid
-const SENDGRID_API_KEY = import.meta.env?.VITE_SENDGRID_API_KEY || process.env.VITE_SENDGRID_API_KEY;
+const SENDGRID_API_KEY_RAW = import.meta.env?.VITE_SENDGRID_API_KEY || process.env.VITE_SENDGRID_API_KEY;
+// Valider que la clé commence par "SG." (format SendGrid valide)
+const SENDGRID_API_KEY = SENDGRID_API_KEY_RAW?.startsWith('SG.') ? SENDGRID_API_KEY_RAW : null;
 const FROM_EMAIL = import.meta.env?.VITE_FROM_EMAIL || process.env.VITE_FROM_EMAIL || 'newsletter@maxiimarket.com';
 const FROM_NAME = import.meta.env?.VITE_FROM_NAME || process.env.VITE_FROM_NAME || 'MaxiMarket Newsletter';
 
-// Initialiser SendGrid
+// Initialiser SendGrid seulement si la clé est valide
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
 } else {
-  console.warn('⚠️ VITE_SENDGRID_API_KEY non configurée - emails en mode simulation');
+  console.log('📧 SendGrid non configuré - utilisation de Brevo comme provider principal');
 }
 
 export const emailService = {

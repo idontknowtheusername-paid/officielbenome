@@ -163,58 +163,54 @@ const HomePage = () => {
         </section>
       )}
 
-      {/* Popular Listings */}
-      <section className="py-5 md:py-7 bg-background/30">
-        <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
-            🔥 <span className="gradient-text">Annonces Populaires</span>
-          </h2>
-          {error.popular && (
-            <p className="text-center text-destructive mb-8">{error.popular}</p>
-          )}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {loading.popular &&
-              !popularListings.length &&
-              Array.from({ length: 10 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent"
-                >
-                  <div className="h-40 sm:h-48 md:h-56 bg-muted animate-pulse" />
-                  <div className="p-3 sm:p-4 md:p-6">
-                    <div className="h-6 w-3/4 bg-muted rounded mb-3 animate-pulse" />
-                    <div className="h-4 w-1/2 bg-muted rounded mb-4 animate-pulse" />
-                    <div className="h-10 w-1/3 bg-muted rounded animate-pulse" />
-                  </div>
-                </div>
-              ))}
-
-            {!loading.popular && popularListings.length === 0 && (
-              <p className="col-span-full text-center text-muted-foreground">
-                Aucune annonce populaire pour le moment.
-              </p>
+      {/* Popular Listings - Masquer si vide */}
+      {(loading.popular || popularListings.length > 0) && (
+        <section className="py-5 md:py-7 bg-background/30">
+          <div className="container mx-auto px-4 md:px-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
+              🔥 <span className="gradient-text">Annonces Populaires</span>
+            </h2>
+            {error.popular && (
+              <p className="text-center text-destructive mb-8">{error.popular}</p>
             )}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
+              {loading.popular &&
+                !popularListings.length &&
+                Array.from({ length: 8 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent"
+                  >
+                    <div className="h-40 sm:h-48 md:h-56 bg-muted animate-pulse" />
+                    <div className="p-3 sm:p-4 md:p-6">
+                      <div className="h-6 w-3/4 bg-muted rounded mb-3 animate-pulse" />
+                      <div className="h-4 w-1/2 bg-muted rounded mb-4 animate-pulse" />
+                      <div className="h-10 w-1/3 bg-muted rounded animate-pulse" />
+                    </div>
+                  </div>
+                ))}
 
-            {popularListings.slice(0, 10).map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                showActions={false}
-              />
-            ))}
+              {popularListings.slice(0, 8).map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  showActions={false}
+                />
+              ))}
+            </div>
+            <div className="text-center mt-6">
+              <Button
+                size="lg"
+                variant="default"
+                className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-primary-foreground"
+                onClick={() => navigate("/marketplace?sort=popular&per=24")}
+              >
+                Voir Toutes les Annonces <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
           </div>
-          <div className="text-center mt-6">
-            <Button
-              size="lg"
-              variant="default"
-              className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-primary-foreground"
-              onClick={() => navigate("/marketplace?sort=popular&per=24")}
-            >
-              Voir Toutes les Annonces <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* New Listings Section */}
       <NewListingsSection />

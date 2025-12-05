@@ -50,7 +50,7 @@ export const supabase = createClient(
       persistSession: SECURITY_CONFIG.persistSession,
       detectSessionInUrl: SECURITY_CONFIG.detectSessionInUrl,
       flowType: 'pkce', // Plus sécurisé que implicit
-      debug: import.meta.env.DEV, // Debug uniquement en développement
+      debug: false, // Désactivé pour éviter le spam console
     },
     realtime: {
       params: {
