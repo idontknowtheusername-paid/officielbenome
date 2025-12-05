@@ -99,14 +99,20 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     const { name, value } = e.target;
     if (name.startsWith('location.')) {
       const locField = name.split('.')[1];
-      setForm((prev) => ({ ...prev, location: { ...prev.location, [locField]: value } }));
+      const newLocation = { ...form.location, [locField]: value };
+      setForm((prev) => ({ ...prev, location: newLocation }));
+
+      // Notifier le parent avec la structure correcte
+      if (onDataChange) {
+        onDataChange({ location: newLocation });
+      }
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
-    }
-    
-    // Notifier le parent des changements
-    if (onDataChange) {
-      onDataChange({ [name]: value });
+
+      // Notifier le parent des changements
+      if (onDataChange) {
+        onDataChange({ [name]: value });
+      }
     }
   };
 
