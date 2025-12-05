@@ -38,7 +38,7 @@ const getCategoryValue = (cat) => {
   return categoryMap[cat] || '';
 };
 
-const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onStepChange, initialData = null }) => {
+const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onStepChange, initialData = null, listingId = null }) => {
   const { toast } = useToast();
   const [form, setForm] = useState(
     initialData || {
@@ -344,7 +344,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   };
 
   const nextStep = () => {
-    if (activeStep < 2) {
+    if (activeStep < 3) {
       setActiveStep(activeStep + 1);
       if (onStepChange) {
         onStepChange(activeStep + 1);
@@ -371,19 +371,29 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
     setIsSubmitting(true);
     try {
       // Filtrer les images pour ne garder que celles qui sont uploadees (pas les previsualisations)
-      const uploadedImages = form.images.filter(img => !img.isPreview).map(img => img.url);
+      const uploadedImages = form.images.filter(img => !img.isPreview).map(img => typeof img === 'string' ? img : img.url);
       
       const payload = {
         ...form,
         images: uploadedImages,
         price: Number(form.price),
       };
-      const res = await listingService.createListing(payload);
-      toast({ title: 'Annonce créée !', description: 'Votre annonce a été soumise avec succès.' });
-      setForm(DEFAULT_FORM);
+
+      let res;
+      if (listingId) {
+        // Mode édition
+        res = await listingService.updateListing(listingId, payload);
+        toast({ title: 'Annonce modifiée !', description: 'Vos modifications ont été enregistrées.' });
+      } else {
+        // Mode création
+        res = await listingService.createListing(payload);
+        toast({ title: 'Annonce créée !', description: 'Votre annonce a été soumise avec succès.' });
+        setForm(DEFAULT_FORM);
+      }
+
       if (onSuccess) onSuccess(res);
     } catch (err) {
-      toast({ title: 'Erreur', description: err?.message || 'Erreur lors de la création.', variant: 'destructive' });
+      toast({ title: 'Erreur', description: err?.message || 'Erreur lors de l\'opération.', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
@@ -709,12 +719,13 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
   // Rendu des etapes du formulaire
   const renderStep = () => {
     switch (activeStep) {
+      // ÉTAPE 1 : Informations de base (Titre, Description, Catégorie, Localisation)
       case 1:
         return (
           <div className="space-y-6">
             <div>
-                              <h3 className="text-xl font-semibold text-foreground mb-4">Informations de base</h3>
-                <p className="text-muted-foreground mb-6">Commencez par les informations essentielles de votre annonce.</p>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Informations de base</h3>
+              <p className="text-muted-foreground mb-6">Commencez par les informations essentielles de votre annonce.</p>
             </div>
             
             <div className="space-y-4">
@@ -742,11 +753,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                   rows={4}
                   required
                   className="max-w-2xl resize-none transition-all duration-200"
-                  style={{
-                    minHeight: '120px',
-                    height: 'auto',
-                    overflow: 'hidden'
-                  }}
+                  style={{ minHeight: '120px', height: 'auto', overflow: 'hidden' }}
                   onInput={(e) => {
                     e.target.style.height = 'auto';
                     e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px';
@@ -772,45 +779,13 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
               </div>
             </div>
             
-            {/* Prix et localisation intégrés dans l'étape 1 */}
+            {/* Localisation */}
             <div className="space-y-4 pt-6 border-t">
-                                <h4 className="text-lg font-medium text-foreground">Prix et localisation</h4>
+              <h4 className="text-lg font-medium text-foreground">Localisation</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Prix *</Label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    value={form.price}
-                    onChange={handleChange}
-                    placeholder="0"
-                    required
-                    className="h-12"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="currency">Devise</Label>
-                  <select
-                    id="currency"
-                    name="currency"
-                    value={form.currency}
-                    onChange={handleChange}
-                    className="w-full px-3 py-3 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-foreground"
-                  >
-                    <option value="XOF" className="text-foreground">XOF (Franc CFA)</option>
-                    <option value="EUR" className="text-foreground">EUR (Euro)</option>
-                    <option value="USD" className="text-foreground">USD (Dollar US)</option>
-                    <option value="NGN" className="text-foreground">NGN (Naira)</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="country">Pays</Label>
+                  <Label htmlFor="country">Pays *</Label>
                   <select
                     id="country"
                     name="location.country"
@@ -826,7 +801,7 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
+                  <Label htmlFor="city">Ville *</Label>
                   <select
                     id="city"
                     name="location.city"
@@ -847,12 +822,74 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
           </div>
         );
         
+      // ÉTAPE 2 : Détails techniques (Prix, Devise, Champs spécifiques)
       case 2:
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-semibold text-foreground mb-4">Médias et détails</h3>
-              <p className="text-muted-foreground mb-6">Ajoutez des photos et des informations spécifiques à votre catégorie.</p>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Détails et tarification</h3>
+              <p className="text-muted-foreground mb-6">Définissez le prix et les caractéristiques spécifiques.</p>
+            </div>
+
+            {/* Section Prix */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-medium text-foreground">Prix et devise</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Prix *</Label>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    value={form.price}
+                    onChange={handleChange}
+                    placeholder="0"
+                    required
+                    min="1"
+                    className="h-12"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Devise</Label>
+                  <select
+                    id="currency"
+                    name="currency"
+                    value={form.currency}
+                    onChange={handleChange}
+                    className="w-full px-3 py-3 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-12 text-foreground"
+                  >
+                    <option value="XOF">XOF (Franc CFA)</option>
+                    <option value="EUR">EUR (Euro)</option>
+                    <option value="USD">USD (Dollar US)</option>
+                    <option value="NGN">NGN (Naira)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Section Détails spécifiques */}
+            <div className="space-y-4 pt-6 border-t">
+              <h4 className="text-lg font-medium text-foreground">Caractéristiques spécifiques</h4>
+              {form.category ? (
+                <div className="space-y-4">
+                  {renderSpecificFields()}
+                </div>
+              ) : (
+                <div className="text-center py-4 bg-muted/50 rounded-lg">
+                  <p className="text-muted-foreground">Veuillez d'abord sélectionner une catégorie à l'étape 1.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ÉTAPE 3 : Images et Publication
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Photos et publication</h3>
+              <p className="text-muted-foreground mb-6">Ajoutez des photos pour rendre votre annonce attractive.</p>
             </div>
             
             {/* Section Médias */}
@@ -973,11 +1010,14 @@ const ListingForm = ({ onSuccess, category, onDataChange, currentStep = 1, onSte
         </Button>
         
         <div className="flex items-center space-x-2">
-          {activeStep < 2 ? (
+          {activeStep < 3 ? (
             <Button
               type="button"
               onClick={nextStep}
-              disabled={!form.title || !form.description || !form.category}
+              disabled={
+                (activeStep === 1 && (!form.title || !form.description || !form.category || !form.location?.country || !form.location?.city)) ||
+                (activeStep === 2 && (!form.price || Number(form.price) < 0))
+              }
             >
               Suivant
             </Button>

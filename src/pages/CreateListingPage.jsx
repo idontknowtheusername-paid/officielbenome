@@ -43,20 +43,61 @@ const CreateListingPage = () => {
       const listing = await listingService.getListingById(listingId);
       
       if (listing) {
+        // Mapper les détails spécifiques selon la catégorie
+        let specificData = {};
+        const cat = listing.category || category;
+
+        // D'abord vérifier specific_data (nouveau format)
+        if (listing.specific_data && Object.keys(listing.specific_data).length > 0) {
+          specificData = listing.specific_data;
+        }
+        // Sinon, mapper depuis les anciens champs séparés
+        else if (cat === 'real_estate' && listing.real_estate_details) {
+          specificData = {
+            propertyType: listing.real_estate_details.type || listing.real_estate_details.propertyType || '',
+            transactionType: listing.real_estate_details.transactionType || '',
+            bedrooms: listing.real_estate_details.bedrooms || listing.real_estate_details.rooms || '',
+            bathrooms: listing.real_estate_details.bathrooms || '',
+            areaSqMeters: listing.real_estate_details.surface || listing.real_estate_details.areaSqMeters || '',
+            amenities: listing.real_estate_details.amenities || []
+          };
+        } else if (cat === 'automobile' && listing.automobile_details) {
+          specificData = {
+            vehicleType: listing.automobile_details.vehicleType || '',
+            make: listing.automobile_details.brand || listing.automobile_details.make || '',
+            model: listing.automobile_details.model || '',
+            year: listing.automobile_details.year || '',
+            mileage: listing.automobile_details.mileage || ''
+          };
+        } else if (cat === 'services' && listing.service_details) {
+          specificData = {
+            serviceCategory: listing.service_details.expertise || listing.service_details.serviceCategory || '',
+            availability: listing.service_details.availability || '',
+            experienceYears: listing.service_details.experience || listing.service_details.experienceYears || '',
+            portfolioLinks: listing.service_details.portfolioLinks || []
+          };
+        } else if (cat === 'marketplace' && listing.product_details) {
+          specificData = {
+            productCategory: listing.product_details.productCategory || '',
+            brand: listing.product_details.brand || '',
+            stockQuantity: listing.product_details.stockQuantity || ''
+          };
+        }
+
         // Préparer les données pour le formulaire
         const preparedData = {
           title: listing.title || '',
           description: listing.description || '',
           price: listing.price || '',
-          category: listing.category || category,
-          location: listing.location || {},
-          images: listing.images || [],
+          currency: listing.currency || 'XOF',
+          category: cat,
+          location: {
+            city: listing.location?.city || listing.city || '',
+            country: listing.location?.country || listing.country || ''
+          },
+          images: (listing.images || []).map(img => typeof img === 'string' ? { url: img, isPreview: false } : img),
           contact_info: listing.contact_info || {},
-          // Détails spécifiques par catégorie
-          real_estate_details: listing.real_estate_details || {},
-          automobile_details: listing.automobile_details || {},
-          service_details: listing.service_details || {},
-          product_details: listing.product_details || {},
+          specificData: specificData,
         };
         
         setFormData(preparedData);
@@ -111,15 +152,22 @@ const CreateListingPage = () => {
   const steps = [
     {
       id: 1,
-      title: 'Informations de base',
-      description: 'Titre, description, catégorie, prix et localisation',
+      title: 'Informations',
+      description: 'Titre, description, catégorie et localisation',
       icon: FileText,
       completed: false
     },
     {
       id: 2,
-      title: 'Médias et publication',
-      description: 'Photos, vidéos, caractéristiques spécifiques et publication',
+      title: 'Détails',
+      description: 'Prix, devise et caractéristiques spécifiques',
+      icon: Settings,
+      completed: false
+    },
+    {
+      id: 3,
+      title: 'Photos & Publication',
+      description: 'Images, prévisualisation et publication',
       icon: Camera,
       completed: false
     }
@@ -330,6 +378,7 @@ const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=$
                       currentStep={currentStep}
                       onStepChange={setCurrentStep}
                       initialData={isEditing ? formData : null}
+                      listingId={isEditing ? id : null}
                     />
                   </CardContent>
                 </Card>

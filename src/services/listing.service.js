@@ -761,9 +761,34 @@ export const listingService = {
 
   // Mettre a jour une annonce
   updateListing: async (id, updates) => {
+    // Preparer les donnees en excluant les champs qui pourraient ne pas exister
+    const { currency, specificData, subCategory, videos, ...baseData } = updates;
+    
+    const updateData = { ...baseData };
+
+    // Ajouter currency seulement si fourni
+    if (currency) {
+      updateData.currency = currency;
+    }
+
+    // Ajouter specificData comme JSON si fourni
+    if (specificData && Object.keys(specificData).length > 0) {
+      updateData.specific_data = specificData;
+    }
+
+    // Ajouter subCategory seulement si fourni
+    if (subCategory) {
+      updateData.subCategory = subCategory;
+    }
+
+    // Ajouter videos seulement si fourni
+    if (videos && videos.length > 0) {
+      updateData.videos = videos;
+    }
+
     const { data, error } = await supabase
       .from('listings')
-      .update(updates)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
