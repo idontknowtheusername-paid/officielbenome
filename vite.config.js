@@ -221,8 +221,6 @@ logger.error = (msg, options) => {
 
 export default defineConfig({
 	customLogger: logger,
-  // Exclure les dossiers Capacitor du scan
-  exclude: ['**/android/**', '**/ios/**', '**/node_modules/**'],
   plugins: [
     react(),
     addTransformIndexHtml,
@@ -503,6 +501,9 @@ export default defineConfig({
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json', ],
 		alias: {
 			'@': path.resolve(__dirname, './src'),
+			// Forcer une version unique de React pour éviter les erreurs de hooks
+			'react': path.resolve(__dirname, './node_modules/react'),
+			'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
 		},
 	},
 	
@@ -526,6 +527,12 @@ export default defineConfig({
 		],
 		exclude: [
 			'@tanstack/react-query-devtools'
+		],
+		// Exclure les dossiers Capacitor du scan de dépendances
+		entries: [
+			'index.html',
+			'!ios/**',
+			'!android/**'
 		]
 	},
 	

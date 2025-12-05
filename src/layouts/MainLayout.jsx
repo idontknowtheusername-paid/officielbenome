@@ -4,7 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { BottomNavigation } from '@/components/BottomNavigation';
+import BottomNavigation from '@/components/BottomNavigation';
 import { MobilePaddingAdjuster } from '@/components/MobilePaddingAdjuster';
 import { cn } from '@/lib/utils';
 

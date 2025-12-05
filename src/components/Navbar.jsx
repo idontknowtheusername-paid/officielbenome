@@ -36,10 +36,13 @@ const Navbar = () => {
   const activeNavLinkClasses = useMemo(() => "text-primary bg-primary/10", []);
 
   // Fonction de déconnexion
-  const handleLogout = async () => {
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(false);
     try {
       await logout();
-      setIsOpen(false);
+      navigate('/');
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
     }
@@ -220,7 +223,7 @@ const Navbar = () => {
             )}
 
 
-            {user && user.role === 'admin' ? (
+            {user && user.role === 'admin' && (
               <NavLink 
                 to="/admin" 
                 onClick={() => setIsOpen(false)} 
@@ -229,7 +232,8 @@ const Navbar = () => {
               >
                 <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Admin
               </NavLink>
-            ) : user && (
+            )}
+            {user && user.role !== 'admin' && (
               <>
                 <NavLink 
                   to="/messages" 
@@ -247,14 +251,34 @@ const Navbar = () => {
                 >
                   <Settings className="mr-2 h-4 w-4" aria-hidden="true" /> Mon Compte
                 </NavLink>
-                <button
-                  onClick={handleLogout}
-                  className={`${navLinkClasses} text-base w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50`}
-                  aria-label="Se déconnecter"
-                >
-                  <LogOut className="mr-2 h-4 w-4" aria-hidden="true" /> Déconnexion
-                </button>
               </>
+            )}
+            {user && (
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🔴 Clic déconnexion');
+                  setIsOpen(false);
+                  logout().then(() => {
+                    console.log('✅ Déconnexion OK');
+                    navigate('/');
+                  });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsOpen(false);
+                    logout().then(() => navigate('/'));
+                  }
+                }}
+                className="text-red-400 hover:text-red-300 hover:bg-red-900/30 transition-colors px-2 py-3 rounded-md text-base font-medium flex items-center w-full justify-start cursor-pointer select-none"
+                aria-label="Se déconnecter"
+              >
+                <LogOut className="mr-2 h-4 w-4" aria-hidden="true" /> Déconnexion
+              </div>
             )}
           </motion.nav>
         )}

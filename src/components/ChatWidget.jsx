@@ -208,15 +208,19 @@ const ChatWidget = ({ pageContext = {} }) => {
       {!open && (
         <button
           onClick={() => { setOpen(true); setSheetMode('initial'); }}
+          className="chat-launcher-btn"
           style={{
-            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
+            position: 'fixed',
+            bottom: isMobile ? '80px' : '24px',
+            right: '24px',
+            zIndex: 9999,
             height: 56, padding: '0 24px', borderRadius: 28,
             background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
             color: 'white', border: 'none',
             boxShadow: '0 8px 32px rgba(37, 99, 235, 0.4)',
             display: 'flex', alignItems: 'center', gap: 12,
             fontSize: '15px', fontWeight: '600', cursor: 'pointer',
-            transition: 'transform 0.2s'
+            transition: 'transform 0.2s, bottom 0.3s'
           }}
           onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}

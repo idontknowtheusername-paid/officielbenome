@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Send, ArrowRight, Zap, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,27 @@ import { Input } from '@/components/ui/input';
 import { personalData } from '@/lib/personalData';
 import { newsletterService } from '@/services/newsletter.service';
 import { useToast } from '@/components/ui/use-toast';
+import { Device } from '@capacitor/device';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isNativeApp, setIsNativeApp] = useState(false);
+
+  // Vérifier si on est sur app native
+  useEffect(() => {
+    const checkNativeApp = async () => {
+      try {
+        const info = await Device.getInfo();
+        setIsNativeApp(info.platform !== 'web');
+      } catch (error) {
+        setIsNativeApp(false);
+      }
+    };
+    checkNativeApp();
+  }, []);
 
   const footerLinks = [
     {
@@ -94,6 +109,11 @@ const Footer = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Masquer le footer sur app mobile native
+  if (isNativeApp) {
+    return null;
+  }
 
   return (
     <footer className="bg-card text-card-foreground border-t border-border">

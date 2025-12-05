@@ -17,6 +17,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { QueryErrorBoundary } from '@/components/QueryErrorBoundary';
 import InactivityDetector from '@/components/InactivityDetector';
 import { MobileNavigation } from '@/components/MobileNavigation';
+import BottomNavigation from '@/components/BottomNavigation';
 
 import AppWrapper from '@/components/AppWrapper';
 
@@ -40,7 +41,8 @@ const MessagingPage = lazy(() => import('@/pages/MessagingPage'));
 const DiagnosticPage = lazy(() => import('@/pages/DiagnosticPage'));
 
 // Pages principales (chargées immédiatement - navigation fréquente)
-import HomePage from '@/pages/HomePage'; 
+import HomePage from '@/pages/HomePage';
+import CategoriesPage from '@/pages/CategoriesPage';
 import RealEstatePage from '@/pages/marketplace/RealEstatePage';
 import AutomobilePage from '@/pages/marketplace/AutomobilePage';
 import ServicesPage from '@/pages/marketplace/ServicesPage';
@@ -130,6 +132,7 @@ function App() {
           <AuthProvider>
             <InactivityDetector />
             <MobileNavigation />
+            <BottomNavigation />
             <AnimatePresence mode="wait">
               <Routes>
                 {/* Messaging - Route séparée sans layout */}
@@ -146,6 +149,7 @@ function App() {
                 
                 <Route path="/" element={<MainLayout />}>
                   <Route index element={<HomePage />} />
+                  <Route path="categories" element={<CategoriesPage />} />
                   
                   {/* Auth Routes */}
                   <Route path="connexion" element={<LoginPage />} />

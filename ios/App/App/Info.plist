@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>fr</string>
 	<key>CFBundleDisplayName</key>
-        <string>MaxiMarket - Marketplace</string>
+	<string>MaxiMarket</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,5 +45,26 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+
+	<!-- Permissions Caméra -->
+	<key>NSCameraUsageDescription</key>
+	<string>MaxiMarket a besoin d'accéder à votre caméra pour prendre des photos de vos annonces</string>
+
+	<!-- Permissions Galerie Photos -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MaxiMarket a besoin d'accéder à votre galerie pour sélectionner des photos pour vos annonces</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MaxiMarket a besoin de sauvegarder des photos dans votre galerie</string>
+
+	<!-- Permissions Géolocalisation -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MaxiMarket utilise votre position pour afficher les annonces près de chez vous</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>MaxiMarket utilise votre position pour vous notifier des nouvelles annonces dans votre zone</string>
+
+	<!-- Permissions Microphone (pour vidéos) -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MaxiMarket a besoin d'accéder à votre microphone pour enregistrer des vidéos</string>
+
 </dict>
 </plist>
