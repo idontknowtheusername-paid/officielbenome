@@ -128,13 +128,25 @@ const DataCarousel = ({ title, icon: Icon, items, isLoading, link }) => {
         <div ref={scrollRef} className="flex overflow-x-auto snap-x snap-mandatory px-4 pb-4 gap-4 no-scrollbar scroll-smooth">
           {items.map((item) => (
             <div key={item.id} className="snap-center min-w-[150px] max-w-[150px] bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden flex-shrink-0 active:scale-95 transition-transform duration-200">
-              {/* IMAGE (Placeholder si pas d'image) */}
+              {/* IMAGE (Logo MaxiMarket si pas d'image ou erreur) */}
               <div className="h-28 w-full relative bg-gray-100">
                 {item.image_url ? (
-                  <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-300"><Sparkles /></div>
-                )}
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 ${item.image_url ? 'hidden' : 'flex'}`}
+                >
+                  <img src="/logo.png" alt="MaxiMarket" className="w-10 h-10 object-contain opacity-60" />
+                </div>
 
                 {/* Badge Conditionnel */}
                 {item.is_promoted && (

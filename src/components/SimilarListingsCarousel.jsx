@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ListingCardSkeleton } from '@/components/ui/Skeleton';
 
-const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires", currentListing = null }) => {
+const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires", currentListing = null, loading = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const carouselRef = useRef(null);
@@ -62,6 +63,22 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires",
       maximumFractionDigits: 0
     }).format(price);
   };
+
+  // État de chargement
+  if (loading) {
+    return (
+      <div className="mt-12">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">{title}</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <ListingCardSkeleton key={idx} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // Si pas d'annonces, afficher un message
   if (!listings || listings.length === 0) {
@@ -134,13 +151,22 @@ const SimilarListingsCarousel = ({ listings = [], title = "Annonces similaires",
           >
                 <div className="rounded-lg border border-border overflow-hidden transition-all duration-300 hover:border-primary hover:shadow-lg h-full">
               {/* Image */}
-              <div className="aspect-video relative overflow-hidden">
-                <img   
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  alt={listing.title}
-                  src={listing.images?.[0] || '/placeholder-image.jpg'}
-                  loading="lazy"
-                />
+                  <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+                    {listing.images?.[0] ? (
+                      <img
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        alt={listing.title}
+                        src={listing.images[0]}
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`w-full h-full flex items-center justify-center absolute inset-0 ${listing.images?.[0] ? 'hidden' : 'flex'}`}>
+                      <img src="/logo.png" alt="MaxiMarket" className="w-12 h-12 object-contain opacity-60" />
+                    </div>
                 
                 {/* Badge Premium */}
                 {(listing.is_featured || listing.is_boosted || listing.is_premium) && (

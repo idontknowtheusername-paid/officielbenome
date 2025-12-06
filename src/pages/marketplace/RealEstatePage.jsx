@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useListings, useFavorites } from '@/hooks';
 import ListingCard from '@/components/ListingCard';
+import { ListingCardSkeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -170,14 +171,15 @@ const RealEstatePage = () => {
         </motion.div>
 
         {/* Loading State */}
-        {loading && (
+        {loading && listings.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-20"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
           >
-            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-lg text-muted-foreground">Chargement des annonces...</p>
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <ListingCardSkeleton key={idx} />
+            ))}
           </motion.div>
         )}
 

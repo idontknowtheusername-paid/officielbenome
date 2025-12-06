@@ -10,7 +10,8 @@ import SuggestionChips from '@/components/ui/SuggestionChips';
 import { aidaIntelligenceService } from '@/services/aidaIntelligence.service';
 import { 
   Maximize2, Minimize2, X, Sparkles, MoreHorizontal, 
-  Bot, Clock, MessageSquare, ChevronRight 
+  Bot, Clock, MessageSquare, ChevronRight,
+  EyeOff, ChevronLeft // Nouveaux imports pour la fonctionnalité masquer
 } from 'lucide-react'; 
 
 const ChatWidget = ({ pageContext = {} }) => {
@@ -24,6 +25,9 @@ const ChatWidget = ({ pageContext = {} }) => {
   const [sheetMode, setSheetMode] = useState('initial');
   const [isMobile, setIsMobile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  
+  // État pour masquer le widget
+  const [isWidgetHidden, setIsWidgetHidden] = useState(false);
   
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,11 +53,16 @@ const ChatWidget = ({ pageContext = {} }) => {
 
   // --- EFFETS ---
   useEffect(() => {
+    // Chargement conversations
     const saved = localStorage.getItem('chatbot_conversations');
     if (saved) {
       try { setConversations(JSON.parse(saved)); } catch (e) {}
     }
     
+    // Chargement préférence visibilité widget
+    const hiddenPref = localStorage.getItem('chat_widget_hidden');
+    if (hiddenPref === 'true') setIsWidgetHidden(true);
+
     const updateMobile = () => setIsMobile(window.matchMedia('(max-width: 640px)').matches);
     updateMobile();
     window.addEventListener('resize', updateMobile);
@@ -76,6 +85,12 @@ const ChatWidget = ({ pageContext = {} }) => {
       initAIDA();
     }
   }, [open, user?.id]);
+
+  // --- FONCTION MASQUER/DEMASQUER ---
+  const toggleWidgetVisibility = (hidden) => {
+    setIsWidgetHidden(hidden);
+    localStorage.setItem('chat_widget_hidden', hidden);
+  };
 
   // --- GESTURES ---
   const handleTouchStart = (e) => { touchStartRef.current = e.touches[0].clientY; };
@@ -204,30 +219,90 @@ const ChatWidget = ({ pageContext = {} }) => {
   // --- RENDER ---
   return (
     <div>
-      {/* LAUNCHER */}
+      {/* LAUNCHER & HIDDEN TAB */}
       {!open && (
-        <button
-          onClick={() => { setOpen(true); setSheetMode('initial'); }}
-          className="chat-launcher-btn"
-          style={{
-            position: 'fixed',
-            bottom: isMobile ? '80px' : '24px',
-            right: '24px',
-            zIndex: 9999,
-            height: 56, padding: '0 24px', borderRadius: 28,
-            background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
-            color: 'white', border: 'none',
-            boxShadow: '0 8px 32px rgba(37, 99, 235, 0.4)',
-            display: 'flex', alignItems: 'center', gap: 12,
-            fontSize: '15px', fontWeight: '600', cursor: 'pointer',
-            transition: 'transform 0.2s, bottom 0.3s'
-          }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <Sparkles size={20} />
-          <span>AIDA</span>
-        </button>
+        <>
+          {isWidgetHidden ? (
+            /* --- MODE MASQUÉ (PETIT ONGLET) --- */
+            <button
+              onClick={() => toggleWidgetVisibility(false)}
+              title="Afficher le chat"
+              style={{
+                position: 'fixed',
+                bottom: '100px',
+                right: '0',
+                zIndex: 9999,
+                padding: '10px 4px 10px 8px',
+                background: 'rgba(31, 41, 55, 0.9)',
+                backdropFilter: 'blur(4px)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRight: 'none',
+                borderRadius: '8px 0 0 8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                transition: 'transform 0.2s',
+                display: 'flex', alignItems: 'center'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-2px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
+            >
+              <ChevronLeft size={20} />
+            </button>
+          ) : (
+            /* --- MODE NORMAL (LAUNCHER) --- */
+            <div style={{ 
+              position: 'fixed', 
+              bottom: isMobile ? '80px' : '24px', 
+              right: '24px', 
+              zIndex: 9999, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'end', 
+              gap: 8,
+              transition: 'bottom 0.3s'
+            }}>
+              
+              {/* Petit bouton pour masquer (flotte au-dessus) */}
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleWidgetVisibility(true); }}
+                title="Masquer le widget"
+                style={{
+                  width: 28, height: 28, borderRadius: '50%',
+                  background: 'rgba(31, 41, 55, 0.6)', backdropFilter: 'blur(4px)',
+                  border: 'none', color: '#9ca3af',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', marginBottom: -4, marginRight: 8,
+                  opacity: 0.8, transition: 'opacity 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}
+              >
+                <EyeOff size={14} />
+              </button>
+
+              {/* Le bouton Principal AIDA */}
+              <button
+                onClick={() => { setOpen(true); setSheetMode('initial'); }}
+                className="chat-launcher-btn"
+                style={{
+                  height: 56, padding: '0 24px', borderRadius: 28,
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                  color: 'white', border: 'none',
+                  boxShadow: '0 8px 32px rgba(37, 99, 235, 0.4)',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  fontSize: '15px', fontWeight: '600', cursor: 'pointer',
+                  transition: 'transform 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <Sparkles size={20} />
+                <span>AIDA</span>
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* WINDOW */}
@@ -290,7 +365,6 @@ const ChatWidget = ({ pageContext = {} }) => {
               </div>
 
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                {/* BOUTON AGRANDIR (MOBILE ONLY) - RÉTABLI */}
                 {isMobile && (
                   <button 
                     onClick={() => setSheetMode(s => s === 'initial' ? 'full' : 'initial')}
@@ -308,7 +382,7 @@ const ChatWidget = ({ pageContext = {} }) => {
               </div>
             </div>
 
-            {/* MENU (AVEC HISTORIQUE RÉTABLI) */}
+            {/* MENU */}
             {showMenu && (
               <div style={{ 
                 position: 'absolute', top: 64, left: 0, right: 0, bottom: 0, 
@@ -324,7 +398,6 @@ const ChatWidget = ({ pageContext = {} }) => {
                   </button>
                 </div>
 
-                {/* HISTORIQUE DES CONVERSATIONS */}
                 <h4 style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10, letterSpacing: 0.5, borderTop: '1px solid #1f2937', paddingTop: 20 }}>HISTORIQUE</h4>
                 {conversations.length === 0 ? (
                   <div style={{ color: '#4b5563', fontSize: 13, fontStyle: 'italic' }}>Aucune conversation récente.</div>

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLazyImage } from '@/hooks/useLazyImage';
 import { cn } from '@/lib/utils';
+import ImagePlaceholder from '@/components/ui/ImagePlaceholder';
 
 /**
  * Composant d'image optimisé spécialement pour les cartes d'annonces
@@ -40,55 +41,22 @@ const OptimizedListingImage = ({
     if (onLoad) onLoad();
   }, [onLoad]);
 
-  // Placeholder par défaut optimisé pour les cartes
+  // Placeholder par défaut avec logo MaxiMarket
   const defaultPlaceholder = (
-    <div className={cn(
-      "bg-gradient-to-br from-muted to-muted/50 animate-pulse flex items-center justify-center",
-      className
-    )}>
-      <div className="w-8 h-8 text-muted-foreground/50">
-        <svg
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      </div>
-    </div>
+    <ImagePlaceholder
+      className={cn("w-full h-full", className)}
+      size="medium"
+      animate={true}
+    />
   );
 
-  // Placeholder d'erreur optimisé pour les cartes
+  // Placeholder d'erreur avec logo MaxiMarket (sans animation)
   const defaultErrorPlaceholder = (
-    <div className={cn(
-      "bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-muted-foreground/50",
-      className
-    )}>
-      <div className="text-center">
-        <div className="w-6 h-6 mx-auto mb-1">
-          <svg
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-            />
-          </svg>
-        </div>
-        <span className="text-xs">Image non disponible</span>
-      </div>
-    </div>
+    <ImagePlaceholder
+      className={cn("w-full h-full", className)}
+      size="medium"
+      animate={false}
+    />
   );
 
   // Si erreur, afficher le placeholder d'erreur

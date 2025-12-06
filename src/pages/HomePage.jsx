@@ -10,6 +10,7 @@ import { resolveSearchIntent } from '@/lib/search-intent';
 import { useAuth } from '@/contexts/AuthContext';
 import { listingService } from '@/services';
 import ListingCard from '@/components/ListingCard';
+import { ListingCardSkeleton } from '@/components/ui/Skeleton';
 import HeroCarousel from '@/components/HeroCarousel';
 import NewListingsSection from '@/components/NewListingsSection';
 
@@ -177,17 +178,7 @@ const HomePage = () => {
               {loading.popular &&
                 !popularListings.length &&
                 Array.from({ length: 8 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-card rounded-lg shadow-xl overflow-hidden glassmorphic-card border border-transparent"
-                  >
-                    <div className="h-40 sm:h-48 md:h-56 bg-muted animate-pulse" />
-                    <div className="p-3 sm:p-4 md:p-6">
-                      <div className="h-6 w-3/4 bg-muted rounded mb-3 animate-pulse" />
-                      <div className="h-4 w-1/2 bg-muted rounded mb-4 animate-pulse" />
-                      <div className="h-10 w-1/3 bg-muted rounded animate-pulse" />
-                    </div>
-                  </div>
+                  <ListingCardSkeleton key={idx} />
                 ))}
 
               {popularListings.slice(0, 8).map((listing) => (

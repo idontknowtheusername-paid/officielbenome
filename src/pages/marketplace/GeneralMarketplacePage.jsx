@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useListings } from '@/hooks/useListings';
 import ListingCard from '@/components/ListingCard';
+import { ListingCardSkeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -233,10 +234,11 @@ const GeneralMarketplacePage = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6"
           >
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-            <p className="text-lg text-muted-foreground">Chargement des produits...</p>
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <ListingCardSkeleton key={idx} />
+            ))}
           </motion.div>
         )}
 

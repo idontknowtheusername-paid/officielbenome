@@ -1,39 +1,27 @@
-import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Grid, MessageSquare, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Device } from '@capacitor/device';
 import { useMessageStats } from '@/hooks/useMessages';
+import { useAppMode } from '@/hooks/useAppMode';
 
 const BottomNavigation = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const [isNativeApp, setIsNativeApp] = useState(false);
+
+  // Utiliser le hook pour détecter le mode app (native ou PWA)
+  const { isAppMode } = useAppMode();
 
   // Récupérer le nombre de messages non lus
   const { data: messageStats } = useMessageStats();
   const unreadCount = messageStats?.unread || 0;
 
-  // Vérifier si on est sur app native
-  useEffect(() => {
-    const checkNativeApp = async () => {
-      try {
-        const info = await Device.getInfo();
-        setIsNativeApp(info.platform !== 'web');
-      } catch (error) {
-        setIsNativeApp(false);
-      }
-    };
-    checkNativeApp();
-  }, []);
-
   // Fonction utilitaire pour vérifier si un onglet est actif
   const isActive = (path) => location.pathname === path;
 
-  // Ne pas afficher sur le web (temporairement désactivé pour tests)
-  // if (!isNativeApp) {
-  //   return null;
-  // }
+  // Ne pas afficher sur le web (uniquement sur app native ou PWA installée)
+  if (!isAppMode) {
+    return null;
+  }
 
   return (
     <>
@@ -197,10 +185,9 @@ const BottomNavigation = () => {
           font-family: sans-serif;
           font-size: 24px;
           font-weight: 900;
-          color: #34d399;
+          color: #ffffff;
           text-shadow: 
-            0 0 8px rgba(52, 211, 153, 0.8),
-            0 0 16px rgba(52, 211, 153, 0.5),
+            0 2px 4px rgba(0, 0, 0, 0.3),
             -1.5px -1.5px 0 #1e3a5f,  
              1.5px -1.5px 0 #1e3a5f,
             -1.5px  1.5px 0 #1e3a5f,
@@ -255,7 +242,7 @@ const BottomNavigation = () => {
           {/* 2. CATÉGORIES */}
           <Link to="/categories" className={`nav-item ${isActive('/categories') ? 'active' : ''}`}>
             <Grid size={24} strokeWidth={2} />
-            <span className="label">Rayons</span>
+            <span className="label">Categorie</span>
           </Link>
 
           {/* 3. FAB CENTRAL (M+) */}

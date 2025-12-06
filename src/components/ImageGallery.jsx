@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useImagePreloader, useGalleryTouchGestures } from '@/hooks';
 import OptimizedImage from '@/components/OptimizedImage';
+import ImagePlaceholder from '@/components/ui/ImagePlaceholder';
 
 const ImageGallery = React.memo(({ images = [], title = "Galerie d'images" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -84,14 +85,14 @@ const ImageGallery = React.memo(({ images = [], title = "Galerie d'images" }) =>
     setIsZoomed(!isZoomed);
   };
 
-  // Si pas d'images, afficher un placeholder
+  // Si pas d'images, afficher le logo MaxiMarket
   if (!images || images.length === 0) {
     return (
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-        <div className="text-center text-muted-foreground">
-          <p>Aucune image disponible</p>
-        </div>
-      </div>
+      <ImagePlaceholder
+        className="relative aspect-video rounded-lg overflow-hidden"
+        size="large"
+        animate={false}
+      />
     );
   }
 

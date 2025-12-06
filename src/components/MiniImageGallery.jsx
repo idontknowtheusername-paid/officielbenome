@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import OptimizedListingImage from '@/components/ui/OptimizedListingImage';
+import ImagePlaceholder from '@/components/ui/ImagePlaceholder';
 
 // Détecter si on est sur mobile (une seule fois)
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -55,14 +56,14 @@ const MiniImageGallery = React.memo(({ images = [], title = "Galerie d'images", 
     }
   };
 
-  // Si pas d'images, afficher un placeholder
+  // Si pas d'images, afficher le logo MaxiMarket
   if (!validImages || validImages.length === 0) {
     return (
-      <div className={`relative bg-muted flex items-center justify-center ${className}`}>
-        <div className="text-center text-muted-foreground">
-          <p className="text-xs sm:text-sm">Aucune image</p>
-        </div>
-      </div>
+      <ImagePlaceholder
+        className={`relative ${className}`}
+        size="medium"
+        animate={false}
+      />
     );
   }
 
