@@ -57,26 +57,41 @@ export const emailProviderService = {
    * @param {object} data - Données du template
    */
   sendTemplateEmail: async (to, templateType, data = {}) => {
+    console.log('📧 [EMAIL-PROVIDER] sendTemplateEmail appelé');
+    console.log('📧 [EMAIL-PROVIDER] Destinataire:', to);
+    console.log('📧 [EMAIL-PROVIDER] Type de template:', templateType);
+    console.log('📧 [EMAIL-PROVIDER] Data:', JSON.stringify(data, null, 2));
+    console.log('📧 [EMAIL-PROVIDER] Provider actif:', EMAIL_PROVIDER);
+    
     try {
       if (EMAIL_PROVIDER === 'brevo') {
         // Utiliser les templates Brevo
         const templateId = getBrevoTemplateId(templateType);
+        console.log('📧 [EMAIL-PROVIDER] Template ID Brevo résolu:', templateId);
+        
         if (!templateId) {
+          console.error('❌ [EMAIL-PROVIDER] Template non trouvé pour:', templateType);
           throw new Error(`Template Brevo non trouvé: ${templateType}`);
         }
         
         const params = getTemplateParams(templateType, data);
-        return await brevoService.sendTemplateEmail(to, templateId, params);
+        console.log('📧 [EMAIL-PROVIDER] Params générés:', JSON.stringify(params, null, 2));
+        
+        const result = await brevoService.sendTemplateEmail(to, templateId, params);
+        console.log('✅ [EMAIL-PROVIDER] Email envoyé avec succès via Brevo');
+        return result;
       } else {
         // Utiliser les templates SendGrid (HTML)
+        console.log('📧 [EMAIL-PROVIDER] Utilisation de SendGrid');
         return await sendgridService.sendTemplateEmail(to, templateType, data);
       }
     } catch (error) {
-      console.error(`❌ Erreur template avec ${EMAIL_PROVIDER}:`, error);
+      console.error(`❌ [EMAIL-PROVIDER] Erreur template avec ${EMAIL_PROVIDER}:`, error);
+      console.error(`❌ [EMAIL-PROVIDER] Stack:`, error.stack);
       
       // Fallback
       if (USE_FALLBACK) {
-        console.log('🔄 Tentative template avec le provider de fallback...');
+        console.log('🔄 [EMAIL-PROVIDER] Tentative template avec le provider de fallback...');
         try {
           if (EMAIL_PROVIDER === 'brevo') {
             return await sendgridService.sendTemplateEmail(to, templateType, data);
@@ -89,7 +104,7 @@ export const emailProviderService = {
             throw new Error('Template Brevo non disponible pour fallback');
           }
         } catch (fallbackError) {
-          console.error('❌ Erreur fallback template:', fallbackError);
+          console.error('❌ [EMAIL-PROVIDER] Erreur fallback template:', fallbackError);
           throw fallbackError;
         }
       }

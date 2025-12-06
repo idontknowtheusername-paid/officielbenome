@@ -87,8 +87,15 @@ export const brevoService = {
    * @param {object} params - Paramètres du template
    */
   sendTemplateEmail: async (to, templateId, params = {}) => {
+    console.log('📧 [BREVO] sendTemplateEmail appelé');
+    console.log('📧 [BREVO] Destinataire:', to);
+    console.log('📧 [BREVO] Template ID:', templateId);
+    console.log('📧 [BREVO] Params:', JSON.stringify(params, null, 2));
+    console.log('📧 [BREVO] API Key configurée:', !!BREVO_API_KEY);
+    
     try {
       if (!BREVO_API_KEY) {
+        console.warn('⚠️ [BREVO] VITE_BREVO_API_KEY non configurée - email en mode SIMULATION');
         console.log('📧 [SIMULATION] Email template Brevo envoyé à:', to);
         console.log('📧 [SIMULATION] Template ID:', templateId);
         return { success: true, message: 'Email simulé (Brevo non configuré)', messageId: 'sim-' + Date.now() };
@@ -101,6 +108,8 @@ export const brevoService = {
         params: params
       };
 
+      console.log('📧 [BREVO] Payload envoyé:', JSON.stringify(payload, null, 2));
+
       const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
         method: 'POST',
         headers: {
@@ -111,13 +120,17 @@ export const brevoService = {
         body: JSON.stringify(payload)
       });
 
+      console.log('📧 [BREVO] Réponse HTTP status:', response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.error('❌ [BREVO] Erreur API:', error);
         throw new Error(error.message || `HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('✅ Email template Brevo envoyé:', data.messageId);
+      console.log('✅ [BREVO] Email template envoyé avec succès!');
+      console.log('✅ [BREVO] Message ID:', data.messageId);
       
       return {
         success: true,
@@ -126,7 +139,8 @@ export const brevoService = {
       };
 
     } catch (error) {
-      console.error('❌ Erreur envoi email template Brevo:', error);
+      console.error('❌ [BREVO] Erreur envoi email template:', error);
+      console.error('❌ [BREVO] Stack:', error.stack);
       throw error;
     }
   },

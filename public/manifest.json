@@ -4,7 +4,7 @@
   "description": "Marketplace leader en Afrique de l'Ouest pour l'immobilier, l'automobile, les services et plus",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
+  "background_color": "#ffffff",
   "theme_color": "#0080FF",
   "orientation": "portrait-primary",
   "scope": "/",
@@ -27,13 +27,13 @@
       "type": "image/png"
     },
     {
-      "src": "/icon-192x192.png",
+      "src": "/logo192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/logo512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -60,7 +60,7 @@
       "url": "/creer-annonce",
       "icons": [
         {
-          "src": "/icon-192x192.png",
+          "src": "/logo192.png",
           "sizes": "192x192"
         }
       ]
@@ -72,7 +72,7 @@
       "url": "/favorites",
       "icons": [
         {
-          "src": "/icon-192x192.png",
+          "src": "/logo192.png",
           "sizes": "192x192"
         }
       ]
@@ -84,7 +84,7 @@
       "url": "/messages",
       "icons": [
         {
-          "src": "/icon-192x192.png",
+          "src": "/logo192.png",
           "sizes": "192x192"
         }
       ]

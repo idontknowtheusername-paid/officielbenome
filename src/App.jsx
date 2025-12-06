@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -124,6 +123,25 @@ function App() {
   // Initialiser les notifications push
   React.useEffect(() => {
     initializePushNotifications();
+  }, []);
+
+  // --- GESTION DU SPLASH SCREEN (AJOUTÉ) ---
+  React.useEffect(() => {
+    // Dès que React est prêt (le composant App est monté)
+    const splash = document.getElementById('splash-screen');
+    
+    if (splash) {
+      // 1. On lance l'animation de disparition (fade out)
+      splash.style.opacity = '0';
+      splash.style.visibility = 'hidden';
+      
+      // 2. On le supprime complètement du HTML après 0.5s (le temps de la transition CSS)
+      setTimeout(() => {
+        if (splash.parentNode) {
+          splash.parentNode.removeChild(splash);
+        }
+      }, 500);
+    }
   }, []);
 
   return (

@@ -1,27 +1,24 @@
-
 <!doctype html>
 <html lang="fr">
 	<head>
 		<meta charset="UTF-8" />
 		
-		<!-- Favicon et icônes -->
 		<link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
 		<link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<link rel="shortcut icon" href="/favicon.ico" />
+		
 		<link rel="manifest" href="/manifest.json" />
 		
-		<!-- Meta viewport et PWA -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 		<meta name="theme-color" content="#0080FF" />
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 		<meta name="apple-mobile-web-app-title" content="MaxiMarket">
 		<meta name="mobile-web-app-capable" content="yes">
 		
-		<!-- SEO Meta Tags -->
 		<title>MaxiMarket - Marketplace N°1 en Afrique de l'Ouest | Immobilier, Automobile, Services</title>
 		<meta name="description" content="MaxiMarket, la plateforme marketplace leader en Afrique de l'Ouest. Achetez, vendez et louez immobilier, automobiles, services au Bénin, Sénégal, Togo, Côte d'Ivoire. Des milliers d'annonces vérifiées." />
 		<meta name="keywords" content="marketplace afrique ouest, immobilier bénin, voiture sénégal, services togo, annonces côte ivoire, acheter vendre louer, marketplace dakar, marketplace cotonou, petites annonces afrique, immobilier dakar, voiture occasion bénin" />
@@ -30,7 +27,6 @@
 		<meta name="googlebot" content="index, follow" />
 		<link rel="canonical" href="https://maxiimarket.com" />
 		
-		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content="https://maxiimarket.com" />
 		<meta property="og:site_name" content="MaxiMarket" />
@@ -42,7 +38,6 @@
 		<meta property="og:image:alt" content="MaxiMarket - Marketplace Afrique de l'Ouest" />
 		<meta property="og:locale" content="fr_FR" />
 		
-		<!-- Twitter Card -->
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:url" content="https://maxiimarket.com" />
 		<meta name="twitter:title" content="MaxiMarket - Marketplace N°1 en Afrique de l'Ouest" />
@@ -50,19 +45,16 @@
 		<meta name="twitter:image" content="https://maxiimarket.com/og-image.png" />
 		<meta name="twitter:image:alt" content="MaxiMarket Logo" />
 		
-		<!-- Geo Tags -->
 		<meta name="geo.region" content="BJ" />
 		<meta name="geo.region" content="SN" />
 		<meta name="geo.placename" content="Parakou, Bénin" />
 		<meta name="geo.placename" content="Dakar, Sénégal" />
 		
-		<!-- Additional SEO -->
 		<meta name="language" content="French" />
 		<meta name="revisit-after" content="3 days" />
 		<meta name="rating" content="general" />
 		<meta name="distribution" content="global" />
     
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9W7H5FEHVF"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -72,18 +64,92 @@
       gtag('config', 'G-9W7H5FEHVF');
     </script>
     
-
-    
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 		
-		<!-- Leaflet CSS pour les cartes interactives -->
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        transition: opacity 0.5s ease-out, visibility 0.5s;
+      }
+
+      .splash-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .splash-logo {
+        width: 120px;
+        height: auto;
+        /* Animation douce de respiration */
+        animation: pulse 2s infinite ease-in-out;
+      }
+
+      .loading-bar {
+        width: 140px;
+        height: 4px;
+        background: #f3f4f6;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .loading-progress {
+        width: 100%;
+        height: 100%;
+        background: #0080FF; /* Ta couleur de marque */
+        transform-origin: left;
+        animation: progress 1.5s infinite ease-in-out;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.85; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      @keyframes progress {
+        0% { transform: translateX(-100%); }
+        50% { transform: translateX(0); }
+        100% { transform: translateX(100%); }
+      }
+
+      /* Dark Mode natif pour le Splash */
+      @media (prefers-color-scheme: dark) {
+        #splash-screen {
+          background-color: #0f172a; /* Slate 900 */
+        }
+        .loading-bar {
+          background: #1e293b;
+        }
+      }
+    </style>
 	</head>
 	<body>
-		<div id="root"></div>
+    <div id="splash-screen">
+      <div class="splash-content">
+        <img src="/logo.png" alt="MaxiMarket" class="splash-logo" />
+        <div class="loading-bar">
+          <div class="loading-progress"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="root"></div>
 		<script type="module" src="/src/main.jsx"></script>
 	</body>
 </html>

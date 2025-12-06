@@ -32,6 +32,8 @@ const CRITICAL_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/logo.png',       // <--- AJOUT CRUCIAL pour le Splash Screen
+  '/favicon.ico'     // <--- AJOUT (Optionnel)
 ];
 
 // Routes à précacher (Vite génère des hashes, on les détectera dynamiquement)
