@@ -39,6 +39,7 @@ const AuthCallbackPage = lazy(() => import('@/pages/auth/AuthCallbackPage'));
 const ProfilePage = lazy(() => import('@/pages/auth/ProfilePage'));
 const MessagingPage = lazy(() => import('@/pages/MessagingPage'));
 const DiagnosticPage = lazy(() => import('@/pages/DiagnosticPage'));
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 
 // Pages principales (chargées immédiatement - navigation fréquente)
 import HomePage from '@/pages/HomePage';
@@ -308,6 +309,18 @@ function App() {
                       <ProtectedRoute>
                         <Suspense fallback={<LoadingSpinner />}>
                           <UserTransactionsPage />
+                        </Suspense>
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Notifications - Lazy */}
+                  <Route
+                    path="notifications"
+                    element={
+                      <ProtectedRoute>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <NotificationsPage />
                         </Suspense>
                       </ProtectedRoute>
                     }

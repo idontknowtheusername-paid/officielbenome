@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 import { 
   TrendingUp, 
   Star, 
@@ -28,6 +30,7 @@ const MyBoostsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAppMode } = useAppMode();
   
   const [boosts, setBoosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -335,8 +338,8 @@ const MyBoostsPage = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
+  const pageContent = (
+    <div className={`min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30 ${isAppMode ? 'pb-20' : ''}`}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -344,7 +347,7 @@ const MyBoostsPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+          <h1 className={`${isAppMode ? 'text-2xl' : 'text-3xl md:text-4xl'} font-bold mb-2`}>
             🚀 Mes Boosts Premium
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -529,6 +532,16 @@ const MyBoostsPage = () => {
       </div>
     </div>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Mes Boosts" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default MyBoostsPage;

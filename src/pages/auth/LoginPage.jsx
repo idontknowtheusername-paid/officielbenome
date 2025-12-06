@@ -3,11 +3,14 @@ import LoginForm from '@/components/auth/LoginForm';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 
 const LoginPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAppMode } = useAppMode();
 
   useEffect(() => {
     // Attend que loading soit false pour verifier l'authentification
@@ -29,8 +32,8 @@ const LoginPage = () => {
   }
 
   // Sinon, afficher le formulaire
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+  const pageContent = (
+    <div className={`min-h-screen bg-gradient-to-br from-background via-muted to-background flex items-center justify-center ${isAppMode ? 'py-4 px-4' : 'py-12 px-4 sm:px-6 lg:px-8'} relative overflow-hidden`}>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
@@ -48,6 +51,16 @@ const LoginPage = () => {
       </motion.div>
     </div>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Connexion" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default LoginPage;

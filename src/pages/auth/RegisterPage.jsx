@@ -2,10 +2,14 @@
 import React from 'react';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { motion } from 'framer-motion';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 
 const RegisterPage = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+  const { isAppMode } = useAppMode();
+
+  const pageContent = (
+    <div className={`min-h-screen bg-gradient-to-br from-background via-muted to-background flex items-center justify-center ${isAppMode ? 'py-4 px-4' : 'py-12 px-4 sm:px-6 lg:px-8'} relative overflow-hidden`}>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
@@ -23,6 +27,16 @@ const RegisterPage = () => {
       </motion.div>
     </div>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Inscription" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default RegisterPage;

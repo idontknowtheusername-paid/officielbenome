@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Heart, Phone, Mail, Calendar, Eye, Flag, MessageSquare, TrendingUp } from 'lucide-react';
+import { ArrowLeft, MapPin, Heart, Phone, Mail, Flag, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -15,12 +15,19 @@ import BoostStatus from '@/components/BoostStatus';
 import SimilarListingsCarousel from '@/components/SimilarListingsCarousel';
 import { useListingImages } from '@/hooks';
 import ReportModal from '@/components/ReportModal';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
+import ListingMap from '@/components/ListingMap';
+
+// 1. IMPORT DU PULL-TO-REFRESH
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 const ListingDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAppMode } = useAppMode();
   
   const [listing, setListing] = useState(null);
   const [relatedListings, setRelatedListings] = useState([]);
@@ -28,8 +35,12 @@ const ListingDetailPage = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [showSecurityDetails, setShowSecurityDetails] = useState(false);
-  const [showSecurityTooltip, setShowSecurityTooltip] = useState(false);
   const { images } = useListingImages(listing);
+
+  // 2. FONCTION DE RAFRAÎCHISSEMENT
+  const handleRefresh = async () => {
+    window.location.reload();
+  };
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -130,29 +141,6 @@ const ListingDetailPage = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(price);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case 'real_estate':
-        return '🏠';
-      case 'automobile':
-        return '🚗';
-      case 'services':
-        return '🔧';
-      case 'marketplace':
-        return '🛍️';
-      default:
-        return '📋';
-    }
   };
 
   const getCategoryName = (category) => {
@@ -315,8 +303,9 @@ const ListingDetailPage = () => {
     console.log('Signalement soumis avec succès');
   };
 
+  // Loading state
   if (isLoading) {
-    return (
+    const loadingContent = (
       <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[60vh]">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
@@ -324,40 +313,50 @@ const ListingDetailPage = () => {
         </div>
       </div>
     );
+
+    if (isAppMode) {
+      return <MobilePageLayout title="Détails" showBack>{loadingContent}</MobilePageLayout>;
+    }
+    return loadingContent;
   }
 
   if (!listing) {
     return null;
   }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-8"
-    >
-      {/* Header avec bouton retour */}
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour
-        </Button>
-        
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-          <Link to="/" className="hover:text-primary">Accueil</Link>
-          <span>/</span>
-          <Link to={`/${listing.category === 'real_estate' ? 'immobilier' : listing.category === 'automobile' ? 'automobile' : listing.category === 'services' ? 'services' : 'marketplace'}`} className="hover:text-primary">
-            {getCategoryName(listing.category)}
-          </Link>
-          <span>/</span>
-          <span className="text-foreground">{listing.title}</span>
-        </div>
-      </div>
+  // Contenu principal de la page
+  const pageContent = (
+    // 3. ENVELOPPE PULL TO REFRESH
+    <PullToRefresh onRefresh={handleRefresh} pullingContent=''>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`container mx-auto px-4 ${isAppMode ? 'py-4 pb-24' : 'py-8'}`}
+      >
+        {/* Header avec bouton retour - masqué en mode app car MobilePageLayout gère ça */}
+        {!isAppMode && (
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour
+            </Button>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+              <Link to="/" className="hover:text-primary">Accueil</Link>
+              <span>/</span>
+              <Link to={`/${listing.category === 'real_estate' ? 'immobilier' : listing.category === 'automobile' ? 'automobile' : listing.category === 'services' ? 'services' : 'marketplace'}`} className="hover:text-primary">
+                {getCategoryName(listing.category)}
+              </Link>
+              <span>/</span>
+              <span className="text-foreground">{listing.title}</span>
+            </div>
+          </div>
+        )}
 
       <div className="max-w-4xl mx-auto">
         {/* Contenu principal */}
@@ -434,6 +433,23 @@ const ListingDetailPage = () => {
               <p className="whitespace-pre-line">{listing.description}</p>
             </div>
           </div>
+
+            {/* Localisation Interactive */}
+            {listing.location && typeof listing.location === 'object' && listing.location.city && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Localisation
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Zone approximative de l'annonce. L'adresse exacte sera communiquée par le vendeur.
+                </p>
+                <ListingMap
+                  city={listing.location.city}
+                  country={listing.location.country}
+                />
+              </div>
+            )}
 
           {/* Détails spécifiques à la catégorie */}
           {listing.real_estate_details && (
@@ -664,7 +680,19 @@ const ListingDetailPage = () => {
         onReportSubmitted={handleReportSubmitted} 
       />
     </motion.div>
+    </PullToRefresh>
   );
+
+  // Wrapper avec MobilePageLayout si mode app
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Détails" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default ListingDetailPage; 

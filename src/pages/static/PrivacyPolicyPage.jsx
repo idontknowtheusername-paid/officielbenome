@@ -17,7 +17,7 @@ const PrivacyPolicyPage = () => {
         <h1 className="text-4xl md:text-5xl font-bold mb-6">
           Politique de <span className="gradient-text">Confidentialité</span>
         </h1>
-        <p className="text-lg text-muted-foreground">Dernière mise à jour : 02 Juin 2025</p>
+        <p className="text-lg text-muted-foreground">Dernière mise à jour : 06 Décembre 2025</p>
       </motion.div>
 
       <motion.div
@@ -95,7 +95,42 @@ const PrivacyPolicyPage = () => {
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border">
           <h2 className="flex items-center text-2xl font-bold mb-4">
             <FileText className="mr-2 h-6 w-6 text-primary" />
-            5. Sécurité des données
+            5. Cookies et Technologies de Suivi
+          </h2>
+          <p className="mb-4">Nous utilisons des cookies et des technologies similaires pour :</p>
+          <ul className="space-y-2 text-muted-foreground mb-4">
+            <li><strong>Cookies essentiels :</strong> Nécessaires au fonctionnement du site (authentification, préférences).</li>
+            <li><strong>Cookies analytiques :</strong> Pour comprendre comment les visiteurs utilisent notre site et améliorer nos services.</li>
+            <li><strong>Cookies publicitaires :</strong> Pour afficher des publicités pertinentes et mesurer leur efficacité.</li>
+          </ul>
+          <p className="text-muted-foreground">
+            Vous pouvez gérer vos préférences de cookies via les paramètres de votre navigateur. Notez que la désactivation de certains cookies peut affecter votre expérience sur notre site.
+          </p>
+        </div>
+
+        <div className="bg-card p-8 rounded-xl shadow-lg border border-border">
+          <h2 className="flex items-center text-2xl font-bold mb-4">
+            <FileText className="mr-2 h-6 w-6 text-primary" />
+            6. Publicité et Partenaires Tiers
+          </h2>
+          <p className="mb-4">Notre site utilise des services publicitaires tiers, notamment Google AdSense, pour afficher des publicités. Ces partenaires peuvent :</p>
+          <ul className="space-y-2 text-muted-foreground mb-4">
+            <li>Utiliser des cookies pour diffuser des annonces basées sur vos visites précédentes sur notre site ou d'autres sites.</li>
+            <li>Collecter des informations anonymes sur vos visites pour personnaliser les publicités.</li>
+            <li>Utiliser la technologie de remarketing pour vous montrer des annonces pertinentes.</li>
+          </ul>
+          <p className="text-muted-foreground mb-4">
+            Google utilise des cookies publicitaires pour permettre à ses partenaires de diffuser des annonces basées sur votre historique de navigation. Vous pouvez désactiver la publicité personnalisée en visitant les <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Paramètres des annonces Google</a>.
+          </p>
+          <p className="text-muted-foreground">
+            Pour plus d'informations sur la façon dont Google utilise les données, consultez la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Politique de confidentialité de Google</a>.
+          </p>
+        </div>
+
+        <div className="bg-card p-8 rounded-xl shadow-lg border border-border">
+          <h2 className="flex items-center text-2xl font-bold mb-4">
+            <FileText className="mr-2 h-6 w-6 text-primary" />
+            7. Sécurité des données
           </h2>
           <p className="text-muted-foreground">
             Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles raisonnables pour protéger vos informations personnelles contre l'accès non autorisé, la divulgation, l'altération ou la destruction. Cependant, aucune méthode de transmission sur Internet ou de stockage électronique n'est totalement sécurisée.
@@ -105,7 +140,7 @@ const PrivacyPolicyPage = () => {
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border">
           <h2 className="flex items-center text-2xl font-bold mb-4">
             <FileText className="mr-2 h-6 w-6 text-primary" />
-            6. Conservation des données
+            8. Conservation des données
           </h2>
           <p className="text-muted-foreground">
             Nous conservons vos informations personnelles aussi longtemps que nécessaire pour atteindre les objectifs décrits dans cette politique de confidentialité, sauf si une période de conservation plus longue est requise ou autorisée par la loi.
@@ -115,7 +150,7 @@ const PrivacyPolicyPage = () => {
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border">
           <h2 className="flex items-center text-2xl font-bold mb-4">
             <FileText className="mr-2 h-6 w-6 text-primary" />
-            7. Transferts internationaux
+            9. Transferts internationaux
           </h2>
           <p className="text-muted-foreground">
             Vos informations peuvent être transférées et traitées dans des pays autres que votre pays de résidence, où les lois sur la protection des données peuvent différer. Nous prendrons des mesures appropriées pour garantir que vos informations personnelles restent protégées conformément à cette politique.
@@ -125,7 +160,7 @@ const PrivacyPolicyPage = () => {
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border">
           <h2 className="flex items-center text-2xl font-bold mb-4">
             <FileText className="mr-2 h-6 w-6 text-primary" />
-            8. Modifications de cette politique
+            10. Modifications de cette politique
           </h2>
           <p className="text-muted-foreground">
             Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Nous vous informerons de tout changement important en publiant la nouvelle politique sur notre site et en mettant à jour la date de "Dernière mise à jour".
@@ -135,7 +170,7 @@ const PrivacyPolicyPage = () => {
         <div className="bg-card p-8 rounded-xl shadow-lg border border-border">
           <h2 className="flex items-center text-2xl font-bold mb-4">
             <FileText className="mr-2 h-6 w-6 text-primary" />
-            9. Nous contacter
+            11. Nous contacter
           </h2>
           <p className="text-muted-foreground">
             Si vous avez des questions ou des préoccupations concernant cette politique de confidentialité ou nos pratiques en matière de données, veuillez nous contacter à <a href={`mailto:${personalData.infoEmail}`} className="text-primary hover:underline">{personalData.infoEmail}</a>.

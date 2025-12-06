@@ -29,6 +29,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 
+// 1. IMPORT DU PULL-TO-REFRESH
+import PullToRefresh from 'react-simple-pull-to-refresh';
+
 const BoostsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -52,6 +55,14 @@ const BoostsPage = () => {
   useEffect(() => {
     filterAndSortBoosts();
   }, [boosts, searchTerm, statusFilter, sortBy]);
+
+  // 2. FONCTION DE RAFRAÎCHISSEMENT
+  const handleRefresh = async () => {
+    return new Promise((resolve) => {
+      window.location.reload();
+      resolve();
+    });
+  };
 
   const loadUserBoosts = async () => {
     try {
@@ -381,236 +392,239 @@ const BoostsPage = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header avec actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">🚀 Mes Boosts Premium</h1>
-          <p className="text-muted-foreground">
-            Gérez tous vos boosts et suivez leurs performances
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button
-            onClick={() => navigate('/marketplace')}
-            variant="outline"
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Découvrir des annonces
-          </Button>
-          
-          <Button
-            onClick={() => navigate('/creer-annonce')}
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Créer une annonce
-          </Button>
-        </div>
-      </div>
-
-      {/* Statistiques globales */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary mb-1">
-              {getActiveBoosts().length}
-            </div>
-            <p className="text-sm text-muted-foreground">Boosts actifs</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600 mb-1">
-              {getExpiredBoosts().length}
-            </div>
-            <p className="text-sm text-muted-foreground">Boosts expirés</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600 mb-1">
-              {boosts.length}
-            </div>
-            <p className="text-sm text-muted-foreground">Total des boosts</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600 mb-1">
-              {boosts.reduce((sum, boost) => sum + (boost.listing_boosts?.boost_packages?.price || 0), 0).toLocaleString()}
-            </div>
-            <p className="text-sm text-muted-foreground">FCFA investis</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtres et recherche */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher par titre d'annonce ou package..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filtrer par statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="active">Actifs</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="expired">Expirés</SelectItem>
-                <SelectItem value="cancelled">Annulés</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Trier par" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recent">Plus récents</SelectItem>
-                <SelectItem value="oldest">Plus anciens</SelectItem>
-                <SelectItem value="price_high">Prix élevé</SelectItem>
-                <SelectItem value="price_low">Prix bas</SelectItem>
-                <SelectItem value="expiring_soon">Expire bientôt</SelectItem>
-              </SelectContent>
-            </Select>
+    // 3. ENVELOPPE PULL TO REFRESH
+    <PullToRefresh onRefresh={handleRefresh} pullingContent=''>
+      <div className="space-y-6">
+        {/* Header avec actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">🚀 Mes Boosts Premium</h1>
+            <p className="text-muted-foreground">
+              Gérez tous vos boosts et suivez leurs performances
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          
+          <div className="flex gap-2">
+            <Button
+              onClick={() => navigate('/marketplace')}
+              variant="outline"
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Découvrir des annonces
+            </Button>
+            
+            <Button
+              onClick={() => navigate('/creer-annonce')}
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Créer une annonce
+            </Button>
+          </div>
+        </div>
 
-      {/* Tabs pour organiser les boosts */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Tous ({filteredBoosts.length})
-          </TabsTrigger>
-          <TabsTrigger value="active" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            Actifs ({getActiveBoosts().length})
-          </TabsTrigger>
-          <TabsTrigger value="pending" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            En attente ({getPendingBoosts().length})
-          </TabsTrigger>
-          <TabsTrigger value="expired" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Expirés ({getExpiredBoosts().length})
-          </TabsTrigger>
-          <TabsTrigger value="cancelled" className="flex items-center gap-2">
-            <XCircle className="h-4 w-4" />
-            Annulés ({getCancelledBoosts().length})
-          </TabsTrigger>
-        </TabsList>
+        {/* Statistiques globales */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-primary mb-1">
+                {getActiveBoosts().length}
+              </div>
+              <p className="text-sm text-muted-foreground">Boosts actifs</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">
+                {getExpiredBoosts().length}
+              </div>
+              <p className="text-sm text-muted-foreground">Boosts expirés</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {boosts.length}
+              </div>
+              <p className="text-sm text-muted-foreground">Total des boosts</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600 mb-1">
+                {boosts.reduce((sum, boost) => sum + (boost.listing_boosts?.boost_packages?.price || 0), 0).toLocaleString()}
+              </div>
+              <p className="text-sm text-muted-foreground">FCFA investis</p>
+            </CardContent>
+          </Card>
+        </div>
 
-        <TabsContent value="all" className="mt-6">
-          {filteredBoosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredBoosts.map((boost, index) => renderBoostCard(boost, index))}
+        {/* Filtres et recherche */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher par titre d'annonce ou package..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filtrer par statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="active">Actifs</SelectItem>
+                  <SelectItem value="pending">En attente</SelectItem>
+                  <SelectItem value="expired">Expirés</SelectItem>
+                  <SelectItem value="cancelled">Annulés</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Trier par" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Plus récents</SelectItem>
+                  <SelectItem value="oldest">Plus anciens</SelectItem>
+                  <SelectItem value="price_high">Prix élevé</SelectItem>
+                  <SelectItem value="price_low">Prix bas</SelectItem>
+                  <SelectItem value="expiring_soon">Expire bientôt</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold mb-2">Aucun boost trouvé</h3>
-              <p className="text-muted-foreground mb-6">
-                Aucun boost ne correspond à vos critères de recherche.
-              </p>
-              <Button onClick={() => {
-                setSearchTerm('');
-                setStatusFilter('all');
-                setSortBy('recent');
-              }} variant="outline">
-                Réinitialiser les filtres
-              </Button>
-            </div>
-          )}
-        </TabsContent>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="active" className="mt-6">
-          {getActiveBoosts().length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {getActiveBoosts().map((boost, index) => renderBoostCard(boost, index))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">📈</div>
-              <h3 className="text-xl font-semibold mb-2">Aucun boost actif</h3>
-              <p className="text-muted-foreground mb-6">
-                Vous n'avez actuellement aucun boost en cours.
-              </p>
-              <Button onClick={() => navigate('/marketplace')}>
-                Découvrir des annonces à booster
-              </Button>
-            </div>
-          )}
-        </TabsContent>
+        {/* Tabs pour organiser les boosts */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Tous ({filteredBoosts.length})
+            </TabsTrigger>
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Actifs ({getActiveBoosts().length})
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              En attente ({getPendingBoosts().length})
+            </TabsTrigger>
+            <TabsTrigger value="expired" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Expirés ({getExpiredBoosts().length})
+            </TabsTrigger>
+            <TabsTrigger value="cancelled" className="flex items-center gap-2">
+              <XCircle className="h-4 w-4" />
+              Annulés ({getCancelledBoosts().length})
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="pending" className="mt-6">
-          {getPendingBoosts().length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {getPendingBoosts().map((boost, index) => renderBoostCard(boost, index))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">⏳</div>
-              <h3 className="text-xl font-semibold mb-2">Aucun boost en attente</h3>
-              <p className="text-muted-foreground">
-                Tous vos boosts sont actifs ou ont été traités.
-              </p>
-            </div>
-          )}
-        </TabsContent>
+          <TabsContent value="all" className="mt-6">
+            {filteredBoosts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredBoosts.map((boost, index) => renderBoostCard(boost, index))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold mb-2">Aucun boost trouvé</h3>
+                <p className="text-muted-foreground mb-6">
+                  Aucun boost ne correspond à vos critères de recherche.
+                </p>
+                <Button onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setSortBy('recent');
+                }} variant="outline">
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+            )}
+          </TabsContent>
 
-        <TabsContent value="expired" className="mt-6">
-          {getExpiredBoosts().length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {getExpiredBoosts().map((boost, index) => renderBoostCard(boost, index))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">✅</div>
-              <h3 className="text-xl font-semibold mb-2">Aucun boost expiré</h3>
-              <p className="text-muted-foreground">
-                Excellent ! Tous vos boosts sont actifs.
-              </p>
-            </div>
-          )}
-        </TabsContent>
+          <TabsContent value="active" className="mt-6">
+            {getActiveBoosts().length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {getActiveBoosts().map((boost, index) => renderBoostCard(boost, index))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">📈</div>
+                <h3 className="text-xl font-semibold mb-2">Aucun boost actif</h3>
+                <p className="text-muted-foreground mb-6">
+                  Vous n'avez actuellement aucun boost en cours.
+                </p>
+                <Button onClick={() => navigate('/marketplace')}>
+                  Découvrir des annonces à booster
+                </Button>
+              </div>
+            )}
+          </TabsContent>
 
-        <TabsContent value="cancelled" className="mt-6">
-          {getCancelledBoosts().length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {getCancelledBoosts().map((boost, index) => renderBoostCard(boost, index))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold mb-2">Aucun boost annulé</h3>
-              <p className="text-muted-foreground">
-                Vous n'avez annulé aucun boost.
-              </p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="pending" className="mt-6">
+            {getPendingBoosts().length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {getPendingBoosts().map((boost, index) => renderBoostCard(boost, index))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">⏳</div>
+                <h3 className="text-xl font-semibold mb-2">Aucun boost en attente</h3>
+                <p className="text-muted-foreground">
+                  Tous vos boosts sont actifs ou ont été traités.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="expired" className="mt-6">
+            {getExpiredBoosts().length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {getExpiredBoosts().map((boost, index) => renderBoostCard(boost, index))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">✅</div>
+                <h3 className="text-xl font-semibold mb-2">Aucun boost expiré</h3>
+                <p className="text-muted-foreground">
+                  Excellent ! Tous vos boosts sont actifs.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="cancelled" className="mt-6">
+            {getCancelledBoosts().length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {getCancelledBoosts().map((boost, index) => renderBoostCard(boost, index))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🎯</div>
+                <h3 className="text-xl font-semibold mb-2">Aucun boost annulé</h3>
+                <p className="text-muted-foreground">
+                  Vous n'avez annulé aucun boost.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </PullToRefresh>
   );
 };
 

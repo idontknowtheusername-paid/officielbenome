@@ -9,10 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Lock, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 
 const ResetPasswordPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isAppMode } = useAppMode();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   
@@ -59,12 +62,12 @@ const ResetPasswordPage = () => {
     );
   }
 
-  return (
+  const pageContent = (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      className={`min-h-screen flex items-center justify-center ${isAppMode ? 'py-4 px-4' : 'py-12 px-4 sm:px-6 lg:px-8'}`}
     >
       <div className="w-full max-w-md">
         <Card>
@@ -142,6 +145,16 @@ const ResetPasswordPage = () => {
       </div>
     </motion.div>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Nouveau mot de passe" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default ResetPasswordPage;

@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { listingService } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
 import { personalData } from '@/lib/personalData';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 import { 
   ArrowLeft, 
   CheckCircle, 
@@ -30,6 +32,7 @@ const CreateListingPage = () => {
   const navigate = useNavigate();
   const { category, id } = useParams();
   const { toast } = useToast();
+  const { isAppMode } = useAppMode();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
   const [showPreview, setShowPreview] = useState(false);
@@ -243,9 +246,10 @@ const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=$
             window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header avec navigation */}
+  const pageContent = (
+    <div className={`min-h-screen bg-background ${isAppMode ? 'pb-20' : ''}`}>
+      {/* Header avec navigation - masqué en mode app */}
+      {!isAppMode && (
       <div className="bg-background/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -289,8 +293,9 @@ const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=$
           </div>
         </div>
       </div>
+      )}
 
-      <div className="container mx-auto px-4 py-8">
+      <div className={`container mx-auto px-4 ${isAppMode ? 'py-4' : 'py-8'}`}>
         <div className="max-w-6xl mx-auto">
           {/* Titre principal */}
           <motion.div
@@ -456,6 +461,16 @@ const mailtoUrl = `mailto:${personalData.supportEmail}?subject=${subject}&body=$
       <Toaster />
     </div>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title={isEditing ? "Modifier" : "Nouvelle annonce"} showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default CreateListingPage; 

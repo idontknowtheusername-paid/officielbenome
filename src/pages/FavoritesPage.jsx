@@ -4,10 +4,24 @@ import { Heart } from 'lucide-react';
 import FavoritesManager from '@/components/FavoritesManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
+
+// 1. IMPORT DU PULL-TO-REFRESH
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 const FavoritesPage = () => {
-  return (
-    <div className="container mx-auto px-4 py-8">
+  const { isAppMode } = useAppMode();
+
+  // 2. FONCTION DE RAFRAÎCHISSEMENT
+  const handleRefresh = async () => {
+    window.location.reload();
+  };
+
+  const pageContent = (
+    // 3. ENVELOPPE PULL TO REFRESH
+    <PullToRefresh onRefresh={handleRefresh} pullingContent=''>
+      <div className={`container mx-auto px-4 ${isAppMode ? 'py-4 pb-24' : 'py-8'}`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -53,7 +67,18 @@ const FavoritesPage = () => {
         </div>
       </motion.div>
     </div>
+    </PullToRefresh>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Mes Favoris">
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default FavoritesPage; 

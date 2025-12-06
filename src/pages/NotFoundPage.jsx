@@ -2,9 +2,13 @@ import { Link } from 'react-router-dom';
 import { Home, Search, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 
 const NotFoundPage = () => {
-  return (
+  const { isAppMode } = useAppMode();
+
+  const pageContent = (
     <>
       <SEO
         title="Page non trouvée - 404"
@@ -74,6 +78,16 @@ const NotFoundPage = () => {
       </div>
     </>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Page introuvable" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default NotFoundPage;

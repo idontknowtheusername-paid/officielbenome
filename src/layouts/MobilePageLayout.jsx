@@ -42,15 +42,19 @@ const MobileHeader = ({ title, showBack = false, rightAction }) => {
 };
 
 /* Wrapper principal pour les pages mobiles */
-const MobilePageLayout = ({ children, title, showBack = false, className }) => {
+const MobilePageLayout = ({ children, title, showBack = false, rightAction, className, noPadding = false }) => {
+    // Si title est null, on n'affiche pas le header (la page a son propre header)
+    const showHeader = title !== null;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      {/* Header App */}
-      <MobileHeader title={title} showBack={showBack} />
+          {/* Header App (seulement si title n'est pas null) */}
+          {showHeader && <MobileHeader title={title} showBack={showBack} rightAction={rightAction} />}
       
       {/* Contenu avec Padding Bottom pour la BottomNav & Safe Area */}
       <main className={cn(
-        "pb-[calc(80px+env(safe-area-inset-bottom))] px-4 pt-4", 
+          "pb-[calc(80px+env(safe-area-inset-bottom))]",
+          !noPadding && "px-4 pt-4",
         className
       )}>
         {children}

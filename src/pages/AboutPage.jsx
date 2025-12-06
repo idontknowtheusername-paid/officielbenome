@@ -4,8 +4,12 @@ import { Building, Users, Globe, Target, ShieldCheck, Lightbulb, Zap } from 'luc
 import { personalData } from '@/lib/personalData';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 
 const AboutPage = () => {
+  const { isAppMode } = useAppMode();
+
   const coreValues = [
     { icon: <Lightbulb className="h-8 w-8 text-primary" />, title: "Innovation Continue", description: "Nous repoussons constamment les limites pour offrir des solutions de pointe." },
     { icon: <ShieldCheck className="h-8 w-8 text-primary" />, title: "Confiance & Sécurité", description: "La sécurité de vos transactions et de vos données est notre priorité absolue." },
@@ -13,8 +17,8 @@ const AboutPage = () => {
     { icon: <Globe className="h-8 w-8 text-primary" />, title: "Impact Local Positif", description: "Nous visons à dynamiser l'économie locale et à créer des opportunités." },
   ];
 
-  return (
-    <div className="container mx-auto px-4 py-16">
+  const pageContent = (
+    <div className={`container mx-auto px-4 ${isAppMode ? 'py-8 pb-24' : 'py-16'}`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -117,6 +121,16 @@ const AboutPage = () => {
       </div>
     </div>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="À propos" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default AboutPage;

@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// 1. IMPORT DU PULL-TO-REFRESH
+import PullToRefresh from 'react-simple-pull-to-refresh';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations, useRealtimeMessages, useGlobalRealtimeMessages, useDeleteConversation } from '@/hooks/useMessages';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/utils/logger';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 import { 
   MessageSquare, 
   Search, 
@@ -124,6 +129,7 @@ const MessagingPageContent = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isAppMode } = useAppMode();
   const [searchParams] = useSearchParams();
   const { data: conversations, isLoading, error, refetch } = useConversations();
   const queryClient = useQueryClient();
@@ -147,6 +153,11 @@ const MessagingPageContent = () => {
   const [audioCallTarget, setAudioCallTarget] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const messagesContainerRef = useRef(null);
+
+  // 2. FONCTION DE RAFRAÎCHISSEMENT
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
   // Détecter si on est sur mobile - Optimisé avec useCallback
   const checkMobile = useCallback(() => {
@@ -820,8 +831,10 @@ const MessagingPageContent = () => {
     );
   }
 
-    return (
-      <div className="h-screen bg-background flex flex-col overflow-hidden max-h-screen">
+  const pageContent = (
+    // 3. ENVELOPPE PULL TO REFRESH
+    <PullToRefresh onRefresh={handleRefresh} pullingContent=''>
+      <div className={`h-screen bg-background flex flex-col overflow-hidden max-h-screen ${isAppMode ? 'pb-16' : ''}`}>
         {/* Header Mobile - Afficher seulement si pas de conversation sélectionnée */}
         {!selectedConversation && (
           <MobileMessagingNav
@@ -1259,7 +1272,18 @@ const MessagingPageContent = () => {
         />
       )}
     </div>
+    </PullToRefresh>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Messages" showBack={!!selectedConversation}>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 // Composant pour afficher un élément de conversation - Optimisé avec React.memo

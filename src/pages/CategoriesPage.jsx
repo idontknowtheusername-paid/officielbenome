@@ -6,6 +6,11 @@ import {
   Search, TrendingUp, Sparkles, MapPin, PlusCircle
 } from 'lucide-react';
 import { listingService } from '@/services';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
+
+// 1. IMPORT DU PULL-TO-REFRESH
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 /* --- CSS GLOBAL --- */
 const scrollbarHideStyle = `
@@ -184,6 +189,7 @@ const DataCarousel = ({ title, icon: Icon, items, isLoading, link }) => {
 /* --- PAGE PRINCIPALE --- */
 const CategoriesPage = () => {
   const navigate = useNavigate();
+  const { isAppMode } = useAppMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [realData, setRealData] = useState({
@@ -192,6 +198,14 @@ const CategoriesPage = () => {
     services: [],
     marketplace: []
   });
+
+  // 2. FONCTION DE RAFRAÎCHISSEMENT
+  const handleRefresh = async () => {
+    return new Promise((resolve) => {
+      window.location.reload();
+      resolve();
+    });
+  };
 
   // Fonction de recherche
   const handleSearch = (e) => {
@@ -251,175 +265,188 @@ const CategoriesPage = () => {
     fetchData();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-foreground pb-24">
-      <style>{scrollbarHideStyle}</style>
+  // Contenu de la page
+  const pageContent = (
+    // 3. ENVELOPPE PULL TO REFRESH
+    <PullToRefresh onRefresh={handleRefresh} pullingContent=''>
+      <div className={`min-h-screen bg-gray-50 dark:bg-slate-900 text-foreground ${isAppMode ? 'pb-20' : 'pb-24'}`}>
+        <style>{scrollbarHideStyle}</style>
 
-      {/* HEADER */}
-      <div className="bg-gradient-to-r from-primary to-blue-700 pt-8 pb-16 px-4 rounded-b-[30px] shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles className="text-white h-24 w-24" /></div>
-        <div className="relative z-10 max-w-xl mx-auto">
-          <h1 className="text-2xl font-bold text-white mb-1">MaxiiMarket</h1>
-          <p className="text-blue-100 text-sm mb-6">Tout trouver, tout vendre.</p>
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
-              placeholder="Rechercher un produit, service..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white text-gray-900 shadow-xl focus:ring-4 focus:ring-white/20 outline-none text-sm"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          </form>
-        </div>
-      </div>
-
-      {/* TENDANCES */}
-      <div className="max-w-xl mx-auto px-4 -mt-6 relative z-20 mb-8">
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-md border border-gray-100 dark:border-slate-700">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="text-orange-500 h-3 w-3" />
-            <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">Top Recherches</span>
+        {/* HEADER */}
+        <div className="bg-gradient-to-r from-primary to-blue-700 pt-8 pb-16 px-4 rounded-b-[30px] shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles className="text-white h-24 w-24" /></div>
+          <div className="relative z-10 max-w-xl mx-auto">
+            <h1 className="text-2xl font-bold text-white mb-1">MaxiiMarket</h1>
+            <p className="text-blue-100 text-sm mb-6">Tout trouver, tout vendre.</p>
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                placeholder="Rechercher un produit, service..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white text-gray-900 shadow-xl focus:ring-4 focus:ring-white/20 outline-none text-sm"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            </form>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {topSearches.map((item, idx) => (
+        </div>
+
+        {/* TENDANCES */}
+        <div className="max-w-xl mx-auto px-4 -mt-6 relative z-20 mb-8">
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-md border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="text-orange-500 h-3 w-3" />
+              <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">Top Recherches</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {topSearches.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleTopSearch(item)}
+                  className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-full text-[10px] font-medium hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* --- CARTES PRINCIPALES (V1 OPTIMISÉE HORIZONTALE) --- */}
+        <div className="mb-8">
+          <div className="px-4 mb-3 flex justify-between items-center">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Nos Univers</h2>
+          </div>
+
+          {/* SCROLL HORIZONTAL FLUIDE */}
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 px-4 pb-4 no-scrollbar">
+            {categoriesDetailed.map((category) => {
+              const Icon = category.icon;
+              return (
+                <Link
+                  key={category.id}
+                  to={category.path}
+                  className="snap-center min-w-[260px] bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center text-center relative overflow-hidden group hover:border-primary/50 transition-colors"
+                >
+                  <div className={`p-2.5 rounded-full bg-gray-50 dark:bg-slate-700 mb-2 ${category.color}`}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+
+                  <h3 className="text-sm font-bold mb-1 text-gray-900 dark:text-white">
+                    {category.name}
+                  </h3>
+
+                  <p className="text-gray-500 dark:text-gray-400 text-[10px] mb-3 leading-tight px-2 line-clamp-2">
+                    {category.description}
+                  </p>
+
+                  <div className="w-full mt-auto bg-gray-50 dark:bg-slate-700/50 py-1.5 rounded-lg text-primary text-xs font-semibold flex justify-center items-center group-hover:bg-primary group-hover:text-white transition-all">
+                    Explorer
+                  </div>
+                </Link>
+              );
+            })}
+            {/* Espace vide fin de scroll */}
+            <div className="w-2 flex-shrink-0"></div>
+          </div>
+        </div>
+
+        {/* --- CAROUSELS PRETS POUR INTEGRATION --- */}
+        <div className="space-y-2">
+          <DataCarousel
+            title="Immobilier"
+            icon={Home}
+            items={realData.immobilier}
+            isLoading={loading}
+            link="/immobilier"
+          />
+          <DataCarousel
+            title="Auto & Moto"
+            icon={Car}
+            items={realData.automobile}
+            isLoading={loading}
+            link="/automobile"
+          />
+          <DataCarousel
+            title="Bonnes Affaires"
+            icon={ShoppingBag}
+            items={realData.marketplace}
+            isLoading={loading}
+            link="/marketplace"
+          />
+          <DataCarousel
+            title="Services"
+            icon={Briefcase}
+            items={realData.services}
+            isLoading={loading}
+            link="/services"
+          />
+        </div>
+
+        {/* CTA VENDEUR */}
+        <div className="px-4 mt-6">
+
+          <motion.div
+
+            whileHover={{ scale: 1.02 }}
+
+            whileTap={{ scale: 0.98 }}
+
+            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black text-white p-6 shadow-2xl shadow-gray-900/20"
+
+          >
+
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30 rounded-full blur-[50px] pointer-events-none"></div>
+
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/20 rounded-full blur-[40px] pointer-events-none"></div>
+
+            <div className="relative z-10 flex flex-col items-center text-center">
+
+              <div className="bg-white/10 p-3 rounded-full mb-3 backdrop-blur-sm border border-white/10">
+
+                <PlusCircle className="w-8 h-8 text-primary" />
+
+              </div>
+
+              <h3 className="text-xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+
+                Vous avez quelque chose à vendre ?
+
+              </h3>
+
+              <p className="text-gray-400 text-sm mb-6 max-w-xs">
+
+                Transformez vos objets inutilisés en cash. C'est gratuit, rapide et sécurisé sur MaxiMarket.
+
+              </p>
+
               <button
-                key={idx}
-                onClick={() => handleTopSearch(item)}
-                className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-full text-[10px] font-medium hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                onClick={() => navigate('/creer-annonce')}
+                className="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 transition-all"
               >
-                {item.label}
+                <span className="text-lg">+</span> Publier une annonce
               </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* --- CARTES PRINCIPALES (V1 OPTIMISÉE HORIZONTALE) --- */}
-      <div className="mb-8">
-        <div className="px-4 mb-3 flex justify-between items-center">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Nos Univers</h2>
-        </div>
-
-        {/* SCROLL HORIZONTAL FLUIDE */}
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 px-4 pb-4 no-scrollbar">
-          {categoriesDetailed.map((category) => {
-            const Icon = category.icon;
-            return (
-              <Link
-                key={category.id}
-                to={category.path}
-                className="snap-center min-w-[260px] bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center text-center relative overflow-hidden group hover:border-primary/50 transition-colors"
-              >
-                <div className={`p-2.5 rounded-full bg-gray-50 dark:bg-slate-700 mb-2 ${category.color}`}>
-                  <Icon className="h-6 w-6" />
-                </div>
-
-                <h3 className="text-sm font-bold mb-1 text-gray-900 dark:text-white">
-                  {category.name}
-                </h3>
-
-                <p className="text-gray-500 dark:text-gray-400 text-[10px] mb-3 leading-tight px-2 line-clamp-2">
-                  {category.description}
-                </p>
-
-                <div className="w-full mt-auto bg-gray-50 dark:bg-slate-700/50 py-1.5 rounded-lg text-primary text-xs font-semibold flex justify-center items-center group-hover:bg-primary group-hover:text-white transition-all">
-                  Explorer
-                </div>
-              </Link>
-            );
-          })}
-          {/* Espace vide fin de scroll */}
-          <div className="w-2 flex-shrink-0"></div>
-        </div>
-      </div>
-
-      {/* --- CAROUSELS PRETS POUR INTEGRATION --- */}
-      <div className="space-y-2">
-        <DataCarousel
-          title="Immobilier"
-          icon={Home}
-          items={realData.immobilier}
-          isLoading={loading}
-          link="/immobilier"
-        />
-        <DataCarousel
-          title="Auto & Moto"
-          icon={Car}
-          items={realData.automobile}
-          isLoading={loading}
-          link="/automobile"
-        />
-        <DataCarousel
-          title="Bonnes Affaires"
-          icon={ShoppingBag}
-          items={realData.marketplace}
-          isLoading={loading}
-          link="/marketplace"
-        />
-        <DataCarousel
-          title="Services"
-          icon={Briefcase}
-          items={realData.services}
-          isLoading={loading}
-          link="/services"
-        />
-      </div>
-
-      {/* CTA VENDEUR */}
-      <div className="px-4 mt-6">
-
-        <motion.div
-
-          whileHover={{ scale: 1.02 }}
-
-          whileTap={{ scale: 0.98 }}
-
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black text-white p-6 shadow-2xl shadow-gray-900/20"
-
-        >
-
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30 rounded-full blur-[50px] pointer-events-none"></div>
-
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/20 rounded-full blur-[40px] pointer-events-none"></div>
-
-          <div className="relative z-10 flex flex-col items-center text-center">
-
-            <div className="bg-white/10 p-3 rounded-full mb-3 backdrop-blur-sm border border-white/10">
-
-              <PlusCircle className="w-8 h-8 text-primary" />
 
             </div>
 
-            <h3 className="text-xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+          </motion.div>
 
-              Vous avez quelque chose à vendre ?
-
-            </h3>
-
-            <p className="text-gray-400 text-sm mb-6 max-w-xs">
-
-              Transformez vos objets inutilisés en cash. C'est gratuit, rapide et sécurisé sur MaxiMarket.
-
-            </p>
-
-            <button
-              onClick={() => navigate('/creer-annonce')}
-              className="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 transition-all"
-            >
-              <span className="text-lg">+</span> Publier une annonce
-            </button>
-
-          </div>
-
-        </motion.div>
+        </div>
 
       </div>
-
-    </div>
-
+    </PullToRefresh>
   );
 
+  // Si mode app, wrapper avec MobilePageLayout (title=null car la page a son propre header)
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title={null}>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default CategoriesPage;

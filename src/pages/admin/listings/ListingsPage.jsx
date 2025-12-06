@@ -24,7 +24,8 @@ import {
 } from 'lucide-react';
 import { 
   listingService,
-  categoryService
+  categoryService,
+  notificationService
 } from '@/services';
 import { useToast } from '@/components/ui/use-toast';
 import { quickExport } from '@/utils/exportUtils';
@@ -96,7 +97,16 @@ export default function ListingsPage() {
 
   // Approve listing mutation
   const approveMutation = useMutation({
-    mutationFn: (listingId) => listingService.updateListingStatus(listingId, 'approved'),
+    mutationFn: async ({ listingId, userId, title }) => {
+      const result = await listingService.updateListingStatus(listingId, 'approved');
+      // Créer notification pour le propriétaire
+      try {
+        await notificationService.createListingApprovedNotification(listingId, userId, title);
+      } catch (notifError) {
+        console.warn('Erreur notification approbation:', notifError);
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['adminListings']);
       toast({
@@ -115,7 +125,16 @@ export default function ListingsPage() {
 
   // Reject listing mutation
   const rejectMutation = useMutation({
-    mutationFn: (listingId) => listingService.updateListingStatus(listingId, 'rejected'),
+    mutationFn: async ({ listingId, userId, title }) => {
+      const result = await listingService.updateListingStatus(listingId, 'rejected');
+      // Créer notification pour le propriétaire
+      try {
+        await notificationService.createListingRejectedNotification(listingId, userId, title, 'Non conforme aux règles de la plateforme');
+      } catch (notifError) {
+        console.warn('Erreur notification rejet:', notifError);
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['adminListings']);
       toast({
@@ -171,12 +190,20 @@ export default function ListingsPage() {
     },
   });
 
-  const handleApproveListing = (listingId) => {
-    approveMutation.mutate(listingId);
+  const handleApproveListing = (listing) => {
+    approveMutation.mutate({
+      listingId: listing.id,
+      userId: listing.user_id,
+      title: listing.title
+    });
   };
 
-  const handleRejectListing = (listingId) => {
-    rejectMutation.mutate(listingId);
+  const handleRejectListing = (listing) => {
+    rejectMutation.mutate({
+      listingId: listing.id,
+      userId: listing.user_id,
+      title: listing.title
+    });
   };
 
   const handleDeleteListing = (listingId) => {
@@ -441,14 +468,14 @@ export default function ListingsPage() {
                         {listing.status === 'pending' && (
                           <>
                             <DropdownMenuItem
-                              onClick={() => handleApproveListing(listing.id)}
+                              onClick={() => handleApproveListing(listing)}
                               disabled={approveMutation.isLoading}
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
                               <span>Approuver</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleRejectListing(listing.id)}
+                              onClick={() => handleRejectListing(listing)}
                               disabled={rejectMutation.isLoading}
                             >
                               <XCircle className="mr-2 h-4 w-4" />
@@ -459,7 +486,7 @@ export default function ListingsPage() {
                         
                         {listing.status === 'rejected' && (
                           <DropdownMenuItem
-                            onClick={() => handleApproveListing(listing.id)}
+                            onClick={() => handleApproveListing(listing)}
                             disabled={approveMutation.isLoading}
                           >
                             <CheckCircle className="mr-2 h-4 w-4" />
@@ -469,7 +496,7 @@ export default function ListingsPage() {
                         
                         {listing.status === 'expired' && (
                           <DropdownMenuItem
-                            onClick={() => handleApproveListing(listing.id)}
+                            onClick={() => handleApproveListing(listing)}
                             disabled={approveMutation.isLoading}
                           >
                             <CheckCircle className="mr-2 h-4 w-4" />

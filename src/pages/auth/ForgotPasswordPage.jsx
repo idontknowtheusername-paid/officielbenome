@@ -9,9 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mail, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 
 const ForgotPasswordPage = () => {
   const { toast } = useToast();
+  const { isAppMode } = useAppMode();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
   const onSubmit = async (data) => {
@@ -32,12 +35,12 @@ const ForgotPasswordPage = () => {
     }
   };
 
-  return (
+  const pageContent = (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      className={`min-h-screen flex items-center justify-center ${isAppMode ? 'py-4 px-4' : 'py-12 px-4 sm:px-6 lg:px-8'}`}
     >
       <div className="w-full max-w-md">
         <Card>
@@ -100,6 +103,16 @@ const ForgotPasswordPage = () => {
       </div>
     </motion.div>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Mot de passe oublié" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default ForgotPasswordPage;

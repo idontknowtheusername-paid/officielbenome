@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useTabNavigation } from '@/hooks/useTabNavigation';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -55,6 +57,7 @@ const ProfilePage = () => {
   const { user, loading, logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isAppMode } = useAppMode();
   const [isUpdating, setIsUpdating] = useState(false);
   const { activeTab, handleTabChange } = useTabNavigation('dashboard');
   const [listings, setListings] = useState([]);
@@ -404,21 +407,27 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return (
+    const loadingContent = (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
+
+    if (isAppMode) {
+      return <MobilePageLayout title="Mon Profil">{loadingContent}</MobilePageLayout>;
+    }
+    return loadingContent;
   }
 
-  return (
+  // Contenu principal de la page
+  const pageContent = (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-background"
+      className={`min-h-screen bg-background ${isAppMode ? 'pb-20' : ''}`}
     >
-      <div className="container mx-auto py-6 sm:py-8 px-4">
+      <div className={`container mx-auto px-4 ${isAppMode ? 'py-4' : 'py-6 sm:py-8'}`}>
         {/* Header avec photo de profil */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-4 sm:gap-6">
@@ -887,6 +896,17 @@ const ProfilePage = () => {
       />
     </motion.div>
   );
+
+  // Wrapper avec MobilePageLayout si mode app
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Mon Profil">
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 };
 
 export default ProfilePage;

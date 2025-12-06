@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useAppMode } from '@/hooks/useAppMode';
+import MobilePageLayout from '@/layouts/MobilePageLayout';
 import { 
   ArrowLeft, 
   Zap, 
@@ -21,12 +23,16 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
+// 1. IMPORT DU PULL-TO-REFRESH
+import PullToRefresh from 'react-simple-pull-to-refresh';
+
 function BoostPaymentPage() {
   const navigate = useNavigate();
   const { listingId } = useParams();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAppMode } = useAppMode();
 
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -36,6 +42,14 @@ function BoostPaymentPage() {
   // Vérifier si on revient d'un paiement
   const reference = searchParams.get('reference');
   const status = searchParams.get('status');
+
+  // 2. FONCTION DE RAFRAÎCHISSEMENT
+  const handleRefresh = async () => {
+    return new Promise((resolve) => {
+      window.location.reload();
+      resolve();
+    });
+  };
 
   // Fetch listing
   const { data: listing, isLoading: listingLoading } = useQuery({
@@ -307,192 +321,207 @@ function BoostPaymentPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Button>
+  const pageContent = (
+    // 3. ENVELOPPE PULL TO REFRESH
+    <PullToRefresh onRefresh={handleRefresh} pullingContent=''>
+      <div className={`min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30 ${isAppMode ? 'pb-20' : ''}`}>
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          {/* Header - masqué en mode app */}
+          {!isAppMode && (
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="mb-4"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour
+            </Button>
 
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            ⚡ Booster votre annonce
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Choisissez un package pour augmenter la visibilité
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Listing Info */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Votre annonce</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {listing.images && listing.images.length > 0 && (
-                  <img
-                    src={listing.images[0]}
-                    alt={listing.title}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                )}
-                <h3 className="font-semibold text-lg mb-2">{listing.title}</h3>
-                <div className="text-2xl font-bold text-primary mb-4">
-                  {formatPrice(listing.price)}
-                </div>
-                <Badge variant="outline">{listing.category}</Badge>
-              </CardContent>
-            </Card>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">
+              ⚡ Booster votre annonce
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Choisissez un package pour augmenter la visibilité
+            </p>
           </div>
+          )}
 
-          {/* Packages */}
-          <div className="lg:col-span-2">
-            {!lygosService.isConfigured() && (
-              <Alert className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Le système de paiement n'est pas encore configuré. Veuillez contacter l'administrateur.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {packages.map((pkg) => (
-                <Card
-                  key={pkg.id}
-                  className={`relative hover:shadow-lg transition-all duration-200 ${
-                    pkg.name === 'Premium' ? 'border-primary border-2' : ''
-                  }`}
-                >
-                  {pkg.name === 'Premium' && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                      ⭐ Recommandé
-                    </Badge>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Listing Info */}
+            <div className="lg:col-span-1">
+              <Card className="sticky top-4">
+                <CardHeader>
+                  <CardTitle>Votre annonce</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {listing.images && listing.images.length > 0 && (
+                    <img
+                      src={listing.images[0]}
+                      alt={listing.title}
+                      className="w-full h-48 object-cover rounded-lg mb-4"
+                    />
                   )}
-                  
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{pkg.name}</span>
-                      <Zap className="h-5 w-5 text-primary" />
-                    </CardTitle>
-                    <CardDescription>{pkg.description}</CardDescription>
-                  </CardHeader>
+                  <h3 className="font-semibold text-lg mb-2">{listing.title}</h3>
+                  <div className="text-2xl font-bold text-primary mb-4">
+                    {formatPrice(listing.price)}
+                  </div>
+                  <Badge variant="outline">{listing.category}</Badge>
+                </CardContent>
+              </Card>
+            </div>
 
-                  <CardContent>
-                    <div className="mb-6">
-                      <div className="text-3xl font-bold text-primary mb-1">
-                        {formatPrice(pkg.price)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Pour {pkg.duration_days} jours
-                      </div>
-                    </div>
+            {/* Packages */}
+            <div className="lg:col-span-2">
+              {!lygosService.isConfigured() && (
+                <Alert className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Le système de paiement n'est pas encore configuré. Veuillez contacter l'administrateur.
+                  </AlertDescription>
+                </Alert>
+              )}
 
-                    {pkg.features && (
-                      <ul className="space-y-2 mb-6">
-                        {(() => {
-                          // Mapper les features techniques vers des descriptions lisibles
-                          const featureDescriptions = {
-                            'boosted': '⚡ Mise en avant dans les résultats',
-                            'priority': '🎯 Priorité d\'affichage',
-                            'highest': '👑 Visibilité maximale',
-                            'high': '⭐ Haute visibilité',
-                            'medium': '📈 Visibilité accrue',
-                            'premium': '💎 Badge Premium',
-                            'featured': '🌟 Annonce vedette',
-                            'analytics': '📊 Statistiques détaillées',
-                            'support': '🎧 Support prioritaire'
-                          };
-
-                          // Parser les features
-                          let features = [];
-                          if (Array.isArray(pkg.features)) {
-                            features = pkg.features;
-                          } else if (typeof pkg.features === 'string') {
-                            try {
-                              features = JSON.parse(pkg.features);
-                            } catch {
-                              features = [];
-                            }
-                          } else if (typeof pkg.features === 'object') {
-                            features = Object.values(pkg.features);
-                          }
-
-                          // Filtrer et mapper vers des descriptions lisibles
-                          const readableFeatures = features
-                            .filter(f => typeof f === 'string' && featureDescriptions[f])
-                            .map(f => featureDescriptions[f]);
-
-                          // Si aucune feature lisible, afficher des features par défaut basées sur le package
-                          if (readableFeatures.length === 0) {
-                            if (pkg.name.includes('VIP') || pkg.name.includes('Premium')) {
-                              return [
-                                '👑 Visibilité maximale',
-                                '⚡ Mise en avant prioritaire',
-                                '💎 Badge Premium',
-                                '📊 Statistiques détaillées',
-                                '🎧 Support prioritaire'
-                              ];
-                            } else if (pkg.name.includes('Standard')) {
-                              return [
-                                '⭐ Haute visibilité',
-                                '⚡ Mise en avant',
-                                '💎 Badge Premium',
-                                '📊 Statistiques basiques'
-                              ];
-                            } else {
-                              return [
-                                '📈 Visibilité accrue',
-                                '⚡ Mise en avant',
-                                '💎 Badge Premium'
-                              ];
-                            }
-                          }
-
-                          return readableFeatures;
-                        })().map((feature, index) => (
-                          <li key={index} className="flex items-start text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {packages.map((pkg) => (
+                  <Card
+                    key={pkg.id}
+                    className={`relative hover:shadow-lg transition-all duration-200 ${
+                      pkg.name === 'Premium' ? 'border-primary border-2' : ''
+                    }`}
+                  >
+                    {pkg.name === 'Premium' && (
+                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
+                        ⭐ Recommandé
+                      </Badge>
                     )}
+                    
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>{pkg.name}</span>
+                        <Zap className="h-5 w-5 text-primary" />
+                      </CardTitle>
+                      <CardDescription>{pkg.description}</CardDescription>
+                    </CardHeader>
 
-                    <Button
-                      onClick={() => handlePayment(pkg)}
-                      disabled={isProcessing || !lygosService.isConfigured()}
-                      className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
-                    >
-                      {isProcessing && selectedPackage?.id === pkg.id ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Traitement...
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="mr-2 h-4 w-4" />
-                          Payer maintenant
-                        </>
+                    <CardContent>
+                      <div className="mb-6">
+                        <div className="text-3xl font-bold text-primary mb-1">
+                          {formatPrice(pkg.price)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Pour {pkg.duration_days} jours
+                        </div>
+                      </div>
+
+                      {pkg.features && (
+                        <ul className="space-y-2 mb-6">
+                          {(() => {
+                            // Mapper les features techniques vers des descriptions lisibles
+                            const featureDescriptions = {
+                              'boosted': '⚡ Mise en avant dans les résultats',
+                              'priority': '🎯 Priorité d\'affichage',
+                              'highest': '👑 Visibilité maximale',
+                              'high': '⭐ Haute visibilité',
+                              'medium': '📈 Visibilité accrue',
+                              'premium': '💎 Badge Premium',
+                              'featured': '🌟 Annonce vedette',
+                              'analytics': '📊 Statistiques détaillées',
+                              'support': '🎧 Support prioritaire'
+                            };
+
+                            // Parser les features
+                            let features = [];
+                            if (Array.isArray(pkg.features)) {
+                              features = pkg.features;
+                            } else if (typeof pkg.features === 'string') {
+                              try {
+                                features = JSON.parse(pkg.features);
+                              } catch {
+                                features = [];
+                              }
+                            } else if (typeof pkg.features === 'object') {
+                              features = Object.values(pkg.features);
+                            }
+
+                            // Filtrer et mapper vers des descriptions lisibles
+                            const readableFeatures = features
+                              .filter(f => typeof f === 'string' && featureDescriptions[f])
+                              .map(f => featureDescriptions[f]);
+
+                            // Si aucune feature lisible, afficher des features par défaut basées sur le package
+                            if (readableFeatures.length === 0) {
+                              if (pkg.name.includes('VIP') || pkg.name.includes('Premium')) {
+                                return [
+                                  '👑 Visibilité maximale',
+                                  '⚡ Mise en avant prioritaire',
+                                  '💎 Badge Premium',
+                                  '📊 Statistiques détaillées',
+                                  '🎧 Support prioritaire'
+                                ];
+                              } else if (pkg.name.includes('Standard')) {
+                                return [
+                                  '⭐ Haute visibilité',
+                                  '⚡ Mise en avant',
+                                  '💎 Badge Premium',
+                                  '📊 Statistiques basiques'
+                                ];
+                              } else {
+                                return [
+                                  '📈 Visibilité accrue',
+                                  '⚡ Mise en avant',
+                                  '💎 Badge Premium'
+                                ];
+                              }
+                            }
+
+                            return readableFeatures;
+                          })().map((feature, index) => (
+                            <li key={index} className="flex items-start text-sm">
+                              <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
                       )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+
+                      <Button
+                        onClick={() => handlePayment(pkg)}
+                        disabled={isProcessing || !lygosService.isConfigured()}
+                        className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+                      >
+                        {isProcessing && selectedPackage?.id === pkg.id ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Traitement...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Payer maintenant
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
+
+  if (isAppMode) {
+    return (
+      <MobilePageLayout title="Paiement" showBack>
+        {pageContent}
+      </MobilePageLayout>
+    );
+  }
+
+  return pageContent;
 }
 
 export default BoostPaymentPage;

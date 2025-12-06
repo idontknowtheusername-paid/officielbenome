@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import notificationService from './notification.service';
 
 // ============================================================================
 // SERVICE DE GESTION DES BOOSTS PREMIUM - PRODUCTION
@@ -294,6 +295,34 @@ export const boostService = {
         }
       } catch (transactionErr) {
         console.warn('Impossible de créer la transaction:', transactionErr);
+      }
+
+      // ============================================================================
+      // NOTIFICATION GLOBALE: Boost activé (visible par tous les utilisateurs)
+      // ============================================================================
+      try {
+        // Récupérer les informations du propriétaire pour la notification
+        const { data: ownerData } = await supabase
+          .from('users')
+          .select('first_name, last_name')
+          .eq('id', boost.user_id)
+          .single();
+
+        const ownerName = ownerData 
+          ? `${ownerData.first_name} ${ownerData.last_name}`.trim() 
+          : 'Un utilisateur';
+
+        // Créer la notification globale
+        await notificationService.createBoostActivatedGlobalNotification(
+          boost.listing_id,
+          boost.listings?.title || 'Une annonce',
+          ownerName
+        );
+
+        console.log('✅ Notification globale de boost créée');
+      } catch (notifError) {
+        // Ne pas bloquer l'activation du boost si la notification échoue
+        console.warn('⚠️ Erreur création notification boost (boost activé quand même):', notifError);
       }
 
       return {

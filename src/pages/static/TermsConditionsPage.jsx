@@ -17,7 +17,7 @@ const TermsConditionsPage = () => {
         <h1 className="text-4xl md:text-5xl font-bold mb-6">
           Termes et <span className="gradient-text">Conditions</span> d'Utilisation
         </h1>
-        <p className="text-lg text-muted-foreground">Dernière mise à jour : 02 Juin 2025</p>
+        <p className="text-lg text-muted-foreground">Dernière mise à jour : 06 Décembre 2025</p>
       </motion.div>
 
       <motion.div

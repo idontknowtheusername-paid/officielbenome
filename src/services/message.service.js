@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/utils/logger';
+import notificationService from './notification.service';
 
 // ============================================================================
 // SERVICE MESSAGERIE CORRIGÉ - SANS RELATIONS COMPLEXES
@@ -243,6 +244,36 @@ export const messageService = {
         .eq('id', conversationId);
 
       logger.log('✅ Message envoyé:', data.id);
+
+      // ============================================================================
+      // NOTIFICATION: Créer notification pour le destinataire
+      // ============================================================================
+      try {
+        // Récupérer les informations de l'expéditeur
+        const { data: senderData } = await supabase
+          .from('users')
+          .select('first_name, last_name')
+          .eq('id', user.id)
+          .single();
+
+        const senderName = senderData 
+          ? `${senderData.first_name} ${senderData.last_name}`.trim() 
+          : 'Un utilisateur';
+
+        // Créer la notification pour le destinataire
+        await notificationService.createNewMessageNotification(
+          user.id,        // senderId
+          receiverId,     // receiverId
+          senderName,     // senderName
+          conversationId  // conversationId
+        );
+
+        logger.log('✅ Notification de nouveau message envoyée au destinataire');
+      } catch (notifError) {
+        // Ne pas bloquer l'envoi du message si la notification échoue
+        logger.error('⚠️ Erreur création notification (message envoyé quand même):', notifError);
+      }
+
       return data;
     } catch (error) {
       logger.error('❌ Erreur dans sendMessage:', error);

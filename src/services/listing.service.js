@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import notificationService from './notification.service';
 
 // ============================================================================
 // SERVICE ANNONCES
@@ -756,6 +757,47 @@ export const listingService = {
       console.error('Erreur création annonce:', error);
       throw error;
     }
+
+    // ============================================================================
+    // NOTIFICATION GLOBALE: Nouvelle annonce publiée (visible par tous)
+    // ============================================================================
+    if (data && data.status === 'approved') {
+      try {
+        // Récupérer les informations du propriétaire
+        const { data: ownerData } = await supabase
+          .from('users')
+          .select('first_name, last_name')
+          .eq('id', user.id)
+          .single();
+
+        const ownerName = ownerData 
+          ? `${ownerData.first_name || ''} ${ownerData.last_name || ''}`.trim() 
+          : 'Un utilisateur';
+
+        // Traduire la catégorie pour l'affichage
+        const categoryLabels = {
+          'real_estate': 'Immobilier',
+          'automobile': 'Automobile',
+          'services': 'Services',
+          'marketplace': 'Marketplace'
+        };
+        const categoryLabel = categoryLabels[data.category] || data.category;
+
+        // Créer la notification globale
+        await notificationService.createNewListingGlobalNotification(
+          data.id,
+          data.title,
+          ownerName,
+          categoryLabel
+        );
+
+        console.log('✅ Notification globale nouvelle annonce créée');
+      } catch (notifError) {
+        // Ne pas bloquer la création si la notification échoue
+        console.warn('⚠️ Erreur création notification (annonce créée quand même):', notifError);
+      }
+    }
+
     return data;
   },
 
